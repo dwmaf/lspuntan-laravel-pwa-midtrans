@@ -30,11 +30,12 @@ class SkemaController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request);
         $validatedData=$request->validate([
             'nama_skema' => ['required', 'string', 'max:255'],
         ]);
         Skema::create($validatedData);
-        return redirect(route('dashboard'))->with('Success','Data Skema berhasil ditambah');
+        return redirect(route('dashboardadmin'))->with('Success','Data Skema berhasil ditambah');
     }
 
     /**
@@ -72,7 +73,7 @@ class SkemaController extends Controller
         Skema::where('id', $skema->id)
             ->update($validatedData);
 
-            return redirect(route('dashboard'))->with('Success','Data Skema berhasil diupdate');
+            return redirect(route('dashboardadmin'))->with('Success','Data Skema berhasil diupdate');
     }
 
     /**
@@ -84,6 +85,6 @@ class SkemaController extends Controller
         //     Storage::delete($skema->link_foto);
         // }
         Skema::destroy($skema->id);
-        return redirect(route('dashboard'))->with('success', 'Skema berhasil dihapus');
+        return redirect(route('dashboardadmin'))->with('success', 'Skema berhasil dihapus');
     }
 }

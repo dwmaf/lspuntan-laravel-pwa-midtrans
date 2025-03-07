@@ -15,6 +15,6 @@ class AdminLayout extends Component
      */
     public function render(): View
     {
-        return view('layouts.asesi');
+        return view('layouts.admin');
     }
 }

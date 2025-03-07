@@ -40,6 +40,6 @@ class RegisteredAsesorController extends Controller
             'role'=> $request->role,
         ]);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('dashboardadmin', absolute: false));
     }
 }

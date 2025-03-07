@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asesor;
-use App\Http\Requests\StoreAsesorRequest;
-use App\Http\Requests\UpdateAsesorRequest;
-
+use App\Models\Skema;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
 class AsesorController extends Controller
 {
     /**
@@ -15,6 +17,7 @@ class AsesorController extends Controller
     {
         return view('admin.asesor.index', [
             'asesors' => Asesor::all(),
+            'skemas' => Skema::all(),
         ]);
     }
 
@@ -29,9 +32,27 @@ class AsesorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreAsesorRequest $request)
+    public function store(Request $request)
     {
-        //
+        dd($request);
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role'=>'required',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role'=> $request->role,
+        ]);
+        Asesor::create([
+            'user_id'=>$user->id,
+        ]);
+
+        return redirect(route('dashboardadmin', absolute: false));
     }
 
     /**
@@ -55,7 +76,7 @@ class AsesorController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateAsesorRequest $request, Asesor $asesor)
+    public function update(Request $request, Asesor $asesor)
     {
         //
     }

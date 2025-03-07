@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sertification;
+use App\Models\Skema;
 use App\Http\Requests\StoreSertificationRequest;
 use App\Http\Requests\UpdateSertificationRequest;
 use Illuminate\Http\Request;
@@ -15,15 +16,11 @@ class SertificationController extends Controller
     public function index()
     {
         return view('admin.sertifikasi.index',[
-            'sertifications'=>Sertification::all()
+            'sertifications'=>Sertification::all(),
+            'skemas'=>Skema::all()
         ]);
     }
-    public function index_asesi()
-    {
-        return view('admin.sertifikasi.index',[
-            'sertifications'=>Sertification::all()
-        ]);
-    }
+    
 
     /**
      * Show the form for creating a new resource.
@@ -94,4 +91,10 @@ class SertificationController extends Controller
         Sertification::destroy($sertification->id);
         return redirect(route('dashboard'))->with('success', 'Sertifikasi berhasil dihapus');
     }
+    // public function index_asesi()
+    // {
+    //     return view('admin.sertifikasi.index',[
+    //         'sertifications'=>Sertification::all()
+    //     ]);
+    // }
 }
