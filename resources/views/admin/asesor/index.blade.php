@@ -1,26 +1,27 @@
 <x-admin-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Sertifikasi') }}
+            {{ __('Asesor') }}
         </h2>
     </x-slot>
     <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <a href=""
-            class="inline-block bg-blue-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition">Data
-            Asesor</a>
-
-
         <form action="/asesor" class="mt-4 flex flex-col gap-2" method="POST">
             @csrf
             <div>
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Nama
                     Asesor</label>
-                <input type="text" name="nama_asesor" required
+                <input type="text" name="name" required
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
             </div>
             <div>
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Email</label>
                 <input type="email" name="email" required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
+            </div>
+            <div>
+                <label for=""
+                    class="block text-sm font-medium text-gray-600 dark:text-gray-300">Password</label>
+                <input type="password" name="password" required
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
             </div>
             <input type="text" name="role" value="asesor" hidden>
@@ -61,6 +62,7 @@
         </form>
 
         <h2 class="mt-4 text-lg font-semibold text-gray-700 dark:text-gray-200">Asesor yang Tersedia</h2>
+
         <table class="mt-6 w-full border-collapse border border-gray-300 dark:border-gray-600">
             <thead>
                 <tr class="bg-gray-200 dark:bg-gray-700">
@@ -78,7 +80,7 @@
                         Aksi</th>
                 </tr>
             </thead>
-            {{-- <tbody>
+            <tbody>
                 @foreach ($asesors as $asesor)
                     <tr>
                         <td
@@ -86,10 +88,13 @@
                             {{ $loop->iteration }}</td>
                         <td
                             class="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2">
-                            {{ $asesor->nama }}</td>
+                            {{ $asesor->user->name }}</td>
                         <td
                             class="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2">
-                            {{ $asesor->nama_skema }}</td>
+                            @foreach ($asesor->skemas as $skema)
+                                <h4 class="rounded-lg bg-blue-100 p-2 mb-2">{{ $skema->nama_skema }}</h4>
+                            @endforeach
+                        </td>
                         <td
                             class="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 text-center">
                             <button x-data
@@ -97,12 +102,31 @@
                                 class="text-blue-500 hover:text-blue-700">
                                 Edit
                             </button>
-                            <button
-                                class="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 dark:hover:bg-500 transition text-sm">Hapus</button>
+                            <form x-data="{ open: false }" class="d-inline" action=""
+                                method="post" @submit="if (!open) { event.preventDefault(); open = true }">
+                                @method('delete')
+                                @csrf
+                                <button type="button" class="btn btn-danger border-0" @click="open = true">
+                                    Hapus</i>
+                                </button>
+
+                                <div x-show="open" x-cloak
+                                    class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+                                    <div class="bg-white p-6 rounded shadow-lg">
+                                        <p>Hapus data {{ $asesor->user->name }}?</p>
+                                        <div class="flex justify-end">
+                                            <button type="button" class="btn btn-secondary mr-2"
+                                                @click="open = false">Batal</button>
+                                            <button type="submit" class="btn btn-danger">Hapus</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+
                         </td>
                     </tr>
                 @endforeach
-            </tbody> --}}
+            </tbody>
         </table>
     </div>
 

@@ -16,8 +16,8 @@ class AsesorController extends Controller
     public function index()
     {
         return view('admin.asesor.index', [
-            'asesors' => Asesor::all(),
-            'skemas' => Skema::all(),
+            'asesors' => Asesor::with('skemas')->get(),
+            'skemas' => Skema::all()
         ]);
     }
 
@@ -34,12 +34,14 @@ class AsesorController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request);
+        // dd($request);
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required'],
             'role'=>'required',
+            'selectedSkemas' => ['required', 'array'],
+            'selectedSkemas.*' => ['exists:skemas,id'],
         ]);
 
         $user = User::create([
@@ -48,10 +50,10 @@ class AsesorController extends Controller
             'password' => Hash::make($request->password),
             'role'=> $request->role,
         ]);
-        Asesor::create([
+        $asesor = Asesor::create([
             'user_id'=>$user->id,
         ]);
-
+        $asesor->skemas()->attach($request->selectedSkemas);
         return redirect(route('dashboardadmin', absolute: false));
     }
 

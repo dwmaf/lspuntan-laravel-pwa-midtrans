@@ -102,26 +102,32 @@
         </div>
     </div>
 </nav> --}}
-<aside class="w-64 bg-white dark:bg-gray-800 min-h-screen p-4">
+<aside class=" bg-white dark:bg-gray-800 min-h-screen p-4">
     <div class="flex items-center justify-center mb-6">
         <a href="{{ route('dashboard') }}">
-            <x-application-logo class="block h-10 fill-current text-gray-800 dark:text-gray-200"/>
+            <x-application-logo class="block h-10 fill-current text-gray-800 dark:text-gray-200" />
         </a>
     </div>
 
-    <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
+    <a href="{{ route('dashboard') }}"
+        class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
         {{ __('Home') }}
     </a>
-    <a href="/sertification" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
+    <a href="/sertification"
+        class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
         {{ __('Sertifikasi') }}
     </a>
-    <a href="/asesor" class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
-        {{ __('Asesor') }}
-    </a>
-    <div class="absolute bottom-6 w-56">
+    @if (auth()->user()->role == 'asesor' || auth()->user()->role == 'admin')
+        <a href="/asesor"
+            class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
+            {{ __('Asesor') }}
+        </a>
+    @endif
+    <div class="">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
+            <button type="submit"
+                class="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
                 {{ __('Log Out') }}
             </button>
         </form>

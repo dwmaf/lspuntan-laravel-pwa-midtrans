@@ -47,14 +47,32 @@
                             {{ $skema->nama_skema }}</td>
                         <td
                             class="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 text-center">
-                            {{-- <button @click="console.log({{ $skema }}); selectedSkema = {{ $skema }}; open = true" class="text-blue-500 hover:text-blue-700">Edit</button> --}}
+                            
                             <button x-data
                                 x-on:click="$dispatch('open-modal', 'editskema'); $dispatch('edit-skema', { id: {{ $skema->id }}, nama_skema: '{{ $skema->nama_skema }}' })"
-                                class="text-blue-500 hover:text-blue-700">
+                                class="p-1 rounded bg-yellow-300">
                                 Edit
                             </button>
-                            <button
-                                class="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 dark:hover:bg-500 transition text-sm">Hapus</button>
+                            <form x-data="{ open: false }" class="d-inline" action=""
+                                method="post" @submit="if (!open) { event.preventDefault(); open = true }">
+                                @method('delete')
+                                @csrf
+                                <button type="button" class="bg-red-600 p-1 rounded text-white" @click="open = true">
+                                    Hapus
+                                </button>
+
+                                <div x-show="open" x-cloak
+                                    class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+                                    <div class="bg-white p-6 rounded shadow-lg">
+                                        <p>Hapus data {{ $skema->nama_skema }}?</p>
+                                        <div class="flex justify-end">
+                                            <button type="button" class="btn btn-secondary mr-2"
+                                                @click="open = false">Batal</button>
+                                            <button type="submit" class="btn btn-danger">Hapus</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
                         </td>
                     </tr>
                 @endforeach

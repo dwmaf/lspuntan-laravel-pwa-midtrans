@@ -18,4 +18,8 @@ class Asesor extends Model
     {
         return $this->belongsToMany(Skema::class, 'asesor_skema');
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class)->where('role', 'asesor');
+    }
 }
