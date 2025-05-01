@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnotherController;
 use App\Http\Controllers\AsesiController;
 use App\Http\Controllers\AsesorController;
 use App\Http\Controllers\SkemaController;
@@ -27,7 +28,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('/skema',SkemaController::class);
     Route::resource('/asesor',AsesorController::class);
     Route::resource('/sertification',SertificationController::class);
-    // Route::get('/sertification/index_asesi',SertificationController::class, 'index_asesi');
+    Route::get('/get-asesor/{skemaId}', [AnotherController::class, 'getAsesor']);
+
 });
 
 require __DIR__.'/auth.php';

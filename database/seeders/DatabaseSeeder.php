@@ -15,14 +15,22 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::create([
+            'name' => 'afif',
             'email' => 'admin@g.c',
             'password'=>bcrypt('1234'),
             'role'=>'admin'
         ]);
         User::create([
-            'email' => 'asesi@g.c',
+            'name' => 'dawam',
+            'email' => 'dwmasesi@g.c',
             'password'=>bcrypt('1234'),
             'role'=>'asesi'
+        ]);
+        User::create([
+            'name' => 'afif',
+            'email' => 'asesor@g.c',
+            'password'=>bcrypt('1234'),
+            'role'=>'asesor'
         ]);
         Skema::create([
             'nama_skema' =>'Skema Programmer'

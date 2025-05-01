@@ -22,4 +22,8 @@ class Asesor extends Model
     {
         return $this->belongsTo(User::class)->where('role', 'asesor');
     }
+    public function sertifications()
+    {
+        return $this->hasMany(Sertification::class);
+    }
 }

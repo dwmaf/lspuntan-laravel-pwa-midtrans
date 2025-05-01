@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('sertifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('skema_id')->constrained();
-            $table->string('tugas_asesmen');
+            $table->foreignId('asesor_id')->constrained();
+            $table->string('file_tugas_asesmen')->nullable();
+            $table->text('deskripsi_tugas_asesmen')->nullable();
             $table->date('tgl_apply_dibuka');
             $table->date('tgl_apply_ditutup');
             $table->dateTime('tgl_bayar_ditutup');

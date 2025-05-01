@@ -22,7 +22,7 @@
             <div class="flex-1 flex flex-col p-6">
 
                 @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow p-4 mb-4">
+                <header class="bg-white dark:bg-gray-800 shadow-sm p-4 mb-4">
                     {{ $header }}
                     
                 </header>

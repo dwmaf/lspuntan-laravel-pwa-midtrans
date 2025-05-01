@@ -14,4 +14,12 @@ class Sertification extends Model
         'created_at',
         'updated_at',
     ];
+    public function asesor()
+    {
+        return $this->belongsTo(Asesor::class);
+    }
+    public function skema()
+    {
+        return $this->hasOne(Skema::class);
+    }
 }

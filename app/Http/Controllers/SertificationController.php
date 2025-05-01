@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Sertification;
 use App\Models\Skema;
+use App\Models\Asesor;
 use App\Http\Requests\StoreSertificationRequest;
 use App\Http\Requests\UpdateSertificationRequest;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ class SertificationController extends Controller
     {
         return view('admin.sertifikasi.index',[
             'sertifications'=>Sertification::all(),
+            'asesors'=>Asesor::with('skemas','user')->get(),
             'skemas'=>Skema::all()
         ]);
     }
@@ -35,11 +37,21 @@ class SertificationController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request);
         $validatedData=$request->validate([
-            'skema_id' => ['required'],
+            'asesor_skema'=>'required',
+            'tgl_apply_dibuka'=>'required',
+            'tgl_apply_ditutup'=>'required',
+            'tgl_bayar_ditutup'=>'required'
         ]);
+        $asesorSkemas = $request->input('asesor_skema'); // Mendapatkan array pilihan yang dikirimkan
+
+        foreach ($asesorSkemas as $asesorSkema) {
+            list($asesor_id, $skema_id) = explode(',', $asesorSkema);
+        }
+        dd($asesor_id);
         Sertification::create($validatedData);
-        return redirect(route('dashboard'))->with('Success','Sertifikasi berhasil diunggah, kini asesi bisa mendaftar ke sertifikasi');
+        return redirect('/sertification')->with('Success','Sertifikasi berhasil diunggah, kini asesi bisa mendaftar ke sertifikasi');
     }
 
     /**
