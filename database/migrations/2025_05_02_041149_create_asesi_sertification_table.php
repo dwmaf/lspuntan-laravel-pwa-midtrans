@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('skemas', function (Blueprint $table) {
+        Schema::create('asesi_sertification', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_skema');
-            $table->string('format_apl_1')->nullable();
-            $table->string('format_apl_2')->nullable();
+            $table->foreignId('asesi_id')->constrained()->onDelete('cascade');
+            $table->foreignId('sertification_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('skemas');
+        Schema::dropIfExists('asesi_sertification');
     }
 };

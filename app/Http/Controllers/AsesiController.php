@@ -19,15 +19,12 @@ class AsesiController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    // public function index_certification()
-    // {
-    //     return view('asesi.sertifikasi.index',[
-    //         'certifications'=>Sertification::all()
-    //     ]);
-    // }
-    public function create()
+    
+    public function create($id)
     {
-        //
+        return view('asesi.sertifikasi.apply-page',[
+            'sertification'=>Sertification::find($id)
+        ]);
     }
 
     /**
@@ -35,7 +32,28 @@ class AsesiController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request);
+        $validatedData=$request->validate([
+            'email'=>'required',
+            'name'=>'required',
+            'nik'=>'required',
+            'tmpt_tgl_lhr'=>'required',
+            'kelamin'=>'required',
+            'kebangsaan'=>'required',
+            'no_tlp_hp'=>'required',
+            'kualifikasi_pendidikan'=>'required',
+            'tujuan_sert'=>'required',
+            'makul_nilai'=>'required',
+            'apl_1'=>'required',
+            'apl_2'=>'required',
+            'foto_ktp'=>'required',
+            'foto_ktm'=>'required',
+            'scan_khs'=>'required',
+            'pas_foto'=>'required',
+        ]);
+        
+        Asesi::create($validatedData);
+        return redirect('/dashboard')->with('Success','Berhasil daftar Sertifikasi');
     }
 
     /**

@@ -14,4 +14,12 @@ class Asesi extends Model
         'created_at',
         'updated_at',
     ];
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
+    }
+    public function sertifications()
+    {
+        return $this->belongsToMany(Sertification::class, 'asesi_sertification');
+    }
 }

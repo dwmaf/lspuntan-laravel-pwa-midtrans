@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Student;
 use App\Models\User;
 use App\Models\Skema;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -26,11 +27,8 @@ class DatabaseSeeder extends Seeder
             'password'=>bcrypt('1234'),
             'role'=>'asesi'
         ]);
-        User::create([
-            'name' => 'afif',
-            'email' => 'asesor@g.c',
-            'password'=>bcrypt('1234'),
-            'role'=>'asesor'
+        Student::create([
+            'user_id' => '2',
         ]);
         Skema::create([
             'nama_skema' =>'Skema Programmer'

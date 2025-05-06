@@ -5,7 +5,18 @@
         </h2>
     </x-slot>
     
+    <div class="max-w-7xl mx-auto mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach ($sertifications as $sert)    
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-900">{{ $sert->skema->nama_skema }}</h3>
+                <p class="text-gray-600 mt-2">Tanggal Pendaftaran Dibuka : {{ $sert->tgl_apply_dibuka }}</p>
+            </div>
+            @endforeach
+        </div>
+    </div>
     <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        
         <h4
             class="inline-block bg-blue-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition">
             Mulai

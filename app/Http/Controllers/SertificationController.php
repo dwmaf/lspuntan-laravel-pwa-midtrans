@@ -17,7 +17,7 @@ class SertificationController extends Controller
     public function index()
     {
         return view('admin.sertifikasi.index',[
-            'sertifications'=>Sertification::all(),
+            'sertifications'=>Sertification::with('skema','asesor')->get(),
             'asesors'=>Asesor::with('skemas','user')->get(),
             'skemas'=>Skema::all()
         ]);
@@ -44,12 +44,11 @@ class SertificationController extends Controller
             'tgl_apply_ditutup'=>'required',
             'tgl_bayar_ditutup'=>'required'
         ]);
-        $asesorSkemas = $request->input('asesor_skema'); // Mendapatkan array pilihan yang dikirimkan
-
-        foreach ($asesorSkemas as $asesorSkema) {
-            list($asesor_id, $skema_id) = explode(',', $asesorSkema);
-        }
-        dd($asesor_id);
+        $asesorSkema = $request->input('asesor_skema');
+        $asesorSkema = $asesorSkema[0];
+        list($asesor_id, $skema_id) = explode(',', $asesorSkema);
+        $validatedData['asesor_id'] = $asesor_id;
+        $validatedData['skema_id'] = $skema_id;
         Sertification::create($validatedData);
         return redirect('/sertification')->with('Success','Sertifikasi berhasil diunggah, kini asesi bisa mendaftar ke sertifikasi');
     }

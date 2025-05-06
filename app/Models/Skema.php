@@ -18,8 +18,8 @@ class Skema extends Model
     {
         return $this->belongsToMany(Asesor::class, 'asesor_skema');
     }
-    public function sertification()
+    public function sertifications()
     {
-        return $this->belongsTo(Sertification::class);
+        return $this->hasMany(Sertification::class);
     }
 }

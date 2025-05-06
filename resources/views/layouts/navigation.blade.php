@@ -108,28 +108,52 @@
             <x-application-logo class="block h-10 fill-current text-gray-800 dark:text-gray-200" />
         </a>
     </div>
+    @if (auth()->user()->role == 'asesor' || auth()->user()->role == 'admin')
+        <a href="{{ route('dashboardadmin') }}"
+            class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
+            {{ __('Home') }}
+        </a>
+    @else
+        <a href="{{ route('dashboard') }}"
+            class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
+            {{ __('Home') }}
+        </a>
+    @endif
 
-    <a href="{{ route('dashboard') }}"
-        class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
-        {{ __('Home') }}
-    </a>
-    <a href="/sertification"
-        class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
-        {{ __('Sertifikasi') }}
-    </a>
+    @if (auth()->user()->role == 'asesor' || auth()->user()->role == 'admin')
+        <a href="/sertification"
+            class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
+            {{ __('Sertifikasi') }}
+        </a>
+    @else
+        <a href="/sertification-asesi"
+            class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
+            {{ __('Sertifikasi') }}
+        </a>
+    @endif
     @if (auth()->user()->role == 'asesor' || auth()->user()->role == 'admin')
         <a href="/asesor"
             class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
             {{ __('Asesor') }}
         </a>
     @endif
-    <div class="">
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit"
-                class="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
-                {{ __('Log Out') }}
-            </button>
-        </form>
-    </div>
+    @if (auth()->user()->role == 'asesor' || auth()->user()->role == 'admin')
+        <a href="/profile"
+            class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
+            {{ __('Profile') }}
+        </a>
+    @else
+        <a href="/profile_asesi"
+            class="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
+            {{ __('Profile') }}
+        </a>
+    @endif
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit"
+            class="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm">
+            {{ __('Log Out') }}
+        </button>
+    </form>
+    
 </aside>

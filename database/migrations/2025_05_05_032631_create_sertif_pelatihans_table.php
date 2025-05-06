@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('skemas', function (Blueprint $table) {
+        Schema::create('sertif_pelatihans', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_skema');
-            $table->string('format_apl_1')->nullable();
-            $table->string('format_apl_2')->nullable();
+            $table->foreignId('asesi_id')->constrained();
+            $table->string('path_sertif_pelatihan');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('skemas');
+        Schema::dropIfExists('sertif_pelatihans');
     }
 };

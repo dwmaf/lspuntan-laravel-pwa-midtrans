@@ -11,15 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('asesis', function (Blueprint $table) {
+        Schema::create('doc_pendukungs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('sertification_id')->constrained();
-            $table->string('nama_asesi');
-            $table->string('status');
-            $table->string('apl_1');
-            $table->string('apl_2');
-            $table->string('tugas_asesmen');
+            $table->foreignId('asesi_id')->constrained();
+            $table->string('path_doc_pendukung');
             $table->timestamps();
         });
     }
@@ -29,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('asesis');
+        Schema::dropIfExists('doc_pendukungs');
     }
 };
