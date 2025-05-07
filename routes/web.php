@@ -37,7 +37,9 @@ Route::middleware(['auth','role:admin,asesor'])->group(function () {
 Route::middleware(['auth', 'role:asesi'])->group(function () {
     Route::get('/sertification-asesi', function () {
         return view('asesi.sertifikasi.index',[
-            'sertifications'=>Sertification::with('skema','asesor')->get()
+            'sertifications'=>Sertification::with('skema','asesor')->get(),
+            
+            
         ]);
     });
     Route::resource('/asesi',AsesiController::class);

@@ -40,8 +40,12 @@
                 Kelamin <span class="text-red-500">*</span>
                 <select name="kelamin" required
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300">
-                    <option value="Laki-laki" {{ old('kelamin', $user->student?->kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-Laki</option>
-                    <option value="Perempuan" {{ old('kelamin', $user->student?->kelamin) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                    <option value="Laki-laki"
+                        {{ old('kelamin', $user->student?->kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-Laki
+                    </option>
+                    <option value="Perempuan"
+                        {{ old('kelamin', $user->student?->kelamin) == 'Perempuan' ? 'selected' : '' }}>Perempuan
+                    </option>
                 </select>
                 <x-input-error class="mt-2" :messages="$errors->get('kelamin')" />
         </div>
@@ -118,23 +122,25 @@
             <x-input-error class="mt-2" :messages="$errors->get('no_tlp_email_fax')" />
         </div>
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Data Sertifikasi</h2>
-        
+
         <div>
             <label for="foto_ktp" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Foto KTP <span class="text-red-500">*</span>
             </label>
             <!-- Feedback jika file sudah ada -->
             @if ($user->student && $user->student->foto_ktp)
-                <p class="text-sm text-gray-500 mt-1">File sudah ada: 
-                    <a href="{{ asset('storage/'.$user->student->foto_ktp) }}" class="text-blue-500" target="_blank">Lihat File</a>
+                <p class="text-sm text-gray-500 mt-1">File sudah ada:
+                    <a href="{{ asset('storage/' . $user->student->foto_ktp) }}" class="text-blue-500"
+                        target="_blank">Lihat File</a>
                 </p>
-            @else
-                <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah</p>
             @endif
+
             <!-- Input file -->
-            <x-text-input id="foto_ktp" name="foto_ktp" type="file"
+            <input id="foto_ktp" name="foto_ktp" type="file"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300"
-                :value="old('foto_ktp', $user->student?->foto_ktp)" required />
+                @if (!$user->student || !$user->student->foto_ktp) required @endif>
+
+            
             <x-input-error class="mt-2" :messages="$errors->get('foto_ktp')" />
         </div>
         <div>
@@ -143,8 +149,9 @@
             </label>
             <!-- Feedback jika file sudah ada -->
             @if ($user->student && $user->student->foto_ktm)
-                <p class="text-sm text-gray-500 mt-1">File sudah ada: 
-                    <a href="{{ asset('storage/'.$user->student->foto_ktm) }}" class="text-blue-500" target="_blank">Lihat File</a>
+                <p class="text-sm text-gray-500 mt-1">File sudah ada:
+                    <a href="{{ asset('storage/' . $user->student->foto_ktm) }}" class="text-blue-500"
+                        target="_blank">Lihat File</a>
                 </p>
             @else
                 <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah</p>
@@ -155,15 +162,16 @@
                 :value="old('foto_ktm', $user->student?->foto_ktm)" required />
             <x-input-error class="mt-2" :messages="$errors->get('foto_ktm')" />
         </div>
-        
+
         <div>
             <label for="foto_khs" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Scan KHS <span class="text-red-500">*</span>
             </label>
             <!-- Feedback jika file sudah ada -->
             @if ($user->student && $user->student->foto_khs)
-                <p class="text-sm text-gray-500 mt-1">File sudah ada: 
-                    <a href="{{ asset('storage/'.$user->student->foto_khs) }}" class="text-blue-500" target="_blank">Lihat File</a>
+                <p class="text-sm text-gray-500 mt-1">File sudah ada:
+                    <a href="{{ asset('storage/' . $user->student->foto_khs) }}" class="text-blue-500"
+                        target="_blank">Lihat File</a>
                 </p>
             @else
                 <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah</p>
@@ -174,15 +182,16 @@
                 :value="old('foto_khs', $user->student?->foto_khs)" required />
             <x-input-error class="mt-2" :messages="$errors->get('foto_khs')" />
         </div>
-        
+
         <div>
             <label for="pas_foto" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Pas Foto Terbaru 4x6 dengan Latar Belakang Merah <span class="text-red-500">*</span>
             </label>
             <!-- Feedback jika file sudah ada -->
             @if ($user->student && $user->student->pas_foto)
-                <p class="text-sm text-gray-500 mt-1">File sudah ada: 
-                    <a href="{{ asset('storage/'.$user->student->pas_foto) }}" class="text-blue-500" target="_blank">Lihat File</a>
+                <p class="text-sm text-gray-500 mt-1">File sudah ada:
+                    <a href="{{ asset('storage/' . $user->student->pas_foto) }}" class="text-blue-500"
+                        target="_blank">Lihat File</a>
                 </p>
             @else
                 <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah</p>

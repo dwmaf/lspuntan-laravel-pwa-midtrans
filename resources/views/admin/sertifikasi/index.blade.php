@@ -18,7 +18,7 @@
     <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         
         <h4
-            class="inline-block bg-blue-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition">
+            class="inline-block  text-gray-800 dark:text-white px-4 py-2 rounded-lg   transition">
             Mulai
             Sertifikasi</h4>
         <form action="/sertification" class="mt-4 flex flex-col gap-2" method="POST">
@@ -57,7 +57,7 @@
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300">
             </div>
             <button type="submit"
-                class="bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-500 dark:bg-green-800 transition self-end">Mulai</button>
+                class="bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-500 dark:hover:bg-blue-500 dark:bg-blue-800 transition self-end">Mulai</button>
         </form>
 
         <form action="/skema" class="mt-4 flex flex-col gap-2" method="POST">

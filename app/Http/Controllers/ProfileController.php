@@ -70,7 +70,6 @@ class ProfileController extends Controller
             $user->name = $request->name;
             $user->save();
         }
-
         // Update data student
         $student->fill($request->only([
             'nik',
