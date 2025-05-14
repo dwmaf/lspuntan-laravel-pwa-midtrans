@@ -20,6 +20,6 @@ class Asesi extends Model
     }
     public function sertifications()
     {
-        return $this->belongsToMany(Sertification::class, 'asesi_sertification');
+        return $this->belongsTo(Sertification::class);
     }
 }

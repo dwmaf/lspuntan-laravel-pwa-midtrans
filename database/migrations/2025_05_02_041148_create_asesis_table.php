@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('tujuan_sert');
             $table->string('apl_1');
             $table->string('apl_2');
+            $table->string('bukti_bayar')->nullable();
             $table->string('tugas_asesmen')->nullable();
             $table->timestamps();
         });

@@ -22,8 +22,8 @@ class Sertification extends Model
     {
         return $this->belongsTo(Skema::class);
     }
-    public function asesis()
+    public function asesi()
     {
-        return $this->belongsToMany(Asesi::class, 'asesi_sertification');
+        return $this->hasMany(Asesi::class);
     }
 }

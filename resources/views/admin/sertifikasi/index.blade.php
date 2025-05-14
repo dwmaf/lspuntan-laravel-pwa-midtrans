@@ -11,6 +11,7 @@
             <div class="bg-white p-6 rounded-lg shadow-lg">
                 <h3 class="text-lg font-semibold text-gray-900">{{ $sert->skema->nama_skema }}</h3>
                 <p class="text-gray-600 mt-2">Tanggal Pendaftaran Dibuka : {{ $sert->tgl_apply_dibuka }}</p>
+                <a href="sertification/{{ $sert->id }}">Lihat</a>
             </div>
             @endforeach
         </div>

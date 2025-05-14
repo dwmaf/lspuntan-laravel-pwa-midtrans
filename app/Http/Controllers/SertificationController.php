@@ -58,7 +58,9 @@ class SertificationController extends Controller
      */
     public function show(Sertification $sertification)
     {
-        //
+        return view('admin.sertifikasi.show',[
+            'sertification'=>Sertification::where('id', $sertification->id)->with('skema','asesor')->get(),
+        ]);
     }
 
     /**

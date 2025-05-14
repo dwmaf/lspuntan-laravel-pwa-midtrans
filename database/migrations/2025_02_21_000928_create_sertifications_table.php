@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('asesor_id')->constrained();
             $table->string('file_tugas_asesmen')->nullable();
             $table->text('deskripsi_tugas_asesmen')->nullable();
+            $table->text('rincian_praasesmen')->nullable();
             $table->date('tgl_apply_dibuka');
             $table->date('tgl_apply_ditutup');
             $table->dateTime('tgl_bayar_ditutup');

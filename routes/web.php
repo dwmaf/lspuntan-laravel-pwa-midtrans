@@ -21,6 +21,8 @@ Route::get('/dashboard', function () {
 Route::get('/dashboardadmin', function () {
     return view('admin.dashboard');
 })->middleware(['auth', 'verified','role:admin,asesor'])->name('dashboardadmin');
+
+// punya semua user
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -28,22 +30,29 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile_asesi', [ProfileController::class, 'update_asesi'])->name('profile_asesi.update');
     // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy'); 
 });
+
+//punya admin dan asesor
 Route::middleware(['auth','role:admin,asesor'])->group(function () {
     Route::resource('/skema',SkemaController::class);
     Route::resource('/asesor',AsesorController::class);
     Route::resource('/sertification',SertificationController::class);
+    Route::get('/list_asesi/{id}', [AnotherController::class, 'list_asesi'])->name('list_asesi');
+    Route::get('/rincian_data_asesi/{id}', [AnotherController::class, 'rincian_data_asesi'])->name('rincian_data_asesi');
+    Route::patch('/updatestatus/{id}/{sertification_id}', [AnotherController::class, 'updateStatus'])->name('updatestatus');
+    Route::get('/rincian_praasesmen/{id}/edit', [AnotherController::class, 'rincian_praasesmen'])->name('rincian_praasesmen.edit');
+    Route::patch('/rincian_praasesmen/{id}/update', [AnotherController::class, 'update_rincian_praasesmen'])->name('rincian_praasesmen.update');
 });
 
+//punya asesi
 Route::middleware(['auth', 'role:asesi'])->group(function () {
     Route::get('/sertification-asesi', function () {
         return view('asesi.sertifikasi.index',[
-            'sertifications'=>Sertification::with('skema','asesor')->get(),
-            
-            
+            'sertifications'=>Sertification::with('skema','asesor')->get(), 
         ]);
     });
     Route::resource('/asesi',AsesiController::class);
     Route::get('/apply_sertifikasi/{id}',[AnotherController::class, 'apply_sertifikasi'])->name('apply_sertifikasi');
+    Route::get('/rincian_praasesmen_asesi/{id}',[AnotherController::class, 'rincian_praasesmen_asesi'])->name('rincian_praasesmen_asesi');
 });
 
 require __DIR__.'/auth.php';
