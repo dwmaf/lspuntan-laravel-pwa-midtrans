@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class SertifPelatihan extends Model
 {
     /** @use HasFactory<\Database\Factories\SertifPelatihanFactory> */
-    use HasFactory;
     protected $guarded = [
         'id',
         'created_at',

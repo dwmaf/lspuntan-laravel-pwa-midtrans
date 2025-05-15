@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Asesi extends Model
 {
     /** @use HasFactory<\Database\Factories\AsesiFactory> */
-    use HasFactory;
     protected $guarded = [
         'id',
         'created_at',
@@ -21,5 +20,9 @@ class Asesi extends Model
     public function sertifications()
     {
         return $this->belongsTo(Sertification::class);
+    }
+    public function transaction()
+    {
+        return $this->hasOne(Transaction::class);
     }
 }

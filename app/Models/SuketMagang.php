@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class SuketMagang extends Model
 {
     /** @use HasFactory<\Database\Factories\SuketMagangFactory> */
-    use HasFactory;
     protected $guarded = [
         'id',
         'created_at',

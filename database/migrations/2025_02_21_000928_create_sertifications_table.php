@@ -21,6 +21,7 @@ return new class extends Migration
             $table->date('tgl_apply_dibuka');
             $table->date('tgl_apply_ditutup');
             $table->dateTime('tgl_bayar_ditutup');
+            $table->integer('harga')->nullable();
             $table->timestamps();
         });
     }

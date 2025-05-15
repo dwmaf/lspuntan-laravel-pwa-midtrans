@@ -14,7 +14,7 @@
         <div class="flex space-x-4">
             <a href="/rincian_praasesmen_asesi/{{ $sertification->id }}"
                 class="bg-blue-500  px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Praasesmen</a>
-            <a href="/rincian_bayar_asesi/{{ $sertification->id }}"
+            <a href="/payment/{{ $sertification->id }}"
                 class="bg-green-500 px-4 py-2 rounded-lg hover:bg-green-600 transition duration-300">Bayar</a>
             <a href=""
                 class="bg-yellow-500 px-4 py-2 rounded-lg hover:bg-yellow-600 transition duration-300">Asesmen</a>

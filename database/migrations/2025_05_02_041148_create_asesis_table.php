@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('apl_1');
             $table->string('apl_2');
             $table->string('bukti_bayar')->nullable();
+            $table->string('payment_status')->default('pending');
+            $table->string('midtrans_order_id')->nullable();
+            $table->string('midtrans_transaction_id')->nullable();
             $table->string('tugas_asesmen')->nullable();
             $table->timestamps();
         });

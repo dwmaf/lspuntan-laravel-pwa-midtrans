@@ -6,6 +6,7 @@ use App\Http\Controllers\AsesorController;
 use App\Http\Controllers\SkemaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SertificationController;
+use App\Http\Controllers\PaymentController;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\RoleMiddleware;
@@ -17,10 +18,10 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified','role:asesi'])->name('dashboard');
+})->middleware(['auth', 'verified', 'role:asesi'])->name('dashboard');
 Route::get('/dashboardadmin', function () {
     return view('admin.dashboard');
-})->middleware(['auth', 'verified','role:admin,asesor'])->name('dashboardadmin');
+})->middleware(['auth', 'verified', 'role:admin,asesor'])->name('dashboardadmin');
 
 // punya semua user
 Route::middleware('auth')->group(function () {
@@ -32,10 +33,10 @@ Route::middleware('auth')->group(function () {
 });
 
 //punya admin dan asesor
-Route::middleware(['auth','role:admin,asesor'])->group(function () {
-    Route::resource('/skema',SkemaController::class);
-    Route::resource('/asesor',AsesorController::class);
-    Route::resource('/sertification',SertificationController::class);
+Route::middleware(['auth', 'role:admin,asesor'])->group(function () {
+    Route::resource('/skema', SkemaController::class);
+    Route::resource('/asesor', AsesorController::class);
+    Route::resource('/sertification', SertificationController::class);
     Route::get('/list_asesi/{id}', [AnotherController::class, 'list_asesi'])->name('list_asesi');
     Route::get('/rincian_data_asesi/{id}', [AnotherController::class, 'rincian_data_asesi'])->name('rincian_data_asesi');
     Route::patch('/updatestatus/{id}/{sertification_id}', [AnotherController::class, 'updateStatus'])->name('updatestatus');
@@ -46,13 +47,16 @@ Route::middleware(['auth','role:admin,asesor'])->group(function () {
 //punya asesi
 Route::middleware(['auth', 'role:asesi'])->group(function () {
     Route::get('/sertification-asesi', function () {
-        return view('asesi.sertifikasi.index',[
-            'sertifications'=>Sertification::with('skema','asesor')->get(), 
+        return view('asesi.sertifikasi.index', [
+            'sertifications' => Sertification::with('skema', 'asesor')->get(),
         ]);
     });
-    Route::resource('/asesi',AsesiController::class);
-    Route::get('/apply_sertifikasi/{id}',[AnotherController::class, 'apply_sertifikasi'])->name('apply_sertifikasi');
-    Route::get('/rincian_praasesmen_asesi/{id}',[AnotherController::class, 'rincian_praasesmen_asesi'])->name('rincian_praasesmen_asesi');
+    Route::resource('/asesi', AsesiController::class);
+    Route::get('/apply_sertifikasi/{id}', [AnotherController::class, 'apply_sertifikasi'])->name('apply_sertifikasi');
+    Route::get('/rincian_praasesmen_asesi/{id}', [AnotherController::class, 'rincian_praasesmen_asesi'])->name('rincian_praasesmen_asesi');
+    // payment routes
+    Route::post('/checkout', [PaymentController::class, 'checkout']);
+    Route::post('/midtrans/webhook',[PaymentController::class, 'handleWebhook']);
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

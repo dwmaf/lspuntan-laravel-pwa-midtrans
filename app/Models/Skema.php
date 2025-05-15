@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Skema extends Model
 {
     /** @use HasFactory<\Database\Factories\SkemaFactory> */
-    use HasFactory;
     protected $guarded = [
         'id',
         'created_at',
