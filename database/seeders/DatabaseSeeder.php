@@ -23,15 +23,15 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('1234'),
             'role' => 'admin'
         ]);
-        User::create([
-            'name' => 'dawam',
-            'email' => 'dwmasesi@g.c',
-            'password' => bcrypt('1234'),
-            'role' => 'asesi'
-        ]);
-        Student::create([
-            'user_id' => 2,
-        ]);
+        // User::create([
+        //     'name' => 'dawam',
+        //     'email' => 'dwmasesi@g.c',
+        //     'password' => bcrypt('1234'),
+        //     'role' => 'asesi'
+        // ]);
+        // Student::create([
+        //     'user_id' => 2,
+        // ]);
         // $asesor = Asesor::create([
         //     'user_id' => 1,
         // ]);

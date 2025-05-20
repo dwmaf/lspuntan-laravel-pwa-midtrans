@@ -42,7 +42,8 @@ class SertificationController extends Controller
             'asesor_skema'=>'required',
             'tgl_apply_dibuka'=>'required',
             'tgl_apply_ditutup'=>'required',
-            'tgl_bayar_ditutup'=>'required'
+            'tgl_bayar_ditutup'=>'required',
+            'harga'=>'required'
         ]);
         $asesorSkema = $request->input('asesor_skema');
         $asesorSkema = $asesorSkema[0];

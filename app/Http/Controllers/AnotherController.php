@@ -78,11 +78,16 @@ class AnotherController extends Controller
             'sertification' => Sertification::find($id)
         ]);   
     }
-    public function rincian_bayar_asesi($id, Request $request)
+    public function rincian_bayar_asesi(Request $request)
     {
-        // dd($id);
+        // dd($request);
         return view('asesi.sertifikasi.bayar.index', [
-            'sertification' => Sertification::find($id)
-        ]);   
+            'asesi_id'=>$request->asesi_id,
+            'biaya'=>$request->biaya,
+            'name'=>$request->name,
+            'email'=>$request->email,
+            'no_tlp_hp'=>$request->no_tlp_hp,
+
+        ]);
     }
 }

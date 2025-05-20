@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Student;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,6 +43,9 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+        Student::create([
+            'user_id' => $user->id,
+        ]);
 
         Auth::login($user);
 

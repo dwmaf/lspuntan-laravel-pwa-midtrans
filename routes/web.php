@@ -55,6 +55,7 @@ Route::middleware(['auth', 'role:asesi'])->group(function () {
     Route::get('/apply_sertifikasi/{id}', [AnotherController::class, 'apply_sertifikasi'])->name('apply_sertifikasi');
     Route::get('/rincian_praasesmen_asesi/{id}', [AnotherController::class, 'rincian_praasesmen_asesi'])->name('rincian_praasesmen_asesi');
     // payment routes
+    Route::post('/payment', [AnotherController::class, 'rincian_bayar_asesi']);
     Route::post('/checkout', [PaymentController::class, 'checkout']);
     Route::post('/midtrans/webhook',[PaymentController::class, 'handleWebhook']);
 });

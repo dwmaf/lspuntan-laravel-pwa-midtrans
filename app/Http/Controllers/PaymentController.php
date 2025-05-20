@@ -16,6 +16,7 @@ class PaymentController extends Controller
 
     public function checkout(Request $request)
     {
+        dd($request);
         $data = [
             'asesi_id' => $request->input('asesi_id'),
             'biaya' => $request->input('biaya'),
