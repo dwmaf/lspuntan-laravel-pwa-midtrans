@@ -4,27 +4,40 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-    <div id="payment-container">
-        <button id="pay-button" onclick="payUsingMidtrans()">Pay Using Midtrans</button>
+    <div>
+        <input type="text" name="asesi_id" hidden required value="{{ $asesi_id }}">
+        <input type="text" name="name" hidden required value="{{ $name }}">
+        <input type="text" name="email" hidden required value="{{ $email }}">
+        <input type="text" name="no_tlp_hp" hidden required value="{{ $no_tlp_hp }}">
+        <input type="number" name="biaya" hidden required value="{{ $biaya }}">
+        <button id="pay-button">Bayar Sekarang</button>
+        <script type="text/javascript">
+            // Ambil snap_token yang dikirim dari backend
+            var snapToken = '{{ $snap_token }}';
+
+            // Inisialisasi Snap untuk memproses pembayaran
+            document.getElementById('pay-button').onclick = function() {
+                snap.pay(snapToken, {
+                    onSuccess: function(result) {
+                        alert("Pembayaran Berhasil!");
+                        console.log(result);
+                        // Kirim data ke backend untuk mengubah status transaksi
+                        // Anda bisa menambahkan Ajax untuk mengirim status transaksi ke server
+                    },
+                    onPending: function(result) {
+                        alert("Pembayaran Anda masih pending.");
+                        console.log(result);
+                        // Anda bisa menambahkan Ajax untuk mengirim status transaksi ke server
+                    },
+                    onError: function(result) {
+                        alert("Terjadi kesalahan dalam pembayaran.");
+                        console.log(result);
+                        // Anda bisa menambahkan Ajax untuk mengirim status transaksi ke server
+                    }
+                });
+            };
+        </script>
+        <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js"
+            data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
     </div>
-
-    <script type="text/javascript" src="https://app.midtrans.com/snap/snap.js"
-        data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
-    <script type="text/javascript">
-        function payUsingMidtrans() {
-            snap.pay('{{ $snapToken }}', {
-                onSuccess: function(result) {
-                    window.location.href = "{{ route('payment.success') }}?order_id=" + result.order_id;
-                },
-                onFailure: function(result) {
-                    window.location.href = "{{ route('payment.failure') }}";
-                },
-                onPending: function(result) {
-                    window.location.href = "{{ route('payment.pending') }}";
-                }
-            });
-        }
-    </script>
-
-
 </x-app-layout>

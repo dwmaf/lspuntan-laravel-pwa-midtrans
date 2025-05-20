@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('asesi_id')->constrained();
             $table->decimal('biaya');
             $table->string('status')->default('pending');
+            $table->string('tipe');
             $table->timestamps();
         });
     }

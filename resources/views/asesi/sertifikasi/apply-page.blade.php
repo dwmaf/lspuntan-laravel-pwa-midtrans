@@ -26,7 +26,7 @@
                     <input type="text" hidden name="name" value="{{ $user->name }}">
                     <input type="text" hidden name="email" value="{{ $user->email }}">
                     <input type="text" hidden name="no_tlp_hp" value="{{ $user->student->no_tlp_hp }}">
-                    <button type="submit">Bayar</button>
+                    <button type="submit" class="cursor-pointer">Bayar</button>
                 </form>
             @endif
             <a href=""

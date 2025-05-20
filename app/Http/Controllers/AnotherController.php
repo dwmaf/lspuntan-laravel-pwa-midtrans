@@ -87,7 +87,6 @@ class AnotherController extends Controller
             'name'=>$request->name,
             'email'=>$request->email,
             'no_tlp_hp'=>$request->no_tlp_hp,
-
         ]);
     }
 }

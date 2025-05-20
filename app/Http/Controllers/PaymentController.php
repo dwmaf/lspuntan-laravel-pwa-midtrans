@@ -16,20 +16,21 @@ class PaymentController extends Controller
 
     public function checkout(Request $request)
     {
-        dd($request);
+        // dd($request);
         $data = [
             'asesi_id' => $request->input('asesi_id'),
             'biaya' => $request->input('biaya'),
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'no_tlp_hp' => $request->input('no_tlp_hp'),
+            'tipe' => $request->input('tipe'),
         ];
 
         $result = $this->checkoutService->processCheckout($data);
 
-        return response()->json([
+        return view('asesi.sertifikasi.bayar.payment-page', [
             'snap_token' => $result['snap_token'],
-            'transaction' => $result['transaction']
+            'transaction' => $result['transaction'],
         ]);
     }
 
@@ -61,6 +62,18 @@ class PaymentController extends Controller
 
         $transaction->save();
 
-        return response()->json(['message'=>'Webhook processed successfully']);
+        return response()->json(['message' => 'Webhook processed successfully']);
+    }
+
+    public function buktipembayaran(Request $request)
+    {
+        dd($request);
+        $validatedData=$request->validate([
+            'asesi_id' => ['required', 'string', 'max:255'],
+            'biaya' => 'required',
+            'status' => 'required',
+            'tipe'=> 'required'
+        ]);
+        Transaction::create($validatedData);
     }
 }

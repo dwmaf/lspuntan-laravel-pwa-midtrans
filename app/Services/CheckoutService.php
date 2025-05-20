@@ -25,6 +25,7 @@ class CheckoutService
         $transaction = $this->transactionRepository->createTransaction([
             'asesi_id' => $data['asesi_id'],
             'biaya' => $data['biaya'],
+            'tipe' => $data['tipe'],
             'status' => 'pending',
         ]);
 

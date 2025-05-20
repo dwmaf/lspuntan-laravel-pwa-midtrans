@@ -19,18 +19,18 @@
     </style>
     <body class="font-sans antialiased">
         <div class="flex min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.chatgptnavigation')
+            @include('layouts.navigation')
 
-            <div class="flex-1 flex flex-col p-6">
+            <div class="flex-1 flex flex-col p-2">
 
                 @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow-sm p-4 mb-4">
+                <header class="bg-white dark:bg-gray-800 shadow-sm p-4 mb-2 ml-2">
                     {{ $header }}
                     
                 </header>
                 @endisset
 
-                <main>
+                <main class="ml-2">
                     {{ $slot }}
                 </main>
             </div>
