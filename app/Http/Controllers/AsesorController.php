@@ -15,7 +15,7 @@ class AsesorController extends Controller
      */
     public function index()
     {
-        return view('admin.asesor.index', [
+        return view('admin.asesor.buatasesor', [
             'asesors' => Asesor::with('skemas')->get(),
             'skemas' => Skema::all()
         ]);
@@ -24,10 +24,10 @@ class AsesorController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        return view('admin.asesor.create');
-    }
+    // public function create()
+    // {
+    //     return view('admin.asesor.create');
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -70,7 +70,7 @@ class AsesorController extends Controller
      */
     public function edit(Asesor $asesor)
     {
-        return view('admin.asesor.edit', [
+        return view('admin.asesor.editasesor', [
             'asesor' => $asesor,
         ]);
     }

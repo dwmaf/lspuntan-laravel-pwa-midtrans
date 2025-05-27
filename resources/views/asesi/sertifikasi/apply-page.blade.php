@@ -4,34 +4,9 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-
-
-
-
-
-
+    @include('layouts.asesi-sertifikasi-menu')
     <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <div class="flex space-x-4">
-            <a href="/rincian_praasesmen_asesi/{{ $sertification->id }}"
-                class="bg-blue-500  px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Praasesmen</a>
-            @php
-                $student = auth()->user()->student;
-                $asesi = $student->asesi()->where('sertification_id', $sertification->id)->first();
-            @endphp
-            @if ($asesi)
-                <form action="/payment" method="POST">
-                    @csrf
-                    <input type="text" hidden name="asesi_id" value="{{ $asesi->id }}">
-                    <input type="text" hidden name="biaya" value="{{ $sertification->harga }}">
-                    <input type="text" hidden name="name" value="{{ $user->name }}">
-                    <input type="text" hidden name="email" value="{{ $user->email }}">
-                    <input type="text" hidden name="no_tlp_hp" value="{{ $user->student->no_tlp_hp }}">
-                    <button type="submit" class="cursor-pointer">Bayar</button>
-                </form>
-            @endif
-            <a href=""
-                class="bg-yellow-500 px-4 py-2 rounded-lg hover:bg-yellow-600 transition duration-300">Asesmen</a>
-        </div>
+
         <h4 class="inline-block  text-gray-800 dark:text-white px-4 py-2 rounded-lg transition">
             Daftar Sertifikasi {{ $sertification->skema->nama_skema }}</h4>
         <h3 class="dark:text-gray-300">a. Data Pribadi</h3>

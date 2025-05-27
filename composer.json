@@ -8,12 +8,15 @@
     "require": {
         "php": "^8.2",
         "blade-ui-kit/blade-icons": "^1.8",
+        "codeat3/blade-teeny-icons": "^1.11",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
+        "mallardduck/blade-boxicons": "^2.4",
         "midtrans/midtrans-php": "^2.6",
         "owenvoke/blade-fontawesome": "^2.9"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.15",
         "fakerphp/faker": "^1.23",
         "laravel/breeze": "^2.3",
         "laravel/pail": "^1.1",

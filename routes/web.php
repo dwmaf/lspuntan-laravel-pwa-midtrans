@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AnotherController;
+use App\Http\Controllers\ManageCertificationController;
 use App\Http\Controllers\AsesiController;
 use App\Http\Controllers\AsesorController;
 use App\Http\Controllers\SkemaController;
@@ -16,12 +16,8 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified', 'role:asesi'])->name('dashboard');
-Route::get('/dashboardadmin', function () {
-    return view('admin.dashboard');
-})->middleware(['auth', 'verified', 'role:admin,asesor'])->name('dashboardadmin');
+
+
 
 // punya semua user
 Route::middleware('auth')->group(function () {
@@ -34,30 +30,36 @@ Route::middleware('auth')->group(function () {
 
 //punya admin dan asesor
 Route::middleware(['auth', 'role:admin,asesor'])->group(function () {
+    Route::get('/dashboardadmin', function () {
+        return view('admin.dashboard');
+    })->name('dashboardadmin');
     Route::resource('/skema', SkemaController::class);
     Route::resource('/asesor', AsesorController::class);
     Route::resource('/sertification', SertificationController::class);
-    Route::get('/list_asesi/{id}', [AnotherController::class, 'list_asesi'])->name('list_asesi');
-    Route::get('/rincian_data_asesi/{id}', [AnotherController::class, 'rincian_data_asesi'])->name('rincian_data_asesi');
-    Route::patch('/updatestatus/{id}/{sertification_id}', [AnotherController::class, 'updateStatus'])->name('updatestatus');
-    Route::get('/rincian_praasesmen/{id}/edit', [AnotherController::class, 'rincian_praasesmen'])->name('rincian_praasesmen.edit');
-    Route::patch('/rincian_praasesmen/{id}/update', [AnotherController::class, 'update_rincian_praasesmen'])->name('rincian_praasesmen.update');
+    Route::get('/list_asesi/{id}', [ManageCertificationController::class, 'list_asesi'])->name('list_asesi');
+    Route::get('/rincian_data_asesi/{id}', [ManageCertificationController::class, 'rincian_data_asesi'])->name('rincian_data_asesi');
+    Route::patch('/updatestatus/{id}/{sertification_id}', [ManageCertificationController::class, 'updateStatus'])->name('updatestatus');
+    Route::get('/rincian_praasesmen/{id}/edit', [ManageCertificationController::class, 'rincian_praasesmen'])->name('rincian_praasesmen.edit');
+    Route::patch('/rincian_praasesmen/{id}/update', [ManageCertificationController::class, 'update_rincian_praasesmen'])->name('rincian_praasesmen.update');
 });
 
 //punya asesi
 Route::middleware(['auth', 'role:asesi'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('asesi.dashboardasesi');
+    })->name('dashboard');
     Route::get('/sertification-asesi', function () {
         return view('asesi.sertifikasi.index', [
             'sertifications' => Sertification::with('skema', 'asesor')->get(),
         ]);
     });
     Route::resource('/asesi', AsesiController::class);
-    Route::get('/apply_sertifikasi/{id}', [AnotherController::class, 'apply_sertifikasi'])->name('apply_sertifikasi');
-    Route::get('/rincian_praasesmen_asesi/{id}', [AnotherController::class, 'rincian_praasesmen_asesi'])->name('rincian_praasesmen_asesi');
+    Route::get('/apply_sertifikasi/{id}', [ManageCertificationController::class, 'apply_sertifikasi'])->name('apply_sertifikasi');
+    Route::get('/rincian_praasesmen_asesi/{id}', [ManageCertificationController::class, 'rincian_praasesmen_asesi'])->name('rincian_praasesmen_asesi');
     // payment routes
-    Route::post('/payment', [AnotherController::class, 'rincian_bayar_asesi']);
+    Route::post('/payment', [ManageCertificationController::class, 'rincian_bayar_asesi']);
     Route::post('/checkout', [PaymentController::class, 'checkout']);
-    Route::post('/midtrans/webhook',[PaymentController::class, 'handleWebhook']);
+    Route::post('/midtrans/webhook', [PaymentController::class, 'handleWebhook']);
 });
 
 require __DIR__ . '/auth.php';

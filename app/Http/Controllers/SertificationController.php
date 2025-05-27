@@ -16,7 +16,7 @@ class SertificationController extends Controller
      */
     public function index()
     {
-        return view('admin.sertifikasi.index',[
+        return view('admin.sertifikasi.mulaisertifikasi',[
             'sertifications'=>Sertification::with('skema','asesor')->get(),
             'asesors'=>Asesor::with('skemas','user')->get(),
             'skemas'=>Skema::all()
@@ -27,10 +27,10 @@ class SertificationController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        return view('admin.sertifikasi.create');
-    }
+    // public function create()
+    // {
+    //     return view('admin.sertifikasi.create');
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -59,7 +59,7 @@ class SertificationController extends Controller
      */
     public function show(Sertification $sertification)
     {
-        return view('admin.sertifikasi.show',[
+        return view('admin.sertifikasi.rinciansertifikasi',[
             'sertification'=>Sertification::where('id', $sertification->id)->with('skema','asesor')->get(),
         ]);
     }
@@ -69,7 +69,7 @@ class SertificationController extends Controller
      */
     public function edit(Sertification $sertification)
     {
-        return view('admin.sertifikasi.edit',[
+        return view('admin.sertifikasi.editsertifikasi',[
             'sertification'=>$sertification
         ]);
     }
@@ -105,10 +105,4 @@ class SertificationController extends Controller
         Sertification::destroy($sertification->id);
         return redirect(route('dashboard'))->with('success', 'Sertifikasi berhasil dihapus');
     }
-    // public function index_asesi()
-    // {
-    //     return view('admin.sertifikasi.index',[
-    //         'sertifications'=>Sertification::all()
-    //     ]);
-    // }
 }

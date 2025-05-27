@@ -4,6 +4,7 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
+    @include('layouts.asesi-sertifikasi-menu')
     <div>
         <input type="text" name="asesi_id" hidden required value="{{ $asesi_id }}">
         <input type="text" name="name" hidden required value="{{ $name }}">

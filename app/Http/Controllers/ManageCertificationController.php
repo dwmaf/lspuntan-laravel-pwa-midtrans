@@ -6,7 +6,7 @@ use App\Models\Asesi;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 
-class AnotherController extends Controller
+class ManageCertificationController extends Controller
 {
     // public function getAsesor($skemaId)
     // {
