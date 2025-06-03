@@ -113,15 +113,15 @@
                     Sertifikasi<span style="color: red">*</span></label>
                 <select name="tujuan_sert" required
                     class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                    <option value="Sertifikasi">Sertifikasi</option>
-                    <option value="Lainnya">Lainnya</option>
+                    <option value="Sertifikasi" {{ old('tujuan_sert', $asesi?->tujuan_sert) == 'Sertifikasi' ? 'selected' : '' }}>Sertifikasi</option>
+                    <option value="Lainnya" {{ old('tujuan_sert', $asesi?->tujuan_sert) == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
                 </select>
             </div>
             <div id="Mata kuliah terkait dan nilainya">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Mata Kuliah
                     terkait Skema Sertifikasi dan Nilai yang diperoleh<span style="color: red">*</span>
                 </label>
-                <x-text-input name="makul_nilai" type="text" class="mt-1 block w-full" />
+                <x-text-input name="makul_nilai" type="text" class="mt-1 block w-full" :value="old('makul_nilai', $asesi?->makul_nilai)"/>
             </div>
 
             <h3 class="dark:text-gray-300">d. Bukti Kelengkapan</h3>
@@ -130,16 +130,32 @@
                     Permohonan Sertifikasi Kompetensi (file MS-Word yang telah diisi dan dilengkapi dengan tanda tangan
                     ukuran file maksimal 2 MB)<span style="color: red">*</span>
                 </label>
+                <!-- Feedback jika file sudah ada -->
+                @if ($asesi->apl_1)
+                    <p class="text-sm text-gray-500 mt-1">File sudah ada:
+                        <a href="{{ asset('storage/' . $asesi->apl_1) }}" class="text-blue-500"
+                            target="_blank">Lihat File</a>
+                    </p>
+                @endif
                 <input type="file" name="apl_1" required
-                    class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800">
+                    class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800"
+                    @if (!$asesi->apl_2) required @endif>
             </div>
             <div id="file apl 2">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Form APL.02.
                     Asesmen Mandiri (file MS-Word yang telah diisi dan dilengkapi dengan tanda tangan ukuran file
                     maksimal 3 MB)<span style="color: red">*</span>
                 </label>
+                <!-- Feedback jika file sudah ada -->
+                @if ($asesi->apl_2)
+                    <p class="text-sm text-gray-500 mt-1">File sudah ada:
+                        <a href="{{ asset('storage/' . $asesi->apl_2) }}" class="text-blue-500"
+                            target="_blank">Lihat File</a>
+                    </p>
+                @endif
                 <input type="file" name="apl_2" required
-                    class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800">
+                    class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800"
+                    @if (!$asesi->apl_2) required @endif>
             </div>
             <div id="foto_ktp">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Scan KTP
@@ -230,7 +246,7 @@
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800">
             </div>
             <button type="submit"
-                class="bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg  transition self-end cursor-pointer">Daftar</button>
+                class="bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg transition self-end cursor-pointer">Simpan</button>
         </form>
         <h4 class="dark:text-white"><span class="text-red-600">*</span>&rpar; Wajib diisi</h4>
     </div>

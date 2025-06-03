@@ -21,12 +21,12 @@ class AsesiController extends Controller
      * Show the form for creating a new resource.
      */
     
-    public function create($id)
-    {
-        return view('asesi.sertifikasi.apply-page',[
-            'sertification'=>Sertification::find($id)
-        ]);
-    }
+    // public function create($id)
+    // {
+    //     return view('asesi.sertifikasi.apply-page',[
+    //         'sertification'=>Sertification::find($id)
+    //     ]);
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -55,11 +55,12 @@ class AsesiController extends Controller
             'foto_khs' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'pas_foto' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
         ]);
-
+        // kalo namanya berubah
         if ($user->name !== $request->name) {
             $user->name = $request->name;
             $user->save();
         }
+        // kalo 
         $student->fill($request->only([
             'nik',
             'tmpt_tgl_lhr',
@@ -90,7 +91,6 @@ class AsesiController extends Controller
 
         Asesi::create([
             'student_id' => $request->input('student_id'),
-            'status'=> $request->input('status'),
             'sertification_id' => $request->input('sertification_id'),
             'tujuan_sert' => $request->input('tujuan_sert'),
             'makul_nilai' => $request->input('makul_nilai'),
@@ -111,9 +111,12 @@ class AsesiController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Asesi $asesi)
+    public function edit(Asesi $asesi, $id)
     {
-        //
+        return view('asesi.sertifikasi.edit-apply-page',[
+            'sertification'=>Sertification::find($id),
+            'asesi'=>Asesi::get()
+        ]);
     }
 
     /**

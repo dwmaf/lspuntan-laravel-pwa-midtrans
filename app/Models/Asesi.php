@@ -23,6 +23,10 @@ class Asesi extends Model
     }
     public function transaction()
     {
-        return $this->hasOne(Transaction::class);
+        return $this->hasMany(Transaction::class);
+    }
+    public function asesiasesmenfile()
+    {
+        return $this->hasMany(Asesiasesmenfile::class);
     }
 }

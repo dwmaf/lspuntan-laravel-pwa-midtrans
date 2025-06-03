@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Sertification;
 use App\Models\Skema;
 use App\Models\Asesor;
-use App\Http\Requests\StoreSertificationRequest;
-use App\Http\Requests\UpdateSertificationRequest;
 use Illuminate\Http\Request;
 
 class SertificationController extends Controller

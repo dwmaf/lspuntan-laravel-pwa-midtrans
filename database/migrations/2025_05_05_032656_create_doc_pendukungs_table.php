@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('asesi_id')->constrained();
             $table->string('path_doc_pendukung');
+            $table->string('file_name');
             $table->timestamps();
         });
     }

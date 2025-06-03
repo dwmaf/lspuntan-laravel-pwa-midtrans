@@ -90,7 +90,6 @@ class ProfileController extends Controller
                     // Hapus file lama jika ada
                     Storage::disk('public')->delete($student->$fileField);
                 }
-
                 // Simpan file baru
                 $student->$fileField = $request->file($fileField)->store($fileField, 'public');
             }

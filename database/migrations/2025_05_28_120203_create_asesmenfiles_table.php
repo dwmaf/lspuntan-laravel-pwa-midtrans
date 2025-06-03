@@ -11,15 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('asesis', function (Blueprint $table) {
+        Schema::create('asesmenfiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained();
             $table->foreignId('sertification_id')->constrained();
-            $table->string('status')->default('daftar');
-            $table->string('makul_nilai');
-            $table->string('tujuan_sert');
-            $table->string('apl_1');
-            $table->string('apl_2');
+            $table->string('asesmen_attachment_file')->nullable();
+            $table->string('file_name');
             $table->timestamps();
         });
     }
@@ -29,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('asesis');
+        Schema::dropIfExists('asesmenfiles');
     }
 };

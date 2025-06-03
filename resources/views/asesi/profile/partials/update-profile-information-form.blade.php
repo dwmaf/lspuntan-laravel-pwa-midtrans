@@ -39,7 +39,7 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Kelamin <span class="text-red-500">*</span>
                 <select name="kelamin" required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300">
+                    class="w-full px-3 py-2 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
                     <option value="Laki-laki"
                         {{ old('kelamin', $user->student?->kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-Laki
                     </option>
@@ -133,14 +133,13 @@
                     <a href="{{ asset('storage/' . $user->student->foto_ktp) }}" class="text-blue-500"
                         target="_blank">Lihat File</a>
                 </p>
+            @else
+                <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah</p>
             @endif
-
             <!-- Input file -->
             <input id="foto_ktp" name="foto_ktp" type="file"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
                 @if (!$user->student || !$user->student->foto_ktp) required @endif>
-
-            
             <x-input-error class="mt-2" :messages="$errors->get('foto_ktp')" />
         </div>
         <div>
@@ -157,9 +156,9 @@
                 <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah</p>
             @endif
             <!-- Input file -->
-            <x-text-input id="foto_ktm" name="foto_ktm" type="file"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300"
-                :value="old('foto_ktm', $user->student?->foto_ktm)" required />
+            <input id="foto_ktm" name="foto_ktm" type="file"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
+                @if (!$user->student || !$user->student->foto_ktm) required @endif>
             <x-input-error class="mt-2" :messages="$errors->get('foto_ktm')" />
         </div>
 
@@ -177,9 +176,9 @@
                 <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah</p>
             @endif
             <!-- Input file -->
-            <x-text-input id="foto_khs" name="foto_khs" type="file"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300"
-                :value="old('foto_khs', $user->student?->foto_khs)" required />
+            <input id="foto_khs" name="foto_khs" type="file"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
+                @if (!$user->student || !$user->student->foto_khs) required @endif>
             <x-input-error class="mt-2" :messages="$errors->get('foto_khs')" />
         </div>
 
@@ -197,38 +196,13 @@
                 <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah</p>
             @endif
             <!-- Input file -->
-            <x-text-input id="pas_foto" name="pas_foto" type="file"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300"
-                :value="old('pas_foto', $user->student?->pas_foto)" required />
+            <input id="pas_foto" name="pas_foto" type="file"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
+                @if (!$user->student || !$user->student->pas_foto) required @endif>
             <x-input-error class="mt-2" :messages="$errors->get('pas_foto')" />
         </div>
 
 
-        {{-- <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)"
-                required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
-
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800 dark:text-gray-200">
-                        {{ __('Your email address is unverified.') }}
-
-                        <button form="send-verification"
-                            class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
-
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
-                    @endif
-                </div>
-            @endif
-        </div> --}}
 
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>

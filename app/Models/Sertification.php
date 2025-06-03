@@ -25,4 +25,12 @@ class Sertification extends Model
     {
         return $this->hasMany(Asesi::class);
     }
+    public function praasesmenfile()
+    {
+        return $this->hasMany(Praasesmenfile::class);
+    }
+    public function asesmenfile()
+    {
+        return $this->hasMany(Asesmenfile::class);
+    }
 }

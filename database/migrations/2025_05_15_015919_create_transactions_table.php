@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('biaya');
             $table->string('status')->default('pending');
             $table->string('tipe');
+            $table->string('bukti_bayar')->nullable();
             $table->timestamps();
         });
     }
