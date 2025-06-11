@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DocPendukung extends Model
+class Asesiattachmentfiles extends Model
 {
-    /** @use HasFactory<\Database\Factories\DocPendukungFactory> */
     protected $guarded = [
         'id',
         'created_at',

@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('praasesmenfiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sertification_id')->constrained();
-            $table->string('praasesmen_attachment_file')->nullable();
-            $table->string('file_name');
+            $table->string('path_file')->nullable();
             $table->timestamps();
         });
     }

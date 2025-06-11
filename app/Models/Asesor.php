@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Asesor extends Model
 {
-    /** @use HasFactory<\Database\Factories\AsesorFactory> */
     protected $guarded = [
         'id',
         'created_at',

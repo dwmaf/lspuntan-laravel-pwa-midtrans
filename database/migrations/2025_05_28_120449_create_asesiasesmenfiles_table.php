@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('asesiasesmenfiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('asesi_id')->constrained();
-            $table->string('asesi_asesmen_attachment_file')->nullable();
-            $table->string('file_name');
+            $table->string('path_file')->nullable();
             $table->timestamps();
         });
     }

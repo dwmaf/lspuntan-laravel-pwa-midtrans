@@ -9,8 +9,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($sertifications as $sert)
                 @php
-                    $asesi = $asesiBySertificationId->get($sert->id);
-                    $sudahDaftar = $asesi !== null;
+                    $filteredAsesi = $asesi->get($sert->id);
+                    $sudahDaftar = !is_null($filteredAsesi);
                 @endphp
 
                 <div class="bg-white p-6 rounded-lg dark:bg-gray-800">
@@ -30,12 +30,12 @@
 
                     <div class="mt-4">
                         @if ($sudahDaftar)
-                            <a href="{{ route('edit_apply_sertifikasi', [$sert->id, $asesi->id]) }}"
+                            <a href="{{ route('show_applied_sertifikasi', [$sert->id, $filteredAsesi->id]) }}"
                                 class="inline-block px-4 py-2 bg-blue-800 text-white rounded-md hover:bg-blue-900">Lihat
                                 Status</a>
                         @else
                             <a href="{{ route('apply_sertifikasi', $sert->id) }}"
-                                class="inline-block px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Daftar</a>
+                                class="inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Daftar</a>
                         @endif
                     </div>
                 </div>

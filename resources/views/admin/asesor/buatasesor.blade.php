@@ -89,7 +89,7 @@
                             {{ $loop->iteration }}</td>
                         <td
                             class="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2">
-                            {{ $asesor->user->name }}</td>
+                            {{ $asesor->name }}</td>
                         <td
                             class="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2">
                             @foreach ($asesor->skemas as $skema)

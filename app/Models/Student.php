@@ -21,16 +21,4 @@ class Student extends Model
     {
         return $this->hasMany(Asesi::class);
     }
-    public function suket_magang()
-    {
-        return $this->hasMany(SuketMagang::class);
-    }
-    public function sertif_pelatihan()
-    {
-        return $this->hasMany(SertifPelatihan::class);
-    }
-    public function doc_pendukung()
-    {
-        return $this->hasMany(DocPendukung::class);
-    }
 }

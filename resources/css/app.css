@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-
+/* @import 'dropzone/dist/min/dropzone.min.css'; */
 @plugin '@tailwindcss/forms';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';

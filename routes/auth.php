@@ -38,10 +38,10 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('registerasesor', [RegisteredAsesorController::class, 'create'])
-        ->name('registerasesor');
+    // Route::get('registerasesor', [RegisteredAsesorController::class, 'create'])
+    //     ->name('registerasesor');
 
-    Route::post('registerasesor', [RegisteredAsesorController::class, 'store']);
+    // Route::post('registerasesor', [RegisteredAsesorController::class, 'store']);
     
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');

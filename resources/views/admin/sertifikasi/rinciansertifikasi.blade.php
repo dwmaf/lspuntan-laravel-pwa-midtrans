@@ -4,9 +4,9 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-    @include('layouts.asesor-sertifikasi-menu')
+    @include('layouts.admin-sertifikasi-menu')
     <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <div>
+        <div class="flex gap-3">
             <a class="inline-flex items-center px-2 py-2 bg-gray-800 dark:bg-gray-200 rounded-md text-white dark:text-gray-800 hover:bg-gray-700 dark:hover:bg-white cursor-pointer"
                 href="/sertification/{{ $sertification[0]->id }}/edit">
                 <x-fas-edit class="w-5" /></a>

@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('suket_magangs', function (Blueprint $table) {
+        Schema::create('asesiattachmentfiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('asesi_id')->constrained();
-            $table->string('path_suket_magang');
-            $table->string('file_name');
+            $table->string('path_file')->nullable();
+            $table->string('type')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('suket_magangs');
+        Schema::dropIfExists('asesiattachmentfiles');
     }
 };

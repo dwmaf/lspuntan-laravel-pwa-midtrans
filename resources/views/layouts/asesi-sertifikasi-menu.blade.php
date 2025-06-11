@@ -4,7 +4,7 @@
 @endphp
 <div class="flex space-x-4">
     {{-- Praasesmen --}}
-    @if ($asesi->status == 'ikut_praasesmen' || $asesi->status == 'belum_bayar' || $asesi->status == 'sudah_bayar')
+    @if ($asesi && in_array($asesi->status, ['ikut_praasesmen', 'belum_bayar', 'sudah_bayar']))
         <a href='/rincian_praasesmen_asesi/{{ $sertification->id }}'
             class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:text-slate-700 dark:hover:text-gray-100 rounded-t-md 
                             dark:text-gray-200 text-slate-600 {{ Request::is('apply_sertifikasi') ? 'border-b-2 border-slate-800' : '' }}">
@@ -20,7 +20,7 @@
     @endif
 
     {{-- Bayar --}}
-    @if ($asesi->status == 'belum_bayar' || $asesi->status == 'sudah_bayar')
+    @if ($asesi && in_array($asesi->status, ['belum_bayar', 'sudah_bayar']))
         <form action="/payment" method="POST" class="">
             @csrf
             <input type="text" hidden name="asesi_id" value="{{ $asesi->id }}">
@@ -46,7 +46,7 @@
         </div>
     @endif
     {{-- Asesmen --}}
-    @if ($asesi->status == 'sudah_bayar')
+    @if ($asesi && $asesi->status == 'sudah_bayar')
         <a href="/asesmen"
             class="flex items-center gap-2 px-4 py-2  font-semibold text-xs uppercase  
     hover:text-slate-700 dark:hover:text-gray-100 dark:text-gray-200 text-gray-700 {{ Request::is('apply_sertifikasi') ? 'border-b-2 border-slate-800' : '' }}">

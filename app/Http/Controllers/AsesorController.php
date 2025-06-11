@@ -45,13 +45,13 @@ class AsesorController extends Controller
         ]);
 
         $user = User::create([
-            'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role'=> $request->role,
         ]);
         $asesor = Asesor::create([
             'user_id'=>$user->id,
+            'name' => $request->name,
         ]);
         $asesor->skemas()->attach($request->selectedSkemas);
         return redirect(route('dashboardadmin', absolute: false));

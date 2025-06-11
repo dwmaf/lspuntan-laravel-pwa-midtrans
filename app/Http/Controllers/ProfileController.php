@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
+use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -26,8 +27,7 @@ class ProfileController extends Controller
     public function edit_asesi(Request $request): View
     {
         return view('asesi.profile.edit', [
-            'user' => $request->user(),
-            'student' => $request->user()->student()
+            'student' => $request->user()->student       
         ]);
     }
     /**
@@ -47,14 +47,14 @@ class ProfileController extends Controller
     }
     public function update_asesi(Request $request)
     {
-        $user = $request->user();
-        $student = $user->student;
-        // dd($student);
+        // $student = $request->user()->student;
+        $student = Student::find($request->id);
 
         $request->validate([
             'name' => 'required|string|max:255',
             'nik' => 'required|string|max:255',
-            'tmpt_tgl_lhr' => 'required|string|max:255',
+            'tmpt_lhr' => 'required|string|max:255',
+            'tgl_lhr' => 'required|string|max:255',
             'kelamin' => 'required|string|in:Laki-laki,Perempuan',
             'kebangsaan' => 'required|string|max:255',
             'no_tlp_hp' => 'required|string|max:255',
@@ -64,16 +64,13 @@ class ProfileController extends Controller
             'foto_khs' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'pas_foto' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
         ]);
-
-        // Update nama user jika berubah
-        if ($user->name !== $request->name) {
-            $user->name = $request->name;
-            $user->save();
-        }
+        
         // Update data student
         $student->fill($request->only([
+            'name',
             'nik',
-            'tmpt_tgl_lhr',
+            'tmpt_lhr',
+            'tgl_lhr',
             'kelamin',
             'kebangsaan',
             'no_tlp_rmh',
@@ -92,6 +89,9 @@ class ProfileController extends Controller
                 }
                 // Simpan file baru
                 $student->$fileField = $request->file($fileField)->store($fileField, 'public');
+                // Simpan nama file asli
+                $originalFilenameField = $fileField . '_original_filename';
+                $student->$originalFilenameField = $request->file($fileField)->getClientOriginalName();
             }
         }
 

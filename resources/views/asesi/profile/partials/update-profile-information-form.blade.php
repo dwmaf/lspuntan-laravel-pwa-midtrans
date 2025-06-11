@@ -13,27 +13,34 @@
     <form method="post" action="{{ route('profile_asesi.update') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
         @csrf
         @method('patch')
-
+        <input type="text" name="id" hidden value={{ $student->id }}>
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Nama Lengkap Sesuai KTP <span class="text-red-500">*</span>
-                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)"
+                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $student->name)"
                     required autofocus />
                 <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 NIK <span class="text-red-500">*</span>
-                <x-text-input id="nik" name="nik" type="text" class="mt-1 block w-full" :value="old('nik', $user->student?->nik)"
+                <x-text-input id="nik" name="nik" type="text" class="mt-1 block w-full" :value="old('nik', $student->nik)"
                     required />
                 <x-input-error class="mt-2" :messages="$errors->get('nik')" />
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Tempat Tanggal Lahir <span class="text-red-500">*</span>
-                <x-text-input id="tmpt_tgl_lhr" name="tmpt_tgl_lhr" type="text" class="mt-1 block w-full"
-                    :value="old('tmpt_tgl_lhr', $user->student?->tmpt_tgl_lhr)" required />
-                <x-input-error class="mt-2" :messages="$errors->get('tmpt_tgl_lhr')" />
+                Tempat Lahir <span class="text-red-500">*</span>
+                <x-text-input id="tmpt_lhr" name="tmpt_lhr" type="text" class="mt-1 block w-full"
+                    :value="old('tmpt_lhr', $student->tmpt_lhr)" required />
+                <x-input-error class="mt-2" :messages="$errors->get('tmpt_lhr')" />
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Tanggal Lahir <span class="text-red-500">*</span>
+                <x-text-input id="tgl_lhr" name="tgl_lhr" type="date" class="mt-1 block w-full"
+                    :value="old('tgl_lhr', $student->tgl_lhr)" required />
+                <x-input-error class="mt-2" :messages="$errors->get('tgl_lhr')" />
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -41,10 +48,10 @@
                 <select name="kelamin" required
                     class="w-full px-3 py-2 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
                     <option value="Laki-laki"
-                        {{ old('kelamin', $user->student?->kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-Laki
+                        {{ old('kelamin', $student->kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-Laki
                     </option>
                     <option value="Perempuan"
-                        {{ old('kelamin', $user->student?->kelamin) == 'Perempuan' ? 'selected' : '' }}>Perempuan
+                        {{ old('kelamin', $student->kelamin) == 'Perempuan' ? 'selected' : '' }}>Perempuan
                     </option>
                 </select>
                 <x-input-error class="mt-2" :messages="$errors->get('kelamin')" />
@@ -53,7 +60,7 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Kebangsaan <span class="text-red-500">*</span>
                 <x-text-input id="kebangsaan" name="kebangsaan" type="text" class="mt-1 block w-full"
-                    :value="old('kebangsaan', $user->student?->kebangsaan)" required />
+                    :value="old('kebangsaan', $student->kebangsaan)" required />
                 <x-input-error class="mt-2" :messages="$errors->get('kebangsaan')" />
         </div>
         <div>
@@ -61,7 +68,7 @@
                 No tlp Rumah
             </label>
             <x-text-input id="no_tlp_rmh" name="no_tlp_rmh" type="text" class="mt-1 block w-full"
-                :value="old('no_tlp_rmh', $user->student?->no_tlp_rmh)" />
+                :value="old('no_tlp_rmh', $student->no_tlp_rmh)" />
             <x-input-error class="mt-2" :messages="$errors->get('no_tlp_rmh')" />
         </div>
         <div>
@@ -69,14 +76,14 @@
                 No tlp Kantor
             </label>
             <x-text-input id="no_tlp_kntr" name="no_tlp_kntr" type="text" class="mt-1 block w-full"
-                :value="old('no_tlp_kntr', $user->student?->no_tlp_kntr)" />
+                :value="old('no_tlp_kntr', $student->no_tlp_kntr)" />
             <x-input-error class="mt-2" :messages="$errors->get('no_tlp_kntr')" />
         </div>
         <div>
             <label for="no_tlp_hp" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 No tlp HP(WA) <span class="text-red-500">*</span>
             </label>
-            <x-text-input id="no_tlp_hp" name="no_tlp_hp" type="text" class="mt-1 block w-full" :value="old('no_tlp_hp', $user->student?->no_tlp_hp)"
+            <x-text-input id="no_tlp_hp" name="no_tlp_hp" type="text" class="mt-1 block w-full" :value="old('no_tlp_hp', $student->no_tlp_hp)"
                 required />
             <x-input-error class="mt-2" :messages="$errors->get('no_tlp_hp')" />
         </div>
@@ -85,7 +92,7 @@
                 Kualifikasi Pendidikan (Isi Mahasiswa S1) <span class="text-red-500">*</span>
             </label>
             <x-text-input id="kualifikasi_pendidikan" name="kualifikasi_pendidikan" type="text"
-                class="mt-1 block w-full" :value="old('kualifikasi_pendidikan', $user->student?->kualifikasi_pendidikan)" required />
+                class="mt-1 block w-full" :value="old('kualifikasi_pendidikan', $student->kualifikasi_pendidikan)" required />
             <x-input-error class="mt-2" :messages="$errors->get('kualifikasi_pendidikan')" />
         </div>
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Data Pekerjaan Saat ini (Tidak Wajib Diisi)
@@ -95,14 +102,14 @@
                 Nama Institusi
             </label>
             <x-text-input id="nama_institusi" name="nama_institusi" type="text" class="mt-1 block w-full"
-                :value="old('nama_institusi', $user->student?->nama_institusi)" />
+                :value="old('nama_institusi', $student->nama_institusi)" />
             <x-input-error class="mt-2" :messages="$errors->get('nama_institusi')" />
         </div>
         <div>
             <label for="jabatan" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Jabatan
             </label>
-            <x-text-input id="jabatan" name="jabatan" type="text" class="mt-1 block w-full" :value="old('jabatan', $user->student?->jabatan)" />
+            <x-text-input id="jabatan" name="jabatan" type="text" class="mt-1 block w-full" :value="old('jabatan', $student->jabatan)" />
             <x-input-error class="mt-2" :messages="$errors->get('jabatan')" />
         </div>
         <div>
@@ -110,7 +117,7 @@
                 Alamat Kantor
             </label>
             <x-text-input id="alamat_kantor" name="alamat_kantor" type="text" class="mt-1 block w-full"
-                :value="old('alamat_kantor', $user->student?->alamat_kantor)" />
+                :value="old('alamat_kantor', $student->alamat_kantor)" />
             <x-input-error class="mt-2" :messages="$errors->get('alamat_kantor')" />
         </div>
         <div>
@@ -118,7 +125,7 @@
                 No Tlp/Email/Fax
             </label>
             <x-text-input id="no_tlp_email_fax" name="no_tlp_email_fax" type="text" class="mt-1 block w-full"
-                :value="old('no_tlp_email_fax', $user->student?->no_tlp_email_fax)" />
+                :value="old('no_tlp_email_fax', $student->no_tlp_email_fax)" />
             <x-input-error class="mt-2" :messages="$errors->get('no_tlp_email_fax')" />
         </div>
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Data Sertifikasi</h2>
@@ -128,9 +135,9 @@
                 Foto KTP <span class="text-red-500">*</span>
             </label>
             <!-- Feedback jika file sudah ada -->
-            @if ($user->student && $user->student->foto_ktp)
+            @if ($student && $student->foto_ktp)
                 <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                    <a href="{{ asset('storage/' . $user->student->foto_ktp) }}" class="text-blue-500"
+                    <a href="{{ asset('storage/' . $student->foto_ktp) }}" class="text-blue-500"
                         target="_blank">Lihat File</a>
                 </p>
             @else
@@ -139,7 +146,7 @@
             <!-- Input file -->
             <input id="foto_ktp" name="foto_ktp" type="file"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
-                @if (!$user->student || !$user->student->foto_ktp) required @endif>
+                @if (!$student || !$student->foto_ktp) required @endif>
             <x-input-error class="mt-2" :messages="$errors->get('foto_ktp')" />
         </div>
         <div>
@@ -147,9 +154,9 @@
                 Foto KTM <span class="text-red-500">*</span>
             </label>
             <!-- Feedback jika file sudah ada -->
-            @if ($user->student && $user->student->foto_ktm)
+            @if ($student && $student->foto_ktm)
                 <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                    <a href="{{ asset('storage/' . $user->student->foto_ktm) }}" class="text-blue-500"
+                    <a href="{{ asset('storage/' . $student->foto_ktm) }}" class="text-blue-500"
                         target="_blank">Lihat File</a>
                 </p>
             @else
@@ -158,7 +165,7 @@
             <!-- Input file -->
             <input id="foto_ktm" name="foto_ktm" type="file"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
-                @if (!$user->student || !$user->student->foto_ktm) required @endif>
+                @if (!$student || !$student->foto_ktm) required @endif>
             <x-input-error class="mt-2" :messages="$errors->get('foto_ktm')" />
         </div>
 
@@ -167,9 +174,9 @@
                 Scan KHS <span class="text-red-500">*</span>
             </label>
             <!-- Feedback jika file sudah ada -->
-            @if ($user->student && $user->student->foto_khs)
+            @if ($student && $student->foto_khs)
                 <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                    <a href="{{ asset('storage/' . $user->student->foto_khs) }}" class="text-blue-500"
+                    <a href="{{ asset('storage/' . $student->foto_khs) }}" class="text-blue-500"
                         target="_blank">Lihat File</a>
                 </p>
             @else
@@ -178,7 +185,7 @@
             <!-- Input file -->
             <input id="foto_khs" name="foto_khs" type="file"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
-                @if (!$user->student || !$user->student->foto_khs) required @endif>
+                @if (!$student || !$student->foto_khs) required @endif>
             <x-input-error class="mt-2" :messages="$errors->get('foto_khs')" />
         </div>
 
@@ -187,9 +194,9 @@
                 Pas Foto Terbaru 4x6 dengan Latar Belakang Merah <span class="text-red-500">*</span>
             </label>
             <!-- Feedback jika file sudah ada -->
-            @if ($user->student && $user->student->pas_foto)
+            @if ($student && $student->pas_foto)
                 <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                    <a href="{{ asset('storage/' . $user->student->pas_foto) }}" class="text-blue-500"
+                    <a href="{{ asset('storage/' . $student->pas_foto) }}" class="text-blue-500"
                         target="_blank">Lihat File</a>
                 </p>
             @else
@@ -198,7 +205,7 @@
             <!-- Input file -->
             <input id="pas_foto" name="pas_foto" type="file"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
-                @if (!$user->student || !$user->student->pas_foto) required @endif>
+                @if (!$student || !$student->pas_foto) required @endif>
             <x-input-error class="mt-2" :messages="$errors->get('pas_foto')" />
         </div>
 
