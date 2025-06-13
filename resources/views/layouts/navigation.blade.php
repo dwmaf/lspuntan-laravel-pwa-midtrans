@@ -1,4 +1,4 @@
-<div x-data="{ open: false }">
+<div x-data="{ open: true }">
     <aside class="h-full  bg-white dark:bg-gray-800 p-3 transform transition-all duration-300 "
         :class="open ? 'w-48 translate-x-0' : 'w-16 translate-x-0'">
         <!-- Sidebar Toggle Button -->
@@ -63,9 +63,9 @@
         @endif
 
         @if (auth()->user()->role == 'asesor' || auth()->user()->role == 'admin')
-            <a href="{{ route('skema.create') }}"
+            <a href="{{ route('manage_skema') }}"
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm"
-                :class="(open && location.pathname === '/skema') ? 'bg-gray-200 dark:bg-gray-800' : ''">
+                :class="(open && location.pathname === '/manage_skema') ? 'bg-gray-200 dark:bg-gray-800' : ''">
                 <x-bxs-book class="w-4 text-gray-700 dark:text-gray-200" />
                 <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="[!open ? 'hidden' : '']">
                     Skema

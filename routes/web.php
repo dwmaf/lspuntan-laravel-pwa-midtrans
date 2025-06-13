@@ -35,9 +35,11 @@ Route::middleware(['auth', 'role:admin,asesor'])->group(function () {
     Route::get('/dashboardadmin', function () {
         return view('admin.dashboardadmin');
     })->name('dashboardadmin');
-    Route::post('/manage_skema', [ManageSkemaController::class, 'create'])->name('manage_skema');
+    Route::get('/manage_skema', [ManageSkemaController::class, 'create'])->name('manage_skema');
+    Route::post('/manage_skema', [ManageSkemaController::class, 'store'])->name('manage_skema');
     Route::get('/manage_skema/{id}/edit', [ManageSkemaController::class, 'edit'])->name('manage_skema.edit');
     Route::get('/manage_skema/{id}/update', [ManageSkemaController::class, 'update'])->name('manage_skema.update');
+    Route::delete('/manage_skema/{id}/destroy', [ManageSkemaController::class, 'destroy'])->name('manage_skema.destroy');
     Route::resource('/asesor', AsesorController::class);
     Route::resource('/sertification', SertificationController::class);
     Route::get('/list_asesi/{id}', [ManageCertificationController::class, 'list_asesi'])->name('list_asesi');

@@ -30,21 +30,25 @@
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {{ $loop->iteration }}</td>
-                            <td
-                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
                                 {{ $skema->nama_skema }}</td>
-                            <td
-                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
-                                {{ $skema->format_apl_1 }} {{ $skema->format_apl_2 }}</td>
-                            <td
-                                class=" text-gray-700 dark:text-gray-200 px-4 py-2 text-center">
+                            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                                <div class="flex flex-col">
+                                    <a href="{{ asset('storage/' . $skema->format_apl_1) }}" target="_blank"
+                                        class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat</a>
+                                    <a href="{{ asset('storage/' . $skema->format_apl_2) }}" target="_blank"
+                                        class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat</a>
+                                </div>
+                            </td>
+                            <td class=" text-gray-700 dark:text-gray-200 px-4 py-2 text-center">
                                 <div class="flex items-center justify-center space-x-2">
                                     <button
                                         class="px-3 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700">
                                         Edit
                                     </button>
-                                    <form class="inline-block" action="route('skema.destroy', $skema->id)"
-                                        method="post" onsubmit="return confirm('Apakah Anda yakin ingin menghapus skema ini?');">
+                                    <form class="inline-block" action="{{ route('manage_skema.destroy', $skema->id) }}"
+                                        method="post"
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus skema ini?');">
                                         @method('delete')
                                         @csrf
                                         <button type="submit"
@@ -57,8 +61,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4"
-                                class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                 Tidak ada skema sertifikasi yang tersedia.
                             </td>
                         </tr>
@@ -70,27 +73,30 @@
 
     <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Tambah Skema Sertifikasi</h2>
-        <form action="/skema" class="mt-4 flex flex-col gap-2" method="POST">
+        <form action="{{ route('manage_skema') }}" class="mt-4 flex flex-col gap-2" method="POST"
+            enctype="multipart/form-data">
             @csrf
             <div id="nama skema">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Nama
                     Skema</label>
-                <x-text-input name="nama_skema" type="text" class="mt-1 block w-full" :value="old('nama_skema', $skema?->nama_skema)" required />
+                <x-text-input name="nama_skema" type="text" class="mt-1 block w-full" :value="old('nama_skema')" required />
             </div>
             <div id="format apl 1">
-                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Format File APL.01 (docx)
+                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Format File
+                    APL.01 (docx)
                 </label>
                 <input type="file" name="format_apl_1" required
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800">
             </div>
             <div id="format apl 2">
-                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Format File APL.02 (docx)
+                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Format File
+                    APL.02 (docx)
                 </label>
                 <input type="file" name="format_apl_2" required
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800">
             </div>
             <button type="submit"
-                class="self-start bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-500 dark:hover:bg-blue-500 dark:bg-blue-800">Tambah</button>
+                class="self-start bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-500 dark:hover:bg-blue-500 dark:bg-blue-800 cursor-pointer">Tambah</button>
         </form>
     </div>
 </x-admin-layout>

@@ -21,13 +21,6 @@ class AsesorController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    // public function create()
-    // {
-    //     return view('admin.asesor.create');
-    // }
 
     /**
      * Store a newly created resource in storage.
@@ -54,7 +47,7 @@ class AsesorController extends Controller
             'name' => $request->name,
         ]);
         $asesor->skemas()->attach($request->selectedSkemas);
-        return redirect(route('dashboardadmin', absolute: false));
+        return redirect('/asesor')->with('success','Data asesor berhasil diperbaharui');
     }
 
     /**
@@ -70,8 +63,11 @@ class AsesorController extends Controller
      */
     public function edit(Asesor $asesor)
     {
+        $user_asesor = $asesor->user;
         return view('admin.asesor.editasesor', [
             'asesor' => $asesor,
+            'user_asesor' => $user_asesor,
+            'skemas'=> Skema::all()
         ]);
     }
 
@@ -80,7 +76,24 @@ class AsesorController extends Controller
      */
     public function update(Request $request, Asesor $asesor)
     {
-        //
+        $user_asesor = $asesor->user;
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class.',email,'.$user_asesor->id],
+            'password' => ['nullable'],
+            'selectedSkemas' => ['required', 'array'],
+            'selectedSkemas.*' => ['exists:skemas,id'],
+        ]);
+        $asesorData = ['name'=>$request->name];
+        $userData = ['email'=>$request->email];
+        if ($request->filled('password')) {
+            $userData['password'] = Hash::make($request->password);
+        }
+        $asesor->update($asesorData);
+        $user_asesor->update($userData);
+        $asesor->skemas()->sync($request->selectedSkemas);
+
+        return redirect('/asesor')->with('success','Data asesor berhasil diperbaharui');
     }
 
     /**
@@ -88,6 +101,13 @@ class AsesorController extends Controller
      */
     public function destroy(Asesor $asesor)
     {
-        //
+        $user = $asesor->user;
+        // dd($user);
+        $asesor->skemas()->detach();
+        $asesor->delete();
+        if($user) {
+            $user->delete();
+        }
+        return redirect('/asesor')->with('success','Data asesor berhasil dihapus');
     }
 }
