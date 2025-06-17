@@ -4,29 +4,46 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-    
-    <div class="max-w-7xl mx-auto mb-4">
+
+    <div class="max-w-7xl mx-auto mb-4 mt-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach ($sertifications as $sert)    
-            <div class="bg-white p-6 rounded-lg shadow-lg">
-                <h3 class="text-lg font-semibold text-gray-900">{{ $sert->skema->nama_skema }}</h3>
-                <p class="text-gray-600 mt-2">Tanggal Pendaftaran Dibuka : {{ $sert->tgl_apply_dibuka }}</p>
-                <a href="sertification/{{ $sert->id }}">Lihat</a>
-            </div>
+            @foreach ($sertifications as $sert)
+                <div class="bg-white p-6 rounded-lg dark:bg-gray-800">
+
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">{{ $sert->skema->nama_skema }}
+                    </h3>
+                    <div class="flex items-center mt-4">
+                        <x-bxs-calendar class="w-4 text-gray-700 dark:text-gray-200" />
+                        <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">Pendaftaran Dibuka:
+                            {{ $sert->tgl_apply_dibuka }}</p>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <x-bxs-calendar-event class="w-4 text-gray-700 dark:text-gray-200" />
+                        <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">Ditutup: {{ $sert->tgl_apply_ditutup }}
+                        </p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="sertification/{{ $sert->id }}"
+                            class=" self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Lihat</a>
+                    </div>
+                </div>
             @endforeach
         </div>
     </div>
     <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        
+
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Mulai Sertifikasi</h2>
         <form action="/sertification" class="mt-4 flex flex-col gap-2" method="POST">
             @csrf
             <div id="asesor dan skema">
-                <label for="skema_asesor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih Skema dan Asesor:</label>
-                <select name="asesor_skema[]" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" multiple>
+                <label for="skema_asesor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih Skema
+                    dan Asesor:</label>
+                <select required name="asesor_skema"
+                    class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                    <option value="" disabled selected>--Silahkan pilih asesor dan skema--</option>
                     @foreach ($asesors as $asesor)
                         @foreach ($asesor->skemas as $skema)
-                            <option value="{{ $asesor->id . ',' . $skema->id }}">
+                            <option class="" value="{{ $asesor->id . ',' . $skema->id }}">
                                 {{ $asesor->name }} - {{ $skema->nama_skema }}
                             </option>
                         @endforeach
@@ -37,32 +54,35 @@
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal Daftar
                     Dibuka
                 </label>
-                <input type="date" name="tgl_apply_dibuka" required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300">
+                <x-text-input id="tgl_apply_dibuka" name="tgl_apply_dibuka" type="date" class="mt-1 block w-full" :value="old('tgl_apply_dibuka')"
+                    required />
             </div>
             <div id="tanggal_apply_ditutup">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal Daftar
                     Ditutup
                 </label>
-                <input type="date" name="tgl_apply_ditutup" required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300">
+                <x-text-input id="tgl_apply_ditutup" name="tgl_apply_ditutup" type="date" class="mt-1 block w-full" :value="old('tgl_apply_ditutup')"
+                    required />
+                
             </div>
             <div id="tanggal_bayar_ditutup">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal Bayar
                     Ditutup
                 </label>
-                <input type="datetime-local" name="tgl_bayar_ditutup" required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300">
+                <x-text-input id="tgl_bayar_ditutup" name="tgl_bayar_ditutup" type="datetime-local" class="mt-1 block w-full" :value="old('tgl_bayar_ditutup')"
+                    required />
+                
             </div>
             <div id="biaya_sertifikasi">
-                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Biaya Sertifikasi
-                    
+                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Biaya
+                    Sertifikasi
+
                 </label>
-                <input type="number" name="harga" required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-hidden focus:ring-3 focus:ring-blue-300">
+                <x-text-input id="harga" name="harga" type="number" min="0" class="mt-1 block w-full" :value="old('harga')"
+                    required />
             </div>
             <button type="submit"
-                class="self-start bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-500 dark:hover:bg-blue-500 dark:bg-blue-800">Mulai</button>
+                class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Mulai</button>
         </form>
     </div>
 </x-admin-layout>

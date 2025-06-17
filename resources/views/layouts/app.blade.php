@@ -9,6 +9,7 @@
 
         {{-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> --}}
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <link rel="icon" href="{{ asset('logo-lsp.png') }}" type="image/png">
         {{-- @vite(['resources/js/app.js']) --}}
     </head>
     <style>
@@ -23,13 +24,13 @@
             <div class="flex-1 flex flex-col p-2">
 
                 @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow-sm p-4 mb-2 ml-2">
+                <header class="bg-white dark:bg-gray-800 shadow-sm p-4 mb-2">
                     {{ $header }}
                     
                 </header>
                 @endisset
 
-                <main class="ml-2">
+                <main>
                     {{ $slot }}
                 </main>
             </div>

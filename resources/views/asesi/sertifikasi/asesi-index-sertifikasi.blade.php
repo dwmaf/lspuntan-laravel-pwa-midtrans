@@ -31,11 +31,12 @@
                     <div class="mt-4">
                         @if ($sudahDaftar)
                             <a href="{{ route('show_applied_sertifikasi', [$sert->id, $filteredAsesi->id]) }}"
-                                class="inline-block px-4 py-2 bg-blue-800 text-white rounded-md hover:bg-blue-900">Lihat
+                                class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Lihat
                                 Status</a>
                         @else
                             <a href="{{ route('apply_sertifikasi', $sert->id) }}"
-                                class="inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Daftar</a>
+                                class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Daftar</a>
+                                
                         @endif
                     </div>
                 </div>

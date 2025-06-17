@@ -11,7 +11,7 @@
     @endif
     <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Tambah Asesor</h2>
-        {{-- utk nanganin dropdown checkboxnya, we use alpine js,  --}}
+        {{-- utk nanganin dropdown checkboxnya, we use alpine js  --}}
         <form action="/asesor" class="mt-4 flex flex-col gap-2" method="POST" x-data="{
                 selectedSkemas: [], // Ini akan menyimpan ID skema yang dipilih
                 open: false, // mengontrol visibilitas dropdown
@@ -56,7 +56,7 @@
             <input type="text" name="role" value="asesor" hidden>
             <div  class="relative mt-2">
                 <button type="button" @click="toggleDropdown"
-                    class="p-2 text-sm font-medium rounded-t-md w-full text-left flex justify-between items-center mt-1 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                    class="p-2 text-sm font-medium rounded-t-md w-full text-left flex justify-between items-center mt-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white ">
                     <span>
                         Pilih Skema
                         <span x-show="selectedSkemas.length > 0" x-text="`(${selectedSkemas.length} selected)`"
@@ -73,11 +73,11 @@
                     </svg>
                 </button>
 
-                <div class="absolute left-0 w-full rounded-b-md z-20 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"
+                <div class="absolute left-0 w-full rounded-b-md z-20 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 dark:text-white "
                     x-show="open" @click.away="open = false" x-cloak>
                     <div class="p-2 max-h-60 overflow-y-auto">
                         @foreach ($skemas as $skema)
-                            <div class="flex items-center p-1 hover:bg-gray-700 rounded">
+                            <div class="flex items-center p-1 hover:bg-gray-300  dark:hover:bg-gray-700 rounded">
                                 <input type="checkbox" id="skema_{{ $skema->id }}" value="{{ $skema->id }}"
                                     @click="toggleSkema({{ $skema->id }})" :checked="isSelected({{ $skema->id }})"
                                     name="selectedSkemas[]" class="mr-2 rounded text-blue-500 focus:ring-blue-400">
@@ -91,12 +91,12 @@
 
             <button type="submit" 
                 :disabled="selectedSkemas.length === 0"
-                class="self-start text-gray-800 dark:text-white px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-500 dark:hover:bg-blue-500 dark:bg-blue-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Tambah</button>
+                class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Tambah</button>
         </form>
     </div>
 
     <div class="p-6 mt-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6">Skema Sertifikasi yang Tersedia</h2>
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-6">Skema Sertifikasi yang Tersedia</h2>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
@@ -126,7 +126,7 @@
                             <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
                                 <div class="flex flex-col space-y-1">
                                     @foreach ($asesor->skemas as $skema)
-                                        <span class="inline-block rounded-lg dark:bg-gray-700 p-2 mb-2 text-xs font-medium ">
+                                        <span class="inline-block rounded-lg bg-gray-200 dark:bg-gray-700 p-2 mb-2 text-xs font-medium ">
                                             {{ $skema->nama_skema }}
                                         </span>
                                     @endforeach

@@ -44,7 +44,7 @@
             <input type="text" name="role" value="asesor" hidden>
             <div class="relative mt-2">
                 <button type="button" @click="toggleDropdown"
-                    class="p-2 text-sm font-medium rounded-t-md w-full text-left flex justify-between items-center mt-1 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                    class="p-2 text-sm font-medium rounded-t-md w-full text-left flex justify-between items-center mt-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white ">
                     <span>
                         Pilih Skema
                         <span x-show="selectedSkemas.length > 0" x-text="`(${selectedSkemas.length} selected)`"
@@ -61,11 +61,11 @@
                     </svg>
                 </button>
 
-                <div class="absolute left-0 w-full rounded-b-md z-20 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"
+                <div class="absolute left-0 w-full rounded-b-md z-20 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 dark:text-white "
                     x-show="open" @click.away="open = false" x-cloak>
                     <div class="p-2 max-h-60 overflow-y-auto">
                         @foreach ($skemas as $skema)
-                            <div class="flex items-center p-1 hover:bg-gray-700 rounded">
+                            <div class="flex items-center p-1 hover:bg-gray-300 dark:hover:bg-gray-700 rounded">
                                 <input type="checkbox" id="skema_{{ $skema->id }}" value="{{ $skema->id }}"
                                     @click="toggleSkema({{ $skema->id }})" :checked="isSelected({{ $skema->id }})"
                                     name="selectedSkemas[]" class="mr-2 rounded text-blue-500 focus:ring-blue-400">

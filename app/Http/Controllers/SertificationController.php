@@ -38,16 +38,15 @@ class SertificationController extends Controller
         // dd($request);
         $validatedData=$request->validate([
             'asesor_skema'=>'required',
-            'tgl_apply_dibuka'=>'required',
-            'tgl_apply_ditutup'=>'required',
-            'tgl_bayar_ditutup'=>'required',
-            'harga'=>'required'
+            'tgl_apply_dibuka'=>'required|date',
+            'tgl_apply_ditutup'=>'required|date|after_or_equal:tgl_apply_dibuka',
+            'tgl_bayar_ditutup'=>'required|date|after_or_equal:tgl_apply_ditutup',
+            'harga'=>'required|numeric|min:0'
         ]);
-        $asesorSkema = $request->input('asesor_skema');
-        $asesorSkema = $asesorSkema[0];
-        list($asesor_id, $skema_id) = explode(',', $asesorSkema);
+        list($asesor_id, $skema_id) = explode(',', $request->input('asesor_skema'));
         $validatedData['asesor_id'] = $asesor_id;
         $validatedData['skema_id'] = $skema_id;
+        unset($validatedData['asesor_skema']);
         Sertification::create($validatedData);
         return redirect('/sertification')->with('Success','Sertifikasi berhasil diunggah, kini asesi bisa mendaftar ke sertifikasi');
     }
@@ -57,8 +56,9 @@ class SertificationController extends Controller
      */
     public function show(Sertification $sertification)
     {
+        $sertification->load('skema','asesor');
         return view('admin.sertifikasi.rinciansertifikasi',[
-            'sertification'=>Sertification::where('id', $sertification->id)->with('skema','asesor')->get(),
+            'sertification'=>$sertification,
         ]);
     }
 

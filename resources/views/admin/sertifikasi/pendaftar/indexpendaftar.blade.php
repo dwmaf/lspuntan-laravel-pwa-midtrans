@@ -4,43 +4,82 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-    @php
-        $asesi = $student->asesi()->where('sertification_id', $sertification->id)->first();
-    @endphp
-    <div class="flex space-x-4">
-        <a href='/rincian_praasesmen_asesi/{{ $sertification->id }}'
-            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:text-slate-700 dark:hover:text-gray-100 rounded-t-md 
-                        dark:text-gray-200 text-slate-600 {{ Request::is('apply_sertifikasi') ? 'border-b-2 border-slate-800' : '' }}">
-            Praasesmen
-        </a>
-        <a href="/asesmen"
-            class="flex items-center gap-2 px-4 py-2  font-semibold text-xs uppercase  
-hover:text-slate-700 dark:hover:text-gray-100 dark:text-gray-200 text-gray-700 {{ Request::is('apply_sertifikasi') ? 'border-b-2 border-slate-800' : '' }}">
-            Asesmen
-        </a>
-    </div>
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <table class="table-auto border-separate border-spacing-0 border-2 border-gray-700 dark:border-white rounded-lg">
-            <thead class="text-gray-800 dark:text-gray-200">
-                <tr>
-                    <th class=" px-3 py-2 text-left text-md font-semibold border-b-2 border-gray-700 dark:border-white">No</th>
-                    <th class=" px-3 py-2 text-left text-md font-semibold border-b-2 border-gray-700 dark:border-white">Nama Asesi</th>
-                    <th class=" px-3 py-2 text-left text-md font-semibold border-b-2 border-gray-700 dark:border-white">Status</th>
-                    <th class=" px-3 py-2 text-left text-md font-semibold border-b-2 border-gray-700 dark:border-white">Action</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-800 dark:text-gray-200">
-                @foreach ($asesis as $asesi)
+    
+
+    {{-- Navigasi Tab --}}
+    @include('layouts.admin-sertifikasi-menu')
+    <div class="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
+                Daftar Pendaftar Skema: {{ $sertification->skema->nama_skema ?? 'Tidak Diketahui' }}
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $asesi->id }}</td>
-                        <td>{{ $asesi->status }}</td>
-                        <td>
-                            <a href="/rincian_data_asesi/{{ $asesi->id }}">Lihat data</a>
-                        </td>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            No
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Nama Asesi
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Aksi
+                        </th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse ($sertification->asesi as $index => $asesi)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {{ $loop->iteration }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {{ $asesi->user->name ?? 'Nama Tidak Tersedia' }} {{-- Asumsi ada relasi user dan user punya atribut name --}}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                @if ($asesi->status == 'Lulus') {{-- Sesuaikan dengan nilai status Anda --}}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
+                                        {{ $asesi->status }}
+                                    </span>
+                                @elseif($asesi->status == 'Tidak Lulus')
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100">
+                                        {{ $asesi->status }}
+                                    </span>
+                                @elseif($asesi->status == 'Proses')
+                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">
+                                        {{ $asesi->status }}
+                                    </span>
+                                @else
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200">
+                                        {{ $asesi->status ?? 'N/A' }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="/rincian_data_asesi/{{ $asesi->id }}" {{-- Sebaiknya gunakan route() helper --}}
+                                   class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                   Lihat Detail
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                                Tidak ada data pendaftar untuk skema ini.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </x-admin-layout>

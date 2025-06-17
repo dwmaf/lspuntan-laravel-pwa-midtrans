@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asesi;
+use App\Models\Asesmenfile;
+use App\Models\Praasesmenfile;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 
 class ManageCertificationController extends Controller
 {
@@ -17,6 +20,22 @@ class ManageCertificationController extends Controller
     //     return response()->json(['asesor' => $asesors]);
     // }
     // AsesiController.php
+
+    private function storeFileWithUniqueName(UploadedFile $file, string $baseDirectory): array
+    {
+        //versi edoxid
+        // $folder = uniqid().'-'.now()->timestamp;
+        // $file_name = $student->unique_id.'-'.Str::slug($student->name).'-'.$type->slug.'-'.Str::slug($format_required_file->name).'-'.uniqid().'.'.$request->file($format_required_file->id)->getClientOriginalExtension();
+        // $request->file($format_required_file->id)->storeAs('submissions/tmp/'.$folder, $file_name, 'public')
+        
+        // id unik berdasarkan timestamp
+        $uniqueId = uniqid().'-'.now()->timestamp;
+        // nama file asli tanpa extension dijadiin slug + unik id + ekstensinya tadi
+        $newFilename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '_' . $uniqueId . '.' . $file->getClientOriginalExtension();
+        // Simpan file dengan nama baru
+        $path = $file->storeAs($baseDirectory, $newFilename, 'public');
+        return ['path' => $path];
+    }
 
     // buat nampilin daftar sertifikasi yg tersedia di sisi asesi
     public function asesi_index_sertifikasi(Request $request)
@@ -112,8 +131,9 @@ class ManageCertificationController extends Controller
     public function list_asesi($id, Request $request)
     {
         // dd($student);
-        return view('admin.sertifikasi.pendaftar.index', [
-            'asesis' => Asesi::all(),
+        $sertification = Sertification::with('skema','asesi')->find($id);
+        return view('admin.sertifikasi.pendaftar.indexpendaftar', [
+            'sertification' => $sertification,
         ]);
     }
 
@@ -140,8 +160,9 @@ class ManageCertificationController extends Controller
     public function rincian_praasesmen($id, Request $request)
     {
         // dd($id);
+        $sertification = Sertification::with('praasesmenfile')->find($id);
         return view('admin.sertifikasi.praasesmen.indexpraasesmen', [
-            'sertification' => Sertification::find($id)
+            'sertification' => $sertification,
         ]);
     }
     //buat update rincian pra asesmen di sisi admin
@@ -156,23 +177,18 @@ class ManageCertificationController extends Controller
         $sertification->rincian_praasesmen = $request->rincian_praasesmen;
         $sertification->save();
         if ($request->hasFile('praasesmen_attachment_file')) {
-            $existing = $sertification->praasesmen_attachment_file()->count();
-            $newFiles = count($request->file('praasesmen_attachment_file'));
-
-            if ($existing + $newFiles > 5) {
-                return redirect()->back()->withErrors(['praasesmen_attachment_file' => 'Total lampiran maksimal 5 file.']);
-            }
             foreach ($request->file('praasesmen_attachment_file') as $file) {
-                $path = $file->store('praasesmen_attachment_file', 'public');
+                $fileData = $this->storeFileWithUniqueName($file, 'praasesmen_attachment_file');
+                // $path = $file->store('praasesmen_attachment_file', 'public');
 
-                $sertification->praasesmenfile()->create([
-                    'praasesmen_attachment_file' => $path,
-                    'file_name' => $file->getClientOriginalName(),
+                Praasesmenfile::create([
+                    'sertification_id' => $sertification->id,
+                    'path_file' => $fileData['path'],
                 ]);
             }
         }
 
-        return redirect()->back()->with('success', 'Data berhasil disimpan!');
+        return redirect()->back()->with('success', 'Data rincian praasesmen berhasil disimpan!');
     }
     //buat nampilin halaman rincian asesmen di sisi admin/asesor
     public function rincian_asesmen($id, Request $request)
@@ -187,25 +203,19 @@ class ManageCertificationController extends Controller
     {
         // dd($request);
         $validated = $request->validate([
-            'rincian_praasesmen' => 'required|string',
+            'rincian_asesmen' => 'required|string',
         ]);
 
         $sertification = Sertification::find($id);
-        $sertification->rincian_praasesmen = $request->rincian_praasesmen;
+        $sertification->rincian_asesmen = $request->rincian_asesmen;
         $sertification->save();
         if ($request->hasFile('asesmen_attachment_file')) {
-            $existing = $sertification->asesmen_attachment_file()->count();
-            $newFiles = count($request->file('asesmen_attachment_file'));
-
-            if ($existing + $newFiles > 5) {
-                return redirect()->back()->withErrors(['asesmen_attachment_file' => 'Total lampiran maksimal 5 file.']);
-            }
             foreach ($request->file('asesmen_attachment_file') as $file) {
                 $path = $file->store('asesmen_attachment_file', 'public');
 
-                $sertification->praasesmenfile()->create([
-                    'asesmen_attachment_file' => $path,
-                    'file_name' => $file->getClientOriginalName(),
+                Asesmenfile::create([
+                    'sertification_id' => $sertification->id,
+                    'path_file' => $path,
                 ]);
             }
         }

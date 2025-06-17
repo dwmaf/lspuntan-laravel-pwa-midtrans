@@ -4,6 +4,11 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
+    @if (session('success'))
+        <div class="mb-4 p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md" role="alert">
+                {{ session('success') }}
+        </div>
+    @endif
     <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6">Skema Sertifikasi yang Tersedia</h2>
         <div class="overflow-x-auto">
@@ -42,17 +47,17 @@
                             </td>
                             <td class=" text-gray-700 dark:text-gray-200 px-4 py-2 text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <button
-                                        class="px-3 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700">
+                                    <a href="{{ route('manage_skema.edit',$skema->id) }}"
+                                        class="cursor-pointer px-3 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700">
                                         Edit
-                                    </button>
+                                    </a>
                                     <form class="inline-block" action="{{ route('manage_skema.destroy', $skema->id) }}"
                                         method="post"
                                         onsubmit="return confirm('Apakah Anda yakin ingin menghapus skema ini?');">
                                         @method('delete')
                                         @csrf
                                         <button type="submit"
-                                            class="px-3 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-700 dark:hover:bg-red-800 dark:focus:ring-red-800">
+                                            class="cursor-pointer px-3 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-700 dark:hover:bg-red-800 dark:focus:ring-red-800">
                                             Hapus
                                         </button>
                                     </form>
@@ -86,17 +91,17 @@
                     APL.01 (docx)
                 </label>
                 <input type="file" name="format_apl_1" required
-                    class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800">
+                    class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-1 focus:border-blue-700 focus:ring-blue-700">
             </div>
             <div id="format apl 2">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Format File
                     APL.02 (docx)
                 </label>
                 <input type="file" name="format_apl_2" required
-                    class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800">
+                    class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden focus:ring-1 focus:border-blue-700 focus:ring-blue-700">
             </div>
             <button type="submit"
-                class="self-start bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-500 dark:hover:bg-blue-500 dark:bg-blue-800 cursor-pointer">Tambah</button>
+                class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Tambah</button>
         </form>
     </div>
 </x-admin-layout>

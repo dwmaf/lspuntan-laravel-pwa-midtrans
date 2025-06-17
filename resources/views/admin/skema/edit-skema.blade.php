@@ -7,7 +7,8 @@
 
     <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit {{ $skema->nama_skema }}</h2>
-        <form action="/skema" class="mt-4 flex flex-col gap-2" method="POST">
+        <form action="{{ route('manage_skema.update',$skema->id) }}" class="mt-4 flex flex-col gap-2" method="POST" enctype="multipart/form-data">
+            @method('patch')
             @csrf
             <div id="nama skema">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Nama
@@ -45,7 +46,7 @@
                     @if (!$skema->format_apl_2) required @endif>
             </div>
             <button type="submit"
-                class="self-start bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-500 dark:hover:bg-blue-500 dark:bg-blue-800">Update</button>
+                class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Update</button>
         </form>
     </div>
 </x-admin-layout>
