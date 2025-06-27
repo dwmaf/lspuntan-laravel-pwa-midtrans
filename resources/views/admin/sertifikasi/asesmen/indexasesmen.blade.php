@@ -1,4 +1,8 @@
 <x-admin-layout>
+    <div id="alert-success"
+        class="fixed top-4 right-4 p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md shadow-lg z-50 hidden">
+        File berhasil dihapus!
+    </div>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Sertifikasi') }}
@@ -11,10 +15,13 @@
         </div>
     @endif
     @include('layouts.admin-sertifikasi-menu')
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div class="p-6 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 sm:mb-0">
-            Praasesmen {{ $sertification->skema->nama_skema }}
+            Asesmen {{ $sertification->skema->nama_skema }}
         </h3>
+        @php
+            $jumlahFileLama = $sertification->asesmenfile ? $sertification->asesmenfile->count() : 0;
+        @endphp
         <form action="/rincian_asesmen/{{ $sertification->id }}/update" class="mt-4 flex flex-col gap-2" method="POST"
             x-data="{ error: '', files: null }" enctype="multipart/form-data">
             @csrf
@@ -22,59 +29,85 @@
 
             <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1" for="rincian_asesmen">Rincian
                 Asesmen</label>
-            <trix-editor input="rincian_asesmen">
-                {!! old('rincian_asesmen', $sertification?->rincian_asesmen) !!}
-            </trix-editor>
-            <input id="rincian_asesmen" type="hidden" name="rincian_asesmen">
+            <input id="rincian_asesmen" type="hidden" name="rincian_asesmen"
+                value="{{ old('rincian_asesmen', $sertification?->rincian_asesmen) }}">
+            <div class="trix-container">
+                <trix-editor input="rincian_asesmen">
+                    {!! old('rincian_asesmen', $sertification?->rincian_asesmen) !!}
+                </trix-editor>
+            </div>
+            @error('rincian_asesmen')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
 
             <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Lampiran (maks 5
                 file)</label>
+            {{-- <p class="text-sm">Jumlah file lama: <span x-text="$store.asesmen.jumlahFileLama"></span></p> --}}
             @if ($sertification->asesmenfile && $sertification->asesmenfile->isNotEmpty())
-                <ul class="list-disc list-inside">
+                <div class="flex-wrap">
                     @foreach ($sertification->asesmenfile as $attachment)
-                        <li>
+                        <div id="file-{{ $attachment->id }}"
+                            class="flex flex-row py-1 px-2 bg-gray-200 rounded-md items-center justify-between mb-1 max-w-[260px]">
+                            @php
+                                $basename = basename($attachment->path_file);
+                                $short = strlen($basename) > 24 ? substr($basename, 0, 24) . '...' : $basename;
+                            @endphp
                             <a href="{{ asset('storage/' . $attachment->path_file) }}" target="_blank"
-                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat</a>
-                        </li>
+                                class="font-medium text-sm text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 no-underline">{{ basename($short) }}</a>
+                            <button type="button"
+                                class="font-medium text-sm ml-2 text-red-600 cursor-pointer flex items-center gap-1"
+                                onclick="hapusFileAjax({{ $attachment->id }}, this)">
+                                Hapus
+                                <span class="hidden ml-1" id="spinner-{{ $attachment->id }}">
+                                    <svg class="animate-spin h-4 w-4 text-red-600" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
                     @endforeach
-                </ul>
+                </div>
             @else
                 <span class="text-xs text-gray-900 dark:text-gray-100">Belum ada file.</span>
             @endif
             <input type="file" name="asesmen_attachment_file[]" multiple
                 accept=".jpg,.jpeg,.png,.pdf,.docx,.pptx,.xlx"
-                class="block w-full border border-gray-300 p-2 rounded-md"
+                class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
                 @change="
-            files = $event.target.files;
-            if (files.length > 5) {
-                error = 'Maksimal 5 file yang boleh dipilih.';
-                $event.target.value = '';
-                files = null;
-            } else {
-                error = '';
-            }" />
+                    files = $event.target.files;
+                    if (files.length + $store.asesmen.jumlahFileLama > 5) {
+                        error = 'Maksimal 5 file yang boleh dipilih. Anda sudah punya  ' + $store.asesmen.jumlahFileLama + ' file.';
+                        $event.target.value = '';
+                        files = null;
+                    } else {
+                        error = '';
+                    }" />
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" id="file_input_help">
                 Tipe file: JPG, JPEG, PNG, PDF, DOCX, PPTX, XLSX.
             </p>
             <template x-if="error">
-                <p class="text-red-600 mt-2" x-text="error"></p>
+                <p class="text-red-600 text-xs mt-1" x-text="error"></p>
             </template>
-            @error('praasesmen_attachment_file.*')
+            @error('asesmen_attachment_file.*')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
-            @error('praasesmen_attachment_file')
+            @error('asesmen_attachment_file')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
 
             <button type="submit"
-                class="bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-500 dark:hover:bg-blue-500 dark:bg-blue-800 transition self-end mt-4 cursor-pointer">
+                class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">
                 Simpan Perubahan
             </button>
         </form>
     </div>
-    @push('scripts-trix-editor-asesmen')
+    @push('scripts-asesmen')
         {{-- trix --}}
-        {{-- <script>
+        <script>
             document.addEventListener('trix-initialize', function(event) {
                 const editorElement = event.target; // Mendapatkan elemen trix-editor
                 const toolbar = editorElement.toolbarElement; // Mendapatkan elemen toolbar dari trix-editor
@@ -106,73 +139,65 @@
                     e.preventDefault();
                 }, true);
             });
-        </script> --}}
-        {{-- summernote --}}
-        {{-- <script>
-            $(document).ready(function() {
-                $('#rincian_praasesmen_editor').summernote({
-                    height: 300, // Tinggi editor
-                    minHeight: 200, // Tinggi minimal
-                    maxHeight: 500, // Tinggi maksimal
-                    placeholder: 'Masukkan rincian pra-asesmen...',
-                    toolbar: [
-                        ['style', ['style']], // Dropdown style tidak disertakan jika tidak diinginkan
-                        ['font', ['bold', 'italic', 'underline', 'clear']], // Font formatting
-                        ['fontsize', ['fontsize']], // Font size, bisa dihilangkan jika tidak diinginkan
-                        ['color', [
-                        'color']], // Font dan background color, bisa dihilangkan jika tidak diinginkan
-                        ['para', ['ul', 'ol', 'paragraph']], // List dan paragraph
-                        ['table', ['table']], // Tabel, bisa dihilangkan jika tidak diinginkan
-                        ['insert', ['link', 'picture',
-                        'video']], // Insert link, picture, video - sesuaikan sesuai kebutuhan
-                        ['view', ['fullscreen',
-                        'help']] // View options, bisa dihilangkan jika tidak diinginkan
-                    ],
+        </script>
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('asesmen', {
+                    jumlahFileLama: {{ $jumlahFileLama }}
                 });
             });
-        </script> --}}
-        {{-- quill --}}
-        {{-- <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Pastikan Quill tersedia dan elemen container ada
-                if (typeof Quill !== 'undefined' && document.getElementById('quill_editor_container')) {
-                    var quill = new Quill('#quill_editor_container', {
-                        theme: 'snow', // Tema 'snow' atau 'bubble'
-                        modules: {
-                            toolbar: [
-                                ['bold', 'italic'], // tombol toggle
-                                [{
-                                    'list': 'bullet'
-                                }],
-                                ['clean'] // tombol hapus format
-                            ]
+        </script>
+        <script>
+            function hapusFileAjax(fileId, btn) {
+                console.log(fileId);
+
+                if (!confirm('Yakin ingin menghapus file ini?')) return;
+                const spinner = document.getElementById('spinner-' + fileId);
+                if (spinner) spinner.classList.remove('hidden');
+                btn.disabled = true;
+                fetch('/asesmen-file-ajax-delete', {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Content-Type': 'text/plain'
                         },
-                        placeholder: 'Masukkan rincian pra-asesmen di sini...',
-                    });
+                        body: fileId.toString()
+                    })
+                    .then(res => {
+                        if (res.ok) {
+                            console.log('the response is ok');
 
-                    // Sinkronisasi konten Quill ke hidden input saat ada perubahan
-                    var hiddenInput = document.getElementById('rincian_praasesmen');
-                    quill.on('text-change', function(delta, oldDelta, source) {
-                        if (hiddenInput) {
-                            // Simpan konten HTML dari Quill
-                            hiddenInput.value = quill.root.innerHTML;
-                            console.log(hiddenInput.value);
+                            // Hapus elemen file dari DOM
+                            document.getElementById('file-' + fileId).remove();
+                            // Update jumlahFileLama di Alpine
+                            if (window.Alpine && Alpine.store('asesmen')) {
+                                Alpine.store('asesmen').jumlahFileLama--;
+                            }
+                            if (spinner) spinner.classList.add('hidden');
+                            btn.disabled = false;
+                            // alert sukses menghapus file
+                            // Tampilkan alert custom
+                            const alertBox = document.getElementById('alert-success');
+                            if (alertBox) {
+                                alertBox.classList.remove('hidden');
+                                setTimeout(() => {
+                                    alertBox.classList.add('hidden');
+                                }, 2000); // 2 detik
+                            }
 
+                        } else {
+                            alert('Gagal menghapus file!');
+                            if (spinner) spinner.classList.add('hidden');
+                            btn.disabled = false;
                         }
+                    })
+                    .catch(() => {
+                        alert('Gagal menghapus file!');
+                        if (spinner) spinner.classList.add('hidden');
+                        btn.disabled = false;
                     });
 
-                    // Jika ada konten awal di hidden input (misalnya dari validasi error),
-                    // dan div editor kosong, coba paste konten tersebut.
-                    // Namun, karena kita sudah memasukkan ke dalam div,
-                    // Quill seharusnya sudah mengambilnya. Baris ini untuk kasus jika div awalnya kosong.
-                    // if (hiddenInput && hiddenInput.value && quill.getLength() <= 1) { // <=1 karena Quill selalu punya newline di awal
-                    //    quill.clipboard.dangerouslyPasteHTML(0, hiddenInput.value);
-                    // }
-
-                } else {
-                    console.error('Quill.js atau container #quill_editor_container tidak ditemukan.');
-                }
-            });
-        </script> --}}
+            }
+        </script>
     @endpush
 </x-admin-layout>

@@ -46,17 +46,12 @@ class ApplyCertificationController extends Controller
             'kualifikasi_pendidikan' => 'required|string|max:255',
             'tujuan_sert' => 'required|string|max:255',
             'makul_nilai' => 'required|string|max:255',
-            'apl_1' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'apl_2' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'apl_1' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
+            'apl_2' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
             'foto_ktp' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'foto_ktm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'foto_khs' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'pas_foto' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
-
-            // validasi dropzone
-            // 'surat_ket_magang_paths' => ['nullable', 'json', function ($attribute, $value, $fail) { $files = json_decode($value, true); if (is_array($files) && count($files) > 5) { $fail(str_replace('_paths', '', $attribute).' tidak boleh lebih dari 5 file.'); }}],
-            // 'sertif_pelatihan_paths' => ['nullable', 'json', function ($attribute, $value, $fail) { $files = json_decode($value, true); if (is_array($files) && count($files) > 5) { $fail(str_replace('_paths', '', $attribute).' tidak boleh lebih dari 5 file.'); }}],
-            // 'dok_pendukung_lain_paths' => ['nullable', 'json', function ($attribute, $value, $fail) { $files = json_decode($value, true); if (is_array($files) && count($files) > 5) { $fail(str_replace('_paths', '', $attribute).' tidak boleh lebih dari 5 file.'); }}],
 
             // validasi untuk input file multiple standar
             'surat_ket_magang' => 'nullable|array|max:5', // Memastikan input adalah array dan maksimal 5 item
@@ -101,7 +96,7 @@ class ApplyCertificationController extends Controller
         ];
         foreach (['apl_1', 'apl_2'] as $fileField) {
             if ($request->hasFile($fileField)) {
-                $fileData = $this->storeFileWithUniqueName($request->file($fileField), 'apl_files');
+                $fileData = $this->storeFileWithUniqueName($request->file($fileField), 'asesi_apl_files');
                 $asesiData[$fileField] = $fileData['path'];
             }
         }
@@ -117,8 +112,7 @@ class ApplyCertificationController extends Controller
         foreach ($multipleFileFields as $requestKey => $fileTypeInDb) {
             if ($request->hasFile($requestKey)) { // Cek apakah ada file yang diunggah untuk field ini
                 foreach ($request->file($requestKey) as $file) {
-                    $directory = "asesi_attachments/{$asesi->id}/{$fileTypeInDb}";
-                    $fileData = $this->storeFileWithUniqueName($file, $directory);
+                    $fileData = $this->storeFileWithUniqueName($file, "asesi_attachments");
 
                     Asesiattachmentfiles::create([
                         'asesi_id' => $asesi->id,
@@ -129,7 +123,7 @@ class ApplyCertificationController extends Controller
             }
         }
 
-        return redirect('/sertification-asesi')->with('Success', 'Berhasil daftar sertifikasi');
+        return redirect(route('asesi.certifications.index'))->with('Success', 'Berhasil daftar sertifikasi');
     }
 
 
@@ -152,8 +146,8 @@ class ApplyCertificationController extends Controller
             'kualifikasi_pendidikan' => 'required|string|max:255',
             'tujuan_sert' => 'required|string|max:255',
             'makul_nilai' => 'required|string|max:255',
-            'apl_1' => 'nullabel|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'apl_2' => 'nullabel|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'apl_1' => 'nullabel|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
+            'apl_2' => 'nullabel|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
             'foto_ktp' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'foto_ktm' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'foto_khs' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -206,14 +200,14 @@ class ApplyCertificationController extends Controller
                 if ($asesi->$fileField && Storage::disk('public')->exists($asesi->$fileField)) {
                     Storage::disk('public')->delete($asesi->$fileField);
                 }
-                $fileData = $this->storeFileWithUniqueName($request->file($fileField), 'apl_files');
+                $fileData = $this->storeFileWithUniqueName($request->file($fileField), 'asesi_apl_files');
                 $asesi->$fileField = $fileData['path'];
             }
         }
         if ($asesi->isDirty()) {
             $asesi->save();
         }
-        //untuk input multiple dropzone
+        //untuk input multiple
         foreach (['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain'] as $requestKey => $fileTypeInDb) {
             if ($request->hasFile($requestKey)) { // Jika ada file baru yang diunggah untuk tipe ini
                 // 1. Hapus file lama dari DB dan storage untuk tipe ini
@@ -227,11 +221,11 @@ class ApplyCertificationController extends Controller
 
                 // 2. Simpan file baru
                 foreach ($request->file($requestKey) as $file) {
-                    $filePath = $file->store("asesi_attachments/{$asesi->id}/{$fileTypeInDb}", 'public');
+                    $fileData = $this->storeFileWithUniqueName($file, "asesi_attachments");
                     Asesiattachmentfiles::create([
                         'asesi_id' => $asesi->id,
                         'type' => $fileTypeInDb,
-                        'path_file' => $filePath,
+                        'path_file' => $fileData['path'],
                     ]);
                 }
             }

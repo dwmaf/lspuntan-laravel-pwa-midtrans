@@ -9,7 +9,7 @@
                 {{ session('success') }}
         </div>
     @endif
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6">Skema Sertifikasi yang Tersedia</h2>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

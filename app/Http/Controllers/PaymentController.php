@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\Sertification;
+use App\Models\Asesi;
 use App\Services\CheckoutService;
 use Illuminate\Http\Request;
 
@@ -14,18 +16,20 @@ class PaymentController extends Controller
         $this->checkoutService = $checkoutService;
     }
 
-    public function checkout(Request $request)
+    public function checkout($sert_id, $asesi_id, Request $request)
     {
         // dd($request);
+        $sertification = Sertification::with('asesor','skema')->find($sert_id);
+        $asesi = Asesi::with('student.user')->find($asesi_id);
         $data = [
-            'asesi_id' => $request->input('asesi_id'),
-            'biaya' => $request->input('biaya'),
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'no_tlp_hp' => $request->input('no_tlp_hp'),
-            'tipe' => $request->input('tipe'),
+            'asesi_id' => $asesi->id,
+            'biaya' => $sertification->harga,
+            'name' => $asesi->student->name,
+            'email' => $asesi->student->user->email,
+            'no_tlp_hp' => $asesi->student->no_tlp_hp,
+            'tipe' => 'midtrans',
         ];
-
+        dd($data);
         $result = $this->checkoutService->processCheckout($data);
 
         return view('asesi.sertifikasi.bayar.payment-page', [
@@ -65,14 +69,13 @@ class PaymentController extends Controller
         return response()->json(['message' => 'Webhook processed successfully']);
     }
 
-    public function buktipembayaran(Request $request)
+    public function buktipembayaran($sert_id, $asesi_id, Request $request)
     {
         dd($request);
+        $sertification = Sertification::with('asesor','skema')->find($sert_id);
+        $asesi = Asesi::with('student.user')->find($asesi_id);
         $validatedData=$request->validate([
-            'asesi_id' => ['required', 'string', 'max:255'],
-            'biaya' => 'required',
-            'status' => 'required',
-            'tipe'=> 'required'
+            'bukti_pembayaran' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
         Transaction::create($validatedData);
     }

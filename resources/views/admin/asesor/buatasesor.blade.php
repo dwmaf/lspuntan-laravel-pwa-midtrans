@@ -9,7 +9,7 @@
                 {{ session('success') }}
         </div>
     @endif
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Tambah Asesor</h2>
         {{-- utk nanganin dropdown checkboxnya, we use alpine js  --}}
         <form action="/asesor" class="mt-4 flex flex-col gap-2" method="POST" x-data="{

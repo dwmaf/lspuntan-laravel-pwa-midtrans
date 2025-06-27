@@ -2,14 +2,19 @@
     $student = auth()->user()->student;
     $asesi = $student->asesi()->where('sertification_id', $sertification->id)->first();
 @endphp
-<div class="flex space-x-4">
+<div class="flex flex-wrap space-x-4 mt-1">
     {{-- Praasesmen --}}
-    @if ($asesi && in_array($asesi->status, ['ikut_praasesmen', 'belum_bayar', 'sudah_bayar']))
-        <a href='/rincian_praasesmen_asesi/{{ $sertification->id }}'
-            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:text-slate-700 dark:hover:text-gray-100 rounded-t-md 
-                            dark:text-gray-200 text-slate-600 {{ Request::is('apply_sertifikasi') ? 'border-b-2 border-slate-800' : '' }}">
+    @if ($asesi && $asesi->status == 'dilanjutkan asesmen')
+    <div>
+        <a href='{{ route('asesi.applied.pre-assessment.show', $sertification->id) }}'
+            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md 
+                            dark:text-white text-gray-600">
             Praasesmen
         </a>
+        @if (Route::is('asesi.applied.pre-assessment.show'))
+            <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
+        @endif
+    </div>
     @else
         <div
             class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase rounded-t-md 
@@ -20,23 +25,17 @@
     @endif
 
     {{-- Bayar --}}
-    @if ($asesi && in_array($asesi->status, ['belum_bayar', 'sudah_bayar']))
-        <form action="/payment" method="POST" class="">
-            @csrf
-            <input type="text" hidden name="asesi_id" value="{{ $asesi->id }}">
-            <input type="text" hidden name="biaya" value="{{ $sertification->harga }}">
-            <input type="text" hidden name="name" value="{{ $user->name }}">
-            <input type="text" hidden name="email" value="{{ $user->email }}">
-            <input type="text" hidden name="no_tlp_hp" value="{{ $user->student->no_tlp_hp }}">
-
-            <button type="submit"
-                class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase tracking-widest hover:text-slate-700 dark:hover:text-gray-100 rounded-t-md
-     dark:text-gray-200 text-gray-700 {{ Request::is('apply_sertifikasi/*') ? 'border-b-2 border-slate-800' : '' }}"
-                {{ $asesi->status != 'daftar' ? 'disabled' : '' }}>
-
-                Bayar
-            </button>
-        </form>
+    @if ($asesi && $asesi->status == 'dilanjutkan asesmen')
+    <div>
+        <a href='{{ route('asesi.applied.payment.create', [$sertification->id, $asesi->id]) }}'
+            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase  hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
+    dark:text-white text-gray-600 ">
+            Bayar
+        </a>
+        @if (Route::is('asesi.applied.payment.create'))
+            <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
+        @endif
+    </div>
     @else
         <div
             class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase rounded-t-md 
@@ -46,12 +45,18 @@
         </div>
     @endif
     {{-- Asesmen --}}
-    @if ($asesi && $asesi->status == 'sudah_bayar')
-        <a href="/asesmen"
+    @if ($asesi && $asesi->status == 'sudah_bayar' && $asesi->status == 'dilanjutkan asesmen')
+    <div>
+
+        <a href="{{ route('asesi.applied.assessment.show', $sertification->id) }}"
             class="flex items-center gap-2 px-4 py-2  font-semibold text-xs uppercase  
-    hover:text-slate-700 dark:hover:text-gray-100 dark:text-gray-200 text-gray-700 {{ Request::is('apply_sertifikasi') ? 'border-b-2 border-slate-800' : '' }}">
+     rounded-t-md dark:text-white text-gray-600">
             Asesmen
         </a>
+        @if (Route::is('asesi.applied.assessment.show'))
+            <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
+        @endif
+    </div>
     @else
         <div
             class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase rounded-t-md 

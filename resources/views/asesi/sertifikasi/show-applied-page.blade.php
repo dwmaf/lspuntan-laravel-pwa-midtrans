@@ -5,10 +5,10 @@
         </h2>
     </x-slot>
     @include('layouts.asesi-sertifikasi-menu')
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+    <div class="p-6 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
             Sertifikasi: {{ $sertification->skema->nama_skema }}
-        </h4>
+        </h3>
         <div class="space-y-6">
             <div>
                 <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700">A. Data Pribadi

@@ -100,12 +100,13 @@
                 </span>
             </a>
         @endif
-        <form method="POST" action="{{ route('logout') }}"
-            class="gap-2 flex items-center w-full px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm cursor-pointer">
+        <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <x-fas-right-from-bracket class="w-4 text-gray-700 dark:text-gray-200" />
-            <button type="submit" :class="!open ? 'hidden' : ''">
-                {{ __('Logout') }}
+            <button type="submit" class="gap-2 flex items-center w-full px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm cursor-pointer">
+                <x-fas-right-from-bracket class="w-4 text-gray-700 dark:text-gray-200" />
+                <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="[!open ? 'hidden' : '']">
+                    Logout
+                </span>
             </button>
         </form>
     </aside>

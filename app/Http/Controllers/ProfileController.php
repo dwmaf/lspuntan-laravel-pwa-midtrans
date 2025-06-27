@@ -11,9 +11,26 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
+    private function storeFileWithUniqueName(UploadedFile $file, string $baseDirectory): array
+    {
+        //versi edoxid
+        // $folder = uniqid().'-'.now()->timestamp;
+        // $file_name = $student->unique_id.'-'.Str::slug($student->name).'-'.$type->slug.'-'.Str::slug($format_required_file->name).'-'.uniqid().'.'.$request->file($format_required_file->id)->getClientOriginalExtension();
+        // $request->file($format_required_file->id)->storeAs('submissions/tmp/'.$folder, $file_name, 'public')
+
+        // id unik berdasarkan timestamp
+        $uniqueId = uniqid() . '-' . now()->timestamp;
+        // nama file asli tanpa extension dijadiin slug + unik id + ekstensinya tadi
+        $newFilename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '_' . $uniqueId . '.' . $file->getClientOriginalExtension();
+        // Simpan file dengan nama baru
+        $path = $file->storeAs($baseDirectory, $newFilename, 'public');
+        return ['path' => $path];
+    }
     /**
      * Display the user's profile form.
      */
@@ -43,7 +60,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return back()->with('success', 'Profil berhasil diperbaharui');
     }
     public function update_asesi(Request $request)
     {
@@ -88,10 +105,8 @@ class ProfileController extends Controller
                     Storage::disk('public')->delete($student->$fileField);
                 }
                 // Simpan file baru
-                $student->$fileField = $request->file($fileField)->store($fileField, 'public');
-                // Simpan nama file asli
-                $originalFilenameField = $fileField . '_original_filename';
-                $student->$originalFilenameField = $request->file($fileField)->getClientOriginalName();
+                $fileData = $this->storeFileWithUniqueName($request->file($fileField), $fileField); // $fileField sebagai baseDirectory
+                $student->$fileField = $fileData['path'];
             }
         }
 
@@ -100,7 +115,7 @@ class ProfileController extends Controller
             $student->save();
         }
 
-        return back()->with('status', 'Profil berhasil diperbarui');
+        return back()->with('success', 'Profil berhasil diperbarui');
     }
 
     /**

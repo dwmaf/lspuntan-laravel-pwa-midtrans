@@ -47,7 +47,7 @@ class AsesorController extends Controller
             'name' => $request->name,
         ]);
         $asesor->skemas()->attach($request->selectedSkemas);
-        return redirect('/asesor')->with('success','Data asesor berhasil diperbaharui');
+        return redirect('/asesor')->with('success','Data asesor berhasil ditambah');
     }
 
     /**

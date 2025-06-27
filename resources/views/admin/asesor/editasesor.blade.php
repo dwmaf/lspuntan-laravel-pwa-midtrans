@@ -4,7 +4,7 @@
             {{ __('Asesor') }}
         </h2>
     </x-slot>
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit Asesor</h2>
         <form action="/asesor/{{ $asesor->id }}" class="mt-4 flex flex-col gap-2" method="POST" x-data="{
             selectedSkemas: {{ $asesor->skemas->pluck('id')->toJson() ?? '[]' }}, // Ini akan menyimpan ID skema yang dipilih
@@ -79,7 +79,7 @@
 
             <button type="submit"
                 :disabled="selectedSkemas.length === 0"
-                class="self-start bg-blue-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-500 dark:hover:bg-blue-500 dark:bg-blue-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Update</button>
+                class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Update</button>
         </form>
     </div>
 </x-admin-layout>

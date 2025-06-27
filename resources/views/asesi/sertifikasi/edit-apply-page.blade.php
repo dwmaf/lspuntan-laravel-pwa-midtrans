@@ -5,14 +5,15 @@
         </h2>
     </x-slot>
     @include('layouts.asesi-sertifikasi-menu')
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div class="p-6 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
         <h4 class="text-gray-800 dark:text-white mb-2 rounded-lg">
             Daftar Sertifikasi {{ $sertification->skema->nama_skema }}</h4>
         <h3 class="dark:text-gray-300">a. Data Pribadi</h3>
-        <form action="{{ route('update_apply_sertifikasi.update',$asesi->id) }}" class="mt-6 space-y-6" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('asesi.applied.update', [$sertification->id, $asesi->id]) }}" class="mt-6 space-y-6"
+            method="POST" enctype="multipart/form-data">
             @csrf
             @method('put')
-            <input type="text" value="{{ $sertification->id }}" hidden name="sertification_id">            
+            <input type="text" value="{{ $sertification->id }}" hidden name="sertification_id">
             <input type="text" value="{{ $student->id }}" hidden name="student_id">
             <div id="nama">
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Nama Lengkap
@@ -32,8 +33,8 @@
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tempat/Tanggal
                     Lahir<span style="color: red">*</span>
                 </label>
-                <x-text-input id="tmpt_lhr" name="tmpt_lhr" type="text" class="mt-1 block w-full"
-                    :value="old('tmpt_lhr', $student?->tmpt_lhr)" required />
+                <x-text-input id="tmpt_lhr" name="tmpt_lhr" type="text" class="mt-1 block w-full" :value="old('tmpt_lhr', $student?->tmpt_lhr)"
+                    required />
             </div>
             <div id="tgl lahir">
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tempat/Tanggal
@@ -47,11 +48,11 @@
                     Kelamin<span style="color: red">*</span></label>
                 <select name="kelamin" required
                     class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                    <option value="Laki-laki"
-                        {{ old('kelamin', $student?->kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-Laki
+                    <option value="Laki-laki" {{ old('kelamin', $student?->kelamin) == 'Laki-laki' ? 'selected' : '' }}>
+                        Laki-Laki
                     </option>
-                    <option value="Perempuan"
-                        {{ old('kelamin', $student?->kelamin) == 'Perempuan' ? 'selected' : '' }}>Perempuan
+                    <option value="Perempuan" {{ old('kelamin', $student?->kelamin) == 'Perempuan' ? 'selected' : '' }}>
+                        Perempuan
                     </option>
                 </select>
 
@@ -121,15 +122,18 @@
                     Sertifikasi<span style="color: red">*</span></label>
                 <select name="tujuan_sert" required
                     class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                    <option value="Sertifikasi" {{ old('tujuan_sert', $asesi?->tujuan_sert) == 'Sertifikasi' ? 'selected' : '' }}>Sertifikasi</option>
-                    <option value="Lainnya" {{ old('tujuan_sert', $asesi?->tujuan_sert) == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
+                    <option value="Sertifikasi"
+                        {{ old('tujuan_sert', $asesi?->tujuan_sert) == 'Sertifikasi' ? 'selected' : '' }}>Sertifikasi
+                    </option>
+                    <option value="Lainnya"
+                        {{ old('tujuan_sert', $asesi?->tujuan_sert) == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
                 </select>
             </div>
             <div id="Mata kuliah terkait dan nilainya">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Mata Kuliah
                     terkait Skema Sertifikasi dan Nilai yang diperoleh<span style="color: red">*</span>
                 </label>
-                <x-text-input name="makul_nilai" type="text" class="mt-1 block w-full" :value="old('makul_nilai', $asesi?->makul_nilai)"/>
+                <x-text-input name="makul_nilai" type="text" class="mt-1 block w-full" :value="old('makul_nilai', $asesi?->makul_nilai)" />
             </div>
 
             <h3 class="dark:text-gray-300">d. Bukti Kelengkapan</h3>
@@ -141,8 +145,8 @@
                 <!-- Feedback jika file sudah ada -->
                 @if ($asesi->apl_1)
                     <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                        <a href="{{ asset('storage/' . $asesi->apl_1) }}" class="text-blue-500"
-                            target="_blank">Lihat File</a>
+                        <a href="{{ asset('storage/' . $asesi->apl_1) }}" class="text-blue-500" target="_blank">Lihat
+                            File</a>
                     </p>
                 @endif
                 <input type="file" name="apl_1" required
@@ -235,7 +239,7 @@
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Scan Surat
                     Keterangan Magang/PKL/MBKM (maks 5, ukuran file maksimal 3 MB)
                 </label>
-                @if ($asesi->asesiasesmenfile->type==='surat_ket_magang')
+                @if ($asesi->asesiasesmenfile->type === 'surat_ket_magang')
                     <p class="text-sm text-gray-500 mt-1">File sudah ada:
                         <a href="{{ asset('storage/' . $asesi->asesiasesmenfile->path_file) }}" class="text-blue-500"
                             target="_blank">Lihat File</a>
@@ -248,7 +252,7 @@
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Scan
                     Sertifikat Pelatihan (maks 5, ukuran file maksimal 3 MB)
                 </label>
-                @if ($asesi->asesiasesmenfile->type==='sertif_pelatihan')
+                @if ($asesi->asesiasesmenfile->type === 'sertif_pelatihan')
                     <p class="text-sm text-gray-500 mt-1">File sudah ada:
                         <a href="{{ asset('storage/' . $asesi->asesiasesmenfile->path_file) }}" class="text-blue-500"
                             target="_blank">Lihat File</a>
@@ -262,7 +266,7 @@
                     pendukung lainnya: dapat berupa Laporan kegiatan PKL/Magang/MBKM/Publikasi Jurnal/dll (maks 5,
                     ukuran file maksimal 5 MB)
                 </label>
-                @if ($asesi->asesiasesmenfile->type==='dok_pendukung_lain')
+                @if ($asesi->asesiasesmenfile->type === 'dok_pendukung_lain')
                     <p class="text-sm text-gray-500 mt-1">File sudah ada:
                         <a href="{{ asset('storage/' . $asesi->asesiasesmenfile->path_file) }}" class="text-blue-500"
                             target="_blank">Lihat File</a>

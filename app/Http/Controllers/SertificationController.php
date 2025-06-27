@@ -48,7 +48,7 @@ class SertificationController extends Controller
         $validatedData['skema_id'] = $skema_id;
         unset($validatedData['asesor_skema']);
         Sertification::create($validatedData);
-        return redirect('/sertification')->with('Success','Sertifikasi berhasil diunggah, kini asesi bisa mendaftar ke sertifikasi');
+        return redirect()->back()->with('success','Sertifikasi berhasil diunggah, kini asesi bisa mendaftar ke sertifikasi');
     }
 
     /**
@@ -67,8 +67,10 @@ class SertificationController extends Controller
      */
     public function edit(Sertification $sertification)
     {
+        $sertification->load('skema','asesor');
         return view('admin.sertifikasi.editsertifikasi',[
-            'sertification'=>$sertification
+            'sertification'=>$sertification,
+            'asesors'=>Asesor::with('skemas','user')->get(),
         ]);
     }
 
@@ -78,18 +80,21 @@ class SertificationController extends Controller
     public function update(Request $request, Sertification $sertification)
     {
         $validatedData = $request->validate([
-            'skema_id' => ['required', 'string','max:255'],
+            'asesor_skema' => 'required',
+            'tgl_apply_dibuka' => 'required|date',
+            'tgl_apply_ditutup' => 'required|date|after_or_equal:tgl_apply_dibuka',
+            'tgl_bayar_ditutup' => 'required|date|after_or_equal:tgl_apply_ditutup',
+            'harga' => 'required|numeric|min:0'
         ]);
-        // if($request->file('link_foto')) {
-        //     if($request->oldImage){
-        //         Storage::delete($request->oldImage);
-        //     }
-        //     $validatedData['link_foto'] = $request->file('link_foto')->store('berita-images');
-        // }
-        Sertification::where('id', $sertification->id)
-            ->update($validatedData);
 
-            return redirect(route('dashboard'))->with('Success','Data Skema berhasil diupdate');
+        list($asesor_id, $skema_id) = explode(',', $request->input('asesor_skema'));
+        $validatedData['asesor_id'] = $asesor_id;
+        $validatedData['skema_id'] = $skema_id;
+        unset($validatedData['asesor_skema']);
+
+        $sertification->update($validatedData);
+
+        return redirect('/sertification')->with('success', 'Data Sertifikasi berhasil diupdate');
     }
 
     /**
@@ -101,6 +106,6 @@ class SertificationController extends Controller
         //     Storage::delete($skema->link_foto);
         // }
         Sertification::destroy($sertification->id);
-        return redirect(route('dashboard'))->with('success', 'Sertifikasi berhasil dihapus');
+        return redirect()->back()->with('success', 'Sertifikasi berhasil dihapus');
     }
 }

@@ -17,7 +17,7 @@ class Asesi extends Model
     {
         return $this->belongsTo(Student::class);
     }
-    public function sertifications()
+    public function sertification()
     {
         return $this->belongsTo(Sertification::class);
     }

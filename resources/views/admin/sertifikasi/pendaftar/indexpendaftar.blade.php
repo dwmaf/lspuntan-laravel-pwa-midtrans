@@ -4,11 +4,9 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-    
-
     {{-- Navigasi Tab --}}
     @include('layouts.admin-sertifikasi-menu')
-    <div class="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden">
+    <div class="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
                 Daftar Pendaftar Skema: {{ $sertification->skema->nama_skema ?? 'Tidak Diketahui' }}
@@ -43,7 +41,7 @@
                                 {{ $loop->iteration }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {{ $asesi->user->name ?? 'Nama Tidak Tersedia' }} {{-- Asumsi ada relasi user dan user punya atribut name --}}
+                                {{ $asesi->student->name ?? 'Nama Tidak Tersedia' }} {{-- Asumsi ada relasi user dan user punya atribut name --}}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 @if ($asesi->status == 'Lulus') {{-- Sesuaikan dengan nilai status Anda --}}
@@ -65,9 +63,9 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="/rincian_data_asesi/{{ $asesi->id }}" {{-- Sebaiknya gunakan route() helper --}}
-                                   class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
-                                   Lihat Detail
+                                <a href="{{ route('rincian_data_asesi',$asesi->id) }}"
+                                   class="cursor-pointer px-2 py-1 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-700">
+                                   Detail
                                 </a>
                             </td>
                         </tr>

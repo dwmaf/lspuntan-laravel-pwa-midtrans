@@ -18,6 +18,8 @@
     },
     "dependencies": {
         "feather-icons-react": "^0.9.0",
+        "filepond": "^4.32.8",
+        "filepond-plugin-file-validate-type": "^1.2.9",
         "jquery": "^3.7.1",
         "quill": "^2.0.3",
         "summernote": "^0.9.1",

@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('asesi_id')->constrained();
-            $table->decimal('biaya');
             $table->string('status')->default('pending');
             $table->string('tipe');
             $table->string('bukti_bayar')->nullable();

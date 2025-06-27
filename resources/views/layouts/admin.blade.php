@@ -17,7 +17,7 @@
     {{-- <link href="https://cdn.jsdelivr.net/npm/summernote@0.9.1/dist/summernote-lite.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.1/dist/summernote-lite.min.js"></script> --}}
     {{-- kustom styling buat trix --}}
-    {{-- <style>
+    <style>
         trix-editor h1 {
             font-size: 2em !important;
             font-weight: bold !important;
@@ -62,56 +62,13 @@
             background-color: white;
         }
 
-        .trix-button--icon-underline {
-            padding-top: 4px;
-        }
-
-        .trix-button.trix-active {
-            background-color: transparent !important;
-        }
-
-        .trix-button.trix-active .ql-stroke {
-            stroke: #0a76d1;
-        }
-
-        .trix-button.trix-active .ql-fill {
-            fill: #0a76d1;
-        }
-
-        .trix-button:hover {
-            color: black;
-        }
-
-        .trix-button:hover .ql-stroke {
-            stroke: black;
-        }
-
-        .trix-button:hover .ql-fill {
-            fill: black;
-        }
-
-        .ql-stroke {
-            fill: none;
-            stroke: #444;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            stroke-width: 2;
-        }
-
-        .ql-thin {
-            stroke-width: 1;
-        }
-
-        .ql-fill {
-            fill: #b30000;
-        }
 
         trix-editor {
             border: none !important;
             font-family: "Gill Sans", sans-serif;
             padding: 12px !important;
         }
-    </style> --}}
+    </style>
     {{-- kustom styling buat quill --}}
 </head>
 
@@ -135,7 +92,7 @@
 
     </div>
     @stack('scripts')
-    @stack('scripts-trix-editor-asesmen')
+    @stack('scripts-asesmen')
 </body>
 {{-- <script type="text/javascript" src="https://unpkg.com/trix@2.0.10/dist/trix.umd.min.js"></script> --}}
 
