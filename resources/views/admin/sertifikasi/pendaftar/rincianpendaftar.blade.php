@@ -336,7 +336,7 @@
                         <div class="flex items-center justify-start space-x-3">
                             {{-- Tombol Lanjutkan --}}
                             <form class="inline-block"
-                                action="{{ route('update_status',[$asesi->id, $asesi->sertification_id]) }}"
+                                action="{{ route('admin.applicants.update-status',[$asesi->id, $asesi->sertification_id]) }}"
                                 method="POST"
                                 onsubmit="return confirm('Anda yakin ingin melanjutkan asesi ini ke tahap asesmen?');">
                                 @csrf
@@ -356,7 +356,7 @@
 
                             {{-- Tombol Tidak Melanjutkan --}}
                             <form class="inline-block"
-                                action="{{ route('update_status',[$asesi->id, $asesi->sertification_id]) }}"
+                                action="{{ route('admin.applicants.update-payment-status',[$asesi->id, $asesi->sertification_id]) }}"
                                 method="POST"
                                 onsubmit="return confirm('Anda yakin ingin menolak asesi ini? Tindakan ini tidak dapat diurungkan.');">
                                 @csrf

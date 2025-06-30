@@ -7,7 +7,7 @@
 
     <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit {{ $skema->nama_skema }}</h2>
-        <form action="{{ route('manage_skema.update',$skema->id) }}" class="mt-4 flex flex-col gap-2" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.skema.update',$skema->id) }}" class="mt-4 flex flex-col gap-2" method="POST" enctype="multipart/form-data">
             @method('patch')
             @csrf
             <div id="nama skema">

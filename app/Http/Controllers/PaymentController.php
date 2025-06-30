@@ -7,6 +7,8 @@ use App\Models\Sertification;
 use App\Models\Asesi;
 use App\Services\CheckoutService;
 use Illuminate\Http\Request;
+use Midtrans\Config;
+use Midtrans\Notification;
 
 class PaymentController extends Controller
 {
@@ -18,7 +20,6 @@ class PaymentController extends Controller
 
     public function checkout($sert_id, $asesi_id, Request $request)
     {
-        // dd($request);
         $sertification = Sertification::with('asesor','skema')->find($sert_id);
         $asesi = Asesi::with('student.user')->find($asesi_id);
         $data = [
@@ -29,10 +30,18 @@ class PaymentController extends Controller
             'no_tlp_hp' => $asesi->student->no_tlp_hp,
             'tipe' => 'midtrans',
         ];
-        dd($data);
+        
         $result = $this->checkoutService->processCheckout($data);
 
+        // Jika service mengembalikan null, berarti pembayaran sudah lunas.
+        if (is_null($result)) {
+            return redirect()->route('asesi.applied.show', ['sert_id' => $sert_id, 'asesi_id' => $asesi_id])
+                             ->with('error', 'Pembayaran untuk sertifikasi ini sudah lunas.');
+        }
+
         return view('asesi.sertifikasi.bayar.payment-page', [
+            'asesi' => $asesi,
+            'sertification' => $sertification,
             'snap_token' => $result['snap_token'],
             'transaction' => $result['transaction'],
         ]);
@@ -40,28 +49,41 @@ class PaymentController extends Controller
 
     public function handleWebhook(Request $request)
     {
-        $serverKey = config('midtrans.server_key');
+        // Set konfigurasi Midtrans
+        Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production');
 
-        // validasi signature key dari midtrans
-        $signatureKey = hash(
-            "sha512",
-            $request->order_id . $request->staus_code . $request->gross_amount . $serverKey
-        );
-
-        if ($signatureKey !== $request->signature_key) {
-            return response()->json(['message' => 'Invalid isgnature key'], 403);
+        try {
+            $notification = new Notification();
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Invalid notification'], 400);
         }
 
-        $transaction = Transaction::find($request->order_id);
+        $transactionStatus = $notification->transaction_status;
+        $orderId = $notification->order_id;
+        $fraudStatus = $notification->fraud_status;
+
+        $transaction = Transaction::find($orderId);
 
         if (!$transaction) {
             return response()->json(['message' => 'Transaction not found'], 404);
-        } elseif ($request->transaction_status == 'settlement' || $request->transaction_status == 'capture') {
+        }
+
+        // Logika update status berdasarkan notifikasi
+        if ($transactionStatus == 'capture') {
+            if ($fraudStatus == 'accept') {
+                // Transaksi berhasil dan aman
+                $transaction->status = 'paid';
+            }
+        } else if ($transactionStatus == 'settlement') {
+            // Transaksi berhasil
             $transaction->status = 'paid';
-        } elseif ($request->transaction_status == 'cancel' || $request->transaction_status == 'expire') {
-            $transaction->status = 'failed';
-        } elseif ($request->transaction_status == 'pending') {
+        } else if ($transactionStatus == 'pending') {
+            // Menunggu pembayaran
             $transaction->status = 'pending';
+        } else if ($transactionStatus == 'deny' || $transactionStatus == 'expire' || $transactionStatus == 'cancel') {
+            // Transaksi gagal atau dibatalkan
+            $transaction->status = 'failed';
         }
 
         $transaction->save();

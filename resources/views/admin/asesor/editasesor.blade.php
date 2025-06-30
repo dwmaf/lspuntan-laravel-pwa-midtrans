@@ -6,7 +6,7 @@
     </x-slot>
     <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit Asesor</h2>
-        <form action="/asesor/{{ $asesor->id }}" class="mt-4 flex flex-col gap-2" method="POST" x-data="{
+        <form action="/admin/asesor/{{ $asesor->id }}" class="mt-4 flex flex-col gap-2" method="POST" x-data="{
             selectedSkemas: {{ $asesor->skemas->pluck('id')->toJson() ?? '[]' }}, // Ini akan menyimpan ID skema yang dipilih
             open: false,
             toggleDropdown() {

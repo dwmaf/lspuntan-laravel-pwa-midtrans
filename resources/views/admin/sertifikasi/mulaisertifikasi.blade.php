@@ -33,7 +33,7 @@
                         </p>
                     </div>
                     <div class="mt-4">
-                        <a href="sertification/{{ $sert->id }}"
+                        <a href="/admin/sertification/{{ $sert->id }}"
                             class=" self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Lihat</a>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
     <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
 
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Mulai Sertifikasi</h2>
-        <form action="/sertification" class="mt-4 flex flex-col gap-2" method="POST">
+        <form action="/admin/sertification" class="mt-4 flex flex-col gap-2" method="POST">
             @csrf
             <div id="asesor dan skema">
                 <label for="skema_asesor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih Skema

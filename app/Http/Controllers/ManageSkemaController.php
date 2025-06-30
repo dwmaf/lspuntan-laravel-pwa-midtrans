@@ -48,7 +48,7 @@ class ManageSkemaController extends Controller
             }
         }
         Skema::create($skemaData);
-        return redirect(route('manage_skema'))->with('success', 'Berhasil Simpan data skema');
+        return redirect(route('admin.skema'))->with('success', 'Berhasil Simpan data skema');
     }
 
 
@@ -86,7 +86,7 @@ class ManageSkemaController extends Controller
         if ($skema->isDirty()) {
             $skema->save();
         }
-        return redirect(route('manage_skema'))->with('success', 'Berhasil update data skema');
+        return redirect(route('admin.skema'))->with('success', 'Berhasil update data skema');
     }
 
     /**
@@ -101,6 +101,6 @@ class ManageSkemaController extends Controller
             }
         }
         Skema::destroy($id);
-        return redirect(route('manage_skema'))->with('success', 'Skema berhasil dihapus');
+        return redirect(route('admin.skema'))->with('success', 'Skema berhasil dihapus');
     }
 }

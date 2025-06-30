@@ -18,7 +18,7 @@
         @php
             $jumlahFileLama = $sertification->praasesmenfile ? $sertification->praasesmenfile->count() : 0;
         @endphp
-        <form id="myForm" action="/rincian_praasesmen/{{ $sertification->id }}/update" class="mt-4 flex flex-col gap-4"
+        <form id="myForm" action="{{ route('admin.sertification.pre-assessment.update', $sertification->id) }}/update}}" class="mt-4 flex flex-col gap-4"
             method="POST" x-data="{ error: '', files: null, }" enctype="multipart/form-data">
             @csrf
             @method('PATCH')

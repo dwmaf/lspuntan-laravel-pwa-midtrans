@@ -25,11 +25,11 @@ class RedirectIfAuthenticated
 
                 // Cek role user dan arahkan ke dashboard yang sesuai
                 if (in_array($user->role, ['admin', 'asesor'])) {
-                    return redirect(route('dashboardadmin'));
+                    return redirect(route('admin.dashboard'));
                 }
                 
                 // Untuk role lain, arahkan ke dashboard default
-                return redirect(route('dashboard'));
+                return redirect(route('asesi.dashboard'));
             }
         }
 

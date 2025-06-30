@@ -17,17 +17,18 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Silakan periksa kembali rincian di bawah ini sebelum melanjutkan.</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">INVOICE #{{ $asesi_id }}-{{ time() }}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Tanggal: {{ \Carbon\Carbon::now()->format('d M Y') }}</p>
+                            {{-- Gunakan ID transaksi sebagai nomor invoice yang unik dan konsisten --}}
+                            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">INVOICE #{{ $transaction->id }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Tanggal: {{ $transaction->created_at->format('d M Y') }}</p>
                         </div>
                     </div>
 
                     <!-- Billing Info -->
                     <div class="mb-8">
                         <h3 class="text-base font-semibold text-gray-600 dark:text-gray-300 mb-2">Ditagihkan Kepada:</h3>
-                        <p class="text-gray-800 dark:text-gray-200">{{ $name }}</p>
-                        <p class="text-gray-600 dark:text-gray-400">{{ $email }}</p>
-                        <p class="text-gray-600 dark:text-gray-400">{{ $no_tlp_hp }}</p>
+                        <p class="text-gray-800 dark:text-gray-200">{{ $asesi->student->name }}</p>
+                        <p class="text-gray-600 dark:text-gray-400">{{ $asesi->student->user->email }}</p>
+                        <p class="text-gray-600 dark:text-gray-400">{{ $asesi->no_tlp_hp }}</p>
                     </div>
 
                     <!-- Items Table -->
@@ -44,11 +45,11 @@
                                     <td class="py-4 text-gray-700 dark:text-gray-300">
                                         Biaya Pendaftaran Sertifikasi
                                         {{-- Asumsi variabel $sertification tersedia untuk nama skema --}}
-                                        {{-- @if(isset($sertification))
+                                        @if(isset($sertification))
                                             <span class="block text-xs text-gray-500">{{ $sertification->skema?->nama_skema }}</span>
-                                        @endif --}}
+                                        @endif
                                     </td>
-                                    <td class="py-4 font-medium text-gray-900 dark:text-white text-right">Rp{{ number_format($biaya, 0, ',', '.') }}</td>
+                                    <td class="py-4 font-medium text-gray-900 dark:text-white text-right">Rp{{ number_format($sertification->harga, 0, ',', '.') }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -59,21 +60,28 @@
                         <div class="w-full max-w-xs space-y-2">
                             <div class="flex justify-between text-gray-600 dark:text-gray-400">
                                 <span>Subtotal</span>
-                                <span>Rp{{ number_format($biaya, 0, ',', '.') }}</span>
+                                <span>Rp{{ number_format($sertification->harga, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-700">
                                 <span>TOTAL</span>
-                                <span>Rp{{ number_format($biaya, 0, ',', '.') }}</span>
+                                <span>Rp{{ number_format($sertification->harga, 0, ',', '.') }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Pay Button -->
+                    <!-- Pay Button or Status -->
                     <div class="flex justify-center mt-8">
-                        <button id="pay-button" class="inline-flex items-center justify-center gap-x-2 w-full sm:w-auto font-semibold bg-green-500 text-white px-6 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-700 cursor-pointer transition-colors duration-200">
-                            <x-fas-shield-halved class="w-5 h-5" />
-                            <span>Bayar Sekarang dengan Aman</span>
-                        </button>
+                        @if($transaction->status == 'paid')
+                            <div class="inline-flex items-center justify-center gap-x-2 w-full sm:w-auto font-semibold bg-blue-500 text-white px-6 py-3 rounded-lg">
+                                <x-fas-check-circle class="w-5 h-5" />
+                                <span>Pembayaran Lunas</span>
+                            </div>
+                        @else
+                            <button id="pay-button" class="inline-flex items-center justify-center gap-x-2 w-full sm:w-auto font-semibold bg-green-500 text-white px-6 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-700 cursor-pointer transition-colors duration-200">
+                                <x-fas-shield-halved class="w-5 h-5" />
+                                <span>Bayar Sekarang dengan Aman</span>
+                            </button>
+                        @endif
                     </div>
 
                 </div>

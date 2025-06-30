@@ -47,11 +47,11 @@
                             </td>
                             <td class=" text-gray-700 dark:text-gray-200 px-4 py-2 text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="{{ route('manage_skema.edit',$skema->id) }}"
+                                    <a href="{{ route('admin.skema.edit',$skema->id) }}"
                                         class="cursor-pointer px-3 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700">
                                         Edit
                                     </a>
-                                    <form class="inline-block" action="{{ route('manage_skema.destroy', $skema->id) }}"
+                                    <form class="inline-block" action="{{ route('admin.skema.destroy', $skema->id) }}"
                                         method="post"
                                         onsubmit="return confirm('Apakah Anda yakin ingin menghapus skema ini?');">
                                         @method('delete')
@@ -78,7 +78,7 @@
 
     <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Tambah Skema Sertifikasi</h2>
-        <form action="{{ route('manage_skema') }}" class="mt-4 flex flex-col gap-2" method="POST"
+        <form action="{{ route('admin.skema') }}" class="mt-4 flex flex-col gap-2" method="POST"
             enctype="multipart/form-data">
             @csrf
             <div id="nama skema">

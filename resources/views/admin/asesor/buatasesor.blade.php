@@ -12,7 +12,7 @@
     <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Tambah Asesor</h2>
         {{-- utk nanganin dropdown checkboxnya, we use alpine js  --}}
-        <form action="/asesor" class="mt-4 flex flex-col gap-2" method="POST" x-data="{
+        <form action="/admin/asesor" class="mt-4 flex flex-col gap-2" method="POST" x-data="{
                 selectedSkemas: [], // Ini akan menyimpan ID skema yang dipilih
                 open: false, // mengontrol visibilitas dropdown
                 toggleDropdown() {
@@ -134,12 +134,12 @@
                             </td>
                             <td class=" text-gray-700 dark:text-gray-200 px-4 py-2 text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="/asesor/{{ $asesor->id }}/edit"
+                                    <a href="/admin/asesor/{{ $asesor->id }}/edit"
                                         class="cursor-pointer px-3 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700">
                                         Edit
                                     </a>
                                     <form class="inline-block"
-                                        action="/asesor/{{ $asesor->id }}" method="post"
+                                        action="/admin/asesor/{{ $asesor->id }}" method="post"
                                         onsubmit="return confirm('Apakah Anda yakin ingin menghapus asesor ini?');">
                                         @method('delete')
                                         @csrf

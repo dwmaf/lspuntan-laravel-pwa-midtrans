@@ -18,9 +18,9 @@
             {{ auth()->user()->name }}</h6>
 
         @if (auth()->user()->role == 'asesor' || auth()->user()->role == 'admin')
-            <a href="{{ route('dashboardadmin') }}"
+            <a href="{{ route('admin.dashboard') }}"
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm"
-                :class="[(open && location.pathname === '/dashboardadmin') ? 'bg-gray-200 dark:bg-gray-800' : '', !open ?
+                :class="[(open && location.pathname === '/admin/dashboard') ? 'bg-gray-200 dark:bg-gray-800' : '', !open ?
                     'mt-10' : ''
                 ]">
                 <x-bxs-grid-alt class="w-5 text-gray-700 dark:text-gray-200" />
@@ -30,9 +30,9 @@
                 </span>
             </a>
         @else
-            <a href="/dashboard"
+            <a href="{{ route('asesi.dashboard') }}"
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm"
-                :class="[(open && location.pathname === '/dashboard') ? 'bg-gray-200 dark:bg-gray-800' : '', !open ? 'mt-10' :
+                :class="[(open && location.pathname === '/asesi/dashboard') ? 'bg-gray-200 dark:bg-gray-800' : '', !open ? 'mt-10' :
                     ''
                 ]">
                 <x-bxs-grid-alt class="w-5 text-gray-700 dark:text-gray-200" />
@@ -52,9 +52,9 @@
                 </span>
             </a>
         @else
-            <a href="/sertification-asesi"
+            <a href="{{ route('asesi.certifications.index') }}"
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm"
-                :class="(location.pathname === '/sertification-asesi') ? 'bg-gray-200 dark:bg-gray-800' : ''">
+                :class="(location.pathname === '/asesi/certifications') ? 'bg-gray-200 dark:bg-gray-800' : ''">
                 <x-tni-certificate class="w-4 text-gray-700 dark:text-gray-200" />
                 <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="[!open ? 'hidden' : '']">
                     Sertifikasi
@@ -63,9 +63,9 @@
         @endif
 
         @if (auth()->user()->role == 'asesor' || auth()->user()->role == 'admin')
-            <a href="{{ route('manage_skema') }}"
+            <a href="{{ route('admin.skema') }}"
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm"
-                :class="(open && location.pathname === '/manage_skema') ? 'bg-gray-200 dark:bg-gray-800' : ''">
+                :class="(open && location.pathname === '/admin/skema') ? 'bg-gray-200 dark:bg-gray-800' : ''">
                 <x-bxs-book class="w-4 text-gray-700 dark:text-gray-200" />
                 <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="[!open ? 'hidden' : '']">
                     Skema

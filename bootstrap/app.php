@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'guest' => MiddlewareRedirectIfAuthenticated::class
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'webhook/midtrans',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
