@@ -309,20 +309,46 @@
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Pembayaran</dt>
                         <dd class="mt-1 text-sm">
-                            @if ($asesi->status == 'daftar')
+                            @php
+                                $latestTransaction = $asesi->transaction->sortByDesc('created_at')->first();
+                            @endphp
+                            @if ($latestTransaction)
+                                @if ($latestTransaction?->status == 'belum bayar')
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                                        belum bayar
+                                    </span>
+                                    {{-- pembayaran manual dan belum diverifikasi admin --}}
+                                @elseif(
+                                    $latestTransaction?->tipe == 'manual' &&
+                                        $latestTransaction?->bukti_pembayaran &&
+                                        $latestTransaction?->status == 'pending')
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">
+                                        pending
+                                    </span>
+                                    {{-- pembayaran manual dan diterima --}}
+                                @elseif($latestTransaction?->tipe == 'manual' && $latestTransaction?->status == 'bukti pembayaran terverifikasi')
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">
+                                        sudah bayar
+                                    </span>
+                                    {{-- pembayaran manual dan ditolak --}}
+                                @elseif($latestTransaction?->tipe == 'manual' && $latestTransaction?->status == 'bukti pembayaran ditolak')
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">
+                                        bukti pembayaran ditolak
+                                    </span>
+                                @elseif($asesi->status == 'dilanjutkan asesmen')
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
+                                        sudah bayar
+                                    </span>
+                                @endif
+                            @else
                                 <span
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
-                                    belum bayar
-                                </span>
-                            @elseif($asesi->status == 'pending')
-                                <span
-                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">
-                                    pending
-                                </span>
-                            @elseif($asesi->status == 'dilanjutkan asesmen')
-                                <span
-                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
-                                    sudah bayar
+                                    Belum ada transaksi
                                 </span>
                             @endif
                         </dd>
@@ -336,7 +362,7 @@
                         <div class="flex items-center justify-start space-x-3">
                             {{-- Tombol Lanjutkan --}}
                             <form class="inline-block"
-                                action="{{ route('admin.applicants.update-status',[$asesi->id, $asesi->sertification_id]) }}"
+                                action="{{ route('admin.applicants.update-status', [$asesi->id, $asesi->sertification_id]) }}"
                                 method="POST"
                                 onsubmit="return confirm('Anda yakin ingin melanjutkan asesi ini ke tahap asesmen?');">
                                 @csrf
@@ -356,7 +382,7 @@
 
                             {{-- Tombol Tidak Melanjutkan --}}
                             <form class="inline-block"
-                                action="{{ route('admin.applicants.update-payment-status',[$asesi->id, $asesi->sertification_id]) }}"
+                                action="{{ route('admin.applicants.update-payment-status', [$asesi->id, $asesi->sertification_id]) }}"
                                 method="POST"
                                 onsubmit="return confirm('Anda yakin ingin menolak asesi ini? Tindakan ini tidak dapat diurungkan.');">
                                 @csrf
@@ -376,20 +402,23 @@
                         </div>
                     </div>
                 @endif
-                {{-- Bagian Aksi Keputusan Untuk Asesi yang sudah melakukan pembayaran dan menyertakan bukti pembayaran --}}
-                @if ($asesi->status == 'daftar')
+                {{-- Bagian Aksi Keputusan Untuk Asesi yang sudah melakukan pembayaran secara manual dan menyertakan bukti pembayaran --}}
+                @if (
+                    $latestTransaction?->tipe == 'manual' &&
+                        $latestTransaction?->bukti_pembayaran &&
+                        $latestTransaction?->status == 'pending')
                     <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">Tindakan Keputusan:
                         </h4>
                         <div class="flex items-center justify-start space-x-3">
                             {{-- Tombol Lanjutkan --}}
                             <form class="inline-block"
-                                action="{{ route("update_status_bayar",$asesi->id) }}"
+                                action="{{ route('admin.applicants.update-payment-status', $asesi->id) }}"
                                 method="POST"
                                 onsubmit="return confirm('Anda yakin ingin melanjutkan asesi ini ke tahap asesmen?');">
                                 @csrf
                                 @method('PATCH')
-                                <input type="hidden" name="status" value="dilanjutkan asesmen">
+                                <input type="hidden" name="status" value="bukti pembayaran terverifikasi">
                                 <button type="submit"
                                     class="flex items-center gap-2 cursor-pointer px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-700">
                                     <!-- Ikon Centang -->
@@ -404,12 +433,12 @@
 
                             {{-- Tombol Tidak Melanjutkan --}}
                             <form class="inline-block"
-                                action="{{ route("update_status_bayar",$asesi->id) }}"
+                                action="{{ route('admin.applicants.update-payment-status', $asesi->id) }}"
                                 method="POST"
                                 onsubmit="return confirm('Anda yakin ingin menolak asesi ini? Tindakan ini tidak dapat diurungkan.');">
                                 @csrf
                                 @method('PATCH')
-                                <input type="hidden" name="status" value="tidak bisa dilanjutkan">
+                                <input type="hidden" name="status" value="bukti pembayaran ditolak">
                                 <button type="submit"
                                     class="flex items-center gap-2 cursor-pointer px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-700 dark:hover:bg-red-800 dark:focus:ring-red-800">
                                     <!-- Ikon Silang -->

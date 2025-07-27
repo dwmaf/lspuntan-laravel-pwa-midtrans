@@ -14,9 +14,12 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('asesi_id')->constrained();
+            $table->foreignId('sertification_id')->constrained();
             $table->string('status')->default('pending');
             $table->string('tipe');
+            $table->string('invoice_number')->unique()->nullable();
             $table->string('bukti_bayar')->nullable();
+            $table->text('snap_token')->nullable();
             $table->timestamps();
         });
     }

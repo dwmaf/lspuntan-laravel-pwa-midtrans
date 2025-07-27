@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class RegisteredUserController extends Controller
 {
@@ -31,22 +32,22 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role'=>'required',
         ]);
-
-        $user = User::create([
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role'=> $request->role,
-        ]);
-
-        event(new Registered($user));
-        Student::create([
-            'user_id' => $user->id,
-        ]);
-
+        $user = null;
+        DB::transaction(function () use ($request, &$user) {
+            $createdUser = User::create([
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+            $createdUser->assignRole('asesi');
+            Student::create([
+                'user_id' => $createdUser->id,
+            ]);
+            event(new Registered($createdUser));
+            $user = $createdUser;
+        });
         Auth::login($user);
 
         return redirect(route('asesi.dashboard', absolute: false));

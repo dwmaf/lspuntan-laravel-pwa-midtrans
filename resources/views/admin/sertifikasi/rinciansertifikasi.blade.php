@@ -58,13 +58,13 @@
             <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
                 <dd class="mt-1 text-sm">
-                    @if ($sertification)
+                    @if ($sertification->status == "berlangsung")
                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
-                            Aktif
+                            Sedang Berlangsung
                         </span>
                     @else
                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100">
-                            Tidak Aktif
+                            Selesai
                         </span>
                     @endif
                 </dd>

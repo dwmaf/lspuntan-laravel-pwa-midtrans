@@ -5,12 +5,13 @@
         </h2>
     </x-slot>
     @if (session('success'))
-        <div class="mb-4 p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md" role="alert">
+        <div class="p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md" role="alert">
                 {{ session('success') }}
         </div>
     @endif
     <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Tambah Asesor</h2>
+        
         {{-- utk nanganin dropdown checkboxnya, we use alpine js  --}}
         <form action="/admin/asesor" class="mt-4 flex flex-col gap-2" method="POST" x-data="{
                 selectedSkemas: [], // Ini akan menyimpan ID skema yang dipilih
@@ -47,13 +48,6 @@
                 <x-text-input name="email" type="email" class="mt-1 block w-full" :value="old('email')" required />
             </div>
 
-            <div>
-                <label for=""
-                    class="block text-sm font-medium text-gray-600 dark:text-gray-300">Password</label>
-                <x-text-input required name="password" type="password" class="mt-1 block w-full" :value="old('password')" />
-
-            </div>
-            <input type="text" name="role" value="asesor" hidden>
             <div  class="relative mt-2">
                 <button type="button" @click="toggleDropdown"
                     class="p-2 text-sm font-medium rounded-t-md w-full text-left flex justify-between items-center mt-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white ">
@@ -111,6 +105,9 @@
                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Skema</th>
                         <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Jml. Sertifikasi</th>
+                        <th scope="col"
                             class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Aksi</th>
                     </tr>
@@ -132,6 +129,8 @@
                                     @endforeach
                                 </div>
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
+                                {{ $asesor->sertifications_count }}</td>
                             <td class=" text-gray-700 dark:text-gray-200 px-4 py-2 text-center">
                                 <div class="flex items-center justify-center space-x-2">
                                     <a href="/admin/asesor/{{ $asesor->id }}/edit"

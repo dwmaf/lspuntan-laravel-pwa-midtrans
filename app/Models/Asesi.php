@@ -33,4 +33,8 @@ class Asesi extends Model
     {
         return $this->hasMany(Asesiasesmenfile::class);
     }
+    public function sertifikat()
+    {
+        return $this->hasOne(Sertifikat::class);
+    }
 }

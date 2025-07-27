@@ -4,8 +4,8 @@
             {{ __('Dashboard Asesi') }}
         </h2>
     </x-slot>
-    {{-- stepper ver 1 --}}
-    <div class="flex flex-col dark:bg-gray-800 bg-white rounded p-4 max-w-2xl">
+    <!-- stepper -->
+    <!-- <div class="flex flex-col dark:bg-gray-800 bg-white rounded p-4 max-w-2xl">
         <div id="stepper" class="flex flex-row gap-6 mb-1">
             <div class="flex flex-col items-center flex-grow">
                 <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
@@ -72,14 +72,14 @@
                 <p class="text-sm dark:text-gray-600">Tata cara pelaksanaan asesmen seperti apakah offline atau online, lalu apa yg harus anda kerjakan, apa yg harus dikumpulkan akan diinfokan kemudian</p>
             </div>
         </div>
-    </div>
-    {{-- stepper ver 2 --}}
+    </div> -->
+    
 
 
 
 
 
-    {{-- <div class="py-12">
+     <!-- <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xs sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -87,5 +87,5 @@
                 </div>
             </div>
         </div>
-    </div> --}}
+    </div>  -->
 </x-app-layout>

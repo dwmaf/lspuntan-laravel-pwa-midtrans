@@ -21,10 +21,10 @@ class RedirectIfAuthenticated
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
                 /** @var \App\Models\User $user */
-                $user = Auth::user();
+                $user = $request->user();
 
                 // Cek role user dan arahkan ke dashboard yang sesuai
-                if (in_array($user->role, ['admin', 'asesor'])) {
+                if ($user->hasAnyRole(['admin','asesor'])) {
                     return redirect(route('admin.dashboard'));
                 }
                 

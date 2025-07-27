@@ -11,11 +11,6 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" href="{{ asset('logo-lsp.png') }}" type="image/png">
-    {{-- jquery cdn buat summernote --}}
-    {{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> --}}
-    <!-- Summernote dari CDN -->
-    {{-- <link href="https://cdn.jsdelivr.net/npm/summernote@0.9.1/dist/summernote-lite.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.1/dist/summernote-lite.min.js"></script> --}}
     {{-- kustom styling buat trix --}}
     <style>
         trix-editor h1 {
@@ -52,6 +47,7 @@
         .trix-button-group {
             border: none !important;
         }
+
         .trix-button {
             display: inline-block;
             height: 24px !important;
@@ -69,23 +65,26 @@
             padding: 12px !important;
         }
     </style>
-    {{-- kustom styling buat quill --}}
 </head>
 
 <body class="font-sans antialiased">
     <div class="flex min-h-screen bg-gray-100 dark:bg-gray-900">
-        @include('layouts.navigation')
+        <div class="hidden md:flex">
+            @include('layouts.navigation')
+        </div>
 
-        <div class="flex-1 flex flex-col p-2">
-
+        <div class="flex-1 flex flex-col">
+            <div class="md:hidden mb-2">
+                @include('layouts.top-navigation')
+            </div>
             @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow-sm p-4">
+                <header class="bg-white dark:bg-gray-800 shadow-sm p-4 m-2">
                     {{ $header }}
                 </header>
             @endisset
 
             <!-- Page Content -->
-            <main>
+            <main class="p-2">
                 {{ $slot }}
             </main>
         </div>
@@ -94,6 +93,5 @@
     @stack('scripts')
     @stack('scripts-asesmen')
 </body>
-{{-- <script type="text/javascript" src="https://unpkg.com/trix@2.0.10/dist/trix.umd.min.js"></script> --}}
 
 </html>

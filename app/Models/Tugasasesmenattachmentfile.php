@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Asesmenfile extends Model
+class Tugasasesmenattachmentfile extends Model
 {
     protected $guarded = [
         'id',
@@ -13,6 +13,6 @@ class Asesmenfile extends Model
     ];
     public function sertification()
     {
-        return $this->belongsTo(Sertification::class);
+        return $this->belongsTo(Asesi::class);
     }
 }

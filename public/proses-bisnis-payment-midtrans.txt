@@ -1,0 +1,3 @@
+1. di indexbayar.blade.php, user tekan lanjutkan pembayaran masuk ke route asesi.applied.payment.checkout
+2. route itu manggil fungsi checkout() di PaymentController.php
+2. masuk ke payment-page.blade.php (halaman invoice)

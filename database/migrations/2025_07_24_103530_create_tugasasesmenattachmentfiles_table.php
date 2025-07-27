@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('asesmenfiles', function (Blueprint $table) {
+        Schema::create('tugasasesmenattachmentfiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sertification_id')->constrained();
-            $table->string('path_file')->nullable();
             $table->timestamps();
         });
     }
@@ -24,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('asesmenfiles');
+        Schema::dropIfExists('tugasasesmenattachmentfiles');
     }
 };

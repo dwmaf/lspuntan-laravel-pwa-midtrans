@@ -17,11 +17,6 @@ class ApplyCertificationController extends Controller
 
     private function storeFileWithUniqueName(UploadedFile $file, string $baseDirectory): array
     {
-        //versi edoxid
-        // $folder = uniqid().'-'.now()->timestamp;
-        // $file_name = $student->unique_id.'-'.Str::slug($student->name).'-'.$type->slug.'-'.Str::slug($format_required_file->name).'-'.uniqid().'.'.$request->file($format_required_file->id)->getClientOriginalExtension();
-        // $request->file($format_required_file->id)->storeAs('submissions/tmp/'.$folder, $file_name, 'public')
-        
         // id unik berdasarkan timestamp
         $uniqueId = uniqid().'-'.now()->timestamp;
         // nama file asli tanpa extension dijadiin slug + unik id + ekstensinya tadi
@@ -30,6 +25,7 @@ class ApplyCertificationController extends Controller
         $path = $file->storeAs($baseDirectory, $newFilename, 'public');
         return ['path' => $path];
     }
+    // fungsi buat nyimpan sertifikasi
     public function store(Request $request)
     {
         // dd($request);

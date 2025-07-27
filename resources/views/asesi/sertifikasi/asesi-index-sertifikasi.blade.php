@@ -4,7 +4,11 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-
+    @if (session('success'))
+        <div class="mb-4 p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md" role="alert">
+                {{ session('success') }}
+        </div>
+    @endif
     <div class="max-w-7xl mx-auto mb-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             @foreach ($sertifications as $sert)
@@ -14,7 +18,7 @@
                     $pendaftaranDitutup = \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($sert->tgl_apply_ditutup));
                     $pendaftaranDibuka = \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($sert->tgl_apply_dibuka));
                 @endphp
-
+                
                 <div class="bg-white p-6 rounded-lg dark:bg-gray-800">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200 flex items-center">
                         {{ $sert->skema->nama_skema }}

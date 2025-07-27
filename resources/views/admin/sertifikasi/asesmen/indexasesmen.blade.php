@@ -22,7 +22,7 @@
         @php
             $jumlahFileLama = $sertification->asesmenfile ? $sertification->asesmenfile->count() : 0;
         @endphp
-        <form action="{{ route('admin.sertification.assessment.update', $sertification->id) }}/update}}" class="mt-4 flex flex-col gap-2" method="POST"
+        <form action="{{ route('admin.sertification.assessment.update', $sertification->id) }}" class="mt-4 flex flex-col gap-2" method="POST"
             x-data="{ error: '', files: null }" enctype="multipart/form-data">
             @csrf
             @method('PATCH')

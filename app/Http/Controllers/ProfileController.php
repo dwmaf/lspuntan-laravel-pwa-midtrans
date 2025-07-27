@@ -16,13 +16,9 @@ use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
+    // function built in buat nyimpan file dgn nama tertentu tapi tetap readable
     private function storeFileWithUniqueName(UploadedFile $file, string $baseDirectory): array
     {
-        //versi edoxid
-        // $folder = uniqid().'-'.now()->timestamp;
-        // $file_name = $student->unique_id.'-'.Str::slug($student->name).'-'.$type->slug.'-'.Str::slug($format_required_file->name).'-'.uniqid().'.'.$request->file($format_required_file->id)->getClientOriginalExtension();
-        // $request->file($format_required_file->id)->storeAs('submissions/tmp/'.$folder, $file_name, 'public')
-
         // id unik berdasarkan timestamp
         $uniqueId = uniqid() . '-' . now()->timestamp;
         // nama file asli tanpa extension dijadiin slug + unik id + ekstensinya tadi
@@ -31,9 +27,8 @@ class ProfileController extends Controller
         $path = $file->storeAs($baseDirectory, $newFilename, 'public');
         return ['path' => $path];
     }
-    /**
-     * Display the user's profile form.
-     */
+    
+    // buat nampilin halaman edit profile dari sisi admin
     public function edit(Request $request): View
     {
         return view('admin.profile.edit', [
@@ -41,15 +36,14 @@ class ProfileController extends Controller
             'student' => $request->user()->student()
         ]);
     }
+    // buat nampilin halaman edit profile dari sisi asesi
     public function edit_asesi(Request $request): View
     {
         return view('asesi.profile.edit', [
             'student' => $request->user()->student       
         ]);
     }
-    /**
-     * Update the user's profile information.
-     */
+    // buat mengupdate profile yg tadi diedit dari sisi admin
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
@@ -62,6 +56,7 @@ class ProfileController extends Controller
 
         return back()->with('success', 'Profil berhasil diperbaharui');
     }
+    // buat mengupdate profile yg tadi diedit dari sisi asesi
     public function update_asesi(Request $request)
     {
         // $student = $request->user()->student;
@@ -118,9 +113,7 @@ class ProfileController extends Controller
         return back()->with('success', 'Profil berhasil diperbarui');
     }
 
-    /**
-     * Delete the user's account.
-     */
+    // untuk menghapus akun
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [

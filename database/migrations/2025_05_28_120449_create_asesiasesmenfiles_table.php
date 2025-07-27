@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    // di sini tabel untuk nyimpan file" yg diattach mahasiswa ketika ngumpulin tugas asesmen
     public function up(): void
     {
         Schema::create('asesiasesmenfiles', function (Blueprint $table) {

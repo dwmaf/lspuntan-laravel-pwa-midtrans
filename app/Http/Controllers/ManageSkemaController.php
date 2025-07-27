@@ -20,9 +20,7 @@ class ManageSkemaController extends Controller
         $path = $file->storeAs($baseDirectory, $newFilename, 'public');
         return ['path' => $path];
     }
-    /**
-     * Show the form for creating a new resource.
-     */
+    // nampilin halaman untuk nambah skema sertifikasi
     public function create()
     {
         return view('admin.skema.create-skema',[
@@ -30,9 +28,7 @@ class ManageSkemaController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // untuk nyimpan skema yg udh dibuat
     public function store(Request $request)
     {
         // dd($request);
@@ -51,10 +47,7 @@ class ManageSkemaController extends Controller
         return redirect(route('admin.skema'))->with('success', 'Berhasil Simpan data skema');
     }
 
-
-    /**
-     * Show the form for editing the specified resource.
-     */
+    // untuk nampilin halaman untuk mengedit sertifikasi
     public function edit(Request $request, $id)
     {
         return view('admin.skema.edit-skema',[
@@ -62,9 +55,7 @@ class ManageSkemaController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    // untuk mengupdate skema yg tadi diedit
     public function update(Request $request, $id)
     {
         $skema = Skema::find($id);
@@ -89,9 +80,7 @@ class ManageSkemaController extends Controller
         return redirect(route('admin.skema'))->with('success', 'Berhasil update data skema');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // untuk menghapus skema
     public function destroy(Request $request, $id)
     {
         $skema = Skema::find($id);

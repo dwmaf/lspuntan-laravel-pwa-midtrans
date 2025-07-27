@@ -5,49 +5,61 @@ namespace App\Http\Controllers;
 use App\Models\Asesor;
 use App\Models\Skema;
 use App\Models\User;
+use App\Notifications\AsesorAccountCreated;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Validation\Rules;
 class AsesorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // buat nampilin daftar asesor sekaligus untuk nambah asesor
     public function index()
     {
         return view('admin.asesor.buatasesor', [
-            'asesors' => Asesor::with('skemas')->get(),
+            'asesors' => Asesor::with('skemas')->withCount('sertifications')->get(),
             'skemas' => Skema::all()
         ]);
     }
 
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // buat nyimpan asesor baru sekaligus ngirim email ke mereka buat password baru untuk akun mereka
     public function store(Request $request)
     {
         // dd($request);
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required'],
-            'role'=>'required',
             'selectedSkemas' => ['required', 'array'],
             'selectedSkemas.*' => ['exists:skemas,id'],
         ]);
+        DB::transaction(function () use ($request) {
+            // 1. Buat user baru dengan password acak yang sangat aman
+            $user = User::create([
+                'email' => $request->email,
+                // Password ini tidak akan pernah digunakan oleh user, hanya sebagai placeholder
+                'password' => Hash::make(Str::random(16)), 
+            ]);
 
-        $user = User::create([
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role'=> $request->role,
-        ]);
-        $asesor = Asesor::create([
-            'user_id'=>$user->id,
-            'name' => $request->name,
-        ]);
-        $asesor->skemas()->attach($request->selectedSkemas);
-        return redirect('/asesor')->with('success','Data asesor berhasil ditambah');
+            // 2. Beri peran 'asesor'
+            $user->assignRole('asesor');
+
+            // 3. Buat data asesor
+            $asesor = Asesor::create([
+                'user_id' => $user->id,
+                'name' => $request->name,
+            ]);
+
+            // 4. Hubungkan asesor dengan skema yang dipilih
+            $asesor->skemas()->attach($request->selectedSkemas);
+
+            // 5. Tandai email sebagai terverifikasi & kirim notifikasi setup password
+            $user->markEmailAsVerified(); // <-- Tandai email sudah verified
+            $user->notify(new AsesorAccountCreated()); // <-- Kirim notifikasi baru
+        });
+        
+        return redirect('/admin/asesor')->with('success','Data asesor berhasil ditambah, Asesor akan menerima Email untuk buat password');
     }
 
     /**
@@ -58,9 +70,7 @@ class AsesorController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    // buat mengedit akun asesor mereka
     public function edit(Asesor $asesor)
     {
         $user_asesor = $asesor->user;
@@ -71,9 +81,7 @@ class AsesorController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    // buat mengupdate akun asesor mereka yg udh diedit
     public function update(Request $request, Asesor $asesor)
     {
         $user_asesor = $asesor->user;
@@ -93,12 +101,10 @@ class AsesorController extends Controller
         $user_asesor->update($userData);
         $asesor->skemas()->sync($request->selectedSkemas);
 
-        return redirect('/asesor')->with('success','Data asesor berhasil diperbaharui');
+        return redirect('/admin/asesor')->with('success','Data asesor berhasil diperbaharui');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // buat menghapus akun asesor
     public function destroy(Asesor $asesor)
     {
         $user = $asesor->user;

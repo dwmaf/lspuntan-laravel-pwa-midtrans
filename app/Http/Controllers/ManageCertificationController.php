@@ -7,7 +7,6 @@ use App\Models\Asesmenfile;
 use App\Models\Praasesmenfile;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
-use App\Models\Transaction;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -15,20 +14,9 @@ use Illuminate\Http\UploadedFile;
 
 class ManageCertificationController extends Controller
 {
-    // public function getAsesor($skemaId)
-    // {
-    //     $asesors = Skema::find($skemaId)->asesors;
-    //     return response()->json(['asesor' => $asesors]);
-    // }
-    // AsesiController.php
 
     private function storeFileWithUniqueName(UploadedFile $file, string $baseDirectory): array
     {
-        //versi edoxid
-        // $folder = uniqid().'-'.now()->timestamp;
-        // $file_name = $student->unique_id.'-'.Str::slug($student->name).'-'.$type->slug.'-'.Str::slug($format_required_file->name).'-'.uniqid().'.'.$request->file($format_required_file->id)->getClientOriginalExtension();
-        // $request->file($format_required_file->id)->storeAs('submissions/tmp/'.$folder, $file_name, 'public')
-
         // id unik berdasarkan timestamp
         $uniqueId = uniqid() . '-' . now()->timestamp;
         // nama file asli tanpa extension dijadiin slug + unik id + ekstensinya tadi
@@ -49,8 +37,8 @@ class ManageCertificationController extends Controller
             'asesi' => Asesi::where('student_id', $student->id)->get()->keyBy('sertification_id')
         ]);
     }
-    
-    // buat nampilin halaman apply page sertifikasi di sisi asesi
+
+    // buat nampilin halaman apply sertifikasi di sisi asesi, di sini asesi harus mengisi form dgn berbagai data yg dibutuhkan
     public function apply_sertifikasi($id, Request $request)
     {
         $user = $request->user();
@@ -64,11 +52,12 @@ class ManageCertificationController extends Controller
             'user' => $user,
         ]);
     }
+    // buat nampilin halaman rincian sertifikasi yg udh didaftar oleh asesi
     public function show_applied_sertifikasi($sert_id, $asesi_id, Request $request)
     {
         $user = $request->user();
         $student = $user->student;
-        $asesi = Asesi::with('asesiattachmentfiles')->find($asesi_id);
+        $asesi = Asesi::with('asesiattachmentfiles', 'transaction')->find($asesi_id);
         // dd($student);
         return view('asesi.sertifikasi.show-applied-page', [
             'sertification' => Sertification::with('skema')->find($sert_id),
@@ -76,7 +65,7 @@ class ManageCertificationController extends Controller
             'asesi' => $asesi
         ]);
     }
-    // buat nampilin halaman edit apply page sertifikasi di sisi asesi
+    // buat nampilin halaman edit sertifikasi yg udh didaftar asesi
     public function edit_apply_sertifikasi($sert_id, $asesi_id, Request $request)
     {
         $user = $request->user();
@@ -90,7 +79,7 @@ class ManageCertificationController extends Controller
         ]);
     }
 
-    //buat nampilin daftar asesi di sisi admin
+    //buat nampilin daftar asesi yg udh daftar suatu sertifikasi di sisi admin
     public function list_asesi($id, Request $request)
     {
         // dd($student);
@@ -100,10 +89,11 @@ class ManageCertificationController extends Controller
         ]);
     }
 
-    //buat nampilin rincian data asesi di sisi admin
+    //buat nampilin rincian data asesi yg udh daftar suatu sertifikasi di sisi admin
     public function rincian_data_asesi($id, Request $request)
     {
-        $asesi = Asesi::with('student')->find($id);
+        $asesi = Asesi::with('student', 'transaction')->find($id);
+        // dd($asesi->transaction);
         $sertification = $asesi->sertification;
         return view('admin.sertifikasi.pendaftar.rincianpendaftar', [
             'asesi' => $asesi,
@@ -111,33 +101,19 @@ class ManageCertificationController extends Controller
         ]);
     }
 
-    //buat memperbaharui status asesi di sisi admin
+    //buat memperbaharui status asesi (lanjutin ke asesmen atau ditolak) di sisi admin
     public function updateStatus($id, $sertification_id, Request $request)
     {
-        $asesi = Asesi::find($id);
+        $asesi = Asesi::with('sertification')->find($id);
 
         // Memperbarui status sesuai dengan yang diterima dari form
         $asesi->status = $request->status;
         $asesi->save();
-        $dataTransaksi = [
-            'asesi_id' => $asesi->id,
-            'status' => 'belum bayar',
-            'tipe' => 'manual',
-        ];
-        Transaction::create($dataTransaksi);
         // dd(route('rincian_data_asesi', ['id' => $id]));
         return redirect()->back()->with('success', 'Status berhasil diperbarui');
     }
-    public function updateStatusBayar($id, Request $request)
-    {
-        $asesi = Asesi::find($id);
-        $transaction = $asesi->transaction;
-        // Memperbarui status sesuai dengan yang diterima dari form
-        $transaction->status = $request->status;
-        $transaction->save();
-        return redirect()->back()->with('success', 'Status berhasil diperbarui');
-    }
-    //buat nampilin halaman rincian pra asesmen di sisi admin
+
+    //buat nampilin halaman rincian pra asesmen di sisi admin, NOT USED ANYMORE
     public function rincian_praasesmen($id, Request $request)
     {
         // dd($id);
@@ -146,7 +122,7 @@ class ManageCertificationController extends Controller
             'sertification' => $sertification,
         ]);
     }
-    //buat update rincian pra asesmen di sisi admin
+    //buat update rincian pra asesmen di sisi admin, NOT USED ANYMORE
     public function update_rincian_praasesmen($id, Request $request)
     {
         // dd($request);
@@ -157,24 +133,14 @@ class ManageCertificationController extends Controller
         $sertification = Sertification::find($id);
         $sertification->rincian_praasesmen = $request->rincian_praasesmen;
         $sertification->save();
-        // Hapus file lama yang dicentang
-        // if ($request->has('delete_files')) {
-        //     foreach ($request->input('delete_files') as $fileId) {
-        //         $file = Praasesmenfile::find($fileId);
-        //         if ($file) {
-        //             Storage::disk('public')->delete($file->path_file);
-        //             $file->delete();
-        //         }
-        //     }
-        // }
         // Simpan file baru
         if ($request->hasFile('praasesmen_attachment_file')) {
             foreach ($request->file('praasesmen_attachment_file') as $file) {
                 if ($file->isValid()) {
-                    $path = $file->store('praasesmen_attachment_file', 'public');
+                    $path = $this->storeFileWithUniqueName($request->file('praasesmen_attachment_file'), 'praasesmen_attachment_file');
                     Praasesmenfile::create([
                         'sertification_id' => $id,
-                        'path_file' => $path,
+                        'path_file' => $path['path'],
                     ]);
                 }
             }
@@ -182,6 +148,7 @@ class ManageCertificationController extends Controller
 
         return redirect()->back()->with('success', 'Data rincian praasesmen berhasil disimpan!');
     }
+    // NOT USED ANYMORE
     public function ajaxDeletePraasesmenFile(Request $request)
     {
         $fileId = $request->getContent(); // body request berisi ID file (plain text)
@@ -202,7 +169,8 @@ class ManageCertificationController extends Controller
             return response()->json(['error' => 'File tidak ditemukan.'], 404);
         }
     }
-    //buat nampilin halaman rincian asesmen di sisi admin/asesor
+
+    //buat nampilin halaman daftar pengumuman asesmen di sisi admin/asesor sekaligus untuk buat nambah pengumuman
     public function rincian_asesmen($id, Request $request)
     {
         // dd($id);
@@ -210,7 +178,32 @@ class ManageCertificationController extends Controller
             'sertification' => Sertification::find($id)
         ]);
     }
-    //buat update rincian asesmen di sisi admin/asesor
+    //buat nampilin nyimpan pengumuman asesmen di sisi admin/asesor
+    public function store_asesmen($id, Request $request)
+    {
+        // dd($request);
+        $validated = $request->validate([
+            'rincian_asesmen' => 'required|string',
+        ]);
+
+        $sertification = Sertification::find($id);
+        $sertification->rincian_asesmen = $request->rincian_asesmen;
+        $sertification->save();
+        // Simpan file baru
+        if ($request->hasFile('asesmen_attachment_file')) {
+            foreach ($request->file('asesmen_attachment_file') as $file) {
+                if ($file->isValid()) {
+                    $path = $this->storeFileWithUniqueName($request->file('asesmen_attachment_file'), 'asesmen_attachment_file');
+                    Asesmenfile::create([
+                        'sertification_id' => $id,
+                        'path_file' => $path['[path'],
+                    ]);
+                }
+            }
+        }
+        return redirect()->back()->with('success', 'Pengumuman berhasil dibuat!');
+    }
+    //buat update pengumuman asesmen di sisi admin/asesor
     public function update_rincian_asesmen($id, Request $request)
     {
         // dd($request);
@@ -225,10 +218,10 @@ class ManageCertificationController extends Controller
         if ($request->hasFile('asesmen_attachment_file')) {
             foreach ($request->file('asesmen_attachment_file') as $file) {
                 if ($file->isValid()) {
-                    $path = $file->store('asesmen_attachment_file', 'public');
+                    $path = $this->storeFileWithUniqueName($request->file('asesmen_attachment_file'), 'asesmen_attachment_file');
                     Asesmenfile::create([
                         'sertification_id' => $id,
-                        'path_file' => $path,
+                        'path_file' => $path['[path'],
                     ]);
                 }
             }
@@ -236,6 +229,7 @@ class ManageCertificationController extends Controller
 
         return redirect()->back()->with('success', 'Data berhasil disimpan!');
     }
+    // fungsi ajax buat hapus file dari pengumuman asesmen
     public function ajaxDeleteAsesmenFile(Request $request)
     {
         $fileId = $request->getContent(); // body request berisi ID file (plain text)
@@ -256,7 +250,8 @@ class ManageCertificationController extends Controller
             return response()->json(['error' => 'File tidak ditemukan.'], 404);
         }
     }
-    //buat nampilin halaman rincian pra asesmen di sisi asesi
+
+    //buat nampilin halaman rincian pra asesmen di sisi asesi, NOT USED ANYMORE
     public function rincian_praasesmen_asesi($id, Request $request)
     {
         // dd($id);
@@ -276,9 +271,48 @@ class ManageCertificationController extends Controller
     public function rincian_bayar_asesi($sert_id, $asesi_id, Request $request)
     {
         // dd($request);
-        return view('asesi.sertifikasi.bayar.indexbayar', [    
-            'sertification' => Sertification::with('asesor','skema')->find($sert_id),
+        return view('asesi.sertifikasi.bayar.indexbayar', [
+            'sertification' => Sertification::with('asesor', 'skema')->find($sert_id),
             'asesi' => Asesi::with('student')->find($asesi_id)
+        ]);
+    }
+    //buat nampilin halaman rincian laporan sertifikasi dari sisi admin
+    public function rincian_laporan($sert_id, Request $request)
+    {
+        // dd($request);
+
+        return view('admin.sertifikasi.laporansertifikasi', [
+            'sertification' => Sertification::with('asesor', 'skema', 'asesi')->find($sert_id)
+        ]);
+    }
+
+    //fungsi ajax buat memfilter riwayat sertifikasi
+    public function filter_riwayat_sertifikasi(Request $request)
+    {
+        $filter = $request->input('filter');
+
+        $query = Sertification::with('skema')->where('status', 'selesai');
+
+        switch ($filter) {
+            case 'bulan_ini':
+                $query->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year);
+                break;
+            case '3_bulan':
+                $query->where('created_at', '>=', now()->subMonths(3));
+                break;
+            case 'tahun_ini':
+                $query->whereYear('created_at', now()->year);
+                break;
+            default:
+                // 'semua' - no additional filter
+                break;
+        }
+
+        $sertifications = $query->get();
+
+        return response()->json([
+            'sertifications' => $sertifications
         ]);
     }
 }

@@ -10,8 +10,8 @@
             Asesmen {{ $sertification->skema->nama_skema }}
         </h3>
         <div class="text-gray-900 dark:text-gray-100 mt-4">
-            @if ($sertification->deskripsi_tugas_asesmen)
-                {!! html_entity_decode($sertification->deskripsi_tugas_asesmen) !!}
+            @if ($sertification->rincian_asesmen)
+                {!! html_entity_decode($sertification->rincian_asesmen) !!}
             @else
                 <p class="text-gray-500 dark:text-gray-400">
                     Asesor belum mengunggah deskripsi tugas untuk asesmen. Silakan periksa kembali nanti.

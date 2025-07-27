@@ -32,11 +32,8 @@ class Transaction extends Model
                 $month = $transaction->created_at->format('m');
                 $userId = $transaction->asesi?->student?->user_id ?? 0;
 
-                $paddedUserId = str_pad($userId, 6, '0', STR_PAD_LEFT);
-                $paddedTransactionId = str_pad($transaction->id, 6, '0', STR_PAD_LEFT);
-
                 // Buat nomor invoice dan simpan kembali ke database tanpa memicu event lagi.
-                $transaction->invoice_number = "{$year}-{$month}-{$prefix}-{$paddedUserId}-{$paddedTransactionId}";
+                $transaction->invoice_number = "{$year}-{$month}-{$prefix}-{$userId}{$transaction->id}";
                 $transaction->saveQuietly();
             }
         });

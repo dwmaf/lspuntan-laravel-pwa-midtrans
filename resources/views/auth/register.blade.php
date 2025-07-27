@@ -11,28 +11,43 @@
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
+        <div class="mt-4" x-data="{ show: false }">
             <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
+            <div class="relative">
+                <input :type="show ? 'text' : 'password'"
+                       id="password"
+                       name="password"
+                       class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                       required autocomplete="new-password">
+                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">
+                    {{-- Ikon Mata Terbuka --}}
+                    <x-fas-eye x-show="!show" class="w-4 text-gray-700 dark:text-gray-300" />
+                    {{-- Ikon Mata Tercoret --}}
+                    <x-fas-eye-slash x-show="show" class="w-4 text-gray-700 dark:text-gray-300" />
+                </button>
+            </div>
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
         <!-- Confirm Password -->
-        <div class="mt-4">
+        <div class="mt-4" x-data="{ show: false }">
             <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
+            <div class="relative">
+                <input :type="show ? 'text' : 'password'"
+                       id="password_confirmation"
+                       name="password_confirmation"
+                       class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                       required autocomplete="new-password">
+                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">
+                    {{-- Ikon Mata Terbuka --}}
+                    <x-fas-eye x-show="!show" class="w-4 text-gray-700 dark:text-gray-200" />
+                    {{-- Ikon Mata Tercoret --}}
+                    <x-fas-eye-slash x-show="show" class="w-4 text-gray-700 dark:text-gray-200" />
+                    
+                </button>
+            </div>
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
-        <input type="text" value="asesi" hidden name="role">
 
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}">
