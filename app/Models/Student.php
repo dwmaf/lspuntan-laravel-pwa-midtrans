@@ -21,4 +21,8 @@ class Student extends Model
     {
         return $this->hasMany(Asesi::class);
     }
+    public function studentattachmentfile()
+    {
+        return $this->hasMany(Studentattachmentfile::class);
+    }
 }

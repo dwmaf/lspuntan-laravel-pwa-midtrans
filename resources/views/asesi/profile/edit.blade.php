@@ -8,7 +8,6 @@
     <div class="flex flex-col gap-4">
         <div class="p-4 bg-white dark:bg-gray-800 rounded-lg">
             @include('asesi.profile.partials.update-profile-information-form')
-            
         </div>
         <div class="p-4 bg-white dark:bg-gray-800 rounded-lg">
             @include('asesi.profile.partials.update-password-form')

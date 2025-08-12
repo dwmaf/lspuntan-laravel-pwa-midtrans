@@ -13,10 +13,10 @@ class Pengumumanasesmen extends Model
     ];
     public function sertification()
     {
-        return $this->belongsTo(Asesi::class);
+        return $this->belongsTo(Sertification::class);
     }
     public function pengumumanasesmenfile()
     {
-        return $this->hasMany(Asesi::class);
+        return $this->hasMany(Pengumumanasesmenfile::class);
     }
 }

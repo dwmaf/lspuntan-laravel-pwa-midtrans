@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
     @include('layouts.admin-sertifikasi-menu')
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md" x-data="{ showConfirmEditStatusModal: false, showConfirmUpdateStatusPembayaranModal: false, editStatusAsesiUrl: '', editStatusPembayaranUrl: '' }">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 sm:mb-0">
             Rincian Pendaftar
         </h3>
@@ -282,21 +282,26 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Asesi</dt>
-                        <dd class="mt-1 text-sm">
+                        <dd class="mt-1 text-sm mr-1">
                             @if ($asesi->status == 'daftar')
                                 <span
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
                                     {{ $asesi->status }}
                                 </span>
-                            @elseif($asesi->status == 'tidak bisa dilanjutkan')
+                            @elseif($asesi->status == 'perlu_perbaikan_berkas')
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">
+                                    Perlu perbaikan berkas
+                                </span>
+                            @elseif($asesi->status == 'ditolak')
                                 <span
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100">
-                                    {{ $asesi->status }}
+                                    Ditolak
                                 </span>
-                            @elseif($asesi->status == 'dilanjutkan asesmen')
+                            @elseif($asesi->status == 'dilanjutkan_asesmen')
                                 <span
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
-                                    {{ $asesi->status }}
+                                    Dilanjutkan ke asesmen
                                 </span>
                             @else
                                 <span
@@ -304,11 +309,18 @@
                                     {{ $asesi->status ?? 'N/A' }}
                                 </span>
                             @endif
+                            <button type="button"
+                                @click="showConfirmEditStatusModal = true; editStatusAsesiUrl = '{{ route('admin.applicants.update-status', [$asesi->id, $asesi->sertification_id]) }}'"
+                                class="inline-flex items-center px-2 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer">
+                                <x-bxs-edit class="w-3 h-3 mr-2" />
+                                Ubah Status
+                            </button>
                         </dd>
                     </div>
+
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Pembayaran</dt>
-                        <dd class="mt-1 text-sm">
+                        <dd class="mt-1 text-sm mr-1">
                             @php
                                 $latestTransaction = $asesi->transaction->sortByDesc('created_at')->first();
                             @endphp
@@ -348,19 +360,24 @@
                             @else
                                 <span
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
-                                    Belum ada transaksi
+                                    Belum submit bukti pembayaran
                                 </span>
                             @endif
+                            <button type="button" @if (!$latestTransaction) disabled @endif
+                                @click="showConfirmUpdateStatusPembayaranModal = true; editStatusPembayaranUrl = '{{ route('admin.applicants.update-payment-status', $asesi->id) }}'"
+                                class="inline-flex items-center px-2 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-default">
+                                <x-bxs-edit class="w-3 h-3 mr-2" />
+                                Ubah Status
+                            </button>
                         </dd>
                     </div>
                 </div>
                 {{-- Bagian Aksi Keputusan Untuk Pendaftar Baru --}}
-                @if ($asesi->status == 'daftar')
+                {{-- @if ($asesi->status == 'daftar')
                     <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">Tindakan Keputusan:
                         </h4>
                         <div class="flex items-center justify-start space-x-3">
-                            {{-- Tombol Lanjutkan --}}
                             <form class="inline-block"
                                 action="{{ route('admin.applicants.update-status', [$asesi->id, $asesi->sertification_id]) }}"
                                 method="POST"
@@ -380,7 +397,6 @@
                                 </button>
                             </form>
 
-                            {{-- Tombol Tidak Melanjutkan --}}
                             <form class="inline-block"
                                 action="{{ route('admin.applicants.update-payment-status', [$asesi->id, $asesi->sertification_id]) }}"
                                 method="POST"
@@ -401,17 +417,14 @@
                             </form>
                         </div>
                     </div>
-                @endif
+                @endif --}}
                 {{-- Bagian Aksi Keputusan Untuk Asesi yang sudah melakukan pembayaran secara manual dan menyertakan bukti pembayaran --}}
-                @if (
-                    $latestTransaction?->tipe == 'manual' &&
-                        $latestTransaction?->bukti_pembayaran &&
-                        $latestTransaction?->status == 'pending')
+                {{-- @if ($latestTransaction?->tipe == 'manual' && $latestTransaction?->bukti_pembayaran && $latestTransaction?->status == 'pending')
                     <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">Tindakan Keputusan:
                         </h4>
                         <div class="flex items-center justify-start space-x-3">
-                            {{-- Tombol Lanjutkan --}}
+                            
                             <form class="inline-block"
                                 action="{{ route('admin.applicants.update-payment-status', $asesi->id) }}"
                                 method="POST"
@@ -431,7 +444,6 @@
                                 </button>
                             </form>
 
-                            {{-- Tombol Tidak Melanjutkan --}}
                             <form class="inline-block"
                                 action="{{ route('admin.applicants.update-payment-status', $asesi->id) }}"
                                 method="POST"
@@ -452,7 +464,93 @@
                             </form>
                         </div>
                     </div>
-                @endif
+                @endif --}}
+            </div>
+        </div>
+        <!-- Modal Konfirmasi Ubah status asesi -->
+        <div x-show="showConfirmEditStatusModal" x-data="{ showCatatanStatus: false}"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 " style="display: none;">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 w-[280px]">
+                <h3 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-6">Konfirmasi Ubah Status Asesi</h3>
+
+                <form :action="editStatusAsesiUrl" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <div id="ubah status asesi">
+                        <label for="status asesi"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih status</label>
+                        <select required name="status"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                            <option value="" disabled selected>--Silahkan pilih status--</option>
+                            <option class="" value="ditolak">
+                                Ditolak
+                            </option>
+                            <option @click="showCatatanStatus = true" class="" value="perlu_perbaikan_berkas">
+                                Perlu Perbaikan Berkas
+                            </option>
+                            <option class="" value="dilanjutkan_asesmen">
+                                Dilanjutkan ke asesmen
+                            </option>
+                        </select>
+                        <div x-show="showCatatanStatus">
+                            <label for="catatan"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">Catatan</label>
+                            <textarea name="catatan_status" id="" cols="30" rows="10"></textarea>
+                        </div>
+                        @error('status')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <button type="button" @click="showConfirmEditStatusModal = false"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 cursor-pointer">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md cursor-pointer">
+                            Ubah
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Modal Konfirmasi Ubah status pembayaran asesi -->
+        <div x-show="showConfirmUpdateStatusPembayaranModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 " style="display: none;">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 w-[280px]">
+                <h3 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-6">Konfirmasi Ubah Status Pembayaran
+                </h3>
+                <form :action="editStatusPembayaranUrl" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <div id="ubah status asesi">
+                        <label for="skema_asesor"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih status</label>
+                        <select required name="status"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                            <option value="" disabled selected>--Silahkan pilih status--</option>
+                            <option class="" value="ditolak">
+                                Bukti Pembayaran Ditolak
+                            </option>
+                            <option class="" value="paid">
+                                Bukti Pembayaran Diterima
+                            </option>
+                        </select>
+                        @error('status')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <button type="button" @click="showConfirmUpdateStatusPembayaranModal = false"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 cursor-pointer">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md cursor-pointer">
+                            Ubah
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

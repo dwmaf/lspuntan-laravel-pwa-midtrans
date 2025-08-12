@@ -10,9 +10,19 @@
             {{ session('success') }}
         </div>
     @endif
-    <div x-data="{ tab: 'berlangsung' }" class="max-w-7xl mx-auto mb-2">
+    <div x-data="{ tab: 'mulai' }" class="max-w-7xl mx-auto mb-2">
         <!-- Tombol Tab -->
         <nav class="flex flex-wrap space-x-4 mt-1" aria-label="Tabs">
+            <div>
+                <button @click="tab = 'mulai'"
+                    class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase  hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
+        dark:text-white text-gray-600 cursor-pointer">
+                    Mulai Sertifikasi
+                </button>
+                <div style="margin-top: -4px"
+                    :class="{ 'w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md': tab === 'mulai', '': tab !== 'mulai' }">
+                </div>
+            </div>
             <div>
                 <button @click="tab = 'berlangsung'"
                     class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase  hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
@@ -34,7 +44,7 @@
                 </div>
             </div>
         </nav>
-
+        <hr class=" border-gray-200 dark:border-gray-700 mb-2">
 
         <!-- Konten Tab -->
         <div class="">
@@ -63,7 +73,7 @@
                             </div>
                             <div class="mt-4">
                                 <a href="{{ route('admin.sertification.show', $sert->id) }}"
-                                    class=" self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Lihat</a>
+                                    class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Lihat</a>
                             </div>
                         </div>
                     @empty
@@ -105,8 +115,7 @@
                 }
             }">
                 <!-- Filter Section -->
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">Riwayat Sertifikasi</h3>
+                <div class="flex justify-end items-center mb-4">
                     <div class="relative">
                         <!-- Filter Button -->
                         <button @click="showFilter = !showFilter"
@@ -187,7 +196,7 @@
                             </div>
                             <div class="mt-4">
                                 <a :href="`/admin/sertification/${sert.id}`"
-                                    class="self-start font-medium bg-gray-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-700 cursor-pointer">Lihat</a>
+                                    class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Lihat</a>
                             </div>
                         </div>
                     </template>
@@ -199,77 +208,88 @@
                     </div>
                 </div>
             </div>
+            {{-- Konten untuk mulai sertifikasi --}}
+            <div x-show="tab === 'mulai'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        
+                <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Mulai Sertifikasi</h2>
+                <form action="{{ route('admin.sertification.store') }}" class="mt-4 flex flex-col gap-2" method="POST">
+                    @csrf
+                    <input type="text" hidden name="status" value="berlangsung">
+                    <div id="asesor dan skema">
+                        <label for="skema_asesor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih
+                            Skema
+                            dan Asesor:</label>
+                        <select required name="asesor_skema"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                            <option value="" disabled selected>--Silahkan pilih asesor dan skema--</option>
+                            @foreach ($asesors as $asesor)
+                                @foreach ($asesor->skemas as $skema)
+                                    <option class="" value="{{ $asesor->id . ',' . $skema->id }}">
+                                        {{ $asesor->name }} - {{ $skema->nama_skema }}
+                                    </option>
+                                @endforeach
+                            @endforeach
+                        </select>
+                        @error('asesor_skema')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div id="tanggal_apply_dibuka">
+                        <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal
+                            Daftar
+                            Dibuka
+                        </label>
+                        <x-text-input id="tgl_apply_dibuka" name="tgl_apply_dibuka" type="date" class="mt-1 block w-full"
+                            :value="old('tgl_apply_dibuka')" required />
+                        @error('tgl_apply_dibuka')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div id="tanggal_apply_ditutup">
+                        <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal
+                            Daftar
+                            Ditutup
+                        </label>
+                        <x-text-input id="tgl_apply_ditutup" name="tgl_apply_ditutup" type="date"
+                            class="mt-1 block w-full" :value="old('tgl_apply_ditutup')" required />
+                        @error('tgl_apply_ditutup')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div id="tanggal_bayar_ditutup">
+                        <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal Bayar
+                            Ditutup
+                        </label>
+                        <x-text-input id="tgl_bayar_ditutup" name="tgl_bayar_ditutup" type="datetime-local"
+                            class="mt-1 block w-full" :value="old('tgl_bayar_ditutup')" required />
+                        @error('tgl_bayar_ditutup')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div id="biaya_sertifikasi">
+                        <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Biaya
+                            Sertifikasi
+                        </label>
+                        <x-text-input id="harga" name="harga" type="number" min="0" class="mt-1 block w-full"
+                            :value="old('harga')" required />
+                        @error('harga')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div id="tuk">
+                        <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tempat Uji
+                            Sertifikasi
+                        </label>
+                        <x-text-input id="tuk" name="tuk" type="text" class="mt-1 block w-full"
+                            :value="old('tuk')" required />
+                        @error('tuk')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <button type="submit"
+                        class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Mulai</button>
+                </form>
+            </div>
         </div>
-    </div>
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-
-        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Mulai Sertifikasi</h2>
-        <form action="/admin/sertification" class="mt-4 flex flex-col gap-2" method="POST">
-            @csrf
-            <input type="text" hidden name="status" value="berlangsung">
-            <div id="asesor dan skema">
-                <label for="skema_asesor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih
-                    Skema
-                    dan Asesor:</label>
-                <select required name="asesor_skema"
-                    class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                    <option value="" disabled selected>--Silahkan pilih asesor dan skema--</option>
-                    @foreach ($asesors as $asesor)
-                        @foreach ($asesor->skemas as $skema)
-                            <option class="" value="{{ $asesor->id . ',' . $skema->id }}">
-                                {{ $asesor->name }} - {{ $skema->nama_skema }}
-                            </option>
-                        @endforeach
-                    @endforeach
-                </select>
-                @error('asesor_skema')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-            <div id="tanggal_apply_dibuka">
-                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal
-                    Daftar
-                    Dibuka
-                </label>
-                <x-text-input id="tgl_apply_dibuka" name="tgl_apply_dibuka" type="date" class="mt-1 block w-full"
-                    :value="old('tgl_apply_dibuka')" required />
-                @error('tgl_apply_dibuka')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-            <div id="tanggal_apply_ditutup">
-                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal
-                    Daftar
-                    Ditutup
-                </label>
-                <x-text-input id="tgl_apply_ditutup" name="tgl_apply_ditutup" type="date"
-                    class="mt-1 block w-full" :value="old('tgl_apply_ditutup')" required />
-                @error('tgl_apply_ditutup')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-            <div id="tanggal_bayar_ditutup">
-                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal Bayar
-                    Ditutup
-                </label>
-                <x-text-input id="tgl_bayar_ditutup" name="tgl_bayar_ditutup" type="datetime-local"
-                    class="mt-1 block w-full" :value="old('tgl_bayar_ditutup')" required />
-                @error('tgl_bayar_ditutup')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-            <div id="biaya_sertifikasi">
-                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Biaya
-                    Sertifikasi
-                </label>
-                <x-text-input id="harga" name="harga" type="number" min="0" class="mt-1 block w-full"
-                    :value="old('harga')" required />
-                @error('harga')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-            <button type="submit"
-                class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Mulai</button>
-        </form>
     </div>
 </x-admin-layout>

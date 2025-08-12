@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-
+use App\Helpers\FileHelper;
 class ManageSkemaController extends Controller
 {
     private function storeFileWithUniqueName(UploadedFile $file, string $baseDirectory): array

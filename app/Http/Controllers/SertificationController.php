@@ -45,7 +45,8 @@ class SertificationController extends Controller
             'tgl_apply_ditutup'=>'required|date|after_or_equal:tgl_apply_dibuka',
             'tgl_bayar_ditutup'=>'required|date',
             'harga'=>'required|numeric|min:0',
-            'status'=>'required'
+            'status'=>'required',
+            'tuk'=>'required',
         ]);
         list($asesor_id, $skema_id) = explode(',', $request->input('asesor_skema'));
         $validatedData['asesor_id'] = $asesor_id;
@@ -77,22 +78,25 @@ class SertificationController extends Controller
     // untuk mengupdate sertifikasi yg tadi diedit
     public function update(Request $request, Sertification $sertification)
     {
+        // dd($request);
         $validatedData = $request->validate([
             'asesor_skema' => 'required',
             'tgl_apply_dibuka' => 'required|date',
             'tgl_apply_ditutup' => 'required|date|after_or_equal:tgl_apply_dibuka',
-            'tgl_bayar_ditutup' => 'required|date|after_or_equal:tgl_apply_ditutup',
-            'harga' => 'required|numeric|min:0'
+            'tgl_bayar_ditutup' => 'required|date',
+            'harga' => 'required|numeric|min:0',
+            'tuk'=>'required',
+            'status'=>'required',
         ]);
 
         list($asesor_id, $skema_id) = explode(',', $request->input('asesor_skema'));
         $validatedData['asesor_id'] = $asesor_id;
         $validatedData['skema_id'] = $skema_id;
         unset($validatedData['asesor_skema']);
-
+        
         $sertification->update($validatedData);
 
-        return redirect('/sertification')->with('success', 'Data Sertifikasi berhasil diupdate');
+        return redirect(route('admin.sertification.index'))->with('success', 'Data Sertifikasi berhasil diupdate');
     }
 
     // untuk menghapus data sertifikasi yg udh dimulai tadi

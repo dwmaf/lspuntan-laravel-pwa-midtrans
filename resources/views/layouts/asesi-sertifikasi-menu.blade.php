@@ -4,7 +4,7 @@
 @endphp
 <div class="flex flex-wrap space-x-4 mt-1">
     {{-- Praasesmen --}}
-    <!-- @if ($asesi && $asesi->status == 'dilanjutkan asesmen')
+    {{-- @if ($asesi && $asesi->status == 'dilanjutkan asesmen')
     <div>
         <a href='{{ route('asesi.applied.pre-assessment.show', $sertification->id) }}'
             class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md 
@@ -22,31 +22,40 @@
             <x-tni-lock class="w-4 " />
             Praasesmen
         </div>
-    @endif -->
+    @endif --}}
     {{-- Detail --}}
-    <div>
-        <a href='{{ route('asesi.applied.show', [$sertification->id, $asesi->id]) }}'
-            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
+    @if ($asesi)
+        <div>
+            <a href='{{ route('asesi.applied.show', [$sertification->id, $asesi->id]) }}'
+                class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
     dark:text-white text-gray-600 ">
+                Detail
+            </a>
+            @if (Route::is('asesi.applied.show'))
+                <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
+            @endif
+        </div>
+    @else
+        <div
+            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase rounded-t-md 
+            dark:text-gray-200 text-slate-400 ">
+            <x-tni-lock class="w-4 " />
             Detail
-        </a>
-        @if (Route::is('asesi.applied.show'))
-            <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
-        @endif
-    </div>
+        </div>
+    @endif
     {{-- Bayar --}}
-    
-    @if ($asesi && $asesi->status == 'dilanjutkan asesmen')
-    <div>
-        <a href='{{ route('asesi.applied.payment.create', [$sertification->id, $asesi->id]) }}'
-            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
+
+    @if ($asesi && $asesi->status == 'dilanjutkan_asesmen')
+        <div>
+            <a href='{{ route('asesi.applied.payment.create', [$sertification->id, $asesi->id]) }}'
+                class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
     dark:text-white text-gray-600 ">
-            Bayar
-        </a>
-        @if (Route::is('asesi.applied.payment.create'))
-            <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
-        @endif
-    </div>
+                Bayar
+            </a>
+            @if (Route::is('asesi.applied.payment.create'))
+                <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
+            @endif
+        </div>
     @else
         <div
             class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase rounded-t-md 
@@ -56,26 +65,32 @@
         </div>
     @endif
     {{-- Asesmen --}}
-    
-    @if ($asesi && $asesi->transaction[0]->status == 'paid' && $asesi->status == 'dilanjutkan asesmen')
-    <div>
 
-        <a href="{{ route('asesi.applied.assessment.show', $sertification->id) }}"
-            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase  
+    @if (
+        $asesi &&
+            $asesi->transaction &&
+            count($asesi->transaction) > 0 &&
+            $asesi->transaction[0]?->status == 'paid' &&
+            $asesi->status == 'dilanjutkan asesmen')
+        <div>
+
+            <a href="{{ route('asesi.applied.assessment.show', $sertification->id) }}"
+                class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase  
      hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600">
-            Asesmen
-        </a>
-        @if (Route::is('asesi.applied.assessment.show'))
-            <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
-        @endif
-    </div>
+                Asesmen
+            </a>
+            @if (Route::is('asesi.applied.assessment.show'))
+                <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
+            @endif
+        </div>
     @else
         <div
             class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase rounded-t-md 
-            dark:text-gray-200 text-slate-400 ">
+            dark:text-gray-200 text-slate-400">
             <x-tni-lock class="w-4 " />
             Asesmen
         </div>
     @endif
 
 </div>
+<hr class=" border-gray-200 dark:border-gray-700 mb-2">

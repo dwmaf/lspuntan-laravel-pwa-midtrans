@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('sertifikats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('asesi_id')->constrained()->onDelete('cascade');
+            $table->foreignId('asesi_id')->constrained();
             $table->string('nomor_seri')->unique()->nullable();
             $table->string('nomor_sertifikat')->unique()->nullable();
             $table->string('nomor_registrasi')->unique()->nullable();

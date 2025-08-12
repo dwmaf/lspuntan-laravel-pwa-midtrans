@@ -1,5 +1,5 @@
 {{-- utk nanganin dropdown checkboxnya, we use alpine js  --}}
-        {{-- <form action="/admin/asesor" class="mt-4 flex flex-col gap-2" method="POST" x-data="{
+{{-- <form action="/admin/asesor" class="mt-4 flex flex-col gap-2" method="POST" x-data="{
                 selectedSkemas: [], // Ini akan menyimpan ID skema yang dipilih
                 open: false, // mengontrol visibilitas dropdown
                 toggleDropdown() {
@@ -80,3 +80,4 @@
                 :disabled="selectedSkemas.length === 0"
                 class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Tambah</button>
         </form> --}}
+

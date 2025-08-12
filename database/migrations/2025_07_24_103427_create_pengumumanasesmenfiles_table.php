@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('pengumumanasesmenfiles', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('pengumumanasesmen_id')->constrained()->onDelete('cascade');
+            $table->string('path_file')->nullable();
             $table->timestamps();
         });
     }

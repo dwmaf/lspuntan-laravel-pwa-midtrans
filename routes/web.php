@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\Sertifikasi\PembayaranController;
 use App\Http\Controllers\ApplyCertificationController;
 use App\Http\Controllers\ManageCertificationController;
 use App\Http\Controllers\AsesiController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\AsesorController;
 use App\Http\Controllers\ManageSkemaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SertificationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Models\Sertification;
 use App\Models\Asesi;
@@ -17,6 +19,9 @@ use App\Http\Middleware\RoleMiddleware;
 Route::get('/', function () {
     return view('auth.login');
 })->middleware('guest');
+Route::get('/test', function () {
+    return view('dumpbladefiles.testing-file');
+});
 
 
 // punya semua user yg terautentikasi
@@ -31,7 +36,8 @@ Route::middleware('auth')->group(function () {
 
 
 //versi lebih baik asesor admin
-Route::middleware(['auth','verified', 'role:admin|asesor'])->prefix('admin')->name('admin.')->group(function () {
+//nanti harus dikasih middleware 'verified'
+Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', function () {
         return view('admin.dashboardadmin');
     })->name('dashboard'); // Hasil: admin.dashboard
@@ -52,14 +58,22 @@ Route::middleware(['auth','verified', 'role:admin|asesor'])->prefix('admin')->na
     Route::prefix('sertification/{id}')->name('sertification.')->group(function () {
         // Menampilkan daftar asesi/pendaftar untuk sertifikasi ini
         Route::get('/applicants', [ManageCertificationController::class, 'list_asesi'])->name('applicants.index'); // admin.sertification.applicants.index
+        // Mengelola pembayaran asesi
+        Route::get('/payment-desc/index', [PembayaranController::class, 'index_rincian_pembayaran'])->name('payment-desc.index'); // admin.sertification.payment-desc.index
+        Route::patch('/payment-desc/update', [PembayaranController::class, 'update_rincian_pembayaran'])->name('payment-desc.update'); // admin.sertification.payment-desc.update
 
         // Mengelola konten pra-asesmen
         // Route::get('/pre-assessment/edit', [ManageCertificationController::class, 'rincian_praasesmen'])->name('pre-assessment.edit'); // admin.sertification.pre-assessment.edit
         // Route::patch('/pre-assessment/update', [ManageCertificationController::class, 'update_rincian_praasesmen'])->name('pre-assessment.update'); // admin.sertification.pre-assessment.update
 
         // Mengelola konten asesmen
+        Route::get('/assessment-announcement/index', [ManageCertificationController::class, 'daftar_pengumuman_asesmen'])->name('assessment-announcement.index'); // admin.sertification.assessment-announcement.index
+        Route::post('/assessment-announcement/store', [ManageCertificationController::class, 'store_pengumuman_asesmen'])->name('assessment-announcement.store'); // admin.sertification.assessment-announcement.store
+        Route::get('/assessment-announcement/edit/{peng_id}', [ManageCertificationController::class, 'edit_pengumuman_asesmen'])->name('assessment-announcement.edit'); // admin.sertification.assessment-announcement.edit
+        Route::patch('/assessment-announcement/update/{peng_id}', [ManageCertificationController::class, 'update_pengumuman_asesmen'])->name('assessment-announcement.update'); // admin.sertification.assessment-announcement.update
+        Route::delete('/assessment-announcement/destroy/{peng_id}', [ManageCertificationController::class, 'destroy_pengumuman_asesmen'])->name('assessment-announcement.destroy'); // admin.sertification.assessment-announcement.update
         Route::get('/assessment/edit', [ManageCertificationController::class, 'rincian_asesmen'])->name('assessment.edit'); // admin.sertification.assessment.edit
-        Route::patch('/assessment/update', [ManageCertificationController::class, 'update_rincian_asesmen'])->name('assessment.update'); // admin.sertification.assessment.update
+        Route::patch('/assessment/update', [ManageCertificationController::class, 'update_tugas_asesmen'])->name('assessment.update'); // admin.sertification.assessment.update
         Route::get('/report', [ManageCertificationController::class, 'rincian_laporan'])->name('report'); // admin.sertification.report
         Route::post('/filter-riwayat_sertifikasi', [ManageCertificationController::class, 'filter_riwayat_sertifikasi'])->name('.filter-riwayat_sertifikasi'); // admin.sertification.filter-riwayat_sertifikasi
     });
@@ -78,7 +92,7 @@ Route::middleware(['auth','verified', 'role:admin|asesor'])->prefix('admin')->na
 });
 
 //versi lebih baik, konsistensi bahasa, penggunaan kebab-case, pakai konvensi restful (index, create, store, show, edit, update, destroy), kelompokin route dgn prefix
-Route::middleware(['auth', 'verified', 'role:asesi'])->prefix('asesi')->name('asesi.')->group(function () {
+Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->group(function () {
     Route::get('/dashboard', function () {
         return view('asesi.dashboardasesi');
     })->name('dashboard'); // Hasil: asesi.dashboard
@@ -115,5 +129,5 @@ Route::middleware(['auth', 'verified', 'role:asesi'])->prefix('asesi')->name('as
 // Route untuk menerima notifikasi (webhook) dari Midtrans.
 // Route ini harus di luar middleware 'auth' karena diakses oleh server Midtrans.
 Route::post('/midtrans/webhook', [PaymentController::class, 'handleWebhook'])->name('midtrans.webhook');
-
+Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 require __DIR__ . '/auth.php';

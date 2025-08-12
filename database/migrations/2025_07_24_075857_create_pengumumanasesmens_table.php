@@ -11,7 +11,10 @@ return new class extends Migration
     {
         Schema::create('pengumumanasesmens', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('sertification_id')->constrained();
             $table->text('rincian_pengumuman_asesmen');
+            $table->foreignId('rincian_pengumuman_asesmen_dibuat_oleh')->nullable()->constrained('users');
+            $table->timestamp('rincian_pengumuman_asesmen_dibuat_pada')->nullable();
             $table->timestamps();
         });
     }

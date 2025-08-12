@@ -4,12 +4,12 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-    @include('layouts.asesi-sertifikasi-menu')
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
+    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">
             Daftar Sertifikasi {{ $sertification->skema->nama_skema }}</h3>
         <h3 class="dark:text-gray-300">a. Data Pribadi</h3>
-        <form action="{{ route('asesi.certifications.apply.store') }}" class="mt-6 space-y-6" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('asesi.certifications.apply.store') }}" class="mt-6 space-y-6" method="POST"
+            enctype="multipart/form-data">
             @csrf
             <input type="text" value="{{ $sertification->id }}" hidden name="sertification_id">
             <input type="text" value="{{ $student->id }}" hidden name="student_id">
@@ -69,8 +69,8 @@
             <div id="no tlp HP">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">No. Tlp
                     HP(WA)<span style="color: red">*</span></label>
-                <x-text-input id="no_tlp_hp" name="no_tlp_hp" type="text" class="mt-1 block w-full" :value="old('no_tlp_hp', $student?->no_tlp_hp)"
-                    required />
+                <x-text-input id="no_tlp_hp" name="no_tlp_hp" type="text" class="mt-1 block w-full"
+                    :value="old('no_tlp_hp', $student?->no_tlp_hp)" required />
                 <x-input-error class="mt-2" :messages="$errors->get('no_tlp_hp')" />
             </div>
             <div id="no tlp rumah">
@@ -109,14 +109,14 @@
                 </label>
                 <x-text-input id="jabatan" name="jabatan" type="text" class="mt-1 block w-full"
                     :value="old('jabatan', $student?->jabatan)" />
-                    <x-input-error class="mt-2" :messages="$errors->get('jabatan')" />
+                <x-input-error class="mt-2" :messages="$errors->get('jabatan')" />
             </div>
             <div id="alamat kantor">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Alamat Kantor
                 </label>
                 <x-text-input id="alamat_kantor" name="alamat_kantor" type="text" class="mt-1 block w-full"
                     :value="old('alamat_kantor', $student?->alamat_kantor)" />
-                    <x-input-error class="mt-2" :messages="$errors->get('alamat_kantor')" />
+                <x-input-error class="mt-2" :messages="$errors->get('alamat_kantor')" />
             </div>
             <div id="No telepon/fax/email">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">No.
@@ -124,7 +124,7 @@
                 </label>
                 <x-text-input id="no_tlp_email_fax" name="no_tlp_email_fax" type="text" class="mt-1 block w-full"
                     :value="old('no_tlp_email_fax', $student?->no_tlp_email_fax)" />
-                    <x-input-error class="mt-2" :messages="$errors->get('no_tlp_email_fax')" />
+                <x-input-error class="mt-2" :messages="$errors->get('no_tlp_email_fax')" />
             </div>
 
             <h3 class="dark:text-gray-300">c. Data Sertifikasi</h3>
@@ -133,18 +133,72 @@
                     Sertifikasi<span style="color: red">*</span></label>
                 <select name="tujuan_sert" required
                     class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:border-indigo-600 focus:ring-indigo-600 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                    <option value="" disabled selected>--Silahkan pilih asesor dan skema--</option>
+                    <option value="" disabled selected>--Silahkan pilih tujuan sertifikasi anda--</option>
                     <option value="Sertifikasi">Sertifikasi</option>
                     <option value="Lainnya">Lainnya</option>
                 </select>
                 <x-input-error class="mt-2" :messages="$errors->get('tujuan_sert')" />
             </div>
-            <div id="Mata kuliah terkait dan nilainya">
+            {{-- <div id="Mata kuliah terkait dan nilainya">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Mata Kuliah
                     terkait Skema Sertifikasi dan Nilai yang diperoleh<span style="color: red">*</span>
                 </label>
                 <x-text-input name="makul_nilai" type="text" class="mt-1 block w-full" />
                 <x-input-error class="mt-2" :messages="$errors->get('makul_nilai')" />
+            </div> --}}
+            <div x-data="{
+                makulNilais: [{ nama_makul: '', nilai: '' }],
+                addMakul() {
+                    this.makulNilais.push({ nama_makul: '', nilai: '' });
+                },
+                removeMakul(index) {
+                    this.makulNilais.splice(index, 1);
+                }
+                        }" class="p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
+                    Mata Kuliah terkait Skema Sertifikasi dan Nilai yang diperoleh<span class="text-red-500">*</span>
+                </label>
+
+                <template x-for="(makul, index) in makulNilais" :key="index">
+                    <div class="flex items-center gap-2 mb-2">
+                        {{-- Input untuk Nama Mata Kuliah --}}
+                        <div class="flex-grow">
+                            <x-text-input name="nama_makul[]" type="text" class="mt-1 block w-full"
+                                placeholder="Nama Mata Kuliah" x-model="makul.nama_makul" required />
+                        </div>
+
+                        {{-- Input untuk Nilai --}}
+                        <div class="w-1/4">
+                            <x-text-input name="nilai_makul[]" type="text" class="mt-1 block w-full"
+                                placeholder="Nilai (e.g., A, B+)" x-model="makul.nilai" required />
+                        </div>
+
+                        {{-- Tombol Hapus (hanya muncul jika ada lebih dari 1 baris) --}}
+                        <button type="button" @click="removeMakul(index)" x-show="makulNilais.length > 1"
+                            class="p-2 text-red-500 hover:text-red-700 dark:hover:text-red-400 cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </template>
+
+                {{-- Tombol untuk Menambah Baris Baru --}}
+                <button type="button" @click="addMakul()"
+                    class="mt-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-300 cursor-pointer">
+                    + Tambah Mata Kuliah
+                </button>
+
+                {{-- Menampilkan Error Validasi --}}
+                @error('makul_nama.*')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+                @error('makul_nilai.*')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <h3 class="dark:text-gray-300">d. Bukti Kelengkapan</h3>
@@ -155,7 +209,7 @@
                 </label>
                 <input type="file" name="apl_1" required
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
-                    <x-input-error class="mt-2" :messages="$errors->get('apl_1')" />
+                <x-input-error class="mt-2" :messages="$errors->get('apl_1')" />
             </div>
             <div id="file apl 2">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Form APL.02.
@@ -164,7 +218,7 @@
                 </label>
                 <input type="file" name="apl_2" required
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
-                    <x-input-error class="mt-2" :messages="$errors->get('apl_2')" />
+                <x-input-error class="mt-2" :messages="$errors->get('apl_2')" />
             </div>
             <div id="foto_ktp">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Scan KTP
@@ -172,8 +226,8 @@
                 </label>
                 <!-- Feedback jika file sudah ada -->
                 @if ($student->foto_ktp)
-                    <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                        <a href="{{ asset('storage/' . $student->foto_ktp) }}" class="text-blue-500"
+                    <p class="text-sm text-gray-500 mb-1">File sudah ada:
+                        <a href="{{ asset('storage/' . $student->foto_ktp) }}" class="text-blue-500 hover:text-blue-300"
                             target="_blank">Lihat File</a>
                     </p>
                 @endif
@@ -181,16 +235,16 @@
                 <input id="foto_ktp" name="foto_ktp" type="file"
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600  rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
                     @if (!$student->foto_ktp) required @endif>
-                    <x-input-error class="mt-2" :messages="$errors->get('foto_ktp')" />
+                <x-input-error class="mt-2" :messages="$errors->get('foto_ktp')" />
             </div>
             <div id="foto_ktm">
-                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Scan KTM
+                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300 ">Scan KTM
                     (ukuran file maksimal 1 MB)<span style="color: red">*</span>
                 </label>
                 <!-- Feedback jika file sudah ada -->
                 @if ($student->foto_ktm)
-                    <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                        <a href="{{ asset('storage/' . $student->foto_ktm) }}" class="text-blue-500"
+                    <p class="text-sm text-gray-500 mb-1">File sudah ada:
+                        <a href="{{ asset('storage/' . $student->foto_ktm) }}" class="text-blue-500 hover:text-blue-300"
                             target="_blank">Lihat File</a>
                     </p>
                 @endif
@@ -198,24 +252,47 @@
                 <input id="foto_ktm" name="foto_ktm" type="file"
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
                     @if (!$student->foto_ktm) required @endif>
-                    <x-input-error class="mt-2" :messages="$errors->get('foto_ktm')" />
+                <x-input-error class="mt-2" :messages="$errors->get('foto_ktm')" />
             </div>
-            <div id="foto_khs">
-                <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Scan Kartu
-                    Hasil Studi (ukuran file maksimal 1 MB)<span style="color: red">*</span>
+            
+            <div id="kartu_hasil_studi">
+                <label for="kartu_hasil_studi" class="block text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Scan Kartu Hasil Studi (Bisa upload lebih dari satu)<span class="text-red-500">*</span>
                 </label>
-                <!-- Feedback jika file sudah ada -->
-                @if ($student->foto_khs)
-                    <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                        <a href="{{ asset('storage/' . $student->foto_khs) }}" class="text-blue-500"
-                            target="_blank">Lihat File</a>
-                    </p>
+
+                {{-- Tampilkan daftar file KHS yang sudah ada --}}
+                @php
+                    $khsFiles = $student->studentattachmentfile->where('type', 'kartu_hasil_studi');
+                @endphp
+                @if ($khsFiles->isNotEmpty())
+                    <div class=" text-sm text-gray-600 dark:text-gray-400">
+                        <p class="text-sm text-gray-500">File yang sudah diunggah:</p>
+                        <ul class="list-disc list-inside pl-2 mb-1">
+                            @foreach ($khsFiles as $file)
+                                <li>
+                                    <a href="{{ asset('storage/' . $file->path_file) }}" class="text-blue-500 hover:text-blue-300"
+                                        target="_blank">
+                                        Lihat File
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
-                <!-- Input file -->
-                <input id="foto_khs" name="foto_khs" type="file"
+
+                {{-- Input file --}}
+                <input id="kartu_hasil_studi" name="kartu_hasil_studi[]" type="file" multiple
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
-                    @if (!$student->foto_khs) required @endif>
-                    <x-input-error class="mt-2" :messages="$errors->get('foto_khs')" />
+                    {{-- Atribut required hanya jika belum ada file sama sekali --}}
+                    @if ($khsFiles->isEmpty()) required @endif>
+                
+                {{-- Menampilkan error --}}
+                @error('kartu_hasil_studi.*')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+                @error('kartu_hasil_studi')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
             <div id="pas foto">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Pasfoto
@@ -224,8 +301,8 @@
                 </label>
                 <!-- Feedback jika file sudah ada -->
                 @if ($student->pas_foto)
-                    <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                        <a href="{{ asset('storage/' . $student->pas_foto) }}" class="text-blue-500"
+                    <p class="text-sm text-gray-500 mb-1">File sudah ada:
+                        <a href="{{ asset('storage/' . $student->pas_foto) }}" class="text-blue-500 hover:text-blue-300"
                             target="_blank">Lihat File</a>
                     </p>
                 @endif
@@ -233,13 +310,13 @@
                 <input id="pas_foto" name="pas_foto" type="file"
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
                     @if (!$student->pas_foto) required @endif>
-                    <x-input-error class="mt-2" :messages="$errors->get('pas_foto')" />
+                <x-input-error class="mt-2" :messages="$errors->get('pas_foto')" />
             </div>
             <div id="surat keterangan magang">
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Scan Surat
                     Keterangan Magang/PKL/MBKM (maks 5, ukuran file maksimal 3 MB)
                 </label>
-                
+
                 <input type="file" name="surat_ket_magang[]" multiple
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
                 @error('surat_ket_magang.*')
@@ -255,7 +332,7 @@
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Scan
                     Sertifikat Pelatihan (maks 5, ukuran file maksimal 3 MB)
                 </label>
-                
+
                 <input type="file" name="sertif_pelatihan[]" multiple
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
                 @error('sertif_pelatihan.*')
@@ -270,7 +347,7 @@
                     pendukung lainnya: dapat berupa Laporan kegiatan PKL/Magang/MBKM/Publikasi Jurnal/dll (maks 5,
                     ukuran file maksimal 5 MB)
                 </label>
-                
+
                 <input type="file" name="dok_pendukung_lain[]" multiple
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
                 @error('dok_pendukung_lain.*')
@@ -287,5 +364,4 @@
     </div>
 </x-app-layout>
 @push('scripts')
-    
 @endpush

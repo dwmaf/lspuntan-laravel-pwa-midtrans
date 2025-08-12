@@ -5,10 +5,19 @@
         </h2>
     </x-slot>
     @include('layouts.asesi-sertifikasi-menu')
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-            Sertifikasi: {{ $sertification->skema->nama_skema }}
-        </h3>
+    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div class="flex flex-col sm:flex-row justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
+                Sertifikasi: {{ $sertification->skema->nama_skema }}
+            </h3>
+            <div class="flex items-center space-x-3">
+                <a href="{{ route('asesi.applied.edit', [$sertification->id,$asesi->id]) }}"
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150">
+                    <x-bxs-edit class="w-4 h-4 mr-2" />
+                    Edit
+                </a>
+            </div>
+        </div>
         <div class="space-y-6">
             <div>
                 <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700">A. Data Pribadi
@@ -281,9 +290,34 @@
                 <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">E. Status</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     <div>
-                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Pendaftaran</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ $asesi->status }}
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Asesi</dt>
+                        <dd class="mt-1 text-sm">
+                            @if ($asesi->status == 'daftar')
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                                    {{ $asesi->status }}
+                                </span>
+                            @elseif($asesi->status == 'diminta perbaiki berkas')
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">
+                                    {{ $asesi->status }}
+                                </span>
+                            @elseif($asesi->status == 'tidak bisa dilanjutkan')
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100">
+                                    {{ $asesi->status }}
+                                </span>
+                            @elseif($asesi->status == 'dilanjutkan asesmen')
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
+                                    {{ $asesi->status }}
+                                </span>
+                            @else
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200">
+                                    {{ $asesi->status ?? 'N/A' }}
+                                </span>
+                            @endif
                         </dd>
                     </div>
 

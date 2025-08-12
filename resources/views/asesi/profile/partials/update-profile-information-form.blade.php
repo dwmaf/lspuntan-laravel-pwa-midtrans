@@ -171,22 +171,35 @@
 
         <div>
             <label for="foto_khs" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Scan KHS <span class="text-red-500">*</span>
+                Kartu Hasil Studi (dari semester I-V) <span class="text-red-500">*</span>
             </label>
+            @php
+                // Filter lampiran untuk hanya mendapatkan 'kartu_hasil_studi'
+                $khsFiles = $student->studentattachmentfile->where('type', 'kartu_hasil_studi');
+            @endphp
             <!-- Feedback jika file sudah ada -->
-            @if ($student && $student->foto_khs)
-                <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                    <a href="{{ asset('storage/' . $student->foto_khs) }}" class="text-blue-500"
-                        target="_blank">Lihat File</a>
-                </p>
+            @if ($khsFiles->isNotEmpty())
+                <div class="mt-2 mb-2 text-sm text-gray-600 dark:text-gray-400">
+                    <p class="font-semibold">File yang sudah diunggah:</p>
+                    <ul class="list-disc list-inside pl-2">
+                        @foreach ($khsFiles as $file)
+                            <li>
+                                <a href="{{ asset('storage/' . $file->path_file) }}" class="text-blue-500 hover:underline"
+                                    target="_blank">
+                                    Lihat file
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
             @else
-                <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah</p>
+                <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah.</p>
             @endif
             <!-- Input file -->
-            <input id="foto_khs" name="foto_khs" type="file"
+            <input id="kartu_hasil_studi" name="kartu_hasil_studi[]" type="file" multiple
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
-                @if (!$student || !$student->foto_khs) required @endif>
-            <x-input-error class="mt-2" :messages="$errors->get('foto_khs')" />
+                @if ($khsFiles->isEmpty()) required @endif>
+            <x-input-error class="mt-2" :messages="$errors->get('kartu_hasil_studi.*')" />
         </div>
 
         <div>

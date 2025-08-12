@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('praasesmenfiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sertification_id')->constrained();
+            $table->foreignId('sertification_id')->constrained()->onDelete('cascade');
             $table->string('path_file')->nullable();
             $table->timestamps();
         });

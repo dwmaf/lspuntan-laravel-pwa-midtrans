@@ -20,17 +20,34 @@ class DatabaseSeeder extends Seeder
     {
         // Panggil RoleSeeder terlebih dahulu
         $this->call(RoleSeeder::class);
-
+        $skema1 = Skema::create(['nama_skema' => 'Skema Programmer']);
+        $skema2 = Skema::create(['nama_skema' => 'Skema Ahli K3 Umum']);
+        $skema3 = Skema::create(['nama_skema' => 'Skema Pendamping UMKM']);
+        $skema4 = Skema::create(['nama_skema' => 'Skema Teknisi Pendengaran Jauh']);
+        $skema5 = Skema::create(['nama_skema' => 'Penyuluh Kehutanan Fasilitator']);
+        $skema6 = Skema::create(['nama_skema' => 'Skema Analis Sumber Daya Manusia']);
+        $skema7 = Skema::create(['nama_skema' => 'Skema Pengoperasian PLC (Programmable Logic Controller)']);
+        $skema8 = Skema::create(['nama_skema' => 'Skema Penerapan K3-Laboratorium']);
         // Buat user admin dan berikan role 'admin'
         $admin = User::create([
             'email' => 'admin@g.c',
             'password' => bcrypt('1234'),
         ]);
+        $asesor1 = User::create([
+            'email' => 'azhar@asesor.c',
+            'password' => bcrypt('12345678'),
+        ]);
         $admin->assignRole('admin');
         $admin->assignRole('asesor');
-        Asesor::create([
+        $asesor1->assignRole('asesor');
+        event(new Registered($admin));
+        $asesorafif = Asesor::create([
                 'user_id' => $admin->id,
                 'name' => 'Afif',
+        ]);
+        $asesorazhar = Asesor::create([
+                'user_id' => $asesor1->id,
+                'name' => 'Azhar',
         ]);
         // Buat user asesi dan berikan role 'asesi'
         $user = User::create([
@@ -42,8 +59,7 @@ class DatabaseSeeder extends Seeder
         Student::create([
             'user_id' => $user->id,
         ]);
-
-        $skema1 = Skema::create(['nama_skema' => 'Skema Programmer']);
-        $skema2 = Skema::create(['nama_skema' => 'Skema Ahli K3 Umum']);
+        $asesorazhar->skemas()->attach($skema1->id);
+        $asesorafif->skemas()->attach($skema2->id);
     }
 }

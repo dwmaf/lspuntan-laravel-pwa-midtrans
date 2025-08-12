@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
     @include('layouts.asesi-sertifikasi-menu')
-
+    
     @if (
         ($asesi->transaction->first()?->tipe == 'manual' &&
             $asesi->transaction->first()?->status == 'bukti pembayaran terverifikasi') ||
@@ -129,7 +129,7 @@
             <h3 class="dark:text-gray-300 mb-2">
                 @if ($sertification->rincian_pembayaran)
                     {!! html_entity_decode($sertification->rincian_pembayaran) !!}
-                @else
+                @endif
             </h3>
             <form action="{{ route('asesi.applied.payment.manual.store', [$sertification->id, $asesi->id]) }}"
                 method="POST" class="mt-6 space-y-6" enctype="multipart/form-data">

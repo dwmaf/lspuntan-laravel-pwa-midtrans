@@ -17,6 +17,10 @@ class Asesi extends Model
     {
         return $this->belongsTo(Student::class);
     }
+    public function makulnilais()
+    {
+        return $this->hasMany(Makulnilai::class);
+    }
     public function sertification()
     {
         return $this->belongsTo(Sertification::class);
@@ -29,7 +33,7 @@ class Asesi extends Model
     {
         return $this->hasMany(Transaction::class);
     }
-    public function asesiasesmenfile()
+    public function asesiasesmenfiles()
     {
         return $this->hasMany(Asesiasesmenfile::class);
     }

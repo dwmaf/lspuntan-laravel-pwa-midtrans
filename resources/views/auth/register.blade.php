@@ -19,7 +19,7 @@
                        name="password"
                        class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                        required autocomplete="new-password">
-                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">
+                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
                     {{-- Ikon Mata Terbuka --}}
                     <x-fas-eye x-show="!show" class="w-4 text-gray-700 dark:text-gray-300" />
                     {{-- Ikon Mata Tercoret --}}

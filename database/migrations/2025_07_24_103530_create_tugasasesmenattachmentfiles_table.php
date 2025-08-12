@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('tugasasesmenattachmentfiles', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('sertification_id')->constrained();
+            $table->string('path_file')->nullable();
             $table->timestamps();
         });
     }
