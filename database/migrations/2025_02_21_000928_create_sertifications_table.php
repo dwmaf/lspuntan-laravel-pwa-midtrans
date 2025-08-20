@@ -25,10 +25,10 @@ return new class extends Migration
             $table->dateTime('batas_pengumpulan_tugas_asesmen')->nullable();
             $table->integer('harga')->nullable();
             $table->string('status')->nullable();
-            $table->foreignId('rincian_pembayaran_dibuat_oleh')->nullable()->constrained('users');
-            $table->timestamp('rincian_pembayaran_dibuat_pada')->nullable();
-            $table->foreignId('rincian_tugas_asesmen_dibuat_oleh')->nullable()->constrained('users');
-            $table->timestamp('rincian_tugas_asesmen_dibuat_pada')->nullable();
+            $table->foreignId('rincian_bayar_dibuat_oleh')->nullable()->constrained('users');
+            $table->timestamp('rincian_bayar_dibuat_pada')->nullable();
+            $table->foreignId('rincian_tugasasesmen_dibuat_oleh')->nullable()->constrained('users');
+            $table->timestamp('rincian_tugasasesmen_dibuat_pada')->nullable();
             $table->timestamps();
         });
     }

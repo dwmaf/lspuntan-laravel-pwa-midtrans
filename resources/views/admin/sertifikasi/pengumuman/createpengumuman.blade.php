@@ -3,7 +3,7 @@
     @csrf
     <input type="text" hidden value="{{ $sertification->id }}" name="sertification_id">
     <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1" for="rincian_pengumuman_asesmen">Rincian</label>
-    @include('admin.sertifikasi.pengumuman.custom-rich-editor', [
+    @include('layouts.custom-rich-editor', [
         'inputName' => 'rincian_pengumuman_asesmen',
         'initialValue' => old('rincian_pengumuman_asesmen', $sertification?->rincian_pengumuman_asesmen ?? 'Silahkan buat pengumuman...'),
     ])

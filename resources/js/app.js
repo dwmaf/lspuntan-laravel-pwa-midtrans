@@ -54,7 +54,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const editor = new Editor({
             element: editorContentEl, // Mount editor ke element ini
             extensions: [
-                StarterKit, // Aktifkan fitur dasar (bold, italic, underline, list)
+                StarterKit.configure({
+                    bulletList: false,
+                    orderedList: false
+                }), // Aktifkan fitur dasar (bold, italic, underline, list)
             ],
             editorProps: {
                 attributes: {
@@ -77,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     toggleBold: "bold",
                     toggleItalic: "italic",
                     toggleUnderline: "underline",
-                    toggleBulletList: "bulletList",
+                    // toggleBulletList: "bulletList",
                 };
                 // Loop semua tombol di toolbar
                 buttons.forEach((button) => {

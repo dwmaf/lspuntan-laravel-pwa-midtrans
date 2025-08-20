@@ -12,13 +12,13 @@
             </h3>
             {{-- {{ $sertification }} --}}
             <div class="flex items-center space-x-3">
-                <a href="{{ route('admin.sertification.edit', $sertification->id) }}"
+                <a href="{{ route('admin.kelolasertifikasi.edit', $sertification->id) }}"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150">
                     <x-bxs-edit class="w-4 h-4 mr-2" />
                     Edit
                 </a>
                 @if ($sertification->status == 'berlangsung')
-                    <form class="inline-block" action="/admin/sertification/{{ $sertification->id }}/destroy"
+                    <form class="inline-block" action="{{ route('admin.kelolasertifikasi.destroy',$sertification->id) }}"
                         method="post"
                         onsubmit="return confirm('Apakah Anda yakin ingin menghapus data sertifikasi ini? Ini tidak akan menghapus skema atau asesor terkait, hanya jadwal sertifikasi ini.');">
                         @method('delete')

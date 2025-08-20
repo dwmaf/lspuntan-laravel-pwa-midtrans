@@ -10,7 +10,7 @@
             {{ session('success') }}
         </div>
     @endif
-    <div x-data="{ tab: 'mulai' }" class="max-w-7xl mx-auto mb-2">
+    <div x-data="{ tab: 'mulai', hargaValue: '{{ old('harga') }}' }" class="max-w-7xl mx-auto mb-2">
         <!-- Tombol Tab -->
         <nav class="flex flex-wrap space-x-4 mt-1" aria-label="Tabs">
             <div>
@@ -72,7 +72,7 @@
                                 </p>
                             </div>
                             <div class="mt-4">
-                                <a href="{{ route('admin.sertification.show', $sert->id) }}"
+                                <a href="{{ route('admin.kelolasertifikasi.show', $sert->id) }}"
                                     class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Lihat</a>
                             </div>
                         </div>
@@ -195,7 +195,7 @@
                                 </p>
                             </div>
                             <div class="mt-4">
-                                <a :href="`/admin/sertification/${sert.id}`"
+                                <a :href="`/admin/kelolasertifikasi/${sert.id}`"
                                     class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Lihat</a>
                             </div>
                         </div>
@@ -212,7 +212,7 @@
             <div x-show="tab === 'mulai'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         
                 <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Mulai Sertifikasi</h2>
-                <form action="{{ route('admin.sertification.store') }}" class="mt-4 flex flex-col gap-2" method="POST">
+                <form action="{{ route('admin.kelolasertifikasi.store') }}" class="mt-4 flex flex-col gap-2" method="POST">
                     @csrf
                     <input type="text" hidden name="status" value="berlangsung">
                     <div id="asesor dan skema">
@@ -270,8 +270,11 @@
                         <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Biaya
                             Sertifikasi
                         </label>
+                        <p x-show="hargaValue" class="text-sm font-medium text-gray-800 dark:text-gray-200 mt-1" style="display: none;">
+                            <span x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(hargaValue)"></span>
+                        </p>
                         <x-text-input id="harga" name="harga" type="number" min="0" class="mt-1 block w-full"
-                            :value="old('harga')" required />
+                            x-model="hargaValue" required />
                         @error('harga')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror

@@ -4,8 +4,14 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
+    @if (session('success'))
+        <div class="my-2 p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md"
+            role="alert">
+            {{ session('success') }}
+        </div>
+    @endif
     @include('layouts.asesi-sertifikasi-menu')
-    
+
     @if (
         ($asesi->transaction->first()?->tipe == 'manual' &&
             $asesi->transaction->first()?->status == 'bukti pembayaran terverifikasi') ||
@@ -126,27 +132,64 @@
         </div> --}}
 
         <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
-            <h3 class="dark:text-gray-300 mb-2">
-                @if ($sertification->rincian_pembayaran)
-                    {!! html_entity_decode($sertification->rincian_pembayaran) !!}
-                @endif
-            </h3>
-            <form action="{{ route('asesi.applied.payment.manual.store', [$sertification->id, $asesi->id]) }}"
-                method="POST" class="mt-6 space-y-6" enctype="multipart/form-data">
-                @csrf
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Bukti
-                        pembayaran</label>
-                    <input id="bukti_pembayaran" name="bukti_pembayaran" type="file"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
-                        @if (!$sertification->rincian_pembayaran) disabled @endif required>
-                    <x-input-error class="mt-2" :messages="$errors->get('bukti_pembayaran')" />
+            @if ($sertification->rincian_pembayaran)
+                {{-- foto profil, nama, dan tanggal rincian pembayaran dibuat --}}
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex-shrink-0">
+                        <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
+                            fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            @if ($sertification->pembuatrincianpembayaran->asesor)
+                                {{-- Jika pembuatnya adalah seorang asesor, tampilkan nama dari tabel asesor --}}
+                                {{ $sertification->pembuatrincianpembayaran->asesor->name }}
+                            @else
+                                {{-- Fallback jika karena suatu hal data pembuat tidak ada --}}
+                                Admin
+                            @endif
+                        </h5>
+                        <div class="text-xs text-gray-400">
+                            @if (\Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->isToday())
+                                {{-- Jika hari ini, tampilkan jam --}}
+                                {{ \Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->format('H:i') }}
+                            @else
+                                {{-- Jika sudah lewat, tampilkan tanggal --}}
+                                {{ \Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->format('d M Y') }}
+                            @endif
+                        </div>
+                    </div>
                 </div>
-                <button type="submit"
-                    class="self-start font-medium bg-indigo-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-700 cursor-pointer"
-                    @if (!$sertification->rincian_pembayaran) disabled @endif>Submit
-                    Bukti Pembayaran</button>
-            </form>
+                <h6 class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2">{!! $sertification?->rincian_pembayaran !!}</h6>
+                <div class="flex">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">Biaya Sertifikasi : </dt>
+                    <dd class="text-sm text-gray-900 dark:text-gray-100">Rp
+                        {{ number_format($sertification->harga, 0, ',', '.') ?? 'N/A' }}</dd>
+                </div>
+                <form action="{{ route('asesi.applied.payment.store', [$sertification->id, $asesi->id]) }}"
+                    method="POST" class="mt-6 space-y-6" enctype="multipart/form-data">
+                    @csrf
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Bukti
+                            pembayaran</label>
+                        <input id="bukti_bayar" name="bukti_bayar" type="file"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
+                            @if (!$sertification->rincian_pembayaran) disabled @endif required>
+                        <x-input-error class="mt-2" :messages="$errors->get('bukti_bayar')" />
+                    </div>
+                    <button type="submit"
+                        class="self-start font-medium bg-indigo-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-700 cursor-pointer"
+                        @if (!$sertification->rincian_pembayaran) disabled @endif>Submit
+                        Bukti Pembayaran</button>
+                </form>
+            @else
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Admin belum memberikan rincian pembayaran
+                </p>
+            @endif
         </div>
     @endif
 </x-app-layout>

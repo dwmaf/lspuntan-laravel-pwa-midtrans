@@ -7,7 +7,7 @@
     <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
 
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit Sertifikasi</h2>
-        <form action="{{ route('admin.sertification.update', $sertification->id) }}" class="mt-4 flex flex-col gap-2"
+        <form action="{{ route('admin.kelolasertifikasi.update', $sertification->id) }}" class="mt-4 flex flex-col gap-2"
             method="POST">
             @csrf
             @method('PATCH')

@@ -58,8 +58,8 @@ class ManageCertificationController extends Controller
     public function show_applied_sertifikasi($sert_id, $asesi_id, Request $request)
     {
         $user = $request->user();
-        $student = $user->student;
-        $asesi = Asesi::with('asesiattachmentfiles', 'transaction')->find($asesi_id);
+        $student = $user->student()->with('studentattachmentfile')->first();
+        $asesi = Asesi::with('asesiattachmentfiles', 'transaction','makulnilais','sertifikat')->find($asesi_id);
         // dd($student);
         return view('asesi.sertifikasi.show-applied-page', [
             'sertification' => Sertification::with('skema')->find($sert_id),
@@ -86,7 +86,7 @@ class ManageCertificationController extends Controller
     public function list_asesi($id, Request $request)
     {
         // dd($student);
-        $sertification = Sertification::with('skema', 'asesi')->find($id);
+        $sertification = Sertification::with('skema', 'asesi.transaction')->find($id);
         return view('admin.sertifikasi.pendaftar.indexpendaftar', [
             'sertification' => $sertification,
         ]);
@@ -95,7 +95,7 @@ class ManageCertificationController extends Controller
     //buat nampilin rincian data asesi yg udh daftar suatu sertifikasi di sisi admin
     public function rincian_data_asesi($id, Request $request)
     {
-        $asesi = Asesi::with('student', 'transaction')->find($id);
+        $asesi = Asesi::with('student.studentattachmentfile', 'transaction','sertifikat')->find($id);
         // dd($asesi->transaction);
         $sertification = $asesi->sertification;
         return view('admin.sertifikasi.pendaftar.rincianpendaftar', [
@@ -176,120 +176,120 @@ class ManageCertificationController extends Controller
     // }
 
     //buat nampilin halaman daftar pengumuman asesmen di sisi admin/asesor sekaligus untuk buat nambah pengumuman
-    public function daftar_pengumuman_asesmen($id, Request $request)
-    {
-        // dd($id);
-        $sertification = Sertification::with('pengumumanasesmen')->find($id);
-        return view('admin.sertifikasi.pengumuman.indexpengumuman', [
-            'pengumumans' => $sertification->pengumumanasesmen,
-            'sertification' => $sertification,
-        ]);
-    }
+    // public function daftar_pengumuman_asesmen($id, Request $request)
+    // {
+    //     // dd($id);
+    //     $sertification = Sertification::with('pengumumanasesmen')->find($id);
+    //     return view('admin.sertifikasi.pengumuman.indexpengumuman', [
+    //         'pengumumans' => $sertification->pengumumanasesmen,
+    //         'sertification' => $sertification,
+    //     ]);
+    // }
     //buat update rincian pra asesmen di sisi admin, NOT USED ANYMORE
-    public function store_pengumuman_asesmen($id, Request $request)
-    {
-        // dd($request);
-        $validatedData = $request->validate([
-            'rincian_pengumuman_asesmen' => 'required|string',
-            'sertification_id' => 'required'
-        ]);
+    // public function store_pengumuman_asesmen($id, Request $request)
+    // {
+    //     // dd($request);
+    //     $validatedData = $request->validate([
+    //         'rincian_pengumuman_asesmen' => 'required|string',
+    //         'sertification_id' => 'required'
+    //     ]);
 
-        $pengumumanAsesmen = Pengumumanasesmen::create(
-            $validatedData
-        );
-        // Simpan file baru
-        if ($request->hasFile('pengumuman_asesmen_attachment_file')) {
-            foreach ($request->file('pengumuman_asesmen_attachment_file') as $file) {
-                if ($file->isValid()) {
-                    $path = $this->storeFileWithUniqueName($request->file('pengumuman_asesmen_attachment_file'), 'pengumuman_asesmen_attachment_file');
-                    Pengumumanasesmenfile::create([
-                        'pengumumanasesmen_id' => $pengumumanAsesmen->id,
-                        'path_file' => $path['path'],
-                    ]);
-                }
-            }
-        }
+    //     $pengumumanAsesmen = Pengumumanasesmen::create(
+    //         $validatedData
+    //     );
+    //     // Simpan file baru
+    //     if ($request->hasFile('pengumuman_asesmen_attachment_file')) {
+    //         foreach ($request->file('pengumuman_asesmen_attachment_file') as $file) {
+    //             if ($file->isValid()) {
+    //                 $path = $this->storeFileWithUniqueName($request->file('pengumuman_asesmen_attachment_file'), 'pengumuman_asesmen_attachment_file');
+    //                 Pengumumanasesmenfile::create([
+    //                     'pengumumanasesmen_id' => $pengumumanAsesmen->id,
+    //                     'path_file' => $path['path'],
+    //                 ]);
+    //             }
+    //         }
+    //     }
 
-        return redirect()->back()->with('success', 'Berhasil membuat pengumuman');
-    }
+    //     return redirect()->back()->with('success', 'Berhasil membuat pengumuman');
+    // }
     //buat update pengumuman asesmen di sisi admin/asesor
-    public function edit_pengumuman_asesmen($id, $peng_id, Request $request)
-    {
-        // dd($request);
-        $sertification = Sertification::find($id);
-        $pengumumanAsesmen = Pengumumanasesmen::find($peng_id);
-        return view('admin.sertifikasi.pengumuman.editpengumuman', [
-            'pengumumanAsesmen' => $pengumumanAsesmen,
-            'sertification' => $sertification,
-        ]);
-    }
+    // public function edit_pengumuman_asesmen($id, $peng_id, Request $request)
+    // {
+    //     // dd($request);
+    //     $sertification = Sertification::find($id);
+    //     $pengumumanAsesmen = Pengumumanasesmen::find($peng_id);
+    //     return view('admin.sertifikasi.pengumuman.editpengumuman', [
+    //         'pengumumanAsesmen' => $pengumumanAsesmen,
+    //         'sertification' => $sertification,
+    //     ]);
+    // }
     //buat update pengumuman asesmen di sisi admin/asesor
-    public function update_pengumuman_asesmen($id, $peng_id, Request $request)
-    {
-        // dd($request);
-        $request->validate([
-            'rincian_pengumuman_asesmen' => 'required|string',
-        ]);
+    // public function update_pengumuman_asesmen($id, $peng_id, Request $request)
+    // {
+    //     // dd($request);
+    //     $request->validate([
+    //         'rincian_pengumuman_asesmen' => 'required|string',
+    //     ]);
 
-        $pengumumanAsesmen = Pengumumanasesmen::find($peng_id);
-        $pengumumanAsesmen->rincian_pengumuman_asesmen = $request->rincian_pengumuman_asesmen;
-        // dd($pengumumanAsesmen);
-        $pengumumanAsesmen->save();
-        // Simpan file baru
-        if ($request->hasFile('pengumuman_asesmen_attachment_file')) {
-            foreach ($request->file('pengumuman_asesmen_attachment_file') as $file) {
-                if ($file->isValid()) {
-                    $path = $this->storeFileWithUniqueName($request->file('pengumuman_asesmen_attachment_file'), 'pengumuman_asesmen_attachment_file');
-                    Pengumumanasesmenfile::create([
-                        'pengumumanasesmen_id' => $pengumumanAsesmen->id,
-                        'path_file' => $path['[path'],
-                    ]);
-                }
-            }
-        }
+    //     $pengumumanAsesmen = Pengumumanasesmen::find($peng_id);
+    //     $pengumumanAsesmen->rincian_pengumuman_asesmen = $request->rincian_pengumuman_asesmen;
+    //     // dd($pengumumanAsesmen);
+    //     $pengumumanAsesmen->save();
+    //     // Simpan file baru
+    //     if ($request->hasFile('pengumuman_asesmen_attachment_file')) {
+    //         foreach ($request->file('pengumuman_asesmen_attachment_file') as $file) {
+    //             if ($file->isValid()) {
+    //                 $path = $this->storeFileWithUniqueName($request->file('pengumuman_asesmen_attachment_file'), 'pengumuman_asesmen_attachment_file');
+    //                 Pengumumanasesmenfile::create([
+    //                     'pengumumanasesmen_id' => $pengumumanAsesmen->id,
+    //                     'path_file' => $path['[path'],
+    //                 ]);
+    //             }
+    //         }
+    //     }
 
-        return redirect(route('admin.sertification.assessment-announcement.index',$id))->with('success', 'Pengumuman berhasil diupdate berhasil disimpan!');
-    }
+    //     return redirect(route('admin.sertification.assessment-announcement.index',$id))->with('success', 'Pengumuman berhasil diupdate berhasil disimpan!');
+    // }
     // fungsi ajax buat hapus file dari pengumuman asesmen
-    public function ajaxDeletePengumumanAsesmenFile(Request $request)
-    {
-        $fileId = $request->getContent(); // body request berisi ID file (plain text)
-        if (empty($fileId)) {
-            return response()->json(['error' => 'File ID tidak valid.'], 400);
-        }
+    // public function ajaxDeletePengumumanAsesmenFile(Request $request)
+    // {
+    //     $fileId = $request->getContent(); // body request berisi ID file (plain text)
+    //     if (empty($fileId)) {
+    //         return response()->json(['error' => 'File ID tidak valid.'], 400);
+    //     }
 
-        $file = Pengumumanasesmenfile::find($fileId);
-        if ($file) {
-            // Hapus file fisik
-            if (Storage::disk('public')->exists($file->path_file)) {
-                Storage::disk('public')->delete($file->path_file);
-            }
-            // Hapus record database
-            $file->delete();
-            return response()->json(['success' => true]);
-        } else {
-            return response()->json(['error' => 'File tidak ditemukan.'], 404);
-        }
-    }
-    public function destroy_pengumuman_asesmen(Request $request, $peng_id)
-    {
-        $pengumuman = Pengumumanasesmen::with('pengumumanasesmenfile')->find($peng_id);
-        foreach ($pengumuman->pengumumanasesmenfile as $file) {
-            // Cek apakah file benar-benar ada di storage sebelum menghapus
-            if (Storage::disk('public')->exists($file->path_file)) {
-                Storage::disk('public')->delete($file->path_file);
-            }
-            // Record file di database akan terhapus otomatis karena cascade delete
-        }
-        $pengumuman->delete();
-        return redirect()->back()->with('success', 'Pengumuman berhasil dihapus');
-    }
+    //     $file = Pengumumanasesmenfile::find($fileId);
+    //     if ($file) {
+    //         // Hapus file fisik
+    //         if (Storage::disk('public')->exists($file->path_file)) {
+    //             Storage::disk('public')->delete($file->path_file);
+    //         }
+    //         // Hapus record database
+    //         $file->delete();
+    //         return response()->json(['success' => true]);
+    //     } else {
+    //         return response()->json(['error' => 'File tidak ditemukan.'], 404);
+    //     }
+    // }
+    // public function destroy_pengumuman_asesmen(Request $request, $peng_id)
+    // {
+    //     $pengumuman = Pengumumanasesmen::with('pengumumanasesmenfile')->find($peng_id);
+    //     foreach ($pengumuman->pengumumanasesmenfile as $file) {
+    //         // Cek apakah file benar-benar ada di storage sebelum menghapus
+    //         if (Storage::disk('public')->exists($file->path_file)) {
+    //             Storage::disk('public')->delete($file->path_file);
+    //         }
+    //         // Record file di database akan terhapus otomatis karena cascade delete
+    //     }
+    //     $pengumuman->delete();
+    //     return redirect()->back()->with('success', 'Pengumuman berhasil dihapus');
+    // }
     //buat nampilin halaman daftar pengumuman asesmen di sisi admin/asesor sekaligus untuk buat nambah pengumuman
     public function rincian_asesmen($id, Request $request)
     {
         // dd($id);
         return view('admin.sertifikasi.asesmen.indexasesmen', [
-            'sertification' => Sertification::find($id)
+            'sertification' => Sertification::with('pembuatrinciantugasasesmen.asesor')->find($id)
         ]);
     }
     
@@ -303,6 +303,8 @@ class ManageCertificationController extends Controller
 
         $sertification = Sertification::find($id);
         $sertification->rincian_tugas_asesmen = $request->rincian_tugas_asesmen;
+        $sertification->rincian_tugasasesmen_dibuat_oleh = $request->user()->id; // Ambil ID user yang login yg buat perubahan
+        $sertification->rincian_tugasasesmen_dibuat_pada = now(); // Ambil waktu saat ini
         $sertification->save();
         // Simpan file baru
         if ($request->hasFile('asesmen_attachment_file')) {
@@ -368,7 +370,7 @@ class ManageCertificationController extends Controller
     {
         // dd($id);
         return view('asesi.sertifikasi.asesmen.asesi-index-asesmen', [
-            'sertification' => Sertification::find($id)
+            'sertification' => Sertification::with('pembuatrinciantugasasesmen.asesor')->find($id)
         ]);
     }
     //buat nampilin halaman rincian pembayaran di sisi asesi
@@ -376,7 +378,7 @@ class ManageCertificationController extends Controller
     {
         // dd($request);
         return view('asesi.sertifikasi.bayar.indexbayar', [
-            'sertification' => Sertification::with('asesor', 'skema')->find($sert_id),
+            'sertification' => Sertification::with('asesor', 'skema','pembuatrincianpembayaran.asesor')->find($sert_id),
             'asesi' => Asesi::with('student')->find($asesi_id)
         ]);
     }

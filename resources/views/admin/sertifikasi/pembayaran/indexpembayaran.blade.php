@@ -1,5 +1,5 @@
 <x-admin-layout>
-    
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Sertifikasi') }}
@@ -19,7 +19,8 @@
     @endphp
     <div x-data="{ editingRincian: {{ $punyaRincian ? 'false' : 'true' }}, punyaRincian: {{ $punyaRincian ? 'true' : 'false' }} }">
         {{-- View utk edit rincian pembayaran (edit mode) --}}
-        <div x-show="editingRincian" class="p-6 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
+        <div x-show="editingRincian"
+            class="p-6 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
             <div class="flex justify-between items-center mb-2">
                 <p class="text-gray-500 dark:text-gray-400 text-xs">Silahkan berikan rincian pembayaran
                     yang harus dilakukan para asesi.</p>
@@ -28,15 +29,18 @@
                     Batal
                 </button>
             </div>
-            <form action="{{ route('admin.sertification.payment-desc.update', $sertification->id) }}" class="mt-4 flex flex-col gap-2" method="POST">
+            <form action="{{ route('admin.sertification.payment-desc.update', $sertification->id) }}"
+                class="mt-4 flex flex-col gap-2" method="POST">
                 @csrf
                 @method('PATCH')
-                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1" for="rincian_pembayaran">Rincian
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1"
+                    for="rincian_pembayaran">Rincian
                     Pembayaran</label>
-                <p class="text-gray-500 dark:text-gray-400 text-xs">Nominal uang yang perlu dibayarkan asesi sudah otomatis tertera di ui asesi</p>
+                <p class="text-gray-500 dark:text-gray-400 text-xs">Nominal uang yang perlu dibayarkan asesi sudah
+                    otomatis tertera di ui asesi</p>
                 <input id="rincian_pembayaran" type="hidden" name="rincian_pembayaran"
                     value="{{ old('rincian_pembayaran', $sertification?->rincian_pembayaran) }}">
-                @include('admin.sertifikasi.pengumuman.custom-rich-editor', [
+                @include('layouts.custom-rich-editor', [
                     'inputName' => 'rincian_pembayaran',
                     'initialValue' => old(
                         'rincian_pembayaran',
@@ -54,12 +58,35 @@
         {{-- View utk nampilin rincian pembayaran (view mode) --}}
         <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2" x-show="!editingRincian">
             <div class="flex justify-between items-center mb-2">
-                <div class="text-xs text-gray-400">
-                    @if ($sertification->created_at->isToday())
-                        {{ $sertification->created_at->format('H:i') }}
-                    @else
-                        {{ $sertification->created_at->format('d M Y') }}
-                    @endif
+                {{-- foto profil, nama, dan tanggal rincian pembayaran dibuat --}}
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex-shrink-0">
+                        <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
+                            fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            @if ($sertification->pembuatrincianpembayaran->asesor)
+                                {{-- Jika pembuatnya adalah seorang asesor, tampilkan nama dari tabel asesor --}}
+                                {{ $sertification->pembuatrincianpembayaran->asesor->name }}
+                            @else
+                                {{-- Fallback jika karena suatu hal data pembuat tidak ada --}}
+                                Admin
+                            @endif
+                        </h5>
+                        <div class="text-xs text-gray-400">
+                            @if (\Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->isToday())
+                                {{-- Jika hari ini, tampilkan jam --}}
+                                {{ \Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->format('H:i') }}
+                            @else
+                                {{-- Jika sudah lewat, tampilkan tanggal --}}
+                                {{ \Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->format('d M Y') }}
+                            @endif
+                        </div>
+                    </div>
                 </div>
                 <button type="button" @click="editingRincian = true"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer">
@@ -75,5 +102,5 @@
             </div>
         </div>
     </div>
-    
+
 </x-admin-layout>

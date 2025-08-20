@@ -11,7 +11,7 @@
                 Sertifikasi: {{ $sertification->skema->nama_skema }}
             </h3>
             <div class="flex items-center space-x-3">
-                <a href="{{ route('asesi.applied.edit', [$sertification->id,$asesi->id]) }}"
+                <a href="{{ route('asesi.applied.edit', [$sertification->id, $asesi->id]) }}"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150">
                     <x-bxs-edit class="w-4 h-4 mr-2" />
                     Edit
@@ -135,7 +135,13 @@
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Mata Kuliah terkait
                             Skema Sertifikasi dan Nilai</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ $asesi?->makul_nilai ?: 'Tidak diisi' }}
+                            <ul class="list-disc list-inside">
+                                @foreach ($asesi?->makulnilais as $makulnilai)
+                                    <li>
+                                        {{ $makulnilai->nama_makul }} : {{ $makulnilai->nilai_makul }}
+                                    </li>
+                                @endforeach
+                            </ul>
                         </dd>
                     </div>
                 </div>
@@ -149,11 +155,11 @@
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Form APL.01</dt>
                         <dd class="mt-1 text-sm">
                             @if ($asesi->apl_1)
-                            <a href="{{ asset('storage/' . $asesi->apl_1) }}" target="_blank"
-                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
-                                File APL.01</a>
+                                <a href="{{ asset('storage/' . $asesi->apl_1) }}" target="_blank"
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
+                                    File APL.01</a>
                             @else
-                            <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
+                                <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
                             @endif
                         </dd>
                     </div>
@@ -161,11 +167,11 @@
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Form APL.02</dt>
                         <dd class="mt-1 text-sm">
                             @if ($asesi->apl_2)
-                            <a href="{{ asset('storage/' . $asesi->apl_2) }}" target="_blank"
-                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
-                                File APL.02</a>
+                                <a href="{{ asset('storage/' . $asesi->apl_2) }}" target="_blank"
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
+                                    File APL.02</a>
                             @else
-                            <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
+                                <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
                             @endif
                         </dd>
                     </div>
@@ -173,11 +179,11 @@
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Scan KTP</dt>
                         <dd class="mt-1 text-sm">
                             @if ($student->foto_ktp)
-                            <a href="{{ asset('storage/' . $student->foto_ktp) }}" target="_blank"
-                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
-                                KTP</a>
+                                <a href="{{ asset('storage/' . $student->foto_ktp) }}" target="_blank"
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
+                                    KTP</a>
                             @else
-                            <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
+                                <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
                             @endif
                         </dd>
                     </div>
@@ -185,11 +191,11 @@
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Scan KTM</dt>
                         <dd class="mt-1 text-sm">
                             @if ($student->foto_ktm)
-                            <a href="{{ asset('storage/' . $student->foto_ktm) }}" target="_blank"
-                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
-                                KTM</a>
+                                <a href="{{ asset('storage/' . $student->foto_ktm) }}" target="_blank"
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
+                                    KTM</a>
                             @else
-                            <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
+                                <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
                             @endif
                         </dd>
                     </div>
@@ -197,12 +203,23 @@
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Scan Kartu Hasil Studi
                         </dt>
                         <dd class="mt-1 text-sm">
-                            @if ($student->foto_khs)
-                            <a href="{{ asset('storage/' . $student->foto_khs) }}" target="_blank"
-                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
-                                KHS</a>
+                            @php
+                                $kartuHasilStudiFiles = $student->studentattachmentfile->where(
+                                    'type',
+                                    'kartu_hasil_studi',
+                                );
+                            @endphp
+                            @if ($kartuHasilStudiFiles->isNotEmpty())
+                                <ul class="list-disc list-inside">
+                                    @foreach ($kartuHasilStudiFiles as $attachment)
+                                        <li>
+                                            <a href="{{ asset('storage/' . $attachment->path_file) }}" target="_blank"
+                                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat</a>
+                                        </li>
+                                    @endforeach
+                                </ul>
                             @else
-                            <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
+                                <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
                             @endif
                         </dd>
                     </div>
@@ -210,11 +227,11 @@
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Pasfoto</dt>
                         <dd class="mt-1 text-sm">
                             @if ($student->pas_foto)
-                            <a href="{{ asset('storage/' . $student->pas_foto) }}" target="_blank"
-                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
-                                Pasfoto</a>
+                                <a href="{{ asset('storage/' . $student->pas_foto) }}" target="_blank"
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
+                                    Pasfoto</a>
                             @else
-                            <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
+                                <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
                             @endif
                         </dd>
                     </div>
@@ -224,19 +241,22 @@
                             Magang/PKL/MBKM</dt>
                         <dd class="mt-1 text-sm">
                             @php
-                            $suratMagangAttachmentFiles = $asesi->asesiattachmentfiles->where('type', 'surat_ket_magang');
+                                $suratMagangAttachmentFiles = $asesi->asesiattachmentfiles->where(
+                                    'type',
+                                    'surat_ket_magang',
+                                );
                             @endphp
                             @if ($suratMagangAttachmentFiles->isNotEmpty())
-                            <ul class="list-disc list-inside">
-                                @foreach ($suratMagangAttachmentFiles as $attachment)
-                                <li>
-                                    <a href="{{ asset('storage/' . $attachment->path_file) }}" target="_blank"
-                                        class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat</a>
-                                </li>
-                                @endforeach
-                            </ul>
+                                <ul class="list-disc list-inside">
+                                    @foreach ($suratMagangAttachmentFiles as $attachment)
+                                        <li>
+                                            <a href="{{ asset('storage/' . $attachment->path_file) }}" target="_blank"
+                                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat</a>
+                                        </li>
+                                    @endforeach
+                                </ul>
                             @else
-                            <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
+                                <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
                             @endif
                         </dd>
                     </div>
@@ -246,19 +266,22 @@
                             Pelatihan</dt>
                         <dd class="mt-1 text-sm">
                             @php
-                            $sertifPelatihanAttachmentFiles = $asesi->asesiattachmentfiles->where('type', 'sertif_pelatihan');
+                                $sertifPelatihanAttachmentFiles = $asesi->asesiattachmentfiles->where(
+                                    'type',
+                                    'sertif_pelatihan',
+                                );
                             @endphp
                             @if ($sertifPelatihanAttachmentFiles->isNotEmpty())
-                            <ul class="list-disc list-inside">
-                                @foreach ($sertifPelatihanAttachmentFiles as $attachment)
-                                <li>
-                                    <a href="{{ asset('storage/' . $attachment->path_file) }}" target="_blank"
-                                        class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat</a>
-                                </li>
-                                @endforeach
-                            </ul>
+                                <ul class="list-disc list-inside">
+                                    @foreach ($sertifPelatihanAttachmentFiles as $attachment)
+                                        <li>
+                                            <a href="{{ asset('storage/' . $attachment->path_file) }}" target="_blank"
+                                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat</a>
+                                        </li>
+                                    @endforeach
+                                </ul>
                             @else
-                            <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
+                                <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
                             @endif
                         </dd>
                     </div>
@@ -268,26 +291,31 @@
                             Lainnya</dt>
                         <dd class="mt-1 text-sm">
                             @php
-                            $dokPendukungAttachmentFiles = $asesi->asesiattachmentfiles->where('type', 'dok_pendukung_lain');
+                                $dokPendukungAttachmentFiles = $asesi->asesiattachmentfiles->where(
+                                    'type',
+                                    'dok_pendukung_lain',
+                                );
                             @endphp
                             @if ($dokPendukungAttachmentFiles->isNotEmpty())
-                            <ul class="list-disc list-inside">
-                                @foreach ($dokPendukungAttachmentFiles as $attachment)
-                                <li>
-                                    <a href="{{ asset('storage/' . $attachment->path_file) }}" target="_blank"
-                                        class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat</a>
-                                </li>
-                                @endforeach
-                            </ul>
+                                <ul class="list-disc list-inside">
+                                    @foreach ($dokPendukungAttachmentFiles as $attachment)
+                                        <li>
+                                            <a href="{{ asset('storage/' . $attachment->path_file) }}"
+                                                target="_blank"
+                                                class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat</a>
+                                        </li>
+                                    @endforeach
+                                </ul>
                             @else
-                            <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
+                                <span class="text-gray-900 dark:text-gray-100">Tidak ada file.</span>
                             @endif
                         </dd>
                     </div>
                 </div>
             </div>
             <div>
-                <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">E. Status</h3>
+                <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">E. Status
+                </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Asesi</dt>
@@ -295,22 +323,27 @@
                             @if ($asesi->status == 'daftar')
                                 <span
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
-                                    {{ $asesi->status }}
+                                    Daftar
                                 </span>
-                            @elseif($asesi->status == 'diminta perbaiki berkas')
+                            @elseif($asesi->status == 'perlu_perbaikan_berkas')
                                 <span
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">
-                                    {{ $asesi->status }}
+                                    Diminta Perbaikan Berkas
                                 </span>
-                            @elseif($asesi->status == 'tidak bisa dilanjutkan')
+                            @elseif($asesi->status == 'ditolak')
                                 <span
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100">
-                                    {{ $asesi->status }}
+                                    Ditolak
                                 </span>
-                            @elseif($asesi->status == 'dilanjutkan asesmen')
+                            @elseif($asesi->status == 'dilanjutkan_asesmen')
                                 <span
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
-                                    {{ $asesi->status }}
+                                    Dilanjutkan ke Asesmen
+                                </span>
+                            @elseif($asesi->status == 'lulus_sertifikasi')
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
+                                    Lulus Sertifikasi
                                 </span>
                             @else
                                 <span
@@ -320,9 +353,86 @@
                             @endif
                         </dd>
                     </div>
+                    <div>
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Pembayaran</dt>
+                        @php
+                            $latestTransaction = $asesi->transaction->sortByDesc('created_at')->first();
+                        @endphp
+                        <dd class="mt-1 text-sm">
+                            @if ($latestTransaction)
+                                @if ($latestTransaction?->status == 'belum bayar')
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                                        belum bayar
+                                    </span>
+                                    {{-- pembayaran manual dan belum diverifikasi admin --}}
+                                @elseif(
+                                    $latestTransaction?->tipe == 'manual' &&
+                                        $latestTransaction?->bukti_bayar &&
+                                        $latestTransaction?->status == 'pending')
+                                    <div class="space-x-1">
+                                        <span
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">
+                                            Menunggu Verifikasi
+                                        </span>
+                                        <a href="{{ asset('storage/' . $latestTransaction->bukti_bayar) }}"
+                                            target="_blank"
+                                            class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
+                                            File</a>
+                                    </div>
+                                @elseif($latestTransaction?->tipe == 'manual' && $latestTransaction?->status == 'bukti_pembayaran_terverifikasi')
+                                    <div class="space-x-1">
+                                        <span
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
+                                            Pembayaran Terverifikasi
+                                        </span>
+                                        <a href="{{ asset('storage/' . $latestTransaction->bukti_bayar) }}"
+                                            target="_blank"
+                                            class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
+                                            File</a>
+                                    </div>
+                                    {{-- pembayaran manual dan ditolak --}}
+                                @elseif($latestTransaction?->tipe == 'manual' && $latestTransaction?->status == 'bukti_pembayaran_ditolak')
+                                    <div class="space-x-1">
+                                        <span
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100">
+                                            Bukti Pembayaran Ditolak
+                                        </span>
+                                        <a href="{{ asset('storage/' . $latestTransaction->bukti_bayar) }}"
+                                            target="_blank"
+                                            class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Lihat
+                                            File</a>
+                                    </div>
+                                @endif
+                            @else
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                                    Belum submit bukti pembayaran
+                                </span>
+                            @endif
 
+                        </dd>
+                    </div>
                 </div>
             </div>
+            @if ($asesi->sertifikat)
+                <div>
+                    <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">E.
+                        Sertifikat</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                        <div>
+                            <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Sertifikat Asesi
+                            </dt>
+                            <dd class="mt-1 text-sm mr-1 space-y-2">
+                                <a href="{{ asset('storage/' . $asesi->sertifikat->file_path) }}" target="_blank"
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">
+                                    Lihat Sertifikat
+                                </a>
+                            </dd>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

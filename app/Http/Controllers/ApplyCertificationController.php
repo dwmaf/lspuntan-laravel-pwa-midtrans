@@ -150,6 +150,7 @@ class ApplyCertificationController extends Controller
                 $fileData = $this->storeFileWithUniqueName($file, "student_attachments");
                 Studentattachmentfile::create([
                     'student_id' => $student->id,
+                    'type' => 'kartu_hasil_studi',
                     'path_file' => $fileData['path'],
                 ]);
             }

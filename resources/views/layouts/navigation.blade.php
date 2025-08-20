@@ -1,5 +1,5 @@
 <div x-data="{ open: false }">
-    <aside class="h-full  bg-white dark:bg-gray-800 p-3 transform transition-all duration-300 "
+    <aside class="h-full bg-white dark:bg-gray-800 p-3 transform transition-all duration-300 "
         :class="open ? 'w-48 translate-x-0' : 'w-16 translate-x-0'">
         <!-- Sidebar Toggle Button -->
         <button @click="open = !open" class="text-gray-700 dark:text-gray-200 cursor-pointer mb-2 absolute top-5 right-5">
@@ -21,8 +21,8 @@
                     Dashboard
                 </span>
             </a>
-            <a href="{{ route('admin.sertification.index') }}"
-                class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.sertification.*')) bg-gray-200 dark:bg-gray-700 @endif">
+            <a href="{{ route('admin.kelolasertifikasi.index') }}"
+                class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.kelolasertifikasi.*')) bg-gray-200 dark:bg-gray-700 @endif">
                 <x-tni-certificate class="w-4 text-gray-700 dark:text-gray-200" />
                 <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
                     Sertifikasi

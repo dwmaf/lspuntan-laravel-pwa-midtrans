@@ -1,8 +1,7 @@
 Agar data dari eloquent bisa diterima oleh alpine, perlu dilakukan hal berikut
 JSON.parse('{{ json_encode($skemas) }}').
 
-Buat tabel pivot asesi_sertifications = done
-pnpm install, jgn pakai npm install
+pnpm install, JANGAN pakai npm install
 
 fas : fontawesome
 bxs : boxicons
@@ -10,20 +9,21 @@ tni : teeny icons
 
 feather-icons-react 0.9.0
 
--kasih kolom 'batas_pengumpulan_tugas_asesmen','tuk' di sertifications = done, tinggal migrate = done
-
--kolom khs nye taruh di asesiattachmentfiles, soalnya perlu khs dari semester 1-5 = 
-
--kolom makul_nilai itu bakal dibuat tabel baru, jadi relasinya asesi 1 to M makulnilai (kolomnya, nama mata kuliah, dan nilai)
-
 php artisan migrate:fresh --seed
 php artisan db:seed
 
 -mustverifyemail nya kita nonaktifin dulu utk mempercepat development
 
-@if (!$latestTransaction) disabled @endif
-
 what to check if u connect firebase to your app:
 - /android/app/build.gradle.kts
 - /android/settings.gradle.kts
-- 
+- MainActivity.kt
+
+DAFTAR NOTIFIKASI IN APP YG HARUS DIBUAT:
+- ketika student daftar (kasih ke asesor yg bersangkutan dan admin)
+- ketika admin/asesor update status asesi (kasih ke asesi yg bersangkutan)
+- ketika student update data asesinya (kasih ke asesor yg bersangkutan dan admin)
+- ketika admin buat rincian pembayaran (kasih ke asesi yg statusnya 'dilanjutkan_asesmen')
+- ketika admin/asesor buat pengumuman (kasih ke asesi yg statusnya 'dilanjutkan_asesmen')
+- ketika asesor buat rincian tugas asesmen (kasih ke asesi yg statusnya 'dilanjutkan_asesmen' & status bayarnya 'pembayaran_terverifikasi')
+- ketika admin upload sertifikat (kasih ke asesi yg bersangkutan)

@@ -37,4 +37,16 @@ class Sertification extends Model
     {
         return $this->hasMany(Tugasasesmenattachmentfile::class);
     }
+    public function pembuatrincianpembayaran()
+    {
+        // Nama kolom foreign key 'rincian_bayar_dibuat_oleh' tidak standar,
+        // jadi kita perlu menentukannya secara eksplisit.
+        return $this->belongsTo(User::class, 'rincian_bayar_dibuat_oleh');
+    }
+    public function pembuatrinciantugasasesmen()
+    {
+        // Nama kolom foreign key 'rincian_bayar_dibuat_oleh' tidak standar,
+        // jadi kita perlu menentukannya secara eksplisit.
+        return $this->belongsTo(User::class, 'rincian_tugasasesmen_dibuat_oleh');
+    }
 }

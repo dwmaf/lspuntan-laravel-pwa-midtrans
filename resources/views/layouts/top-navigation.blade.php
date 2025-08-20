@@ -33,7 +33,7 @@
         <div class="pt-2 pb-3 space-y-1">
             @hasrole(['admin', 'asesor'])
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dashboard</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.sertification.index')" :active="request()->routeIs('admin.sertification.*')">Sertifikasi</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.kelolasertifikasi.index')" :active="request()->routeIs('admin.kelolasertifikasi.*')">Sertifikasi</x-responsive-nav-link>
                 @hasrole('admin')
                     <x-responsive-nav-link :href="route('admin.skema.create')" :active="request()->routeIs('admin.skema.*')">Skema</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.asesor.index')" :active="request()->routeIs('admin.asesor.*')">Asesor</x-responsive-nav-link>

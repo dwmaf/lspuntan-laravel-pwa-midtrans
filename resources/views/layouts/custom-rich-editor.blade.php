@@ -12,9 +12,9 @@
         <button type="button" data-command="toggleUnderline" class="cursor-pointer p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
             <x-fas-underline class="w-4 h-4" />
         </button>
-        <button type="button" data-command="toggleBulletList" class="cursor-pointer p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
+        {{-- <button type="button" data-command="toggleBulletList" class="cursor-pointer p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
             <x-fas-list-ul class="w-4 h-4" />
-        </button>
+        </button> --}}
         <button type="button" data-command="unsetAllMarks" class="cursor-pointer p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
             <x-fas-text-slash class="w-4 h-4" />
         </button>

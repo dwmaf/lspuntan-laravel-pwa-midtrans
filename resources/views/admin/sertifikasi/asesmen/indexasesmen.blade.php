@@ -25,12 +25,34 @@
         {{-- Blok untuk menampilkan rincian yang sudah ada (View Mode) --}}
         <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2" x-show="!editingRincian">
             <div class="flex justify-between items-center mb-2">
-                <div class="text-xs text-gray-400">
-                    @if ($sertification->created_at->isToday())
-                        {{ $sertification->created_at->format('H:i') }}
-                    @else
-                        {{ $sertification->created_at->format('d M Y') }}
-                    @endif
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex-shrink-0">
+                        <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
+                            fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            @if ($sertification->pembuatrinciantugasasesmen->asesor)
+                                {{-- Jika pembuatnya adalah seorang asesor, tampilkan nama dari tabel asesor --}}
+                                {{ $sertification->pembuatrinciantugasasesmen->asesor->name }}
+                            @else
+                                {{-- Fallback jika karena suatu hal data pembuat tidak ada --}}
+                                Admin
+                            @endif
+                        </h5>
+                        <div class="text-xs text-gray-400">
+                            @if (\Carbon\Carbon::parse($sertification->rincian_tugasasesmen_dibuat_pada)->isToday())
+                                {{-- Jika hari ini, tampilkan jam --}}
+                                {{ \Carbon\Carbon::parse($sertification->rincian_tugasasesmen_dibuat_pada)->format('H:i') }}
+                            @else
+                                {{-- Jika sudah lewat, tampilkan tanggal --}}
+                                {{ \Carbon\Carbon::parse($sertification->rincian_tugasasesmen_dibuat_pada)->format('d M Y') }}
+                            @endif
+                        </div>
+                    </div>
                 </div>
                 <button type="button" @click="editingRincian = true"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer">
@@ -59,7 +81,7 @@
                 @method('PATCH')
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1"
                     for="rincian_tugas_asesmen">Rincian</label>
-                @include('admin.sertifikasi.pengumuman.custom-rich-editor', [
+                @include('layouts.custom-rich-editor', [
                     'inputName' => 'rincian_tugas_asesmen',
                     'initialValue' => old(
                         'rincian_tugas_asesmen',
@@ -133,6 +155,70 @@
                     Simpan Perubahan
                 </button>
             </form>
+        </div>
+    </div>
+    {{-- Daftar mahasiswa yg dilanjutkan ke asesmen dan pembayarannya sudah terverifikasi --}}
+    <div class="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            No
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Nama Asesi
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Status Tugas
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Aksi
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse ($filteredAsesi as $index => $asesi)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {{ $loop->iteration }}
+                            </td>
+                            <td
+                                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {{ $asesi->student->name ?? 'Nama Tidak Tersedia' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                @if ($asesi->asesiasesmenfiles && $asesi->asesiasesmenfiles->isNotEmpty())
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">Menunggu Dilihat</span>
+                                @else
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">Belum ada tugas dikumpulkan</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                @if ($asesi->asesiasesmenfiles && $asesi->asesiasesmenfiles->isNotEmpty())
+                                    <a href="{{ route('admin.applicants.assessment-asesi.show', [$asesi->id, $sertification->id]) }}"
+                                        class="cursor-pointer px-2 py-1 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-700">
+                                        Lihat
+                                    </a>
+                                @else
+                                    <span class="text-xs text-gray-500">Belum ada tugas dikumpulkan</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                                Belum ada pendaftar yang memenuhi kriteria (Dilanjutkan Asesmen dan Pembayarannya
+                                Terverifikasi)
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
     @push('scripts-asesmen')

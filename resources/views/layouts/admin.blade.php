@@ -11,20 +11,7 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" href="{{ asset('logo-lsp.png') }}" type="image/png">
-    <style>
-        ul {
-            list-style-type: disc;
-            /* dari 'list-disc' */
-            list-style-position: outside;
-            /* dari 'list-outside' */
-            padding-left: 2.5rem;
-            /* dari 'pl-10' */
-            padding-top: 1rem;
-            /* dari 'py-4' */
-            padding-bottom: 1rem;
-            /* dari 'py-4' */
-        }
-    </style>
+    
 </head>
 
 <body class="font-sans antialiased">
@@ -33,15 +20,18 @@
             @include('layouts.navigation')
         </div>
 
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col min-w-0">
             <div class="md:hidden mb-2">
                 @include('layouts.top-navigation')
             </div>
             @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow-sm p-4 m-2">
+                <header class="bg-white dark:bg-gray-800 shadow-sm p-4 m-2 flex items-center justify-between">
                     {{ $header }}
-                    <a href="{{-- route ke halaman notifikasi --}}" class="relative">
-                        <span>Notifikasi</span>
+                    <a href="{{ route('notifications.index') }}" class="relative text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                        {{-- Ikon Lonceng (Heroicons) --}}
+                        <x-fas-bell class="w-4 text-gray-700 dark:text-gray-200" />
+                        
+                        {{-- Bubble notifikasi (tidak berubah, posisinya akan mengikuti ikon) --}}
                         @if (isset($unreadNotifications) && $unreadNotifications->count() > 0)
                             <span
                                 class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
