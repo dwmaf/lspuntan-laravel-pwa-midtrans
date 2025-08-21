@@ -1,5 +1,5 @@
 <?php
-
+//ketika admin buat pengumuman
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
@@ -8,11 +8,13 @@ use Illuminate\Notifications\Notification;
 class PengumumanBaru extends Notification
 {
     use Queueable;
-    protected $pengumuman;
+    protected $sert_id;
+    protected $asesi_id;
 
-    public function __construct($pengumuman)
+    public function __construct($sert_id, $asesi_id)
     {
-        $this->pengumuman = $pengumuman;
+        $this->sert_id = $sert_id;
+        $this->asesi_id = $asesi_id;
     }
 
     public function via($notifiable)
@@ -23,8 +25,8 @@ class PengumumanBaru extends Notification
     public function toArray($notifiable)
     {
         return [
-            'message' => 'Pengumuman baru: ' . $this->pengumuman->judul,
-            'link' => route('asesi.pengumuman.show', $this->pengumuman->id),
+            'message' => 'Pengumuman baru: ',
+            'link' => route('asesi.pengumuman.index', [$this->sert_id, $this->asesi_id]),
         ];
     }
 }

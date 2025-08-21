@@ -95,10 +95,15 @@
                 </button>
             </div>
             <h6 class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2">{!! $sertification?->rincian_pembayaran !!}</h6>
-            <div class="flex">
+            <div class="flex mb-2">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">Biaya Sertifikasi : </dt>
                 <dd class="text-sm text-gray-900 dark:text-gray-100">Rp
                     {{ number_format($sertification->harga, 0, ',', '.') ?? 'N/A' }}</dd>
+            </div>
+            <div class="flex">
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">Batas Akhir Pembayaran : </dt>
+                <dd class="text-sm text-gray-900 dark:text-gray-100">
+                    {{ \Carbon\Carbon::parse($sertification->tgl_bayar_ditutup)->isoFormat('D MMMM YYYY') ?? 'N/A' }}</dd>
             </div>
         </div>
     </div>

@@ -60,8 +60,8 @@
                     Dashboard
                 </span>
             </a>
-            <a href="{{ route('asesi.certifications.index') }}"
-                class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('asesi.certifications.*')) bg-gray-200 dark:bg-gray-700 @endif">
+            <a href="{{ route('asesi.sertifikasi.index') }}"
+                class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('asesi.sertifikasi.*')) bg-gray-200 dark:bg-gray-700 @endif">
                 <x-tni-certificate class="w-4 text-gray-700 dark:text-gray-200" />
                 <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
                     Sertifikasi

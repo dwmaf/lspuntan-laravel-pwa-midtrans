@@ -1,5 +1,5 @@
 <?php
-
+//ketika admin update status asesi
 namespace App\Notifications;
 
 use App\Models\Asesi;
@@ -9,12 +9,14 @@ use Illuminate\Notifications\Notification;
 class StatusAsesiUpdated extends Notification
 {
     use Queueable;
-    protected $asesi;
+    protected $sert_id;
+    protected $asesi_id;
     protected $status;
 
-    public function __construct(Asesi $asesi, $status)
+    public function __construct($sert_id, $asesi_id, $status)
     {
-        $this->asesi = $asesi;
+        $this->sert_id = $sert_id;
+        $this->asesi_id = $asesi_id;
         $this->status = $status;
     }
 
@@ -27,7 +29,7 @@ class StatusAsesiUpdated extends Notification
     {
         return [
             'message' => 'Status asesmen Anda diubah menjadi: ' . $this->status,
-            'link' => route('asesi.sertifikasi.rincian', $this->asesi->id),
+            'link' => route('asesi.sertifikasi.applied.show', [$this->sert_id, $this->asesi_id]),
         ];
     }
 }

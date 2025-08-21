@@ -169,7 +169,7 @@
                     <dd class="text-sm text-gray-900 dark:text-gray-100">Rp
                         {{ number_format($sertification->harga, 0, ',', '.') ?? 'N/A' }}</dd>
                 </div>
-                <form action="{{ route('asesi.applied.payment.store', [$sertification->id, $asesi->id]) }}"
+                <form action="{{ route('asesi.payment.store', [$sertification->id, $asesi->id]) }}"
                     method="POST" class="mt-6 space-y-6" enctype="multipart/form-data">
                     @csrf
                     <div>

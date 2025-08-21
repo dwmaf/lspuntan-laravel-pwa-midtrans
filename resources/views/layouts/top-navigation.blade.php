@@ -41,7 +41,7 @@
                 <x-responsive-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')">Profile</x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('asesi.dashboard')" :active="request()->routeIs('asesi.dashboard')">Dashboard</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('asesi.certifications.index')" :active="request()->routeIs('asesi.certifications.*')">Sertifikasi</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('asesi.sertifikasi.index')" :active="request()->routeIs('asesi.sertifikasi.*')">Sertifikasi</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('profile_asesi.edit')" :active="request()->routeIs('profile_asesi.edit')">Profile</x-responsive-nav-link>
             @endhasrole
         </div>

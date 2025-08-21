@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Admin\Sertifikasi;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
+use App\Models\Asesi;
 use App\Models\Pengumumanasesmen;
+use App\Notifications\PengumumanBaru;
 use App\Models\Pengumumanasesmenfile;
 use App\Helpers\FileHelper;
+use App\Notifications\PengumumanUpdated;
 use Illuminate\Support\Facades\Storage;
 
 class PengumumanController extends Controller
@@ -48,6 +51,19 @@ class PengumumanController extends Controller
                 }
             }
         }
+        // ambil semua Asesi yang cocok
+        $asesis = Asesi::with(['student.user']) // pastikan relasi student->user ada
+            ->where('sertification_id', $id)
+            ->where('status', 'dilanjutkan_asesmen')
+            ->get();
+
+        // kirim notifikasi secara individual agar link bisa berisi asesi_id
+        foreach ($asesis as $asesi) {
+            $user = $asesi->student->user ?? null;
+            if ($user) {
+                $user->notify(new PengumumanBaru($id, $asesi->id));
+            }
+        }
 
         return redirect()->back()->with('success', 'Berhasil membuat pengumuman');
     }
@@ -86,6 +102,19 @@ class PengumumanController extends Controller
                         'path_file' => $path['[path'],
                     ]);
                 }
+            }
+        }
+        // ambil semua Asesi yang cocok
+        $asesis = Asesi::with(['student.user']) // pastikan relasi student->user ada
+            ->where('sertification_id', $id)
+            ->where('status', 'dilanjutkan_asesmen')
+            ->get();
+
+        // kirim notifikasi secara individual agar link bisa berisi asesi_id
+        foreach ($asesis as $asesi) {
+            $user = $asesi->student->user ?? null;
+            if ($user) {
+                $user->notify(new PengumumanUpdated($id, $asesi->id));
             }
         }
 

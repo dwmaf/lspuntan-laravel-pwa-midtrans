@@ -46,7 +46,7 @@
                 <h6 class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2">{!! $sertification?->rincian_tugas_asesmen !!}</h6>
                 <div id="asesiasesmenfiles">
                     <form class="border border-gray-300 dark:border-gray-600 rounded-md p-3 mt-10"
-                        action="{{ route('asesi.applied.assessment.update', [$sertification->id, $asesi->id]) }}"
+                        action="{{ route('asesi.assessmen.update', [$sertification->id, $asesi->id]) }}"
                         method="POST" enctype="multipart/form-data">
                         @csrf
                         <label for=""

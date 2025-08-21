@@ -109,4 +109,42 @@ class KelolaSertifikasiController extends Controller
     //     $sertification->update(['status' => 'selesai']);
     //     return redirect()->route('admin.kelolasertifikasi.show', $sertification->id)->with('success', 'Status sertifikasi berhasil diubah menjadi Selesai.');
     // }
+    public function rincian_laporan($sert_id, Request $request)
+    {
+        // dd($request);
+
+        return view('admin.sertifikasi.kelolasertfikasi.laporansertifikasi', [
+            'sertification' => Sertification::with('asesor', 'skema', 'asesi')->find($sert_id)
+        ]);
+    }
+
+    //fungsi ajax buat memfilter riwayat sertifikasi
+    public function filter_riwayat_sertifikasi(Request $request)
+    {
+        $filter = $request->input('filter');
+
+        $query = Sertification::with('skema')->where('status', 'selesai');
+
+        switch ($filter) {
+            case 'bulan_ini':
+                $query->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year);
+                break;
+            case '3_bulan':
+                $query->where('created_at', '>=', now()->subMonths(3));
+                break;
+            case 'tahun_ini':
+                $query->whereYear('created_at', now()->year);
+                break;
+            default:
+                // 'semua' - no additional filter
+                break;
+        }
+
+        $sertifications = $query->get();
+
+        return response()->json([
+            'sertifications' => $sertifications
+        ]);
+    }
 }

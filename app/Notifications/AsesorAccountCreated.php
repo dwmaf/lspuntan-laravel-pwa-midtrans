@@ -1,5 +1,5 @@
 <?php
-
+// ketika admin buat akun asesor
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;

@@ -10,6 +10,7 @@ use App\Models\Tugasasesmenattachmentfile;
 use App\Models\Sertifikat;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
+use App\Notifications\TugasAsesmenBaru;
 
 class AsesmenController extends Controller
 {
@@ -60,6 +61,19 @@ class AsesmenController extends Controller
                 }
             }
         }
+        // ambil semua Asesi yang cocok
+        $asesis = Asesi::with(['student.user']) // pastikan relasi student->user ada
+            ->where('sertification_id', $id)
+            ->where('status', 'dilanjutkan_asesmen')
+            ->get();
+
+        // kirim notifikasi secara individual agar link bisa berisi asesi_id
+        foreach ($asesis as $asesi) {
+            $user = $asesi->student->user ?? null;
+            if ($user) {
+                $user->notify(new TugasAsesmenBaru($id, $asesi->id));
+            }
+        }
 
         return redirect()->back()->with('success', 'Data berhasil disimpan!');
     }
@@ -73,4 +87,25 @@ class AsesmenController extends Controller
             'sertification' => Sertification::find($sert_id)
         ]);
     }    
+
+    public function ajaxDeleteAsesmenFile(Request $request)
+    {
+        $fileId = $request->getContent(); // body request berisi ID file (plain text)
+        if (empty($fileId)) {
+            return response()->json(['error' => 'File ID tidak valid.'], 400);
+        }
+
+        $file = Tugasasesmenattachmentfile::find($fileId);
+        if ($file) {
+            // Hapus file fisik
+            if (Storage::disk('public')->exists($file->path_file)) {
+                Storage::disk('public')->delete($file->path_file);
+            }
+            // Hapus record database
+            $file->delete();
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['error' => 'File tidak ditemukan.'], 404);
+        }
+    }
 }

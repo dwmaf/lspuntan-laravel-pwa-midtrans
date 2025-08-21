@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
@@ -15,6 +16,14 @@ class NotificationController extends Controller
         // Tandai notifikasi yang belum dibaca sebagai sudah dibaca
         $user->unreadNotifications->markAsRead();
 
-        return view('notifications.index', compact('notifications'));
+        return view('admin.notifikasi.notifikasi', compact('notifications'));
+    }
+
+    public function markAllRead(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->unreadNotifications->markAsRead();
+
+        return response()->json(['status' => 'ok']);
     }
 }

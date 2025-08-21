@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Asesi\Sertifikasi;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asesi;
-use App\Models\Transaction;
+use App\Models\Tugasasesmenattachmentfile;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Storage;
@@ -50,5 +50,27 @@ class AsesmenAsesiController extends Controller
         }
 
         return redirect()->back()->with('success', 'Berhasil unggah file asesmen.');
+    }
+
+    // fungsi ajax buat hapus file dari tugas asesmen
+    public function ajaxDeleteTugasAsesmenFile(Request $request)
+    {
+        $fileId = $request->getContent(); // body request berisi ID file (plain text)
+        if (empty($fileId)) {
+            return response()->json(['error' => 'File ID tidak valid.'], 400);
+        }
+
+        $file = Asesiasesmenfile::find($fileId);
+        if ($file) {
+            // Hapus file fisik
+            if (Storage::disk('public')->exists($file->path_file)) {
+                Storage::disk('public')->delete($file->path_file);
+            }
+            // Hapus record database
+            $file->delete();
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['error' => 'File tidak ditemukan.'], 404);
+        }
     }
 }

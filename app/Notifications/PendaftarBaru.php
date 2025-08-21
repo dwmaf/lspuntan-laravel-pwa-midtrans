@@ -1,5 +1,5 @@
 <?php
-
+// ketika ada mahasiswa yg mendaftar sertifikasi
 namespace App\Notifications;
 
 use App\Models\Asesi;

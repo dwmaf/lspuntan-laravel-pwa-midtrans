@@ -1,12 +1,11 @@
 <?php
-//ketika admin ngunggah sertifikat ke asesi
+//ketika admin buat pengumuman
 namespace App\Notifications;
 
-use App\Models\Sertifikat;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
-class SertifikatDiunggah extends Notification
+class PengumumanUpdated extends Notification
 {
     use Queueable;
     protected $sert_id;
@@ -26,8 +25,8 @@ class SertifikatDiunggah extends Notification
     public function toArray($notifiable)
     {
         return [
-            'message' => 'Sertifikat Anda telah diunggah.',
-            'link' => route('asesi.sertifikasi.applied.show', [$this->sert_id, $this->asesi_id]),
+            'message' => 'Pengumuman diperbaharui: ',
+            'link' => route('asesi.pengumuman.index', [$this->sert_id, $this->asesi_id]),
         ];
     }
 }

@@ -1,21 +1,22 @@
 <?php
-//ketika admin ngunggah sertifikat ke asesi
+//ketika admin update status pembayaran asesi
 namespace App\Notifications;
 
-use App\Models\Sertifikat;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
-class SertifikatDiunggah extends Notification
+class StatusBayarAsesiUpdated extends Notification
 {
     use Queueable;
     protected $sert_id;
     protected $asesi_id;
+    protected $status;
 
-    public function __construct($sert_id, $asesi_id)
+    public function __construct($sert_id, $asesi_id, $status)
     {
         $this->sert_id = $sert_id;
         $this->asesi_id = $asesi_id;
+        $this->status = $status;
     }
 
     public function via($notifiable)
@@ -26,7 +27,7 @@ class SertifikatDiunggah extends Notification
     public function toArray($notifiable)
     {
         return [
-            'message' => 'Sertifikat Anda telah diunggah.',
+            'message' => 'Status pembayaran Anda diubah menjadi: ' . $this->status,
             'link' => route('asesi.sertifikasi.applied.show', [$this->sert_id, $this->asesi_id]),
         ];
     }
