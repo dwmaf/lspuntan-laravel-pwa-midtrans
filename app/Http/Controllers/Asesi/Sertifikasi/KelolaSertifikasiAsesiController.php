@@ -19,16 +19,7 @@ use Illuminate\Support\Facades\Notification;
 class KelolaSertifikasiAsesiController extends Controller
 {
 
-    public function asesi_daftar_sertifikasi(Request $request)
-    {
-        $user = $request->user();
-        $student = $user->student;
-
-        return view('asesi.sertifikasi.kelolasertifikasi.asesi-daftar-sertifikasi', [
-            'sertifications' => Sertification::with('skema')->get(),
-            'asesi' => Asesi::where('student_id', $student->id)->get()->keyBy('sertification_id')
-        ]);
-    }
+     
 
     public function form_daftar_sertifikasi($id, Request $request)
     {

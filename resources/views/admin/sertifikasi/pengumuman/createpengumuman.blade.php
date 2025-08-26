@@ -1,4 +1,4 @@
-<form action="{{ route('admin.sertification.assessment-announcement.store', $sertification->id) }}" class="mt-4 flex flex-col gap-2"
+<form action="{{ route('admin.sertifikasi.assessment-announcement.store', $sertification->id) }}" class="mt-4 flex flex-col gap-2"
     method="POST" x-data="{ error: '', files: null }" enctype="multipart/form-data">
     @csrf
     <input type="text" hidden value="{{ $sertification->id }}" name="sertification_id">

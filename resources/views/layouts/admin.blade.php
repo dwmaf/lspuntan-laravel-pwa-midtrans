@@ -26,7 +26,7 @@
             </div>
             @isset($header)
                 <header x-data="{ showNotifikasi: false }"
-                    class="bg-white dark:bg-gray-800 shadow-sm p-4 m-2 flex items-center justify-between relative">
+                    class="bg-white dark:bg-gray-800 shadow-sm p-4 m-2 flex items-center justify-between relative z-10">
                     <div class="flex-1">
                         {{ $header }}
                     </div>
@@ -46,27 +46,22 @@
                         </button>
 
                         {{-- Dropdown Daftar Notifikasi --}}
-                        <div x-show="showNotifikasi" x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="transform opacity-100 scale-100"
-                            x-transition:leave-end="transform opacity-0 scale-95" @click.outside="showNotifikasi = false"
+                        <div x-show="showNotifikasi" @click.outside="showNotifikasi = false"
                             class="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10 border border-gray-200 dark:border-gray-600">
                             <div class="py-2 max-h-64 overflow-y-auto">
                                 @auth
-                                    @php $latest = auth()->user()->notifications()->latest()->take(5)->get(); @endphp
-                                    @forelse ($latest as $n)
+                                    @php $latestNotif = auth()->user()->notifications()->latest()->take(5)->get(); @endphp
+                                    @forelse ($latestNotif as $notif)
                                         @php
-                                            $data = $n->data;
-                                            $isUnread = is_null($n->read_at);
+                                            $data = $notif->data;
+                                            $isUnread = is_null($notif->read_at);
                                         @endphp
                                         <a href="{{ $data['link'] ?? '#' }}"
                                             class="notification-item block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 {{ $isUnread ? 'bg-gray-50 dark:bg-gray-800' : '' }}">
                                             <div class="flex items-start justify-between">
                                                 <div class="text-gray-800 dark:text-gray-100 truncate">
                                                     {{ $data['message'] ?? 'Notifikasi' }}</div>
-                                                <div class="text-xs text-gray-500 ml-2">{{ $n->created_at->diffForHumans() }}
+                                                <div class="text-xs text-gray-500 ml-2">{{ $notif->created_at->diffForHumans() }}
                                                 </div>
                                             </div>
                                         </a>
@@ -95,6 +90,7 @@
             </main>
         </div>
 
+        
     </div>
     @stack('scripts')
     <script>

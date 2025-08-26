@@ -69,13 +69,13 @@
                             </div>
                         </div>
                         <div class="flex items-center space-x-3">
-                            <a href="{{ route('admin.sertification.assessment-announcement.edit', [$sertification->id, $pengumuman->id]) }}"
+                            <a href="{{ route('admin.sertifikasi.assessment-announcement.edit', [$sertification->id, $pengumuman->id]) }}"
                                 class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer">
                                 <x-bxs-edit class="w-4 h-4 mr-2" />
                                 Edit
                             </a>
                             <button type="button"
-                                @click="showConfirmModal = true; deleteUrl = '{{ route('admin.sertification.assessment-announcement.destroy', [$sertification->id, $pengumuman->id]) }}'"
+                                @click="showConfirmModal = true; deleteUrl = '{{ route('admin.sertifikasi.assessment-announcement.destroy', [$sertification->id, $pengumuman->id]) }}'"
                                 class="cursor-pointer inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-700 dark:hover:bg-red-800 dark:focus:ring-red-800 transition ease-in-out duration-150">
                                 <x-bxs-trash class="w-4 h-4 mr-2" />
                                 Hapus

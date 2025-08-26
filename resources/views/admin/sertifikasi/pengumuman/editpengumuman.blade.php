@@ -15,14 +15,14 @@
         </div>
     @endif
     @include('layouts.admin-sertifikasi-menu')
-    <div class="p-6 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
+    <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 sm:mb-0">
             Edit Pengumuman
         </h3>
         @php
             $jumlahFileLama = $sertification->asesmenfile ? $sertification->asesmenfile->count() : 0;
         @endphp
-        <form action="{{ route('admin.sertification.assessment-announcement.update', [$sertification->id,$pengumumanAsesmen->id]) }}"
+        <form action="{{ route('admin.sertifikasi.assessment-announcement.update', [$sertification->id,$pengumumanAsesmen->id]) }}"
             class="mt-4 flex flex-col gap-2" method="POST" x-data="{ error: '', files: null }" enctype="multipart/form-data">
             @csrf
             @method('PATCH')
@@ -122,7 +122,7 @@
                 const spinner = document.getElementById('spinner-' + fileId);
                 if (spinner) spinner.classList.remove('hidden');
                 btn.disabled = true;
-                fetch('/asesmen-file-ajax-delete', {
+                fetch('/pengumuman-file-ajax-delete', {
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,

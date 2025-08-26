@@ -1,5 +1,5 @@
 <div x-data="{ open: false }">
-    <aside class="h-full bg-white dark:bg-gray-800 p-3 transform transition-all duration-300 "
+    <aside class="h-full bg-white dark:bg-gray-800 p-3 transition-all duration-300 overflow-visible z-40"
         :class="open ? 'w-48 translate-x-0' : 'w-16 translate-x-0'">
         <!-- Sidebar Toggle Button -->
         <button @click="open = !open" class="text-gray-700 dark:text-gray-200 cursor-pointer mb-2 absolute top-5 right-5">
@@ -14,12 +14,14 @@
 
 
         @hasrole(['admin', 'asesor'])
-            <a href="{{ route('admin.dashboard') }}"
-                class="w-full flex items-center gap-2 leading-none mt-10 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.dashboard')) bg-gray-200 dark:bg-gray-700 @endif">
+            <a href="{{ route('admin.dashboard') }}" x-data="{ showTip: false, left: 0, top: 0 }"
+                
+                class="w-full flex items-center gap-2 leading-none mt-10 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm relative @if (request()->routeIs('admin.dashboard')) bg-gray-200 dark:bg-gray-700 @endif">
                 <x-bxs-grid-alt class="w-5 text-gray-700 dark:text-gray-200" />
                 <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
                     Dashboard
                 </span>
+                
             </a>
             <a href="{{ route('admin.kelolasertifikasi.index') }}"
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.kelolasertifikasi.*')) bg-gray-200 dark:bg-gray-700 @endif">
@@ -29,20 +31,20 @@
                 </span>
             </a>
             @hasrole('admin')
-            <a href="{{ route('admin.skema.create') }}"
-                class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.skema.*')) bg-gray-200 dark:bg-gray-700 @endif">
-                <x-bxs-book class="w-4 text-gray-700 dark:text-gray-200" />
-                <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
-                    Skema
-                </span>
-            </a>
-            <a href="{{ route('admin.asesor.index') }}"
-                class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.asesor.*')) bg-gray-200 dark:bg-gray-700 @endif">
-                <x-fas-chalkboard-teacher class="w-4 text-gray-700 dark:text-gray-200" />
-                <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
-                    Asesor
-                </span>
-            </a>
+                <a href="{{ route('admin.skema.create') }}"
+                    class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.skema.*')) bg-gray-200 dark:bg-gray-700 @endif">
+                    <x-bxs-book class="w-4 text-gray-700 dark:text-gray-200" />
+                    <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
+                        Skema
+                    </span>
+                </a>
+                <a href="{{ route('admin.asesor.index') }}"
+                    class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.asesor.*')) bg-gray-200 dark:bg-gray-700 @endif">
+                    <x-fas-chalkboard-teacher class="w-4 text-gray-700 dark:text-gray-200" />
+                    <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
+                        Asesor
+                    </span>
+                </a>
             @endhasrole
             <a href="{{ route('profile.edit') }}"
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('profile.edit')) bg-gray-200 dark:bg-gray-700 @endif"

@@ -11,6 +11,7 @@ use App\Models\Sertifikat;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
 use App\Notifications\TugasAsesmenBaru;
+use Illuminate\Support\Facades\Notification;
 
 class AsesmenController extends Controller
 {
@@ -71,7 +72,7 @@ class AsesmenController extends Controller
         foreach ($asesis as $asesi) {
             $user = $asesi->student->user ?? null;
             if ($user) {
-                $user->notify(new TugasAsesmenBaru($id, $asesi->id));
+                Notification::send($user, new TugasAsesmenBaru($id, $asesi->id));
             }
         }
 

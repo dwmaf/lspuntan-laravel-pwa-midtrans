@@ -22,55 +22,56 @@
     </div> --}}
     {{-- pembayaran --}}
     <div>
-        <a href="{{ route('admin.sertification.payment-desc.index', $sertification->id) }}"
+        <a href="{{ route('admin.sertifikasi.payment-desc.index', $sertification->id) }}"
             class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md 
             dark:text-white text-gray-600 "> 
             Pembayaran
         </a>
-        @if (Route::is('admin.sertification.payment-desc.index'))
+        @if (Route::is('admin.sertifikasi.payment-desc.index'))
+            <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
+        @endif
+    </div>
+    {{-- Pengumuman --}}
+    <div>
+        <a href="{{ route('admin.sertifikasi.assessment-announcement.index', $sertification->id) }}"
+            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md 
+            dark:text-white text-gray-600 ">
+            Pengumuman
+        </a>
+        @if (Route::is('admin.sertifikasi.assessment-announcement.*'))
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
     {{-- Asesmen --}}
     <div>
-        <a href="{{ route('admin.sertification.assessment-announcement.index', $sertification->id) }}"
-            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md 
-            dark:text-white text-gray-600 ">
-            Pengumuman
-        </a>
-        @if (Route::is('admin.sertification.assessment-announcement.index'))
-            <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
-        @endif
-    </div>
-    <div>
-        <a href="{{ route('admin.sertification.assessment.edit', $sertification->id) }}"
+        <a href="{{ route('admin.sertifikasi.assessment.edit', $sertification->id) }}"
             class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md 
             dark:text-white text-gray-600 ">
             Asesmen
         </a>
-        @if (Route::is('admin.sertification.assessment.edit'))
+        @if (Route::is('admin.sertifikasi.assessment.edit'))
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
     {{-- Daftar asesi yg mendaftar --}}
     <div>
-        <a href="{{ route('admin.sertification.applicants.index', $sertification->id) }}"
+        <a href="{{ route('admin.sertifikasi.pendaftar.index', $sertification->id) }}"
             class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
             dark:text-white text-gray-600 ">
             Peserta
         </a>
-        @if (Route::is(['admin.sertification.applicants.index','admin.applicants.show']))
+        @if (Route::is('admin.sertifikasi.pendaftar.*'))
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
     {{-- laporan --}}
     <div>
-        <a href="{{ route('admin.sertification.report', $sertification->id) }}"
+        <a href="{{ route('admin.kelolasertifikasi.report', $sertification->id) }}"
             class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
             dark:text-white text-gray-600 ">
             Laporan
         </a>
-        @if (Route::is(['admin.sertification.report']))
+        @if (Route::is(['admin.kelolasertifikasi.report']))
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>

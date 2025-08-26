@@ -29,7 +29,7 @@
                     Batal
                 </button>
             </div>
-            <form action="{{ route('admin.sertification.payment-desc.update', $sertification->id) }}"
+            <form action="{{ route('admin.sertifikasi.payment-desc.update', $sertification->id) }}"
                 class="mt-4 flex flex-col gap-2" method="POST">
                 @csrf
                 @method('PATCH')

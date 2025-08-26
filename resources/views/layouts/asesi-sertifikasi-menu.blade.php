@@ -7,12 +7,12 @@
     {{-- Detail --}}
     @if ($asesi)
         <div>
-            <a href='{{ route('asesi.kelolasertifikasi.applied.show', [$sertification->id, $asesi->id]) }}'
+            <a href='{{ route('asesi.sertifikasi.applied.show', [$sertification->id, $asesi->id]) }}'
                 class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
     dark:text-white text-gray-600 ">
                 Detail
             </a>
-            @if (Route::is('asesi.kelolasertifikasi.applied.show'))
+            @if (Route::is('asesi.sertifikasi.applied.show'))
                 <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
             @endif
         </div>

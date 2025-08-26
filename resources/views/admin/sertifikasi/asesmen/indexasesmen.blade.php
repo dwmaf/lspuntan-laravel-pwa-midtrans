@@ -75,7 +75,7 @@
                     Batal
                 </button>
             </div>
-            <form action="{{ route('admin.sertification.assessment.update', $sertification->id) }}"
+            <form action="{{ route('admin.sertifikasi.assessment.update', $sertification->id) }}"
                 class="mt-4 flex flex-col gap-2" method="POST" x-data="{ error: '', files: null }" enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
@@ -200,7 +200,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 @if ($asesi->asesiasesmenfiles && $asesi->asesiasesmenfiles->isNotEmpty())
-                                    <a href="{{ route('admin.applicants.assessment-asesi.show', [$asesi->id, $sertification->id]) }}"
+                                    <a href="{{ route('admin.sertifikasi.rincian.assessment.asesi.index', [$asesi->id, $sertification->id]) }}"
                                         class="cursor-pointer px-2 py-1 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-700">
                                         Lihat
                                     </a>

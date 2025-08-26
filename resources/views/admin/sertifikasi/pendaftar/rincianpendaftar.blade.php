@@ -328,7 +328,6 @@
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
                                     Dilanjutkan ke asesmen
                                 </span>
-                            @else
                             @elseif($asesi->status == 'lulus_sertifikasi')
                                 <span
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
@@ -341,7 +340,7 @@
                                 </span>
                             @endif
                             <button type="button"
-                                @click="showConfirmEditStatusModal = true; editStatusAsesiUrl = '{{ route('admin.applicants.update-status', [$asesi->id, $asesi->sertification_id]) }}'"
+                                @click="showConfirmEditStatusModal = true; editStatusAsesiUrl = '{{ route('admin.sertifikasi.pendaftar.update-status', [$asesi->id, $asesi->sertification_id]) }}'"
                                 class="inline-flex items-center px-2 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer">
                                 <x-bxs-edit class="w-3 h-3 mr-2" />
                                 Ubah Status
@@ -423,7 +422,7 @@
                             @endif
                             <div class="flex justify-end">
                                 <button type="button" @if (!$latestTransaction) disabled @endif
-                                    @click="showConfirmUpdateStatusPembayaranModal = true; editStatusPembayaranUrl = '{{ route('admin.applicants.update-payment-status', [$asesi->id, $latestTransaction->id]) }}'"
+                                    @click="showConfirmUpdateStatusPembayaranModal = true; editStatusPembayaranUrl = '{{ route('admin.sertifikasi.pendaftar.update-payment-status', [$asesi->id, $latestTransaction->id]) }}'"
                                     class="inline-flex items-center px-2 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-default">
                                     <x-bxs-edit class="w-3 h-3 mr-2" />
                                     Ubah Status
@@ -578,7 +577,7 @@
                 <p class="my-1 text-sm text-gray-600 dark:text-gray-400">Untuk: <span
                         class="font-semibold">{{ $asesi->student->name }}</span></p>
     
-                <form action="{{ route('admin.applicants.upload-certificate.update', [$asesi->id, $sertification->id]) }}"
+                <form action="{{ route('admin.sertifikasi.pendaftar.upload-certificate.update', [$asesi->id, $sertification->id]) }}"
                     method="POST" enctype="multipart/form-data" class="space-y-6">
                     @method('PATCH')
                     @csrf

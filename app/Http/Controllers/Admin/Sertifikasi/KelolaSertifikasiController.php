@@ -113,7 +113,7 @@ class KelolaSertifikasiController extends Controller
     {
         // dd($request);
 
-        return view('admin.sertifikasi.kelolasertfikasi.laporansertifikasi', [
+        return view('admin.sertifikasi.kelolasertifikasi.laporansertifikasi', [
             'sertification' => Sertification::with('asesor', 'skema', 'asesi')->find($sert_id)
         ]);
     }
