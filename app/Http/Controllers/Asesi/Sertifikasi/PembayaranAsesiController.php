@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Asesi\Sertifikasi;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asesi;
+use App\Models\User;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Storage;
+use App\Notifications\AsesiUploadBuktiPembayaran;
 use App\Helpers\FileHelper;
+use Illuminate\Support\Facades\Notification;
 
 class PembayaranAsesiController extends Controller
 {
@@ -45,6 +48,9 @@ class PembayaranAsesiController extends Controller
         $transaction['status'] = 'pending';
         $transaction->save();
 
+        $admins = User::role('admin')->get();
+        Notification::send($admins, new AsesiUploadBuktiPembayaran($sert_id, $asesi_id));
+        
         return redirect()->back()->with('success', 'Berhasil upload bukti pembayaran, admin akan memverifikasinya.');
     }
 

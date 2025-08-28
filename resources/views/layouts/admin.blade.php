@@ -32,7 +32,7 @@
                     </div>
                     <div class="relative flex items-center ml-4">
                         {{-- Ikon Lonceng --}}
-                        <button @click="showNotifikasi = !showNotifikasi" class="relative focus:outline-none">
+                        <button @click="showNotifikasi = !showNotifikasi" class="relative focus:outline-none cursor-pointer">
                             <x-fas-bell class="w-5 h-5 text-gray-700 dark:text-gray-200" />
                             @auth
                                 @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
@@ -48,7 +48,7 @@
                         {{-- Dropdown Daftar Notifikasi --}}
                         <div x-show="showNotifikasi" @click.outside="showNotifikasi = false"
                             class="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10 border border-gray-200 dark:border-gray-600">
-                            <div class="py-2 max-h-64 overflow-y-auto">
+                            <div class=" max-h-64 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-600">
                                 @auth
                                     @php $latestNotif = auth()->user()->notifications()->latest()->take(5)->get(); @endphp
                                     @forelse ($latestNotif as $notif)
@@ -57,9 +57,9 @@
                                             $isUnread = is_null($notif->read_at);
                                         @endphp
                                         <a href="{{ $data['link'] ?? '#' }}"
-                                            class="notification-item block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 {{ $isUnread ? 'bg-gray-50 dark:bg-gray-800' : '' }}">
+                                            class="notification-item block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
                                             <div class="flex items-start justify-between">
-                                                <div class="text-gray-800 dark:text-gray-100 truncate">
+                                                <div class="{{ $isUnread ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400' }} truncate">
                                                     {{ $data['message'] ?? 'Notifikasi' }}</div>
                                                 <div class="text-xs text-gray-500 ml-2">{{ $notif->created_at->diffForHumans() }}
                                                 </div>

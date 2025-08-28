@@ -53,7 +53,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 @if ($asesi->status == 'daftar')
                                     <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
                                         Daftar
                                     </span>
                                 @elseif($asesi->status == 'perlu_perbaikan_berkas')
@@ -70,6 +70,11 @@
                                     <span
                                         class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
                                         Dilanjutkan ke asesmen
+                                    </span>
+                                @elseif($asesi->status == 'lulus_sertifikasi')
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
+                                        Lulus Sertifikasi
                                     </span>
                                 @else
                                     <span

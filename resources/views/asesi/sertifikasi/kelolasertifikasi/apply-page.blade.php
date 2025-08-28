@@ -154,7 +154,7 @@
                 removeMakul(index) {
                     this.makulNilais.splice(index, 1);
                 }
-                        }" class="p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+            }" class="p-4 border border-gray-200 dark:border-gray-700 rounded-md">
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
                     Mata Kuliah terkait Skema Sertifikasi dan Nilai yang diperoleh<span class="text-red-500">*</span>
                 </label>
@@ -207,6 +207,10 @@
                     Permohonan Sertifikasi Kompetensi (file MS-Word yang telah diisi dan dilengkapi dengan tanda tangan
                     ukuran file maksimal 2 MB)<span style="color: red">*</span>
                 </label>
+                <a href="{{ asset('storage/' . $sertification->skema->format_apl_1) }}"
+                    class="text-blue-500 hover:text-blue-300" target="_blank">
+                    Lihat Template
+                </a>
                 <input type="file" name="apl_1" required
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
                 <x-input-error class="mt-2" :messages="$errors->get('apl_1')" />
@@ -216,6 +220,10 @@
                     Asesmen Mandiri (file MS-Word yang telah diisi dan dilengkapi dengan tanda tangan ukuran file
                     maksimal 3 MB)<span style="color: red">*</span>
                 </label>
+                <a href="{{ asset('storage/' . $sertification->skema->format_apl_2) }}"
+                    class="text-blue-500 hover:text-blue-300" target="_blank">
+                    Lihat Template
+                </a>
                 <input type="file" name="apl_2" required
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
                 <x-input-error class="mt-2" :messages="$errors->get('apl_2')" />
@@ -227,8 +235,8 @@
                 <!-- Feedback jika file sudah ada -->
                 @if ($student->foto_ktp)
                     <p class="text-sm text-gray-500 mb-1">File sudah ada:
-                        <a href="{{ asset('storage/' . $student->foto_ktp) }}" class="text-blue-500 hover:text-blue-300"
-                            target="_blank">Lihat File</a>
+                        <a href="{{ asset('storage/' . $student->foto_ktp) }}"
+                            class="text-blue-500 hover:text-blue-300" target="_blank">Lihat File</a>
                     </p>
                 @endif
                 <!-- Input file -->
@@ -244,8 +252,8 @@
                 <!-- Feedback jika file sudah ada -->
                 @if ($student->foto_ktm)
                     <p class="text-sm text-gray-500 mb-1">File sudah ada:
-                        <a href="{{ asset('storage/' . $student->foto_ktm) }}" class="text-blue-500 hover:text-blue-300"
-                            target="_blank">Lihat File</a>
+                        <a href="{{ asset('storage/' . $student->foto_ktm) }}"
+                            class="text-blue-500 hover:text-blue-300" target="_blank">Lihat File</a>
                     </p>
                 @endif
                 <!-- Input file -->
@@ -254,7 +262,7 @@
                     @if (!$student->foto_ktm) required @endif>
                 <x-input-error class="mt-2" :messages="$errors->get('foto_ktm')" />
             </div>
-            
+
             <div id="kartu_hasil_studi">
                 <label for="kartu_hasil_studi" class="block text-sm font-medium text-gray-600 dark:text-gray-300">
                     Scan Kartu Hasil Studi (Bisa upload lebih dari satu)<span class="text-red-500">*</span>
@@ -270,8 +278,8 @@
                         <ul class="list-disc list-inside pl-2 mb-1">
                             @foreach ($khsFiles as $file)
                                 <li>
-                                    <a href="{{ asset('storage/' . $file->path_file) }}" class="text-blue-500 hover:text-blue-300"
-                                        target="_blank">
+                                    <a href="{{ asset('storage/' . $file->path_file) }}"
+                                        class="text-blue-500 hover:text-blue-300" target="_blank">
                                         Lihat File
                                     </a>
                                 </li>
@@ -283,9 +291,8 @@
                 {{-- Input file --}}
                 <input id="kartu_hasil_studi" name="kartu_hasil_studi[]" type="file" multiple
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
-                    {{-- Atribut required hanya jika belum ada file sama sekali --}}
-                    @if ($khsFiles->isEmpty()) required @endif>
-                
+                    {{-- Atribut required hanya jika belum ada file sama sekali --}} @if ($khsFiles->isEmpty()) required @endif>
+
                 {{-- Menampilkan error --}}
                 @error('kartu_hasil_studi.*')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -302,8 +309,8 @@
                 <!-- Feedback jika file sudah ada -->
                 @if ($student->pas_foto)
                     <p class="text-sm text-gray-500 mb-1">File sudah ada:
-                        <a href="{{ asset('storage/' . $student->pas_foto) }}" class="text-blue-500 hover:text-blue-300"
-                            target="_blank">Lihat File</a>
+                        <a href="{{ asset('storage/' . $student->pas_foto) }}"
+                            class="text-blue-500 hover:text-blue-300" target="_blank">Lihat File</a>
                     </p>
                 @endif
                 <!-- Input file -->

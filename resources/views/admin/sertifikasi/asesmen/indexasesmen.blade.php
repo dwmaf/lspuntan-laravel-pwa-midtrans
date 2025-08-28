@@ -193,14 +193,14 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 @if ($asesi->asesiasesmenfiles && $asesi->asesiasesmenfiles->isNotEmpty())
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">Menunggu Dilihat</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">Diserahkan</span>
                                 @else
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">Belum ada tugas dikumpulkan</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 @if ($asesi->asesiasesmenfiles && $asesi->asesiasesmenfiles->isNotEmpty())
-                                    <a href="{{ route('admin.sertifikasi.rincian.assessment.asesi.index', [$asesi->id, $sertification->id]) }}"
+                                    <a href="{{ route('admin.sertifikasi.rincian.assessment.asesi.index', [$sertification->id, $asesi->id]) }}"
                                         class="cursor-pointer px-2 py-1 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-700">
                                         Lihat
                                     </a>

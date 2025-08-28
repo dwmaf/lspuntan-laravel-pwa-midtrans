@@ -19,7 +19,21 @@ use Illuminate\Support\Facades\Notification;
 class KelolaSertifikasiAsesiController extends Controller
 {
 
-     
+     public function asesi_daftar_sertifikasi(Request $request){
+        // 1. Ambil user yang sedang login
+        $user = $request->user();
+        $student = $user->student;
+
+        // 2. Ambil semua data pendaftaran (asesi) milik student tersebut.
+        // Gunakan keyBy('sertification_id') agar mudah dicari di view.
+        $asesi = Asesi::where('student_id', $student->id)
+                      ->get()
+                      ->keyBy('sertification_id');
+        return view('asesi.sertifikasi.kelolasertifikasi.asesi-daftar-sertifikasi', [
+            'sertifications' => Sertification::with('skema')->get(),
+            'asesi' => $asesi
+        ]);
+     }
 
     public function form_daftar_sertifikasi($id, Request $request)
     {
@@ -163,7 +177,7 @@ class KelolaSertifikasiAsesiController extends Controller
         $admins = User::role('admin')->get();
         Notification::send($admins, new PendaftarBaru($asesi));
         $sertification_id = $request->input('sertification_id');
-        return redirect(route('asesi.kelolasertifikasi.applied.show',[$asesi->id, $sertification_id]))->with('Success', 'Berhasil daftar sertifikasi');
+        return redirect(route('asesi.sertifikasi.applied.show',[$sertification_id, $asesi->id]))->with('Success', 'Berhasil daftar sertifikasi');
     }
 
     public function detail_applied_sertifikasi($sert_id, $asesi_id, Request $request)
@@ -193,7 +207,7 @@ class KelolaSertifikasiAsesiController extends Controller
         ]);
     }
 
-    public function update_applied_sertifikasi($asesi_id, Request $request)
+    public function update_applied_sertifikasi($sert_id, $asesi_id, Request $request)
     {
         // dd($request);
         $student = Student::findOrFail($request->student_id);

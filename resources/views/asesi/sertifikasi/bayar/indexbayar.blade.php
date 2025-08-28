@@ -14,7 +14,7 @@
 
     @if (
         ($asesi->transaction->first()?->tipe == 'manual' &&
-            $asesi->transaction->first()?->status == 'bukti pembayaran terverifikasi') ||
+            $asesi->transaction->first()?->status == 'bukti_pembayaran_terverifikasi') ||
             $asesi->transaction->first()?->status == 'paid')
         <div class="p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
             <div class="flex flex-col items-center text-center">
@@ -40,16 +40,18 @@
             <div class="space-y-4">
                 <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Rincian Transaksi</h4>
                 <dl class="space-y-2 text-sm">
-                    <div class="flex items-center justify-between">
-                        <dt class="text-gray-600 dark:text-gray-400">Nomor Invoice</dt>
-                        <dd class="font-mono text-gray-900 dark:text-white">
-                            {{ $asesi->transaction->first()->invoice_number }}</dd>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <dt class="text-gray-600 dark:text-gray-400">Tanggal Pembayaran</dt>
-                        <dd class="font-medium text-gray-900 dark:text-white">
-                            {{ $asesi->transaction->first()->updated_at->format('d F Y, H:i') }}</dd>
-                    </div>
+                    @if ($asesi->transaction->first()?->tipe != 'manual')
+                        <div class="flex items-center justify-between">
+                            <dt class="text-gray-600 dark:text-gray-400">Nomor Invoice</dt>
+                            <dd class="font-mono text-gray-900 dark:text-white">
+                                {{ $asesi->transaction->first()->invoice_number }}</dd>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <dt class="text-gray-600 dark:text-gray-400">Tanggal Pembayaran</dt>
+                            <dd class="font-medium text-gray-900 dark:text-white">
+                                {{ $asesi->transaction->first()->updated_at->format('d F Y, H:i') }}</dd>
+                        </div>
+                    @endif
                     <div class="flex items-center justify-between">
                         <dt class="text-gray-600 dark:text-gray-400">Metode</dt>
                         <dd class="font-medium text-gray-900 dark:text-white">
@@ -169,12 +171,13 @@
                     <dd class="text-sm text-gray-900 dark:text-gray-100">Rp
                         {{ number_format($sertification->harga, 0, ',', '.') ?? 'N/A' }}</dd>
                 </div>
-                <form action="{{ route('asesi.payment.store', [$sertification->id, $asesi->id]) }}"
-                    method="POST" class="mt-6 space-y-6" enctype="multipart/form-data">
+                <form action="{{ route('asesi.payment.store', [$sertification->id, $asesi->id]) }}" method="POST"
+                    class="mt-6 space-y-6" enctype="multipart/form-data">
                     @csrf
                     <div>
                         <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Bukti
                             pembayaran</label>
+
                         <input id="bukti_bayar" name="bukti_bayar" type="file"
                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
                             @if (!$sertification->rincian_pembayaran) disabled @endif required>

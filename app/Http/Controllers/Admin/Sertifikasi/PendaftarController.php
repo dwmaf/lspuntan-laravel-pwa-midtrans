@@ -44,6 +44,7 @@ class PendaftarController extends Controller
 
         // Memperbarui status sesuai dengan yang diterima dari form
         $asesi->status = $request->status;
+        // dd($asesi->status, $asesi->id);
         $asesi->save();
         
         $user = $asesi->student->user;

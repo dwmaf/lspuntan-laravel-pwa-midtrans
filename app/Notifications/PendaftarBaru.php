@@ -37,7 +37,7 @@ class PendaftarBaru extends Notification
     {
         return [
             'message' => 'Pendaftar baru untuk sertifikasi: ' . $this->asesi->sertification->skema->nama_skema,
-            'link' => route('admin.applicants.show', $this->asesi->id), // Link menuju rincian pendaftar
+            'link' => route('admin.sertifikasi.pendaftar.show', [$this->asesi->sertification->id, $this->asesi->id]), // Link menuju rincian pendaftar
             'asesi_name' => $this->asesi->student->name,
         ];
     }

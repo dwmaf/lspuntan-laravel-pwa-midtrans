@@ -80,11 +80,11 @@ class AsesmenController extends Controller
     }
 
     // buat nampilin daftar submitan tugas asesmen yg dikirim asesi
-    public function rincian_asesmen_asesi($id, $sert_id, Request $request)
+    public function rincian_asesmen_asesi($sert_id, $asesi_id, Request $request)
     {
         // dd($id);
         return view('admin.sertifikasi.asesmen.rinciansubmitanasesi', [
-            'asesi' => Asesi::with('asesiasesmenfiles')->find($id),
+            'asesi' => Asesi::with('asesiasesmenfiles')->find($asesi_id),
             'sertification' => Sertification::find($sert_id)
         ]);
     }    

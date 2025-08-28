@@ -11,8 +11,7 @@
         </div>
     @endif
     @include('layouts.admin-sertifikasi-menu')
-    <div x-transition.opacity class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"
-        x-data="{ showConfirmEditStatusModal: false, showConfirmUpdateStatusPembayaranModal: false, isEditingCertificate: false, editStatusAsesiUrl: '', editStatusPembayaranUrl: '' }">
+    <div x-transition.opacity class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md" x-data="{ showConfirmEditStatusModal: false, showConfirmUpdateStatusPembayaranModal: false, isEditingCertificate: false, editStatusAsesiUrl: '', editStatusPembayaranUrl: '' }">
         <h3 x-show="!isEditingCertificate" class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 sm:mb-0">
             Rincian Pendaftar
         </h3>
@@ -340,7 +339,7 @@
                                 </span>
                             @endif
                             <button type="button"
-                                @click="showConfirmEditStatusModal = true; editStatusAsesiUrl = '{{ route('admin.sertifikasi.pendaftar.update-status', [$asesi->id, $asesi->sertification_id]) }}'"
+                                @click="showConfirmEditStatusModal = true; editStatusAsesiUrl = '{{ route('admin.sertifikasi.pendaftar.update-status', [$asesi->sertification_id, $asesi->id]) }}'"
                                 class="inline-flex items-center px-2 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer">
                                 <x-bxs-edit class="w-3 h-3 mr-2" />
                                 Ubah Status
@@ -420,14 +419,16 @@
                                     Belum submit bukti pembayaran
                                 </span>
                             @endif
-                            <div class="flex justify-end">
-                                <button type="button" @if (!$latestTransaction) disabled @endif
-                                    @click="showConfirmUpdateStatusPembayaranModal = true; editStatusPembayaranUrl = '{{ route('admin.sertifikasi.pendaftar.update-payment-status', [$asesi->id, $latestTransaction->id]) }}'"
-                                    class="inline-flex items-center px-2 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-default">
-                                    <x-bxs-edit class="w-3 h-3 mr-2" />
-                                    Ubah Status
-                                </button>
-                            </div>
+                            @if ($latestTransaction)
+                                <div class="flex justify-end">
+                                    <button type="button" @if (!$latestTransaction) disabled @endif
+                                        @click="showConfirmUpdateStatusPembayaranModal = true; editStatusPembayaranUrl = '{{ route('admin.sertifikasi.pendaftar.update-payment-status', [$sertification->id, $latestTransaction->id]) }}'"
+                                        class="inline-flex items-center px-2 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-default">
+                                        <x-bxs-edit class="w-3 h-3 mr-2" />
+                                        Ubah Status
+                                    </button>
+                                </div>
+                            @endif
                         </dd>
                     </div>
                 </div>
@@ -452,7 +453,7 @@
                                         Ubah Data
                                     </button>
                                 </div>
-                            @else
+                            @elseif($asesi->status == 'lulus_sertifikasi')
                                 <button type="button" @click="isEditingCertificate = true"
                                     class="inline-flex items-center px-2 py-1 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 transition ease-in-out duration-150 cursor-pointer">
                                     <x-fas-upload class="w-3 h-3 mr-2" />
@@ -573,84 +574,85 @@
                     class="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
                     &times; Batal
                 </button>
-                </div>
-                <p class="my-1 text-sm text-gray-600 dark:text-gray-400">Untuk: <span
-                        class="font-semibold">{{ $asesi->student->name }}</span></p>
-    
-                <form action="{{ route('admin.sertifikasi.pendaftar.upload-certificate.update', [$asesi->id, $sertification->id]) }}"
-                    method="POST" enctype="multipart/form-data" class="space-y-6">
-                    @method('PATCH')
-                    @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="nomor_seri"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nomor
-                                Seri</label>
-                            <input required type="text" name="nomor_seri" id="nomor_seri"
-                                value="{{ old('nomor_seri', $asesi->sertifikat?->nomor_seri) }}"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="nomor_sertifikat"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nomor
-                                Sertifikat</label>
-                            <input required type="text" name="nomor_sertifikat" id="nomor_sertifikat"
-                                value="{{ old('nomor_sertifikat', $asesi->sertifikat?->nomor_sertifikat) }}"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="nomor_registrasi"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nomor
-                                Registrasi</label>
-                            <input required type="text" name="nomor_registrasi" id="nomor_registrasi"
-                                value="{{ old('nomor_registrasi', $asesi->sertifikat?->nomor_registrasi) }}"
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-md shadow-sm">
-                        </div>
-                    </div>
-    
-                    {{-- Input untuk Tanggal --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="tanggal_terbit"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal
-                                Terbit</label>
-                            <input required type="date" name="tanggal_terbit" id="tanggal_terbit"
-                                value="{{ old('tanggal_terbit', $asesi->sertifikat?->tanggal_terbit) }}" required
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="berlaku_hingga"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300">Berlaku
-                                Hingga</label>
-                            <input required type="date" name="berlaku_hingga" id="berlaku_hingga"
-                                value="{{ old('berlaku_hingga', $asesi->sertifikat?->berlaku_hingga) }}" required
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-md shadow-sm">
-                        </div>
-                    </div>
-                    {{-- Input untuk File --}}
+            </div>
+            <p class="my-1 text-sm text-gray-600 dark:text-gray-400">Untuk: <span
+                    class="font-semibold">{{ $asesi->student->name }}</span></p>
+
+            <form
+                action="{{ route('admin.sertifikasi.pendaftar.upload-certificate.update', [$asesi->id, $sertification->id]) }}"
+                method="POST" enctype="multipart/form-data" class="space-y-6">
+                @method('PATCH')
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="sertifikat_asesi"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">File Sertifikat
-                            (PDF, JPG, PNG)</label>
-                        <input type="file" name="sertifikat_asesi" id="sertifikat_asesi"
-                            @if (!$asesi->sertifikat) required @endif accept=".pdf,.jpg,.jpeg,.png,.webp"
-                            class="cursor-pointer w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
-                        @if ($asesi->sertifikat)
-                            <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ingin mengubah file.</p>
-                        @endif
-                        @error('sertifikat_asesi')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                        <label for="nomor_seri"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nomor
+                            Seri</label>
+                        <input required type="text" name="nomor_seri" id="nomor_seri"
+                            value="{{ old('nomor_seri', $asesi->sertifikat?->nomor_seri) }}"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-md shadow-sm">
                     </div>
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" @click="showUploadCertificateModal = false"
-                            class="cursor-pointer px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Batal</button>
-                        <button type="submit"
-                            class="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Simpan
-                            Sertifikat</button>
+                    <div>
+                        <label for="nomor_sertifikat"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nomor
+                            Sertifikat</label>
+                        <input required type="text" name="nomor_sertifikat" id="nomor_sertifikat"
+                            value="{{ old('nomor_sertifikat', $asesi->sertifikat?->nomor_sertifikat) }}"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-md shadow-sm">
                     </div>
-                </form>
-            
+                    <div>
+                        <label for="nomor_registrasi"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nomor
+                            Registrasi</label>
+                        <input required type="text" name="nomor_registrasi" id="nomor_registrasi"
+                            value="{{ old('nomor_registrasi', $asesi->sertifikat?->nomor_registrasi) }}"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-md shadow-sm">
+                    </div>
+                </div>
+
+                {{-- Input untuk Tanggal --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="tanggal_terbit"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal
+                            Terbit</label>
+                        <input required type="date" name="tanggal_terbit" id="tanggal_terbit"
+                            value="{{ old('tanggal_terbit', $asesi->sertifikat?->tanggal_terbit) }}" required
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="berlaku_hingga"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Berlaku
+                            Hingga</label>
+                        <input required type="date" name="berlaku_hingga" id="berlaku_hingga"
+                            value="{{ old('berlaku_hingga', $asesi->sertifikat?->berlaku_hingga) }}" required
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-md shadow-sm">
+                    </div>
+                </div>
+                {{-- Input untuk File --}}
+                <div>
+                    <label for="sertifikat_asesi"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">File Sertifikat
+                        (PDF, JPG, PNG)</label>
+                    <input type="file" name="sertifikat_asesi" id="sertifikat_asesi"
+                        @if (!$asesi->sertifikat) required @endif accept=".pdf,.jpg,.jpeg,.png,.webp"
+                        class="cursor-pointer w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
+                    @if ($asesi->sertifikat)
+                        <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ingin mengubah file.</p>
+                    @endif
+                    @error('sertifikat_asesi')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" @click="showUploadCertificateModal = false"
+                        class="cursor-pointer px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Batal</button>
+                    <button type="submit"
+                        class="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Simpan
+                        Sertifikat</button>
+                </div>
+            </form>
+
         </div>
     </div>
 </x-admin-layout>

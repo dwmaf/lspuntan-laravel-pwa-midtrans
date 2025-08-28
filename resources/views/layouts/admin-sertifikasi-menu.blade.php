@@ -49,7 +49,7 @@
             dark:text-white text-gray-600 ">
             Asesmen
         </a>
-        @if (Route::is('admin.sertifikasi.assessment.edit'))
+        @if (Route::is(['admin.sertifikasi.assessment.edit','admin.sertifikasi.rincian.assessment.asesi.index']))
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
