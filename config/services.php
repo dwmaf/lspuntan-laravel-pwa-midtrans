@@ -34,5 +34,13 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'fcm' => [
+        'driver' => 'fcm',
+        'log_enabled' => false,
+            'credentials' => storage_path('app/firebase/snappie-c0775-firebase-adminsdk-gshgv-287b0534e8.json'), // <-- GANTI DENGAN NAMA FILE ANDA
+    ],
+    'fonnte' => [
+        'token' => env('FONNTE_TOKEN'),
+    ],
 
 ];

@@ -17,17 +17,7 @@ use Illuminate\Support\Str;
 use App\Helpers\FileHelper;
 class ProfileController extends Controller
 {
-    // function built in buat nyimpan file dgn nama tertentu tapi tetap readable
-    private function storeFileWithUniqueName(UploadedFile $file, string $baseDirectory): array
-    {
-        // id unik berdasarkan timestamp
-        $uniqueId = uniqid() . '-' . now()->timestamp;
-        // nama file asli tanpa extension dijadiin slug + unik id + ekstensinya tadi
-        $newFilename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '_' . $uniqueId . '.' . $file->getClientOriginalExtension();
-        // Simpan file dengan nama baru
-        $path = $file->storeAs($baseDirectory, $newFilename, 'public');
-        return ['path' => $path];
-    }
+    
     
     // buat nampilin halaman edit profile dari sisi admin
     public function edit(Request $request): View
@@ -42,6 +32,7 @@ class ProfileController extends Controller
     {
         $user = $request->user()->load('student.studentattachmentfile');
         return view('asesi.profile.edit', [
+            'user'=>$user,
             'student' => $user->student
         ]);
     }
@@ -50,7 +41,7 @@ class ProfileController extends Controller
     {
         $request->user()->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
+        if ($request->user()->isDirty(['email','no_tlp_hp'])) {
             $request->user()->email_verified_at = null;
         }
 
@@ -62,7 +53,8 @@ class ProfileController extends Controller
     public function update_asesi(Request $request)
     {
         // $student = $request->user()->student;
-        $student = Student::find($request->id);
+        $student = Student::with('user')->find($request->id);
+        $user = $student->user;
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -82,7 +74,7 @@ class ProfileController extends Controller
         
         // Update data student
         $student->fill($request->only([
-            'name',
+            
             'nik',
             'tmpt_lhr',
             'tgl_lhr',
@@ -90,10 +82,11 @@ class ProfileController extends Controller
             'kebangsaan',
             'no_tlp_rmh',
             'no_tlp_kntr',
-            'no_tlp_hp',
+            
             'kualifikasi_pendidikan',
         ]));
-
+        $user->fill($request->only(['no_tlp_hp','name',]));
+        // dd($user);
         // Tangani file jika ada upload baru
         foreach (['foto_ktp', 'foto_ktm', 'pas_foto'] as $fileField) {
             if ($request->hasFile($fileField)) {
@@ -103,7 +96,7 @@ class ProfileController extends Controller
                     Storage::disk('public')->delete($student->$fileField);
                 }
                 // Simpan file baru
-                $fileData = $this->storeFileWithUniqueName($request->file($fileField), $fileField); // $fileField sebagai baseDirectory
+                $fileData = FileHelper::storeFileWithUniqueName($request->file($fileField), $fileField); // $fileField sebagai baseDirectory
                 $student->$fileField = $fileData['path'];
             }
         }
@@ -119,7 +112,7 @@ class ProfileController extends Controller
 
             // 2. Simpan SEMUA file KHS yang baru diunggah
             foreach ($request->file('kartu_hasil_studi') as $file) {
-                $fileData = $this->storeFileWithUniqueName($file, "student_attachments");
+                $fileData = FileHelper::storeFileWithUniqueName($file, "student_attachments");
                 Studentattachmentfile::create([
                     'student_id' => $student->id,
                     'type' => 'kartu_hasil_studi',
@@ -130,6 +123,9 @@ class ProfileController extends Controller
 
         if ($student->isDirty()) {
             $student->save();
+        }
+        if ($user->isDirty()) {
+            $user->save();
         }
 
         return back()->with('success', 'Profil berhasil diperbarui');

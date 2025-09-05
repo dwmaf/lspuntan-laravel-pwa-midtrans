@@ -48,7 +48,7 @@
                             </td>
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {{ $asesi->student->name ?? 'Nama Tidak Tersedia' }}
+                                {{ $asesi->student->user->name ?? 'Nama Tidak Tersedia' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 @if ($asesi->status == 'daftar')

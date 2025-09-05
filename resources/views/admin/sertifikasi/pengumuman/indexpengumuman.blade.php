@@ -49,21 +49,22 @@
                             </div>
                             <div>
                                 <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                    @if ($pengumuman->pembuatpengumuman->asesor)
+                                    @if ($pengumuman->pembuatpengumuman && $pengumuman->pembuatpengumuman->asesor)
                                         {{-- Jika pembuatnya adalah seorang asesor, tampilkan nama dari tabel asesor --}}
-                                        {{ $pengumuman->pembuatpengumuman->asesor->name }}
+                                        {{ $pengumuman->pembuatpengumuman->asesor->user->name }}
                                     @else
                                         {{-- Fallback jika karena suatu hal data pembuat tidak ada --}}
                                         Admin
                                     @endif
                                 </h5>
                                 <div class="text-xs text-gray-400">
-                                    @if (\Carbon\Carbon::parse($pengumuman->rincian_pengumuman_asesmen_dibuat_pada)->isToday())
-                                        {{-- Jika hari ini, tampilkan jam --}}
-                                        {{ \Carbon\Carbon::parse($pengumuman->rincian_pengumuman_asesmen_dibuat_pada)->format('H:i') }}
+                                    @if ($pengumuman->created_at->isToday())
+                                        {{ $pengumuman->created_at->format('H:i') }}
                                     @else
-                                        {{-- Jika sudah lewat, tampilkan tanggal --}}
-                                        {{ \Carbon\Carbon::parse($pengumuman->rincian_pengumuman_asesmen_dibuat_pada)->format('d M Y') }}
+                                        {{ $pengumuman->created_at->format('d M Y') }}
+                                    @endif
+                                    @if ($pengumuman->updated_at && $pengumuman->updated_at->ne($pengumuman->created_at))
+                                        <span class=" text-gray-500">(diedit)</span>
                                     @endif
                                 </div>
                             </div>

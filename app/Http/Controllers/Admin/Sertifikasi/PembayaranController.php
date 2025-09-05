@@ -17,7 +17,7 @@ class PembayaranController extends Controller
     public function index_rincian_pembayaran($id, Request $request)
     {
         return view('admin.sertifikasi.pembayaran.indexpembayaran', [
-            'sertification' => Sertification::with('pembuatrincianpembayaran.asesor')->find($id)
+            'sertification' => Sertification::with('pembuatrincianpembayaran')->find($id)
         ]);
     }
 
@@ -26,12 +26,23 @@ class PembayaranController extends Controller
         // dd($request);
         $request->validate([
             'rincian_pembayaran' => 'required|string',
+            'tgl_bayar_ditutup' => 'required|date',
+            'harga' => 'required|numeric|min:0',
         ]);
 
-        $sertification = Sertification::find($id);
+        $sertification = Sertification::findOrFail($id);
+        $sertification->fill($request->only([
+            'rincian_pembayaran',
+            'tgl_bayar_ditutup',
+            'harga',
+        ]));
         $sertification->rincian_pembayaran = $request->rincian_pembayaran;
-        $sertification->rincian_bayar_dibuat_oleh = $request->user()->id; // Ambil ID user yang login yg buat perubahan
-        $sertification->rincian_bayar_dibuat_pada = now(); // Ambil waktu saat ini
+        $sertification->rincianbayar_madeby = $request->user()->id; // Ambil ID user yang login yg buat perubahan
+        if(is_null($sertification->rincianbayar_createdat)) {
+            $sertification->rincianbayar_createdat = now(); // Ambil waktu saat ini
+        } else{
+            $sertification->rincianbayar_updatedat = now(); // Ambil waktu saat ini
+        }
         $sertification->save();
         
         // ambil semua Asesi yang cocok

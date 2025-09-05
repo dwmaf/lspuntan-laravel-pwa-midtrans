@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Asesi\Sertifikasi;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
 use App\Models\User;
 use App\Models\Transaction;
@@ -20,6 +21,7 @@ class PembayaranAsesiController extends Controller
     public function index_rincian_pembayaran($sert_id, $asesi_id,  Request $request)
     {
         // dd($request);
+        NotificationController::markAsRead($request);
         return view('asesi.sertifikasi.bayar.indexbayar', [
             'sertification' => Sertification::with('asesor', 'skema','pembuatrincianpembayaran.asesor')->find($sert_id),
             'asesi' => Asesi::with('student')->find($asesi_id)

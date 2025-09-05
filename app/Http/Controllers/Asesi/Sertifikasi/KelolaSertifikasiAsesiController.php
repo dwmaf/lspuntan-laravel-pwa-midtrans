@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Asesi\Sertifikasi;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
 use App\Models\Student;
 use App\Models\User;
@@ -52,7 +53,8 @@ class KelolaSertifikasiAsesiController extends Controller
     public function submit_form_daftar_sertifikasi(Request $request)
     {
         // dd($request);
-        $student = Student::findOrFail($request->student_id);
+        $student = Student::with('user')->findOrFail($request->student_id);
+        $user = $student->user;
         $request->validate([
             'sertification_id' => 'required|string|max:255',
             'name' => 'required|string|max:255',
@@ -87,16 +89,16 @@ class KelolaSertifikasiAsesiController extends Controller
         ]);
         $student->fill($request->only([
             'nik',
-            'name',
+            
             'tmpt_lhr',
             'tgl_lhr',
             'kelamin',
             'kebangsaan',
             'no_tlp_rmh',
             'no_tlp_kntr',
-            'no_tlp_hp',
             'kualifikasi_pendidikan',
         ]));
+        $user->fill($request->only(['no_tlp_hp','name']));
         foreach (['foto_ktp', 'foto_ktm', 'pas_foto'] as $fileField) {
             if ($request->hasFile($fileField)) {
                 // Cek jika file sebelumnya ada (tidak null atau kosong)
@@ -111,6 +113,9 @@ class KelolaSertifikasiAsesiController extends Controller
         }
         if ($student->isDirty()) {
             $student->save();
+        }
+        if ($user->isDirty()) {
+            $user->save();
         }
         $asesiData = [
             'student_id' => $student->id,
@@ -182,6 +187,7 @@ class KelolaSertifikasiAsesiController extends Controller
 
     public function detail_applied_sertifikasi($sert_id, $asesi_id, Request $request)
     {
+        NotificationController::markAsRead($request);
         $user = $request->user();
         $student = $user->student()->with('studentattachmentfile')->first();
         $asesi = Asesi::with('asesiattachmentfiles', 'transaction','makulnilais','sertifikat')->find($asesi_id);
@@ -210,7 +216,8 @@ class KelolaSertifikasiAsesiController extends Controller
     public function update_applied_sertifikasi($sert_id, $asesi_id, Request $request)
     {
         // dd($request);
-        $student = Student::findOrFail($request->student_id);
+        $student = Student::with('user')->findOrFail($request->student_id);
+        $user = $student->user;
         $asesi = Asesi::findOrFail($asesi_id);
         $request->validate([
             'name' => 'required|string|max:255',
@@ -247,7 +254,7 @@ class KelolaSertifikasiAsesiController extends Controller
         // untuk tabel student
         $student->fill($request->only([
             'nik',
-            'name',
+            
             'tmpt_lhr',
             'tgl_lhr',
             'kelamin',
@@ -257,7 +264,7 @@ class KelolaSertifikasiAsesiController extends Controller
             'no_tlp_hp',
             'kualifikasi_pendidikan',
         ]));
-
+        $user->fill($request->only(['no_tlp_hp','name']));
         foreach (['foto_ktp', 'foto_ktm', 'pas_foto'] as $fileField) {
             // cek di inputannya ada atau tidak
             if ($request->hasFile($fileField)) {
@@ -273,6 +280,9 @@ class KelolaSertifikasiAsesiController extends Controller
         }
         if ($student->isDirty()) {
             $student->save();
+        }
+        if ($user->isDirty()) {
+            $user->save();
         }
         // untuk tabel asesi
         $asesi->fill($request->only([

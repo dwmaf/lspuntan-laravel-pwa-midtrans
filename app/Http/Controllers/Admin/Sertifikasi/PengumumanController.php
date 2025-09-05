@@ -34,8 +34,7 @@ class PengumumanController extends Controller
             'rincian_pengumuman_asesmen' => 'required|string',
             'sertification_id' => 'required'
         ]);
-        $validatedData['rincian_pengumuman_asesmen_dibuat_oleh']= $request->user()->id; // Ambil ID user yang login yg buat perubahan
-        $validatedData['rincian_pengumuman_asesmen_dibuat_pada']= now(); // Ambil waktu saat ini
+        $validatedData['pengumuman_madeby']= $request->user()->id; // Ambil ID user yang login yg buat perubahan
         $pengumumanAsesmen = Pengumumanasesmen::create(
             $validatedData
         );
@@ -88,9 +87,6 @@ class PengumumanController extends Controller
 
         $pengumumanAsesmen = Pengumumanasesmen::find($peng_id);
         $pengumumanAsesmen->rincian_pengumuman_asesmen = $request->rincian_pengumuman_asesmen;
-        $pengumumanAsesmen->rincian_pengumuman_asesmen_dibuat_oleh = $request->user()->id; // Ambil ID user yang login yg buat perubahan
-        $pengumumanAsesmen->rincian_pengumuman_asesmen_dibuat_pada = now(); // Ambil waktu saat ini
-        // dd($pengumumanAsesmen);
         $pengumumanAsesmen->save();
         // Simpan file baru
         if ($request->hasFile('pengumuman_asesmen_attachment_file')) {
@@ -118,7 +114,7 @@ class PengumumanController extends Controller
             }
         }
 
-        return redirect(route('admin.sertification.assessment-announcement.index',$id))->with('success', 'Pengumuman berhasil diupdate berhasil disimpan!');
+        return redirect(route('admin.sertifikasi.assessment-announcement.index',$id))->with('success', 'Pengumuman berhasil diupdate berhasil disimpan!');
     }
     // fungsi ajax buat hapus file dari pengumuman asesmen
     public function ajaxDeletePengumumanAsesmenFile(Request $request)

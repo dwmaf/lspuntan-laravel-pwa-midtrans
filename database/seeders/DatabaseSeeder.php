@@ -31,10 +31,12 @@ class DatabaseSeeder extends Seeder
         // Buat user admin dan berikan role 'admin'
         $admin = User::create([
             'email' => 'admin@g.c',
+            'name' => 'Afif',
             'password' => bcrypt('1234'),
         ]);
         $asesor1 = User::create([
             'email' => 'azhar@asesor.c',
+            'name' => 'Azhar',
             'password' => bcrypt('12345678'),
         ]);
         $admin->assignRole('admin');
@@ -43,11 +45,9 @@ class DatabaseSeeder extends Seeder
         event(new Registered($admin));
         $asesorafif = Asesor::create([
                 'user_id' => $admin->id,
-                'name' => 'Afif',
         ]);
         $asesorazhar = Asesor::create([
-                'user_id' => $asesor1->id,
-                'name' => 'Azhar',
+                'user_id' => $asesor1->id,    
         ]);
         // Buat user asesi dan berikan role 'asesi'
         $user = User::create([
@@ -55,6 +55,21 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('12345678'),
         ]);
         $user->assignRole('asesi');
+        $user2 = User::create([
+            'email' => 'd1041211006@student.untan.ac.id',
+            'password' => Hash::make('12345678'),
+        ]);
+        $user2->assignRole('asesi');
+        $user3 = User::create([
+            'email' => 'd1041211007@student.untan.ac.id',
+            'password' => Hash::make('12345678'),
+        ]);
+        $user3->assignRole('asesi');
+        $user4 = User::create([
+            'email' => 'd1041211008@student.untan.ac.id',
+            'password' => Hash::make('12345678'),
+        ]);
+        $user4->assignRole('asesi');
         event(new Registered($user));
         Student::create([
             'user_id' => $user->id,

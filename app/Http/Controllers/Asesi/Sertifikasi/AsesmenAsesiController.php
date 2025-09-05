@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Asesi\Sertifikasi;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
 use App\Models\Tugasasesmenattachmentfile;
 use Illuminate\Http\Request;
@@ -10,6 +11,8 @@ use App\Models\Sertification;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
 use App\Models\Asesiasesmenfile;
+use App\Notifications\AsesiUploadBuktiPembayaran;
+use App\Notifications\AsesiUploadTugasAsesmen;
 
 class AsesmenAsesiController extends Controller
 {
@@ -17,6 +20,7 @@ class AsesmenAsesiController extends Controller
     public function index_asesmen_asesi($sert_id, $asesi_id, Request $request)
     {
         // dd($id);
+        NotificationController::markAsRead(($request));
         return view('asesi.sertifikasi.asesmen.asesi-index-asesmen', [
             'sertification' => Sertification::with('pembuatrinciantugasasesmen.asesor')->find($sert_id),
             'asesi' => Asesi::with('asesiasesmenfiles')->find($asesi_id)
@@ -48,7 +52,12 @@ class AsesmenAsesiController extends Controller
                 ]);
             }
         }
-
+        // ambil semua Asesi yang cocok
+        $sertification = Sertification::with(['asesor.user']) // pastikan relasi student->user ada
+            ->find($sert_id);
+        $asesor = $sertification->asesor->user;
+        $asesor->notify(new AsesiUploadTugasAsesmen($sert_id, $asesi_id));
+        
         return redirect()->back()->with('success', 'Berhasil unggah file asesmen.');
     }
 

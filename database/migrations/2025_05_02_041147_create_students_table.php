@@ -14,15 +14,15 @@ return new class extends Migration
         Schema::create('students', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
-            $table->string('name')->nullable();
+            
             $table->string('nik')->nullable();
+            $table->string('nim')->nullable();
             $table->string('tmpt_lhr')->nullable();
             $table->date('tgl_lhr')->nullable();
             $table->string('kelamin')->nullable();
             $table->string('kebangsaan')->nullable();
             $table->string('no_tlp_rmh')->nullable();
             $table->string('no_tlp_kntr')->nullable();
-            $table->string('no_tlp_hp')->nullable();
             $table->string('kualifikasi_pendidikan')->nullable();
             $table->string('nama_institusi')->nullable();
             $table->string('jabatan')->nullable();

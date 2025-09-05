@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin\Sertifikasi;
 
+use App\Http\Controllers\Controller;
 use App\Models\Asesor;
 use App\Models\Skema;
 use App\Models\User;
@@ -31,13 +32,16 @@ class AsesorController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'no_tlp_hp' => 'required|string|max:255',
             'selectedSkemas' => ['required', 'array'],
             'selectedSkemas.*' => ['exists:skemas,id'],
         ]);
         DB::transaction(function () use ($request) {
             // 1. Buat user baru dengan password acak yang sangat aman
             $user = User::create([
+                'name' => $request->name,
                 'email' => $request->email,
+                'no_tlp_hp' => $request->no_tlp_hp,
                 // Password ini tidak akan pernah digunakan oleh user, hanya sebagai placeholder
                 'password' => Hash::make(Str::random(16)), 
             ]);
@@ -48,7 +52,6 @@ class AsesorController extends Controller
             // 3. Buat data asesor
             $asesor = Asesor::create([
                 'user_id' => $user->id,
-                'name' => $request->name,
             ]);
 
             // 4. Hubungkan asesor dengan skema yang dipilih
@@ -88,16 +91,17 @@ class AsesorController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class.',email,'.$user_asesor->id],
+            'no_tlp_hp' => 'required|string|max:255',
             'password' => ['nullable'],
             'selectedSkemas' => ['required', 'array'],
             'selectedSkemas.*' => ['exists:skemas,id'],
         ]);
-        $asesorData = ['name'=>$request->name];
-        $userData = ['email'=>$request->email];
+        
+        $userData = ['email'=>$request->email, 'no_tlp_hp'=>$request->no_tlp_hp, 'name'=>$request->name];
         if ($request->filled('password')) {
             $userData['password'] = Hash::make($request->password);
         }
-        $asesor->update($asesorData);
+        
         $user_asesor->update($userData);
         $asesor->skemas()->sync($request->selectedSkemas);
 

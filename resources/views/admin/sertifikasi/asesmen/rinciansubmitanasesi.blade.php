@@ -7,7 +7,7 @@
     @include('layouts.admin-sertifikasi-menu')
     <div class="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
         @if ($asesi->asesiasesmenfiles && $asesi->asesiasesmenfiles->isNotEmpty())
-            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{{ $asesi->student->name }}</h3>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{{ $asesi->student->user->name }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
                 @foreach ($asesi->asesiasesmenfiles as $attachment)
                     <div id="file-{{ $attachment->id }}"

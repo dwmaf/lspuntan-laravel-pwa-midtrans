@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Asesi\Sertifikasi;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ class PengumumanAsesiController extends Controller
     public function index_pengumuman_asesi($sert_id, $asesi_id,  Request $request)
     {
         // dd($request);
+        NotificationController::markAsRead($request);
         $sertification = Sertification::with('pengumumanasesmen.pembuatpengumuman.asesor')->find($sert_id);
         return view('asesi.sertifikasi.pengumuman.index-pengumuman-asesi', [
             'pengumumans' => $sertification->pengumumanasesmen,

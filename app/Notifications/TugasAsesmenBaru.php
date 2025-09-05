@@ -4,6 +4,9 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class TugasAsesmenBaru extends Notification
 {
@@ -19,14 +22,28 @@ class TugasAsesmenBaru extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', FcmChannel::class];
     }
 
     public function toArray($notifiable)
     {
+        $notificationId = $this->id; 
         return [
-            'message' => 'Tugas asesmen diperbaharui',
-            'link' => route('asesi.assessmen.index', [$this->sert_id, $this->asesi_id,]),
+            'message' => 'Instruksi Tugas asesmen diperbaharui.',
+            //tujuan functionnya ada di AsesmenAsesiController, function index_asesmen_asesi
+            'link' => route('asesi.assessmen.index', [$this->sert_id, $this->asesi_id,'notification_id' => $notificationId]),
         ];
+    }
+
+    public function toFcm($notifiable)
+    {
+        $notificationId = $this->id;
+        return (new FcmMessage(notification: new FcmNotification(
+            title: 'Instruksi Tugas asesmen diperbaharui.',
+            image: asset('logo-lsp.png')
+        )))
+            ->data([
+                'link' => route('asesi.assessmen.index', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId])
+            ]);
     }
 }

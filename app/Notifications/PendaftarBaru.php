@@ -7,6 +7,9 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class PendaftarBaru extends Notification
 {
@@ -27,7 +30,7 @@ class PendaftarBaru extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database']; // Kita hanya butuh notifikasi in-app (database)
+        return ['database', FcmChannel::class]; // Kita hanya butuh notifikasi in-app (database)
     }
 
     /**
@@ -35,10 +38,23 @@ class PendaftarBaru extends Notification
      */
     public function toArray(object $notifiable): array
     {
+        $notificationId = $this->id; 
         return [
             'message' => 'Pendaftar baru untuk sertifikasi: ' . $this->asesi->sertification->skema->nama_skema,
-            'link' => route('admin.sertifikasi.pendaftar.show', [$this->asesi->sertification->id, $this->asesi->id]), // Link menuju rincian pendaftar
+            //tujuan functionnya ada di PendaftarController, function rincian_data_asesi
+            'link' => route('admin.sertifikasi.pendaftar.show', [$this->asesi->sertification->id, $this->asesi->id, 'notification_id' => $notificationId]), // Link menuju rincian pendaftar
             'asesi_name' => $this->asesi->student->name,
         ];
+    }
+
+    public function toFcm($notifiable)
+    {
+        $notificationId = $this->id;
+        return FcmMessage::create()
+            ->setNotification(FcmNotification::create()
+                ->title('Pendaftar baru untuk sertifikasi.')
+                ->body('Seorang mahasiswa telah mendaftar: ' . $this->asesi->student->name)
+                ->image(asset('logo-lsp.png')))
+            ->setData(['link' => route('admin.sertifikasi.pendaftar.show', [$this->asesi->sertification->id, $this->asesi->id, 'notification_id' => $notificationId])]); // 'data' adalah tempat untuk payload custom seperti link
     }
 }

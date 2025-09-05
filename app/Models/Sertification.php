@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute; // <-- Tambahkan ini
+use Carbon\Carbon; // <-- Tambahkan ini
 
 class Sertification extends Model
 {
@@ -39,14 +41,77 @@ class Sertification extends Model
     }
     public function pembuatrincianpembayaran()
     {
-        // Nama kolom foreign key 'rincian_bayar_dibuat_oleh' tidak standar,
-        // jadi kita perlu menentukannya secara eksplisit.
-        return $this->belongsTo(User::class, 'rincian_bayar_dibuat_oleh');
+        return $this->belongsTo(User::class, 'rincianbayar_madeby');
     }
     public function pembuatrinciantugasasesmen()
     {
-        // Nama kolom foreign key 'rincian_bayar_dibuat_oleh' tidak standar,
-        // jadi kita perlu menentukannya secara eksplisit.
-        return $this->belongsTo(User::class, 'rincian_tugasasesmen_dibuat_oleh');
+        return $this->belongsTo(User::class, 'tugasasesmen_madeby');
+    }
+
+
+    public const RINCIAN_DEFAULT = 'Silahkan buat rincian pembayaran...';
+    public const RINCIAN_DEFAULT_ASESMEN = 'Silahkan buat rincian tugas asesmen...';
+
+    protected $casts = [
+        'rincianbayar_createdat' => 'datetime',
+        'tgl_bayar_ditutup' => 'datetime',
+        'tugasasesmen_createdat' => 'datetime',
+        'batas_pengumpulan_tugas_asesmen' => 'datetime',
+    ];
+
+    protected function punyaRincianPembayaran(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => !empty($this->rincian_pembayaran) && $this->rincian_pembayaran !== self::RINCIAN_DEFAULT,
+        );
+    }
+
+    protected function tanggalRincianBayarDibuatFormatted(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (!$this->rincianbayar_createdat) {
+                    return 'N/A';
+                }
+                if ($this->rincianbayar_createdat->isToday()) {
+                    return $this->rincianbayar_createdat->format('H:i');
+                }
+                return $this->rincianbayar_createdat->format('d M Y');
+            }
+        );
+    }
+
+    protected function punyaRincianAsesmen(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => !empty($this->rincian_tugas_asesmen) && $this->rincian_tugas_asesmen !== self::RINCIAN_DEFAULT_ASESMEN,
+        );
+    }
+
+    protected function tanggalRincianAsesmenDibuatFormatted(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (!$this->tugasasesmen_createdat) {
+                    return 'N/A';
+                }
+                if ($this->tugasasesmen_createdat->isToday()) {
+                    return $this->tugasasesmen_createdat->format('H:i');
+                }
+                return $this->tugasasesmen_createdat->format('d M Y');
+            }
+        );
+    }
+
+    protected function batasPengumpulanFormatted(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (!$this->batas_pengumpulan_tugas_asesmen) {
+                    return 'Tidak ada batas pengumpulan';
+                }
+                return $this->batas_pengumpulan_tugas_asesmen->format('d M Y H:i');
+            }
+        );
     }
 }

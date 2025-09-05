@@ -2,7 +2,7 @@
     {{-- Detail --}}
     <div>
         <a href="{{ route('admin.kelolasertifikasi.show', $sertification->id) }}"
-            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase  hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
+            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase  hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md
     dark:text-white text-gray-600 ">
             Detail
         </a>
@@ -13,7 +13,7 @@
     {{-- Praasesmen, disabled --}}
     {{-- <div>
         <a href="{{ route('admin.sertification.pre-assessment.edit', $sertification->id) }}"
-            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase  hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-mddark:text-white text-gray-600 ">
+            class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase  hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-mddark:text-white text-gray-600 ">
             Praasesmen
         </a>
         @if (Route::is('admin.sertification.pre-assessment.edit'))
@@ -23,7 +23,7 @@
     {{-- pembayaran --}}
     <div>
         <a href="{{ route('admin.sertifikasi.payment-desc.index', $sertification->id) }}"
-            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md 
+            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md 
             dark:text-white text-gray-600 "> 
             Pembayaran
         </a>
@@ -34,7 +34,7 @@
     {{-- Pengumuman --}}
     <div>
         <a href="{{ route('admin.sertifikasi.assessment-announcement.index', $sertification->id) }}"
-            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md 
+            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md 
             dark:text-white text-gray-600 ">
             Pengumuman
         </a>
@@ -45,7 +45,7 @@
     {{-- Asesmen --}}
     <div>
         <a href="{{ route('admin.sertifikasi.assessment.edit', $sertification->id) }}"
-            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md 
+            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md 
             dark:text-white text-gray-600 ">
             Asesmen
         </a>
@@ -56,7 +56,7 @@
     {{-- Daftar asesi yg mendaftar --}}
     <div>
         <a href="{{ route('admin.sertifikasi.pendaftar.index', $sertification->id) }}"
-            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
+            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md
             dark:text-white text-gray-600 ">
             Peserta
         </a>
@@ -67,7 +67,7 @@
     {{-- laporan --}}
     <div>
         <a href="{{ route('admin.kelolasertifikasi.report', $sertification->id) }}"
-            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
+            class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md
             dark:text-white text-gray-600 ">
             Laporan
         </a>

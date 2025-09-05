@@ -148,7 +148,7 @@
                         <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
                             @if ($sertification->pembuatrincianpembayaran->asesor)
                                 {{-- Jika pembuatnya adalah seorang asesor, tampilkan nama dari tabel asesor --}}
-                                {{ $sertification->pembuatrincianpembayaran->asesor->name }}
+                                {{ $sertification->pembuatrincianpembayaran->asesor->user->name }}
                             @else
                                 {{-- Fallback jika karena suatu hal data pembuat tidak ada --}}
                                 Admin

@@ -28,7 +28,7 @@
             <div>
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Nama
                     Asesor</label>
-                <x-text-input name="name" type="text" class="mt-1 block w-full" :value="old('name',$asesor->name)" required />
+                <x-text-input name="name" type="text" class="mt-1 block w-full" :value="old('name',$asesor->user->name)" required />
             </div>
             <div>
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Email</label>

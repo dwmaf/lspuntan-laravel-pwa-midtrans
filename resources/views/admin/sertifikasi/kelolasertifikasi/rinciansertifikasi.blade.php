@@ -41,7 +41,7 @@
             </div>
             <div>
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Asesor</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $sertification->asesor->name ?? 'N/A' }}
+                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $sertification->asesor->user->name ?? 'N/A' }}
                 </dd>
             </div>
             <div>

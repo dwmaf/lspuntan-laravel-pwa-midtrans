@@ -26,7 +26,7 @@
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Nama Lengkap (Sesuai
                             KTP)</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $student?->name ?: 'Tidak diisi' }}
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $student?->user->name ?: 'Tidak diisi' }}
                         </dd>
                     </div>
                     <div>

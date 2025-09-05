@@ -13,11 +13,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('sertification_id')->constrained();
             $table->text('rincian_pengumuman_asesmen');
-            $table->foreignId('rincian_pengumuman_asesmen_dibuat_oleh')->nullable()->constrained(
-                table: 'users',
-                indexName: 'pengumuman_dibuat_oleh_fk'
-            );
-            $table->timestamp('rincian_pengumuman_asesmen_dibuat_pada')->nullable();
+            $table->foreignId('pengumuman_madeby')->nullable()->constrained('users');
             $table->timestamps();
         });
     }

@@ -30,7 +30,7 @@
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Asesor</dt>
-                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $sertification->asesor->name }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $sertification->asesor->user->name }}</dd>
                 </div>
             </div>
 
@@ -54,7 +54,7 @@
                                         @forelse ($sertification->asesi as $peserta)
                                             <tr>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $loop->iteration }}</td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ $peserta->student->name }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ $peserta->student->user->name }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $peserta->student->nim }}</td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

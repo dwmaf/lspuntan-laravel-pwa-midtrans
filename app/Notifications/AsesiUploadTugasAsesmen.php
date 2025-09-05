@@ -1,5 +1,5 @@
 <?php
-//ketika admin buat pengumuman
+//ketika admin ngunggah sertifikat ke asesi
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
@@ -8,7 +8,7 @@ use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
-class PengumumanBaru extends Notification
+class AsesiUploadTugasAsesmen extends Notification
 {
     use Queueable;
     protected $sert_id;
@@ -29,21 +29,22 @@ class PengumumanBaru extends Notification
     {
         $notificationId = $this->id; 
         return [
-            'message' => 'Pengumuman baru: ',
-            //tujuan functionnya ada di PengumumanAsesiController, function index_pengumuman_asesi
-            'link' => route('asesi.pengumuman.index', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId]),
+            'message' => 'Asesi mengunggah tugas asesmennya.',
+            //tujuan functionnya ada di AsesmenController, function rincian_asesmen_asesi
+            'link' => route('admin.sertifikasi.rincian.assessment.asesi.index', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId]),
         ];
     }
-    
+
     public function toFcm($notifiable)
     {
         $notificationId = $this->id;
         return (new FcmMessage(notification: new FcmNotification(
-            title: 'Ada Pengumuman baru',
+            title: 'Asesi mengunggah tugas asesmennya.',
+            body: 'Seorang asesi telah mengunggah tugas asesmennya. Silakan periksa.',
             image: asset('logo-lsp.png')
         )))
             ->data([
-                'link' => route('asesi.pengumuman.index', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId])
+                'link' => route('admin.sertifikasi.pendaftar.show', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId])
             ]);
     }
 }

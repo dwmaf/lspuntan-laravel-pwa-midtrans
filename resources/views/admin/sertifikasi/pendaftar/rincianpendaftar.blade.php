@@ -24,7 +24,7 @@
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Nama Lengkap (Sesuai
                             KTP)</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ $asesi->student?->name ?: 'Tidak diisi' }}
+                            {{ $asesi->student?->user->name ?: 'Tidak diisi' }}
                         </dd>
                     </div>
                     <div>
@@ -576,7 +576,7 @@
                 </button>
             </div>
             <p class="my-1 text-sm text-gray-600 dark:text-gray-400">Untuk: <span
-                    class="font-semibold">{{ $asesi->student->name }}</span></p>
+                    class="font-semibold">{{ $asesi->student->user->name }}</span></p>
 
             <form
                 action="{{ route('admin.sertifikasi.pendaftar.upload-certificate.update', [$asesi->id, $sertification->id]) }}"

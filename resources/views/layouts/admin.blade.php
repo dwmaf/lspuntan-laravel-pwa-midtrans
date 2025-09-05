@@ -10,6 +10,7 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
     <link rel="icon" href="{{ asset('logo-lsp.png') }}" type="image/png">
 
 </head>
@@ -47,7 +48,8 @@
 
                         {{-- Dropdown Daftar Notifikasi --}}
                         <div x-show="showNotifikasi" @click.outside="showNotifikasi = false"
-                            class="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10 border border-gray-200 dark:border-gray-600">
+                            class="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10 border border-gray-200 dark:border-gray-600 hidden md:block"
+                            style="display: none;">
                             <div class=" max-h-64 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-600">
                                 @auth
                                     @php $latestNotif = auth()->user()->notifications()->latest()->take(5)->get(); @endphp
@@ -74,10 +76,49 @@
                             <div
                                 class="border-t border-gray-100 dark:border-gray-600 flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-b-md">
                                 <button id="mark-all-read-btn" onclick="markAllRead()"
-                                    class="text-xs text-gray-700 dark:text-gray-300 hover:underline">Tandai dibaca
+                                    class="text-xs text-gray-700 dark:text-gray-300 hover:underline cursor-pointer">Tandai dibaca
                                     semua</button>
                                 <a href="{{ route('notifications.index') }}"
-                                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Lihat semua</a>
+                                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">Lihat semua</a>
+                            </div>
+                        </div>
+                        <div x-show="showNotifikasi"
+                             class="fixed inset-0 z-50 bg-white dark:bg-gray-900 flex flex-col md:hidden"
+                             style="display: none;">
+                            
+                            {{-- Header Modal --}}
+                            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Notifikasi</h2>
+                                <button @click="showNotifikasi = false" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+
+                            {{-- Konten Modal (Scrollable) --}}
+                            <div class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-600">
+                                @auth
+                                    @forelse (auth()->user()->notifications()->latest()->take(20)->get() as $notif)
+                                        @php
+                                            $data = $notif->data;
+                                            $isUnread = is_null($notif->read_at);
+                                        @endphp
+                                        <a href="{{ $data['link'] ?? '#' }}"
+                                            class="notification-item block px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-800">
+                                            <div class="flex items-start justify-between">
+                                                <div class="{{ $isUnread ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400' }} truncate pr-2">{{ $data['message'] ?? 'Notifikasi' }}</div>
+                                                <div class="text-xs text-gray-500 ml-2 flex-shrink-0">{{ $notif->created_at->diffForHumans() }}</div>
+                                            </div>
+                                        </a>
+                                    @empty
+                                        <div class="px-4 py-3 text-sm text-gray-500 text-center">Tidak ada notifikasi.</div>
+                                    @endforelse
+                                @endauth
+                            </div>
+
+                            {{-- Footer Modal --}}
+                            <div class="border-t border-gray-200 dark:border-gray-700 flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50">
+                                <button id="mark-all-read-btn-mobile" onclick="markAllRead()" class="text-sm text-gray-700 dark:text-gray-300 hover:underline">Tandai dibaca semua</button>
+                                <a href="{{ route('notifications.index') }}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Lihat semua</a>
                             </div>
                         </div>
                     </div>
@@ -118,6 +159,7 @@
         }
     </script>
     @stack('scripts-asesmen')
+    @livewireScripts
 </body>
 
 </html>

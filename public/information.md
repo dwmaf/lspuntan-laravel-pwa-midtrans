@@ -3,6 +3,8 @@ JSON.parse('{{ json_encode($skemas) }}').
 
 pnpm install, JANGAN pakai npm install
 
+extension sodium harus dienable nanti di hostingan
+
 fas : fontawesome
 bxs : boxicons
 tni : teeny icons

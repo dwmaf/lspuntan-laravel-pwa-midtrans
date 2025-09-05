@@ -1,4 +1,5 @@
 <section>
+    
     <header>
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
             {{ __('Data Pribadi') }}
@@ -17,7 +18,7 @@
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Nama Lengkap Sesuai KTP <span class="text-red-500">*</span>
-                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $student->name)"
+                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)"
                     required autofocus />
                 <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
@@ -83,7 +84,7 @@
             <label for="no_tlp_hp" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 No tlp HP(WA) <span class="text-red-500">*</span>
             </label>
-            <x-text-input id="no_tlp_hp" name="no_tlp_hp" type="text" class="mt-1 block w-full" :value="old('no_tlp_hp', $student->no_tlp_hp)"
+            <x-text-input id="no_tlp_hp" name="no_tlp_hp" type="text" class="mt-1 block w-full" :value="old('no_tlp_hp', $user->no_tlp_hp)"
                 required />
             <x-input-error class="mt-2" :messages="$errors->get('no_tlp_hp')" />
         </div>
@@ -155,12 +156,12 @@
             </label>
             <!-- Feedback jika file sudah ada -->
             @if ($student && $student->foto_ktm)
-                <p class="text-sm text-gray-500 mt-1">File sudah ada:
-                    <a href="{{ asset('storage/' . $student->foto_ktm) }}" class="text-blue-500"
+                <p class="text-sm text-gray-500 mb-1">File sudah ada:
+                    <a href="{{ asset('storage/' . $student->foto_ktm) }}" class="text-blue-500 hover:underline"
                         target="_blank">Lihat File</a>
                 </p>
             @else
-                <p class="text-sm text-red-500 mt-1">Belum ada file yang diunggah</p>
+                <p class="text-sm text-red-500 mb-1">Belum ada file yang diunggah</p>
             @endif
             <!-- Input file -->
             <input id="foto_ktm" name="foto_ktm" type="file"
@@ -169,7 +170,7 @@
             <x-input-error class="mt-2" :messages="$errors->get('foto_ktm')" />
         </div>
 
-        <div>
+        <div x-data="{ showKhsError: false }">
             <label for="foto_khs" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Kartu Hasil Studi (dari semester I-V) <span class="text-red-500">*</span>
             </label>
@@ -198,8 +199,20 @@
             <!-- Input file -->
             <input id="kartu_hasil_studi" name="kartu_hasil_studi[]" type="file" multiple
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:outline-hidden focus:ring-2 focus:border-blue-800 focus:ring-blue-800 rounded-md"
-                @if ($khsFiles->isEmpty()) required @endif>
+                @if ($khsFiles->isEmpty()) required @endif
+                @change="
+                    if ($event.target.files.length > 5) {
+                        showKhsError = true;
+                        $event.target.value = null; // Mengosongkan pilihan file yang tidak valid
+                    } else {
+                        showKhsError = false;
+                    }
+                ">
+            <p x-show="showKhsError" style="display: none;" class="text-sm text-red-600 dark:text-red-400 mt-2">
+                Anda hanya dapat mengunggah maksimal 5 file. Pilihan Anda telah dibatalkan.
+            </p>
             <x-input-error class="mt-2" :messages="$errors->get('kartu_hasil_studi.*')" />
+            <x-input-error class="mt-2" :messages="$errors->get('kartu_hasil_studi')" />
         </div>
 
         <div>

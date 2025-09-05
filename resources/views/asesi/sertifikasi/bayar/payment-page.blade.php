@@ -26,7 +26,7 @@
                 <!-- Billing Info -->
                 <div class="mb-8">
                     <h3 class="text-base font-semibold text-gray-600 dark:text-gray-300 mb-2">Ditagihkan Kepada:</h3>
-                    <p class="text-gray-800 dark:text-gray-200">{{ $asesi->student->name }}</p>
+                    <p class="text-gray-800 dark:text-gray-200">{{ $asesi->student->user->name }}</p>
                     <p class="text-gray-600 dark:text-gray-400">{{ $asesi->student->user->email }}</p>
                     <p class="text-gray-600 dark:text-gray-400">{{ $asesi->no_tlp_hp }}</p>
                 </div>

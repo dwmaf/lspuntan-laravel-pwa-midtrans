@@ -119,7 +119,7 @@
                                 class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {{ $loop->iteration }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
-                                {{ $asesor->name }}</td>
+                                {{ $asesor->user->name }}</td>
                             <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
                                 <div class="flex flex-col space-y-1">
                                     @foreach ($asesor->skemas as $skema)

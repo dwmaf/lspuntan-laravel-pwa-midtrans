@@ -17,7 +17,7 @@
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Nama Lengkap
                     (Sesuai KTP)<span style="color: red">*</span>
                 </label>
-                <x-text-input name="name" type="text" class="mt-1 block w-full" :value="old('name', $student?->name)" required />
+                <x-text-input name="name" type="text" class="mt-1 block w-full" :value="old('name', $student?->user->name)" required />
                 <x-input-error class="mt-2" :messages="$errors->get('name')" />
             </div>
             <div id="nik KTP">
@@ -70,7 +70,7 @@
                 <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">No. Tlp
                     HP(WA)<span style="color: red">*</span></label>
                 <x-text-input id="no_tlp_hp" name="no_tlp_hp" type="text" class="mt-1 block w-full"
-                    :value="old('no_tlp_hp', $student?->no_tlp_hp)" required />
+                    :value="old('no_tlp_hp', $user?->no_tlp_hp)" required />
                 <x-input-error class="mt-2" :messages="$errors->get('no_tlp_hp')" />
             </div>
             <div id="no tlp rumah">
@@ -291,7 +291,7 @@
                 {{-- Input file --}}
                 <input id="kartu_hasil_studi" name="kartu_hasil_studi[]" type="file" multiple
                     class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
-                    {{-- Atribut required hanya jika belum ada file sama sekali --}} @if ($khsFiles->isEmpty()) required @endif>
+                    @if ($khsFiles->isEmpty()) required @endif>
 
                 {{-- Menampilkan error --}}
                 @error('kartu_hasil_studi.*')

@@ -210,13 +210,15 @@
             </div>
             {{-- Konten untuk mulai sertifikasi --}}
             <div x-show="tab === 'mulai'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        
+
                 <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Mulai Sertifikasi</h2>
-                <form action="{{ route('admin.kelolasertifikasi.store') }}" class="mt-4 flex flex-col gap-2" method="POST">
+                <form action="{{ route('admin.kelolasertifikasi.store') }}" class="mt-4 flex flex-col gap-2"
+                    method="POST">
                     @csrf
                     <input type="text" hidden name="status" value="berlangsung">
                     <div id="asesor dan skema">
-                        <label for="skema_asesor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih
+                        <label for="skema_asesor"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih
                             Skema
                             dan Asesor:</label>
                         <select required name="asesor_skema"
@@ -225,69 +227,64 @@
                             @foreach ($asesors as $asesor)
                                 @foreach ($asesor->skemas as $skema)
                                     <option class="" value="{{ $asesor->id . ',' . $skema->id }}">
-                                        {{ $asesor->name }} - {{ $skema->nama_skema }}
+                                        {{ $asesor->user->name }} - {{ $skema->nama_skema }}
                                     </option>
                                 @endforeach
                             @endforeach
                         </select>
-                        @error('asesor_skema')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                        <x-input-error class="mt-2" :messages="$errors->get('asesor_skema')" />
+                        
                     </div>
                     <div id="tanggal_apply_dibuka">
-                        <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal
+                        <label for=""
+                            class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal
                             Daftar
                             Dibuka
                         </label>
-                        <x-text-input id="tgl_apply_dibuka" name="tgl_apply_dibuka" type="date" class="mt-1 block w-full"
-                            :value="old('tgl_apply_dibuka')" required />
-                        @error('tgl_apply_dibuka')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                        <x-text-input id="tgl_apply_dibuka" name="tgl_apply_dibuka" type="date"
+                            class="mt-1 block w-full" :value="old('tgl_apply_dibuka')" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('tgl_apply_dibuka')" />
                     </div>
                     <div id="tanggal_apply_ditutup">
-                        <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal
+                        <label for=""
+                            class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal
                             Daftar
                             Ditutup
                         </label>
                         <x-text-input id="tgl_apply_ditutup" name="tgl_apply_ditutup" type="date"
                             class="mt-1 block w-full" :value="old('tgl_apply_ditutup')" required />
-                        @error('tgl_apply_ditutup')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                        <x-input-error class="mt-2" :messages="$errors->get('tgl_apply_ditutup')" />
                     </div>
                     <div id="tanggal_bayar_ditutup">
-                        <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal Bayar
+                        <label for=""
+                            class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tanggal Bayar
                             Ditutup
                         </label>
                         <x-text-input id="tgl_bayar_ditutup" name="tgl_bayar_ditutup" type="datetime-local"
                             class="mt-1 block w-full" :value="old('tgl_bayar_ditutup')" required />
-                        @error('tgl_bayar_ditutup')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                        <x-input-error class="mt-2" :messages="$errors->get('tgl_bayar_ditutup')" />
                     </div>
                     <div id="biaya_sertifikasi">
                         <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Biaya
                             Sertifikasi
                         </label>
-                        <p x-show="hargaValue" class="text-sm font-medium text-gray-800 dark:text-gray-200 mt-1" style="display: none;">
-                            <span x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(hargaValue)"></span>
+                        <p x-show="hargaValue" class="text-sm font-medium text-gray-800 dark:text-gray-200 mt-1
+                            style="display: none;">
+                            <span
+                                x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(hargaValue)"></span>
                         </p>
-                        <x-text-input id="harga" name="harga" type="number" min="0" class="mt-1 block w-full"
-                            x-model="hargaValue" required />
-                        @error('harga')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                        <x-text-input id="harga" name="harga" type="number" min="0"
+                            class="mt-1 block w-full" x-model="hargaValue" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('harga')" />
                     </div>
                     <div id="tuk">
-                        <label for="" class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tempat Uji
+                        <label for=""
+                            class="block text-sm font-medium text-gray-600 dark:text-gray-300">Tempat Uji
                             Sertifikasi
                         </label>
                         <x-text-input id="tuk" name="tuk" type="text" class="mt-1 block w-full"
                             :value="old('tuk')" required />
-                        @error('tuk')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                        <x-input-error class="mt-2" :messages="$errors->get('tuk')" />
                     </div>
                     <button type="submit"
                         class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Mulai</button>

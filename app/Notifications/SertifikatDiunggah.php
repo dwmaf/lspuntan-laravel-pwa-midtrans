@@ -5,6 +5,9 @@ namespace App\Notifications;
 use App\Models\Sertifikat;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmChannel;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class SertifikatDiunggah extends Notification
 {
@@ -20,14 +23,28 @@ class SertifikatDiunggah extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', FcmChannel::class];
     }
 
     public function toArray($notifiable)
     {
+        $notificationId = $this->id; 
         return [
             'message' => 'Sertifikat Anda telah diunggah.',
-            'link' => route('asesi.sertifikasi.applied.show', [$this->sert_id, $this->asesi_id]),
+            //tujuan functionnya ada di KelolaSertifikasiAsesiController, function detail_applied_sertifikasi
+            'link' => route('asesi.sertifikasi.applied.show', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId]),
         ];
+    }
+
+    public function toFcm($notifiable)
+    {
+        $notificationId = $this->id;
+        return (new FcmMessage(notification: new FcmNotification(
+            title: 'Sertifikat Anda telah diunggah.',
+            image: asset('logo-lsp.png')
+        )))
+            ->data([
+                'link' => route('asesi.sertifikasi.applied.show', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId])
+            ]);
     }
 }

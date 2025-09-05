@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Sertifikasi;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use App\Models\Asesi;
@@ -29,6 +30,7 @@ class PendaftarController extends Controller
     //buat nampilin rincian data asesi yg udh daftar suatu sertifikasi di sisi admin
     public function rincian_data_asesi($sert_id, $asesi_id, Request $request)
     {
+        NotificationController::markAsRead($request);
         $asesi = Asesi::with('student.studentattachmentfile', 'transaction','sertifikat')->find($asesi_id);
         // dd($asesi->transaction);
         $sertification = $asesi->sertification;

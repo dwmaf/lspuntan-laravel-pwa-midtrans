@@ -26,4 +26,14 @@ class NotificationController extends Controller
 
         return response()->json(['status' => 'ok']);
     }
+
+    public static function markAsRead(Request $request)
+    {
+        if ($request->has('notification_id')) {
+            $notification = $request->user()->notifications()->where('id', $request->notification_id)->first();
+            if ($notification) {
+                $notification->markAsRead();
+            }
+        }
+    }
 }

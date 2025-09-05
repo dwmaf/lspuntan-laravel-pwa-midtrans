@@ -9,7 +9,7 @@
     <title>{{ config('app.name', 'LSP UNTAN') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
+    @livewireStyles
     <link rel="icon" href="{{ asset('logo-lsp.png') }}" type="image/png">
     
 </head>
@@ -121,6 +121,7 @@
             }
         }
     </script>
+    @livewireScripts
 </body>
 
 </html>

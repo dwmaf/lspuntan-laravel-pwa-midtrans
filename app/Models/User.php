@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'no_tlp_hp'
     ];
 
     /**
@@ -55,4 +56,25 @@ class User extends Authenticatable
     {
         return $this->hasOne(Student::class);
     }
+    /**
+     * Route notifications for the FCM channel.
+     *
+     * @param  \Illuminate\Notifications\Notification  $notification
+     * @return string|array
+     */
+    public function routeNotificationForFcm($notification)
+    {
+        return $this->fcm_token;
+    }
+
+    /**
+     * Route notifications for the Fonnte channel.
+     *
+     * @param  \Illuminate\Notifications\Notification  $notification
+     * @return string
+     */
+    // public function routeNotificationForFonnte($notification)
+    // {
+    //     return $this->no_tlp_hp; 
+    // }
 }

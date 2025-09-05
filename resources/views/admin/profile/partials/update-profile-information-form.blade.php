@@ -18,6 +18,11 @@
             <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->asesor->name)" required autofocus autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
+        <div>
+            <x-input-label for="no_tlp_hp" :value="__('No HP/WA')" />
+            <x-text-input id="no_tlp_hp" name="no_tlp_hp" type="text" class="mt-1 block w-full" :value="old('name', $user->no_tlp_hp)" required />
+            <x-input-error class="mt-2" :messages="$errors->get('no_tlp_hp')" />
+        </div>
 
         {{-- <div>
             <x-input-label for="email" :value="__('Email')" />
