@@ -32,17 +32,17 @@
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden">
         <div class="pt-2 pb-3 space-y-1">
             @hasrole(['admin', 'asesor'])
-                <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dashboard</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.kelolasertifikasi.index')" :active="request()->routeIs('admin.kelolasertifikasi.*')">Sertifikasi</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.dashboard')" wire:navigate :active="request()->routeIs('admin.dashboard')">Dashboard</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.kelolasertifikasi.index')" wire:navigate :active="request()->routeIs('admin.kelolasertifikasi.*')">Sertifikasi</x-responsive-nav-link>
                 @hasrole('admin')
-                    <x-responsive-nav-link :href="route('admin.skema.create')" :active="request()->routeIs('admin.skema.*')">Skema</x-responsive-nav-link>
-                    <x-responsive-nav-link :href="route('admin.asesor.index')" :active="request()->routeIs('admin.asesor.*')">Asesor</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.skema.create')" wire:navigate :active="request()->routeIs('admin.skema.*')">Skema</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.asesor.index')" wire:navigate :active="request()->routeIs('admin.asesor.*')">Asesor</x-responsive-nav-link>
                 @endhasrole
-                <x-responsive-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')">Profile</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('profile.edit')" wire:navigate :active="request()->routeIs('profile.edit')">Profile</x-responsive-nav-link>
             @else
-                <x-responsive-nav-link :href="route('asesi.dashboard')" :active="request()->routeIs('asesi.dashboard')">Dashboard</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('asesi.sertifikasi.index')" :active="request()->routeIs('asesi.sertifikasi.*')">Sertifikasi</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('profile_asesi.edit')" :active="request()->routeIs('profile_asesi.edit')">Profile</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('asesi.dashboard')" wire:navigate :active="request()->routeIs('asesi.dashboard')">Dashboard</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('asesi.sertifikasi.index')" wire:navigate :active="request()->routeIs('asesi.sertifikasi.*')">Sertifikasi</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('profile_asesi.edit')" wire:navigate  :active="request()->routeIs('profile_asesi.edit')">Profile</x-responsive-nav-link>
             @endhasrole
         </div>
 

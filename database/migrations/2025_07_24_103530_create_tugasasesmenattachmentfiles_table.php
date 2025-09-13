@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('sertification_id')->constrained();
             $table->string('path_file')->nullable();
+            $table->string('type')->nullable();
             $table->timestamps();
         });
     }

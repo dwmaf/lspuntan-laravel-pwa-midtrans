@@ -23,15 +23,16 @@ class Asesmen extends Component
     public string $rincian_tugas_asesmen = '';
     public ?string $batas_pengumpulan_tugas_asesmen = null;
 
-    public array $existingFiles = [];
+    public $existingFiles;
     public array $newFiles = [];
-
+    
     public int $maxFiles = 5;
 
     protected $rules = [
         'rincian_tugas_asesmen' => 'required|string',
         'batas_pengumpulan_tugas_asesmen' => 'nullable|date',
-        'newFiles.*' => 'file|max:2048|mimes:jpg,jpeg,png,pdf,docx,pptx,xls,xlsx'
+        'newFiles.*' => 'file|max:2048|mimes:jpg,jpeg,png,pdf,docx,pptx,xls,xlsx',
+        'newFiles' => 'max:5',
     ];
 
     public function mount(int $sertificationId)
@@ -44,23 +45,18 @@ class Asesmen extends Component
             ?? Sertification::RINCIAN_DEFAULT_ASESMEN;
         $this->batas_pengumpulan_tugas_asesmen = $sert->batas_pengumpulan_tugas_asesmen;
 
-        $this->mapExistingFiles($sert);
+        $this->existingFiles = $sert->tugasasesmenattachmentfile;
     }
-
+    
     public function updatedNewFiles()
     {
+        $this->resetErrorBag('newFiles');
+        $this->resetErrorBag('newFiles.*');
         $this->validateOnly('newFiles.*');
-
+        $this->validateOnly('newFiles');
         if ($this->totalCount() > $this->maxFiles) {
-            $this->reset('newFiles');
-            $this->addError('newFiles', 'Maksimal total 5 file (lama + baru).');
+            $this->addError('newFiles', 'Maksimal total 5 file.');
         }
-    }
-
-    public function removeNewFileTemp($index)
-    {
-        unset($this->newFiles[$index]);
-        $this->newFiles = array_values($this->newFiles);
     }
 
     public function deleteFile(int $id)
@@ -108,6 +104,7 @@ class Asesmen extends Component
                 ]);
             }
         }
+        
 
         $this->notifyAsesi($sert->id);
         $this->reset('newFiles');
@@ -132,23 +129,12 @@ class Asesmen extends Component
         }
     }
 
-    protected function mapExistingFiles(Sertification $sert)
-    {
-        $this->existingFiles = $sert->tugasasesmenattachmentfile
-            ->map(fn($f) => [
-                'id' => $f->id,
-                'name' => basename($f->path_file),
-                'short' => strlen(basename($f->path_file)) > 24
-                    ? substr(basename($f->path_file), 0, 24) . '...'
-                    : basename($f->path_file),
-                'url' => asset('storage/' . $f->path_file),
-            ])->toArray();
-    }
+    
 
     protected function refreshFilesOnly()
     {
         $sert = Sertification::with('tugasasesmenattachmentfile')->find($this->sertificationId);
-        $this->mapExistingFiles($sert);
+        $this->existingFiles = $sert->tugasasesmenattachmentfile;
     }
 
     protected function totalCount(): int

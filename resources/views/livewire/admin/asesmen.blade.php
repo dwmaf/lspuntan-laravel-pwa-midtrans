@@ -27,14 +27,13 @@
                         </h5>
                         <div class="text-xs text-gray-400">
                             {{ $sert->tanggalRincianAsesmenDibuatFormatted }}
+                            @if ($sert->tugasasesmen_updatedat)
+                                (Diedit)
+                            @endif
                         </div>
                     </div>
                 </div>
-                <button type="button" wire:click="$set('editingRincian', true)"
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 transition ease-in-out duration-150 cursor-pointer">
-                    <x-bxs-edit class="w-4 h-4 mr-2" />
-                    Edit
-                </button>
+                <x-edit-button type="button" wire:click="$set('editingRincian', true)">Edit</x-edit-button>
             </div>
             
             <h6 class="font-medium text-sm text-gray-800 dark:text-gray-100">{!! nl2br(e($rincian_tugas_asesmen)) !!}</h6>
@@ -44,11 +43,14 @@
                     {{ $batas_pengumpulan_tugas_asesmen ? $sertification->batasPengumpulanFormatted : '-' }}
                 </dd>
             </div>
-            <div class="space-y-1">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                 @forelse($existingFiles as $f)
-
-                    <a href="{{ $f['url'] }}" target="_blank"
-                        class="text-xs text-blue-600 dark:text-blue-400 underline">{{ $f['short'] }}</a>
+                <div class="flex items-center justify-between gap-4 px-3 py-2 border-1 border-gray-300 rounded-md text-xs">
+                    <a href="{{ asset('storage/' . $f->path_file) }}" target="_blank"
+                        class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
+                        {{ basename($f->path_file) }}
+                    </a>
+                </div>
                 @empty
                     <p class="text-xs text-gray-500">Tidak ada lampiran.</p>
                 @endforelse
@@ -60,93 +62,69 @@
     @if ($editingRincian)
         <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-2">
             <div class="flex justify-between items-center mb-2">
-                <p class="text-gray-500 dark:text-gray-400 text-xs">Edit Rincian Asesmen</p>
-                <button type="button" wire:click="$set('editingRincian', false)"
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-700 transition ease-in-out duration-150 cursor-pointer">
-                    Batal
-                </button>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Edit Rincian Tugas Asesmen</h3>
             </div>
 
             {{-- Rincian --}}
             <div>
-                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Rincian</label>
-
+                <x-input-label>Rincian</x-input-label>
                 <textarea
                     wire:model.defer="rincian_tugas_asesmen"
                     rows="8"
                     class="w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"
                 >{{ $rincian_tugas_asesmen }}</textarea>
-
-                @error('rincian_tugas_asesmen')
-                    <p class="text-xs text-red-600">{{ $message }}</p>
-                @enderror
+                <x-input-error class="mt-2" :messages="$errors->get('rincian_tugas_asesmen')" />
             </div>
 
             {{-- Batas --}}
             <div>
-                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Batas Pengumpulan</label>
+                <x-input-label>Batas Pengumpulan</x-input-label>
                 <x-text-input type="datetime-local" wire:model.defer="batas_pengumpulan_tugas_asesmen" class="mt-1 block w-full"/>
-                @error('batas_pengumpulan_tugas_asesmen')
-                    <p class="text-xs text-red-600">{{ $message }}</p>
-                @enderror
+                <x-input-error class="mt-2" :messages="$errors->get('batas_pengumpulan_tugas_asesmen')" />
             </div>
 
             {{-- File Lama --}}
-            <div class="space-y-2">
-                <label class="text-xs font-medium">Lampiran ({{ $existingCount }}/5)</label>
-                <div class="flex flex-col gap-1">
+            <div>
+                <x-input-label>Lampiran ({{ $existingCount }}/5)</x-input-label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
                     @forelse($existingFiles as $f)
                         <div
-                            class="flex items-center justify-between bg-gray-200 dark:bg-gray-700 rounded px-2 py-1 text-xs">
-                            <a href="{{ $f['url'] }}" target="_blank"
-                                class="text-blue-600 dark:text-blue-400">{{ $f['short'] }}</a>
-                            <button wire:click="deleteFile({{ $f['id'] }})" wire:confirm="Yakin hapus file ini?"
-                                wire:loading.attr="disabled" class="text-red-600">
-                                Hapus
+                            class="flex items-center justify-between gap-4 px-3 py-2 border-1 border-gray-300 rounded-md text-xs">
+                            <a href="{{ asset('storage/' . $f->path_file) }}" target="_blank"
+                                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
+                                {{ basename($f->path_file) }}
+                            </a>
+                            <button wire:click="deleteFile({{ $f->id }})" wire:confirm="Yakin hapus lampiran ini?"
+                                wire:loading.attr="disabled" 
+                                class="cursor-pointer flex-shrink-0 p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+                                <x-fas-xmark class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                             </button>
                         </div>
                     @empty
                         <p class="text-[11px] text-gray-500">Belum ada file.</p>
                     @endforelse
                 </div>
-            </div>
-
-            {{-- Upload baru --}}
-            <div>
-                <input type="file" multiple wire:model="newFiles"
-                    class="w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600">
+                <x-file-input type="file" multiple wire:model="newFiles"/>
                 <p class="text-[11px] text-gray-500">Tipe: JPG, JPEG, PNG, PDF, DOCX, PPTX, XLS/XLSX. Maks 5 total.</p>
-                @error('newFiles')
-                    <p class="text-xs text-red-600">{{ $message }}</p>
-                @enderror
-                @error('newFiles.*')
-                    <p class="text-xs text-red-600">{{ $message }}</p>
-                @enderror
-
-                {{-- Preview file baru --}}
-                @if ($newFiles)
-                    <div class="space-y-1">
-                        @foreach ($newFiles as $i => $nf)
-                            <div
-                                class="flex items-center justify-between bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-[11px]">
-                                <span>{{ $nf->getClientOriginalName() }}</span>
-                                <button type="button" wire:click="removeNewFileTemp({{ $i }})"
-                                    class="text-red-600">x</button>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
+                <x-input-error class="mt-2" :messages="$errors->get('newFiles')" />
+                <x-input-error class="mt-2" :messages="$errors->get('newFiles.*')" />
                 <div wire:loading wire:target="newFiles" class="text-[11px] text-gray-500">Memproses file...</div>
             </div>
 
             <div class="flex gap-2">
-                <button wire:click="save" wire:loading.attr="disabled"
-                    class="px-4 py-2 text-sm bg-blue-600 text-white rounded">
-                    Simpan
-                </button>
-                <div wire:loading.delay.short wire:target="save" class="text-xs text-gray-500 self-center">
-                    Menyimpan...
-                </div>
+                <span wire:loading wire:target="save" class="flex items-center">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                            stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </span>
+                <x-primary-button wire:click="save" wire:loading.attr="disabled">Simpan</x-primary-button>
+                <x-secondary-button wire:click="$set('editingRincian', false)">Batal</x-secondary-button>
             </div>
         </div>
     @endif

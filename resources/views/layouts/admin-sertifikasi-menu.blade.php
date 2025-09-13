@@ -1,7 +1,7 @@
 <div class="flex flex-wrap space-x-4 mt-1">
     {{-- Detail --}}
     <div>
-        <a href="{{ route('admin.kelolasertifikasi.show', $sertification->id) }}"
+        <a href="{{ route('admin.kelolasertifikasi.show', $sertification->id) }}" wire:navigate
             class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase  hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md
     dark:text-white text-gray-600 ">
             Detail
@@ -22,7 +22,7 @@
     </div> --}}
     {{-- pembayaran --}}
     <div>
-        <a href="{{ route('admin.sertifikasi.payment-desc.index', $sertification->id) }}"
+        <a href="{{ route('admin.sertifikasi.payment-desc.index', $sertification->id) }}" wire:navigate
             class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md 
             dark:text-white text-gray-600 "> 
             Pembayaran
@@ -33,7 +33,7 @@
     </div>
     {{-- Pengumuman --}}
     <div>
-        <a href="{{ route('admin.sertifikasi.assessment-announcement.index', $sertification->id) }}"
+        <a href="{{ route('admin.sertifikasi.assessment-announcement.index', $sertification->id) }}" wire:navigate
             class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md 
             dark:text-white text-gray-600 ">
             Pengumuman
@@ -44,7 +44,7 @@
     </div>
     {{-- Asesmen --}}
     <div>
-        <a href="{{ route('admin.sertifikasi.assessment.edit', $sertification->id) }}"
+        <a href="{{ route('admin.sertifikasi.assessment.edit', $sertification->id) }}" wire:navigate
             class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md 
             dark:text-white text-gray-600 ">
             Asesmen
@@ -55,7 +55,7 @@
     </div>
     {{-- Daftar asesi yg mendaftar --}}
     <div>
-        <a href="{{ route('admin.sertifikasi.pendaftar.index', $sertification->id) }}"
+        <a href="{{ route('admin.sertifikasi.pendaftar.index', $sertification->id) }}" wire:navigate
             class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md
             dark:text-white text-gray-600 ">
             Peserta
@@ -66,7 +66,7 @@
     </div>
     {{-- laporan --}}
     <div>
-        <a href="{{ route('admin.kelolasertifikasi.report', $sertification->id) }}"
+        <a href="{{ route('admin.kelolasertifikasi.report', $sertification->id) }}" wire:navigate
             class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md
             dark:text-white text-gray-600 ">
             Laporan

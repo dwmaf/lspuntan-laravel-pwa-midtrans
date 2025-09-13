@@ -12,9 +12,9 @@
         </div>
     @endif
     @include('layouts.admin-sertifikasi-menu')
-
-    <div x-data="{ editingRincian: {{ $sertification->punya_rincian_pembayaran ? 'false' : 'true' }}, hargaValue: '{{ old('harga', $sertification->harga) }}', tglBayarValue: '{{ old('tgl_bayar_ditutup', $sertification->tgl_bayar_ditutup?->format('Y-m-d\TH:i')) }}' }">
-        {{-- View utk edit rincian pembayaran (edit mode) --}}
+<livewire:admin.pembayaran :sertification-id="$sertification->id" />
+    {{-- <div x-data="{ editingRincian: {{ $sertification->punya_rincian_pembayaran ? 'false' : 'true' }}, hargaValue: '{{ old('harga', $sertification->harga) }}', tglBayarValue: '{{ old('tgl_bayar_ditutup', $sertification->tgl_bayar_ditutup?->format('Y-m-d\TH:i')) }}' }">
+        
 
         <div x-show="editingRincian"
             class="p-6 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
@@ -85,13 +85,13 @@
                 </button>
             </form>
         </div>
-        {{-- View utk nampilin rincian pembayaran (view mode) --}}
+        
 
 
 
         <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2" x-show="!editingRincian">
             <div class="flex justify-between items-center mb-2">
-                {{-- foto profil, nama, dan tanggal rincian pembayaran dibuat --}}
+                
                 <div class="flex items-center gap-3 mb-4">
                     <div class="flex-shrink-0">
                         <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
@@ -132,6 +132,6 @@
                 </dd>
             </div>
         </div>
-    </div>
+    </div> --}}
 
 </x-admin-layout>

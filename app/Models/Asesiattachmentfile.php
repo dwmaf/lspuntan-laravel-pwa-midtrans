@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Asesiattachmentfiles extends Model
+class Asesiattachmentfile extends Model
 {
     protected $guarded = [
         'id',

@@ -58,7 +58,7 @@
 
                     <div class="mt-4">
                         @if ($sudahDaftar)
-                            <a href="{{ route('asesi.sertifikasi.applied.show', [$sert->id, $filteredAsesi->id]) }}"
+                            <a href="{{ route('asesi.sertifikasi.applied.show', [$sert->id, $filteredAsesi->id]) }}" wire:navigate
                                 class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">
                                 Lihat Status
                             </a>
@@ -73,7 +73,7 @@
                                 Belum Dibuka
                             </span>
                         @else
-                            <a href="{{ route('asesi.sertifikasi.apply.create', $sert->id) }}"
+                            <a href="{{ route('asesi.sertifikasi.apply.create', $sert->id) }}" wire:navigate
                                 class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">
                                 Daftar
                             </a>

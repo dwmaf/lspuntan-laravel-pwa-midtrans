@@ -4,7 +4,8 @@
             {{ __('Asesor') }}
         </h2>
     </x-slot>
-    @if (session('success'))
+    <livewire:admin.asesorlivewire />
+    {{-- @if (session('success'))
         <div class="p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md" role="alert">
                 {{ session('success') }}
         </div>
@@ -12,7 +13,7 @@
     <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Tambah Asesor</h2>
         
-        {{-- utk nanganin dropdown checkboxnya, we use alpine js  --}}
+        
         <form action="/admin/asesor" class="mt-4 flex flex-col gap-2" method="POST" x-data="{
                 selectedSkemas: [], // Ini akan menyimpan ID skema yang dipilih
                 open: false, // mengontrol visibilitas dropdown
@@ -160,7 +161,7 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </div> --}}
     
 
 

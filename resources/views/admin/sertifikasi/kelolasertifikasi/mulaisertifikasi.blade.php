@@ -4,14 +4,15 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-    @if (session('success'))
+    <livewire:admin.kelola-sertifikasi />
+    {{-- @if (session('success'))
         <div class="mb-4 p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md"
             role="alert">
             {{ session('success') }}
         </div>
     @endif
     <div x-data="{ tab: 'mulai', hargaValue: '{{ old('harga') }}' }" class="max-w-7xl mx-auto mb-2">
-        <!-- Tombol Tab -->
+        
         <nav class="flex flex-wrap space-x-4 mt-1" aria-label="Tabs">
             <div>
                 <button @click="tab = 'mulai'"
@@ -46,9 +47,9 @@
         </nav>
         <hr class=" border-gray-200 dark:border-gray-700 mb-2">
 
-        <!-- Konten Tab -->
+        
         <div class="">
-            {{-- Konten untuk Tab Berlangsung --}}
+            
             <div x-show="tab === 'berlangsung'">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     @forelse ($sertifications_berlangsung as $sert)
@@ -83,7 +84,7 @@
                 </div>
             </div>
 
-            {{-- Konten untuk Tab Selesai --}}
+            
             <div x-show="tab === 'selesai'" style="display: none;" x-data="{
                 showFilter: false,
                 selectedFilter: 'semua',
@@ -114,10 +115,10 @@
                     }
                 }
             }">
-                <!-- Filter Section -->
+                
                 <div class="flex justify-end items-center mb-4">
                     <div class="relative">
-                        <!-- Filter Button -->
+                        
                         <button @click="showFilter = !showFilter"
                             class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,7 +134,7 @@
                             </svg>
                         </button>
 
-                        <!-- Dropdown Menu -->
+                        
                         <div x-show="showFilter" x-transition:enter="transition ease-out duration-100"
                             x-transition:enter-start="transform opacity-0 scale-95"
                             x-transition:enter-end="transform opacity-100 scale-100"
@@ -167,7 +168,7 @@
                     </div>
                 </div>
 
-                <!-- Loading Indicator -->
+                
                 <div x-show="loading" class="flex justify-center items-center py-8">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     <span class="ml-2 text-gray-600 dark:text-gray-400">Memuat data...</span>
@@ -201,14 +202,14 @@
                         </div>
                     </template>
 
-                    <!-- Empty State -->
+                    
                     <div x-show="filteredData.length === 0" class="col-span-2">
                         <p class="text-gray-500 dark:text-gray-400">Tidak ada riwayat sertifikasi untuk filter yang
                             dipilih.</p>
                     </div>
                 </div>
             </div>
-            {{-- Konten untuk mulai sertifikasi --}}
+            
             <div x-show="tab === 'mulai'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
 
                 <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Mulai Sertifikasi</h2>
@@ -291,5 +292,5 @@
                 </form>
             </div>
         </div>
-    </div>
+    </div> --}}
 </x-admin-layout>

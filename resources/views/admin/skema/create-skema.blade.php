@@ -4,7 +4,8 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-    @if (session('success'))
+    <livewire:admin.skemalivewire />
+    {{-- @if (session('success'))
         <div class="mb-4 p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md" role="alert">
                 {{ session('success') }}
         </div>
@@ -47,7 +48,7 @@
                             </td>
                             <td class=" text-gray-700 dark:text-gray-200 px-4 py-2 text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="{{ route('admin.skema.edit',$skema->id) }}"
+                                    <a href="{{ route('admin.skema.edit',$skema->id) }}" wire:navigate
                                         class="cursor-pointer px-3 py-1 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700">
                                         Edit
                                     </a>
@@ -103,5 +104,5 @@
             <button type="submit"
                 class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Tambah</button>
         </form>
-    </div>
+    </div> --}}
 </x-admin-layout>

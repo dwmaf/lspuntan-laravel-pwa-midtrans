@@ -7,7 +7,7 @@
     {{-- Detail --}}
     @if ($asesi)
         <div>
-            <a href='{{ route('asesi.sertifikasi.applied.show', [$sertification->id, $asesi->id]) }}'
+            <a href='{{ route('asesi.sertifikasi.applied.show', [$sertification->id, $asesi->id]) }}' wire:navigate
                 class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
     dark:text-white text-gray-600 ">
                 Detail
@@ -27,7 +27,7 @@
     {{-- Bayar --}}
     @if ($asesi && $asesi->status == 'dilanjutkan_asesmen')
         <div>
-            <a href='{{ route('asesi.payment.create', [$sertification->id, $asesi->id]) }}'
+            <a href='{{ route('asesi.payment.create', [$sertification->id, $asesi->id]) }}' wire:navigate
                 class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
     dark:text-white text-gray-600 ">
                 Bayar
@@ -47,7 +47,7 @@
     {{-- Pengumuman --}}
     @if ($asesi && $asesi->status == 'dilanjutkan_asesmen')
         <div>
-            <a href='{{ route('asesi.pengumuman.index', [$sertification->id, $asesi->id]) }}'
+            <a href='{{ route('asesi.pengumuman.index', [$sertification->id, $asesi->id]) }}' wire:navigate
                 class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md
     dark:text-white text-gray-600 ">
                 Pengumuman
@@ -73,7 +73,7 @@
             $asesi->status == 'dilanjutkan_asesmen')
         <div>
 
-            <a href="{{ route('asesi.assessmen.index', [$sertification->id, $asesi->id]) }}"
+            <a href="{{ route('asesi.assessmen.index', [$sertification->id, $asesi->id]) }}" wire:navigate
                 class="flex items-center gap-2 px-4 py-3  font-semibold text-xs uppercase  
      hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600">
                 Asesmen

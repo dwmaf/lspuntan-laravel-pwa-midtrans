@@ -5,7 +5,8 @@
         </h2>
     </x-slot>
     @include('layouts.admin-sertifikasi-menu')
-    <div x-data="{ showForm: false, showConfirmModal: false, deleteUrl: '' }">
+    <livewire:admin.pengumuman :sertification-id="$sertification->id" />
+    {{-- <div x-data="{ showForm: false, showConfirmModal: false, deleteUrl: '' }">
         @if ($sertification->status == 'berlangsung')
             <div class="p-6 mb-2 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">
                 <div class="flex justify-between items-center">
@@ -22,7 +23,7 @@
                     </button>
                 </div>
 
-                {{-- Form tambah pengumuman (di-hide/ditampilkan dengan Alpine) --}}
+                
                 <div x-show="showForm" x-transition>
                     @include('admin.sertifikasi.pengumuman.createpengumuman')
                 </div>
@@ -30,7 +31,7 @@
 
             </div>
         @endif
-        {{-- Daftar pengumuman --}}
+        
         @if ($pengumumans->isEmpty())
             <div class="text-center text-gray-500 dark:text-gray-300 py-8">
                 Belum ada pengumuman.
@@ -50,10 +51,10 @@
                             <div>
                                 <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
                                     @if ($pengumuman->pembuatpengumuman && $pengumuman->pembuatpengumuman->asesor)
-                                        {{-- Jika pembuatnya adalah seorang asesor, tampilkan nama dari tabel asesor --}}
+                                        
                                         {{ $pengumuman->pembuatpengumuman->asesor->user->name }}
                                     @else
-                                        {{-- Fallback jika karena suatu hal data pembuat tidak ada --}}
+                                        
                                         Admin
                                     @endif
                                 </h5>
@@ -77,7 +78,7 @@
                             </a>
                             <button type="button"
                                 @click="showConfirmModal = true; deleteUrl = '{{ route('admin.sertifikasi.assessment-announcement.destroy', [$sertification->id, $pengumuman->id]) }}'"
-                                class="cursor-pointer inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-700 dark:hover:bg-red-800 dark:focus:ring-red-800 transition ease-in-out duration-150">
+                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-700 dark:hover:bg-red-800 dark:focus:ring-red-800 transition ease-in-out duration-150 cursor-pointer">
                                 <x-bxs-trash class="w-4 h-4 mr-2" />
                                 Hapus
                             </button>
@@ -87,7 +88,7 @@
                 </div>
             @endforeach
         @endif
-        <!-- Modal Konfirmasi Hapus -->
+        
         <div x-show="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 "
             style="display: none;">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 w-[280px]">
@@ -109,5 +110,5 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 </x-admin-layout>

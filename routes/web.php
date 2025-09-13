@@ -8,9 +8,9 @@ use App\Http\Controllers\Admin\Sertifikasi\PengumumanController;
 use App\Http\Controllers\Admin\SkemaController;
 use App\Http\Controllers\Asesi\Sertifikasi\PembayaranAsesiController;
 use App\Http\Controllers\Asesi\Sertifikasi\AsesmenAsesiController;
-use App\Http\Controllers\Asesi\Sertifikasi\PengumumanAsesiController;
+// use App\Http\Controllers\Asesi\Sertifikasi\PengumumanAsesiController;
 use App\Http\Controllers\Asesi\Sertifikasi\KelolaSertifikasiAsesiController;
-use App\Http\Controllers\Admin\Sertifikasi\AsesorController;
+use App\Http\Controllers\Admin\AsesorController;
 use App\Http\Controllers\FcmController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
@@ -18,6 +18,11 @@ use App\Http\Controllers\PaymentController;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\RoleMiddleware;
+use App\Livewire\Asesi\ApplySertifikasi;
+use App\Livewire\Asesi\DetailSertifikasi;
+use App\Livewire\Asesi\PengumumanAsesi;
+use App\Livewire\Asesi\PembayaranAsesi;
+use App\Livewire\Asesi\AsesmenAsesi;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -104,23 +109,24 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
         return view('asesi.dashboardasesi.dashboardasesi');
     })->name('dashboard'); // Hasil: asesi.dashboard
 
-    Route::get('/{sert_id}/{asesi_id}/assessmen/index', [AsesmenAsesiController::class, 'index_asesmen_asesi'])->name('assessmen.index'); // asesi.assessmen.index
+    Route::get('/{sert_id}/{asesi_id}/assessmen/index', AsesmenAsesi::class)->name('assessmen.index'); // asesi.assessmen.index
     Route::post('/{sert_id}/{asesi_id}/assessmen', [AsesmenAsesiController::class, 'update_asesmen_asesi'])->name('assessmen.update'); // asesi.assessmen.update
     Route::prefix('payment/{sert_id}')->name('payment.')->group(function () {
-        Route::get('/{asesi_id}/create', [PembayaranAsesiController::class, 'index_rincian_pembayaran'])->name('create'); // asesi.payment.create
+        Route::get('/{asesi_id}/create', PembayaranAsesi::class)->name('create'); // asesi.payment.create
         Route::post('/{asesi_id}/store', [PembayaranAsesiController::class, 'upload_bukti_pembayaran'])->name('store'); // asesi.payment.store
         // Route::post('{asesi_id}/checkout', [PaymentController::class, 'checkout'])->name('checkout'); // asesi.payment.checkout
         // Route::post('{asesi_id}/manual', [PaymentController::class, 'buktipembayaran'])->name('manual.store'); // asesi.payment.manual.store
     });
     Route::prefix('sertifikasi')->name('sertifikasi.')->group(function () {
         Route::get('/index', [KelolaSertifikasiAsesiController::class, 'asesi_daftar_sertifikasi'])->name('index'); // asesi.sertifikasi.index
-        Route::get('/{sert_id}/apply/create', [KelolaSertifikasiAsesiController::class, 'form_daftar_sertifikasi'])->name('apply.create'); // asesi.sertifikasi.apply.create
-        Route::post('/apply/store', [KelolaSertifikasiAsesiController::class, 'submit_form_daftar_sertifikasi'])->name('apply.store'); // asesi.sertifikasi.apply.store
-        Route::get('/{sert_id}/{asesi_id}/applied/show', [KelolaSertifikasiAsesiController::class, 'detail_applied_sertifikasi'])->name('applied.show'); // asesi.sertifikasi.applied.show
+        Route::get('/{sertificationId}/apply/create', ApplySertifikasi::class)->name('apply.create'); // asesi.sertifikasi.apply.create
+        // Route::get('/{sert_id}/apply/create', [KelolaSertifikasiAsesiController::class, 'form_daftar_sertifikasi'])->name('apply.create'); // asesi.sertifikasi.apply.create
+        // Route::post('/apply/store', [KelolaSertifikasiAsesiController::class, 'submit_form_daftar_sertifikasi'])->name('apply.store'); // asesi.sertifikasi.apply.store
+        Route::get('/{sert_id}/{asesi_id}/applied/show', DetailSertifikasi::class)->name('applied.show'); // asesi.sertifikasi.applied.show
         Route::get('/{sert_id}/{asesi_id}/applied/edit', [KelolaSertifikasiAsesiController::class, 'edit_applied_sertifikasi'])->name('applied.edit'); // asesi.sertifikasi.applied.edit
         Route::patch('/{sert_id}/{asesi_id}/applied/update', [KelolaSertifikasiAsesiController::class, 'update_applied_sertifikasi'])->name('applied.update'); // asesi.sertifikasi.applied.update
     });
-    Route::get('/{sert_id}/{asesi_id}/pengumuman/index', [PengumumanAsesiController::class, 'index_pengumuman_asesi'])->name('pengumuman.index'); // asesi.pengumuman.index
+    Route::get('/{sert_id}/{asesi_id}/pengumuman/index', PengumumanAsesi::class)->name('pengumuman.index'); // asesi.pengumuman.index
     
 });
 

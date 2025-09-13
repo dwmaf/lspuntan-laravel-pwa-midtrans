@@ -14,7 +14,7 @@
 
 
         @hasrole(['admin', 'asesor'])
-            <a href="{{ route('admin.dashboard') }}" x-data="{ showTip: false, left: 0, top: 0 }"
+            <a href="{{ route('admin.dashboard') }}" wire:navigate x-data="{ showTip: false, left: 0, top: 0 }"
                 
                 class="w-full flex items-center gap-2 leading-none mt-10 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm relative @if (request()->routeIs('admin.dashboard')) bg-gray-200 dark:bg-gray-700 @endif">
                 <x-bxs-grid-alt class="w-5 text-gray-700 dark:text-gray-200" />
@@ -23,7 +23,7 @@
                 </span>
                 
             </a>
-            <a href="{{ route('admin.kelolasertifikasi.index') }}"
+            <a href="{{ route('admin.kelolasertifikasi.index') }}" wire:navigate
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.kelolasertifikasi.*')) bg-gray-200 dark:bg-gray-700 @endif">
                 <x-tni-certificate class="w-4 text-gray-700 dark:text-gray-200" />
                 <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
@@ -31,14 +31,14 @@
                 </span>
             </a>
             @hasrole('admin')
-                <a href="{{ route('admin.skema.create') }}"
+                <a href="{{ route('admin.skema.create') }}" wire:navigate
                     class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.skema.*')) bg-gray-200 dark:bg-gray-700 @endif">
                     <x-bxs-book class="w-4 text-gray-700 dark:text-gray-200" />
                     <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
                         Skema
                     </span>
                 </a>
-                <a href="{{ route('admin.asesor.index') }}"
+                <a href="{{ route('admin.asesor.index') }}" wire:navigate
                     class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('admin.asesor.*')) bg-gray-200 dark:bg-gray-700 @endif">
                     <x-fas-chalkboard-teacher class="w-4 text-gray-700 dark:text-gray-200" />
                     <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
@@ -46,7 +46,7 @@
                     </span>
                 </a>
             @endhasrole
-            <a href="{{ route('profile.edit') }}"
+            <a href="{{ route('profile.edit') }}" wire:navigate
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('profile.edit')) bg-gray-200 dark:bg-gray-700 @endif"
                 :class="(open && location.pathname === '/profile') ? 'bg-gray-200 dark:bg-gray-800' : ''">
                 <x-fas-user class="w-4 text-gray-700 dark:text-gray-200" />
@@ -55,21 +55,21 @@
                 </span>
             </a>
         @else
-            <a href="{{ route('asesi.dashboard') }}"
+            <a href="{{ route('asesi.dashboard') }}" wire:navigate
                 class="w-full flex items-center gap-2 leading-none mt-10 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('asesi.dashboard')) bg-gray-200 dark:bg-gray-700 @endif">
                 <x-bxs-grid-alt class="w-5 text-gray-700 dark:text-gray-200" />
                 <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
                     Dashboard
                 </span>
             </a>
-            <a href="{{ route('asesi.sertifikasi.index') }}"
+            <a href="{{ route('asesi.sertifikasi.index') }}" wire:navigate
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('asesi.sertifikasi.*')) bg-gray-200 dark:bg-gray-700 @endif">
                 <x-tni-certificate class="w-4 text-gray-700 dark:text-gray-200" />
                 <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">
                     Sertifikasi
                 </span>
             </a>
-            <a href="{{ route('profile_asesi.edit') }}"
+            <a href="{{ route('profile_asesi.edit') }}" wire:navigate
                 class="w-full flex items-center gap-2 leading-none mt-2 mb-2 px-3 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-sm @if (request()->routeIs('profile_asesi.edit')) bg-gray-200 dark:bg-gray-700 @endif">
                 <x-fas-user class="w-4 text-gray-700 dark:text-gray-200" />
                 <span class="text-gray-700 dark:text-gray-200 rounded-sm" :class="!open ? 'hidden' : ''">

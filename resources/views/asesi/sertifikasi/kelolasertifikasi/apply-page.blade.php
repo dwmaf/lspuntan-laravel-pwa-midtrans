@@ -14,9 +14,7 @@
             <input type="text" value="{{ $sertification->id }}" hidden name="sertification_id">
             <input type="text" value="{{ $student->id }}" hidden name="student_id">
             <div id="nama">
-                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">Nama Lengkap
-                    (Sesuai KTP)<span style="color: red">*</span>
-                </label>
+                <x-input-label>Nama Lengkap<span style="color: red">*</span></x-input-label>
                 <x-text-input name="name" type="text" class="mt-1 block w-full" :value="old('name', $student?->user->name)" required />
                 <x-input-error class="mt-2" :messages="$errors->get('name')" />
             </div>
@@ -370,5 +368,4 @@
         <h4 class="dark:text-white"><span class="text-red-600">*</span>&rpar; Wajib diisi</h4>
     </div>
 </x-app-layout>
-@push('scripts')
-@endpush
+

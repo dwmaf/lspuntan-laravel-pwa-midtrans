@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
-use App\Models\Asesiattachmentfiles;
+use App\Models\Asesiattachmentfile;
 use App\Models\Studentattachmentfile;
 use App\Notifications\PendaftarBaru;
 use Illuminate\Support\Facades\Notification;
@@ -154,7 +154,7 @@ class KelolaSertifikasiAsesiController extends Controller
                 foreach ($request->file($fileType) as $file) {
                     $fileData = FileHelper::storeFileWithUniqueName($file, "asesi_attachments");
 
-                    Asesiattachmentfiles::create([
+                    Asesiattachmentfile::create([
                         'asesi_id' => $asesi->id,
                         'type' => $fileType,
                         'path_file' => $fileData['path'],
@@ -325,7 +325,7 @@ class KelolaSertifikasiAsesiController extends Controller
         foreach ($fileTypes as $fileType) {
             if ($request->hasFile($fileType)) { // Jika ada file baru yang diunggah untuk tipe ini
                 // 1. Hapus file lama dari DB dan storage untuk tipe ini
-                $oldFiles = Asesiattachmentfiles::where('asesi_id', $asesi->id)
+                $oldFiles = Asesiattachmentfile::where('asesi_id', $asesi->id)
                     ->where('type', $fileType)
                     ->get();
                 foreach ($oldFiles as $oldFile) {
@@ -336,7 +336,7 @@ class KelolaSertifikasiAsesiController extends Controller
                 // 2. Simpan file baru
                 foreach ($request->file($fileType) as $file) {
                     $fileData = FileHelper::storeFileWithUniqueName($file, "asesi_attachments");
-                    Asesiattachmentfiles::create([
+                    Asesiattachmentfile::create([
                         'asesi_id' => $asesi->id,
                         'type' => $fileType,
                         'path_file' => $fileData['path'],
