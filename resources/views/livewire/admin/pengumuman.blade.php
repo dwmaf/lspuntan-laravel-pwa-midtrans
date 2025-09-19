@@ -2,13 +2,19 @@
 <div x-data="{ showCreate: false }" x-on:pengumuman-created.window="showCreate = false"
     x-on:validation-error.window="$refs.createForm.scrollIntoView({ behavior: 'smooth', block: 'center' })">
     {{-- Notifikasi --}}
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Rincian Sertifikasi') }}
+        </h2>
+    </x-slot>
+    @include('layouts.admin-sertifikasi-menu')
     <div x-data="{ show: false, message: '' }"
         x-on:notify.window="message=$event.detail.message;show=true;setTimeout(()=>show=false,2500)" x-show="show"
         x-transition x-text="message" class="fixed top-20 right-4 text-xs px-3 py-2 rounded bg-green-600 text-white z-50"
         style="display:none">
     </div>
     @if ($formMode === 'create')
-        <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Buat Pengumuman</h2>
             <form wire:submit.prevent="save" class="mt-4 flex flex-col gap-4">
                 @include('livewire.admin.partials.pengumuman-form-fields')

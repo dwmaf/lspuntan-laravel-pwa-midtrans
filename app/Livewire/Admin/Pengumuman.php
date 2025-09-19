@@ -13,7 +13,12 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Layout;
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 
+#[Layout('layouts.admin')]
 class Pengumuman extends Component
 {
     use WithFileUploads;
@@ -21,6 +26,7 @@ class Pengumuman extends Component
     // Properti utama
     public int $sertificationId;
     public $pengumumans;
+    public Sertification $sertification;
 
     // Properti untuk form
     public ?string $formMode = null;
@@ -37,9 +43,10 @@ class Pengumuman extends Component
         ];
     }
 
-    public function mount(int $sertificationId)
+    public function mount($sert_id)
     {
-        $this->sertificationId = $sertificationId;
+        $this->sertificationId = $sert_id;
+        $this->sertification = Sertification::findOrFail($sert_id);
         $this->loadPengumumans();
     }
 
@@ -68,7 +75,7 @@ class Pengumuman extends Component
         $this->formMode = 'edit';
     }
 
-    public function save()
+    public function save(Messaging $messaging)
     {
         try {
             $this->validate();
@@ -78,7 +85,7 @@ class Pengumuman extends Component
             // Lempar kembali exception agar Livewire tetap menampilkan error
             throw $e;
         }
-        
+
         $isCreating = !$this->editingPengumuman->exists;
 
         $this->editingPengumuman->fill([
@@ -96,7 +103,34 @@ class Pengumuman extends Component
                 'path_file' => $path,
             ]);
         }
+        $asesis = Asesi::with('student.user')
+            ->where('sertification_id', $this->sertificationId)
+            ->where('status', 'dilanjutkan_asesmen')
+            ->whereHas('student.user', function ($query) {
+                $query->whereNotNull('fcm_token');
+            })
+            ->get();
 
+        if ($asesis->isNotEmpty()) {
+            // 2. Siapkan konten notifikasi
+            $title = $isCreating ? 'Ada Pengumuman Baru' : 'Pengumuman Diperbarui';
+            $body = 'Pengumuman baru untuk sertifikasi: ' . $this->sertification->skema->nama_skema;
+            $url = route('asesi.pengumuman.index', [$this->sertificationId]);
+            // 3. Buat template pesan (tanpa data URL karena setiap asesi punya URL berbeda)
+            $message = CloudMessage::new()
+                ->withNotification(FirebaseNotification::create($title, $body))->withData(['url' => $url]);
+
+            // 4. Kirim pesan ke setiap asesi secara individual karena URL-nya unik
+            if (!empty($deviceTokens)) {
+                $report = $messaging->sendMulticast($message, $deviceTokens);
+
+                // (Opsional) Periksa jika ada kegagalan
+                if ($report->hasFailures()) {
+                    // Log::warning('Gagal mengirim beberapa notifikasi pengumuman.');
+                    // Anda bisa menambahkan logging yang lebih detail di sini jika perlu
+                }
+            }
+        }
         // Kirim notifikasi
         $this->notifyAsesi($isCreating);
 

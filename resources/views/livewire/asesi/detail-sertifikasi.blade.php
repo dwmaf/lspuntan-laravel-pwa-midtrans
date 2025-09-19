@@ -190,7 +190,7 @@
                                 style="color: red">*</span></x-input-label>
                         {{-- Tampilkan daftar file KHS yang sudah ada --}}
                         @php
-                            $khsFiles = $student->studentattachmentfile->where('type', 'kartu_hasil_studi');
+                            $khsFiles = $student->studentattachmentfiles->where('type', 'kartu_hasil_studi');
                         @endphp
                         @if ($khsFiles->isNotEmpty())
                             <div class=" text-sm text-gray-600 dark:text-gray-400">

@@ -30,7 +30,7 @@ class ProfileController extends Controller
     // buat nampilin halaman edit profile dari sisi asesi
     public function edit_asesi(Request $request): View
     {
-        $user = $request->user()->load('student.studentattachmentfile');
+        $user = $request->user()->load('student.studentattachmentfiles');
         return view('asesi.profile.edit', [
             'user'=>$user,
             'student' => $user->student

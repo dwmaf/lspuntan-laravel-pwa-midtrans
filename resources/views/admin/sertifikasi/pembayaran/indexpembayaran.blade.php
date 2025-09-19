@@ -12,7 +12,7 @@
         </div>
     @endif
     @include('layouts.admin-sertifikasi-menu')
-<livewire:admin.pembayaran :sertification-id="$sertification->id" />
+
     {{-- <div x-data="{ editingRincian: {{ $sertification->punya_rincian_pembayaran ? 'false' : 'true' }}, hargaValue: '{{ old('harga', $sertification->harga) }}', tglBayarValue: '{{ old('tgl_bayar_ditutup', $sertification->tgl_bayar_ditutup?->format('Y-m-d\TH:i')) }}' }">
         
 

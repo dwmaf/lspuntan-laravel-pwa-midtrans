@@ -4,9 +4,6 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Fcm\FcmChannel;
-use NotificationChannels\Fcm\FcmMessage;
-use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class PengumumanBaru extends Notification
 {
@@ -22,7 +19,7 @@ class PengumumanBaru extends Notification
 
     public function via($notifiable)
     {
-        return ['database', FcmChannel::class];
+        return ['database'];
     }
 
     public function toArray($notifiable)
@@ -35,15 +32,4 @@ class PengumumanBaru extends Notification
         ];
     }
     
-    public function toFcm($notifiable)
-    {
-        $notificationId = $this->id;
-        return (new FcmMessage(notification: new FcmNotification(
-            title: 'Ada Pengumuman baru',
-            image: asset('logo-lsp.png')
-        )))
-            ->data([
-                'link' => route('asesi.pengumuman.index', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId])
-            ]);
-    }
 }

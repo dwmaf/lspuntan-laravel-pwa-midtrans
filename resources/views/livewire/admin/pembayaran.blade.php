@@ -1,10 +1,16 @@
-<div class="space-y-4">
+<div >
     {{-- Notifikasi (copy dari komponen Asesmen) --}}
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Sertifikasi') }}
+        </h2>
+    </x-slot>
     <div x-data="{ show: false, message: '' }"
         x-on:notify.window="message=$event.detail.message;show=true;setTimeout(()=>show=false,2500)" x-show="show"
         x-transition x-text="message" class="text-xs px-3 py-2 rounded bg-green-600 text-white inline-block"
         style="display:none">
     </div>
+    @include('layouts.admin-sertifikasi-menu')
 
     {{-- Mode Tampilan --}}
     @if (!$editingRincian)

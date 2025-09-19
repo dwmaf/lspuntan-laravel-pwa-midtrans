@@ -5,7 +5,9 @@ namespace App\Livewire\Admin;
 use App\Models\Asesor;
 use App\Models\Sertification;
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 
+#[Layout('layouts.admin')]
 class KelolaSertifikasi extends Component
 {
     // Properti untuk state & data

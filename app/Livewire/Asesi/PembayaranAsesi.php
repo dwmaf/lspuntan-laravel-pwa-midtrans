@@ -13,6 +13,9 @@ use App\Helpers\FileHelper;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 #[Layout('layouts.app')]
 class PembayaranAsesi extends Component
 {
@@ -26,7 +29,7 @@ class PembayaranAsesi extends Component
         $this->sertification = Sertification::with('asesor', 'skema','pembuatrincianpembayaran.asesor')->find($sert_id);
         $this->asesi = Asesi::with('student')->find($asesi_id);   
     }
-    public function save()
+    public function save(Messaging $messaging)
     {
         $this->validate([
             'bukti_bayar' => 'required|image|mimes:jpeg,png,jpg,gif,pdf|max:2048',
@@ -46,7 +49,26 @@ class PembayaranAsesi extends Component
         $transaction->save();
         $admins = User::role('admin')->get();
         Notification::send($admins, new AsesiUploadBuktiPembayaran($this->sertification->id, $this->asesi->id));
+        if ($admins->isNotEmpty()) {
+            // 2. Siapkan konten notifikasi
+            $title = 'Pembayaran Baru Diterima';
+            $body = 'Seorang asesi telah mengunggah bukti pembayaran. Silakan periksa.';
+            $url = route('admin.sertifikasi.pendaftar.show', [$this->sertification->id, $this->asesi->id]);
+            // 3. Buat template pesan (tanpa data URL karena setiap asesi punya URL berbeda)
+            $message = CloudMessage::new()
+                ->withNotification(FirebaseNotification::create($title, $body))->withData(['url' => $url]);
 
+            // 4. Kirim pesan ke setiap asesi secara individual karena URL-nya unik
+            if (!empty($deviceTokens)) {
+                $report = $messaging->sendMulticast($message, $deviceTokens);
+
+                // (Opsional) Periksa jika ada kegagalan
+                if ($report->hasFailures()) {
+                    // Log::warning('Gagal mengirim beberapa notifikasi pengumuman.');
+                    // Anda bisa menambahkan logging yang lebih detail di sini jika perlu
+                }
+            }
+        }
         // PERBAIKAN 3: Beri feedback ke pengguna
         $this->asesi->refresh(); // Muat ulang data transaksi asesi
         $this->reset('bukti_bayar'); // Kosongkan input file

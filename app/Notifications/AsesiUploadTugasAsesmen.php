@@ -22,7 +22,7 @@ class AsesiUploadTugasAsesmen extends Notification
 
     public function via($notifiable)
     {
-        return ['database', FcmChannel::class];
+        return ['database'];
     }
 
     public function toArray($notifiable)
@@ -33,18 +33,5 @@ class AsesiUploadTugasAsesmen extends Notification
             //tujuan functionnya ada di AsesmenController, function rincian_asesmen_asesi
             'link' => route('admin.sertifikasi.rincian.assessment.asesi.index', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId]),
         ];
-    }
-
-    public function toFcm($notifiable)
-    {
-        $notificationId = $this->id;
-        return (new FcmMessage(notification: new FcmNotification(
-            title: 'Asesi mengunggah tugas asesmennya.',
-            body: 'Seorang asesi telah mengunggah tugas asesmennya. Silakan periksa.',
-            image: asset('logo-lsp.png')
-        )))
-            ->data([
-                'link' => route('admin.sertifikasi.pendaftar.show', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId])
-            ]);
     }
 }

@@ -1,5 +1,10 @@
 {{-- filepath: d:\Laravel-App\lsp-untan-laravel-pwa\resources\views\livewire\admin\asesorlivewire.blade.php --}}
 <div>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Asesor') }}
+        </h2>
+    </x-slot>
     {{-- Notifikasi --}}
     <div x-data="{ show: false, message: '' }"
         x-on:notify.window="message=$event.detail.message;show=true;setTimeout(()=>show=false,3000)" x-show="show"
@@ -9,7 +14,7 @@
 
     @if ($formMode === 'create')
         {{-- Tampilan Form Create --}}
-        <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Tambah Asesor</h2>
             <form wire:submit.prevent="save" class="mt-4 flex flex-col gap-4">
                 @include('livewire.admin.partials.asesor-form-fields')
@@ -17,7 +22,7 @@
         </div>
     @else
         {{-- Tampilan Daftar Asesor (Default) --}}
-        <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Daftar Asesor</h2>
                 <x-add-button wire:click="showCreateForm">Tambah Asesor</x-add-button>

@@ -78,10 +78,10 @@ class DetailSertifikasi extends Component
         ];
     }
 
-    public function mount($sertificationId, $asesiId)
+    public function mount($sert_id, $asesi_id)
     {
-        $this->sertification = Sertification::with('skema')->findOrFail($sertificationId);
-        $this->asesi = Asesi::with('makulnilais', 'asesiattachmentfiles')->findOrFail($asesiId);
+        $this->sertification = Sertification::with('skema')->findOrFail($sert_id);
+        $this->asesi = Asesi::with('makulnilais', 'asesiattachmentfiles')->findOrFail($asesi_id);
         $this->user = Auth::user();
         $this->student = $this->user->student;
 

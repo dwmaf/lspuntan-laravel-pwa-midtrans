@@ -18,11 +18,34 @@ use App\Http\Controllers\PaymentController;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\RoleMiddleware;
+use App\Livewire\Admin\Asesmen;
+use App\Livewire\Admin\Asesorlivewire;
+use App\Livewire\Admin\DetailSertifikasiAdmin;
+use App\Livewire\Admin\KelolaSertifikasi;
+use App\Livewire\Admin\Pembayaran;
+use App\Livewire\Admin\Pendaftar;
+use App\Livewire\Admin\Pengumuman;
+use App\Livewire\Admin\Skemalivewire;
 use App\Livewire\Asesi\ApplySertifikasi;
 use App\Livewire\Asesi\DetailSertifikasi;
 use App\Livewire\Asesi\PengumumanAsesi;
 use App\Livewire\Asesi\PembayaranAsesi;
 use App\Livewire\Asesi\AsesmenAsesi;
+
+Route::get('/debug-firebase', function () {
+    try {
+        // Coba panggil service 'firebase.messaging' yang seharusnya dibuat oleh ServiceProvider
+        $messaging = app('firebase.messaging');
+        
+        // Jika berhasil, kita akan mendapatkan pesan sukses
+        dd('Koneksi ke Firebase Messaging BERHASIL! Driver seharusnya sudah terdaftar. Masalah ada di tempat lain.');
+
+    } catch (\Throwable $e) {
+        // Jika gagal, kita akan mendapatkan pesan error yang detail
+        // Ini akan memberi tahu kita mengapa ServiceProvider gagal.
+        dd($e);
+    }
+});
 
 Route::get('/', function () {
     return view('auth.login');
@@ -57,18 +80,21 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
 
     // Menggunakan Route::resource untuk CRUD standar, lebih bersih.
     Route::prefix('skema')->name('skema.')->group(function () {
-        Route::get('/', [SkemaController::class, 'create'])->name('create'); // admin.skema.create
+        Route::get('/', Skemalivewire::class)->name('create'); // admin.skema.create
         Route::post('/', [SkemaController::class, 'store'])->name('store'); // admin.skema.store
         Route::get('/{id}/edit', [SkemaController::class, 'edit'])->name('edit'); // admin.skema.edit
         Route::patch('/{id}/update', [SkemaController::class, 'update'])->name('update'); // admin.skema.update
         Route::delete('/{id}/destroy', [SkemaController::class, 'destroy'])->name('destroy'); // admin.skema.destroy
     });
-    Route::resource('asesor', AsesorController::class)->names('asesor'); // URI: admin/asesor
+    Route::prefix('asesor')->name('asesor.')->group(function () {
+        Route::get('/index', Asesorlivewire::class)->name('index'); // admin.asesor.index
+    });
+    // Route::resource('asesor', AsesorController::class)->names('asesor'); // URI: admin/asesor
     Route::prefix('kelolasertifikasi')->name('kelolasertifikasi.')->group(function () {
         Route::post('/filter-riwayat_sertifikasi', [KelolaSertifikasiController::class, 'filter_riwayat_sertifikasi'])->name('.filter-riwayat_sertifikasi'); // admin.kelolasertifikasi.filter-riwayat_sertifikasi
-        Route::get('/index', [KelolaSertifikasiController::class, 'index'])->name('index'); // admin.kelolasertifikasi.index
+        Route::get('/index', KelolaSertifikasi::class)->name('index'); // admin.kelolasertifikasi.index
         Route::post('/store', [KelolaSertifikasiController::class, 'store'])->name('store'); // admin.kelolasertifikasi.store
-        Route::get('/{sert_id}/show', [KelolaSertifikasiController::class, 'show'])->name('show'); // admin.kelolasertifikasi.show
+        Route::get('/{sert_id}/show', DetailSertifikasiAdmin::class)->name('show'); // admin.kelolasertifikasi.show
         Route::get('/{sert_id}/edit', [KelolaSertifikasiController::class, 'edit'])->name('edit'); // admin.kelolasertifikasi.edit
         Route::patch('/{sert_id}/update', [KelolaSertifikasiController::class, 'update'])->name('update'); // admin.kelolasertifikasi.update
         Route::delete('/{sert_id}/destroy', [KelolaSertifikasiController::class, 'destroy'])->name('destroy'); // admin.kelolasertifikasi.destroy
@@ -76,14 +102,14 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
     });
     Route::prefix('sertifikasi/{sert_id}')->name('sertifikasi.')->group(function () {
         // untuk munculin halaman edit asesmen dan updatenya
-        Route::get('/assessment/edit', [AsesmenController::class, 'rincian_asesmen'])->name('assessment.edit'); // admin.sertifikasi.assessment.edit
+        Route::get('/assessment/edit', Asesmen::class )->name('assessment.edit'); // admin.sertifikasi.assessment.edit
         Route::patch('/assessment/update', [AsesmenController::class, 'update_tugas_asesmen'])->name('assessment.update'); // admin.sertifikasi.assessment.update
         Route::get('/{asesi_id}/rincian-assessment-asesi/index', [AsesmenController::class, 'rincian_asesmen_asesi'])->name('rincian.assessment.asesi.index'); // admin.sertifikasi.rincian.assessment.asesi.index
         // untuk mnunculin halaman edit rincian pembayaran dan updatenya
-        Route::get('/payment-desc/index', [PembayaranController::class, 'index_rincian_pembayaran'])->name('payment-desc.index'); // admin.sertifikasi.payment-desc.index
+        Route::get('/payment-desc/index', Pembayaran::class)->name('payment-desc.index'); // admin.sertifikasi.payment-desc.index
         Route::patch('/payment-desc/update', [PembayaranController::class, 'update_rincian_pembayaran'])->name('payment-desc.update'); // admin.sertifikasi.payment-desc.update
         // Mengelola konten pengumuman
-        Route::get('/assessment-announcement/index', [PengumumanController::class, 'index_pengumuman_asesmen'])->name('assessment-announcement.index'); // admin.sertifikasi.assessment-announcement.index
+        Route::get('/assessment-announcement/index', Pengumuman::class)->name('assessment-announcement.index'); // admin.sertifikasi.assessment-announcement.index
         Route::post('/assessment-announcement/store', [PengumumanController::class, 'store_pengumuman_asesmen'])->name('assessment-announcement.store'); // admin.sertifikasi.assessment-announcement.store
         Route::get('/assessment-announcement/edit/{peng_id}', [PengumumanController::class, 'edit_pengumuman_asesmen'])->name('assessment-announcement.edit'); // admin.sertifikasi.assessment-announcement.edit
         Route::patch('/assessment-announcement/update/{peng_id}', [PengumumanController::class, 'update_pengumuman_asesmen'])->name('assessment-announcement.update'); // admin.sertifikasi.assessment-announcement.update
@@ -92,7 +118,7 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
 
     // Mengelola data pendaftar (asesi) secara spesifik
     Route::prefix('sertifikasi/{sert_id}')->name('sertifikasi.')->group(function () {
-        Route::get('/pendaftar/index', [PendaftarController::class, 'list_asesi'])->name('pendaftar.index'); // admin.sertifikasi.pendaftar.index
+        Route::get('/pendaftar/index', Pendaftar::class)->name('pendaftar.index'); // admin.sertifikasi.pendaftar.index
         Route::get('/{asesi_id}/pendaftar/show', [PendaftarController::class, 'rincian_data_asesi'])->name('pendaftar.show'); // admin.sertifikasi.pendaftar.show
         Route::patch('/{asesi_id}/pendaftar/update-status', [PendaftarController::class, 'update_status_asesi'])->name('pendaftar.update-status'); // admin.sertifikasi.pendaftar.update-status
         Route::patch('/{transaction_id}/pendaftar/update-payment-status', [PendaftarController::class, 'update_status_pembayaran'])->name('pendaftar.update-payment-status'); // admin.sertifikasi.pendaftar.update-payment-status
@@ -102,6 +128,7 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
     Route::delete('/asesmen-file-ajax-delete/{id_file}', [AsesmenController::class, 'ajaxDeleteAsesmenFile'])->name('asesmen.file.ajaxdelete');
     Route::delete('/pengumuman-file-ajax-delete', [PengumumanController::class, 'ajaxDeletePengumumanAsesmenFile'])->name('pengumuman.file.ajaxdelete');
 });
+
 
 //versi lebih baik utk asesi, konsistensi bahasa, penggunaan kebab-case, pakai konvensi restful (index, create, store, show, edit, update, destroy), kelompokin route dgn prefix
 Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->group(function () {

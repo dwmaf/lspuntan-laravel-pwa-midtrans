@@ -4,18 +4,20 @@
             {{ __('Profile') }}
         </h2>
     </x-slot>
-    @if (session('success'))
-        <div class="mb-4 p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md"
-            role="alert">
-            {{ session('success') }}
-        </div>
-    @endif
+    <div x-data="{ show: false, message: '' }"
+        x-on:profile-updated.window="message=$event.detail.message; show=true; setTimeout(() => show=false, 3000)"
+        x-on:password-updated.window="message=$event.detail.message; show=true; setTimeout(() => show=false, 3000)"
+        x-show="show" x-transition.leave.duration.500ms
+        class="mb-4 p-4 bg-green-100 text-green-700 border border-green-200 rounded-lg"
+        style="display: none;"
+        x-text="message">
+    </div>
     <div class="flex flex-col gap-4">
         <div class="p-4 bg-white dark:bg-gray-800 rounded-lg">
-            @include('asesi.profile.partials.update-profile-information-form')
+            <livewire:asesi.profile.update-profile-asesi />
         </div>
         <div class="p-4 bg-white dark:bg-gray-800 rounded-lg">
-            @include('asesi.profile.partials.update-password-form')
+            <livewire:asesi.profile.update-password-asesi />
         </div>
         <div class="p-4 bg-white dark:bg-gray-800 rounded-lg">
             @include('asesi.profile.partials.pengaturan')

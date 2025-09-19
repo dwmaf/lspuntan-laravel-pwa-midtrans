@@ -15,7 +15,7 @@
         $jumlahFileLama = $sertification->asesmenfile ? $sertification->asesmenfile->count() : 0;
     @endphp
     <div x-data="{ editingRincian: {{ $sertification->punya_rincian_asesmen ? 'false' : 'true' }} }">
-        <livewire:admin.asesmen :sertification-id="$sertification->id" />
+        
         {{-- Blok untuk menampilkan editor (Edit Mode) --}}
         {{-- <div x-show="editingRincian"
             class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">

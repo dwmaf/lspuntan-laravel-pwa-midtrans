@@ -27,6 +27,7 @@
                     <x-fas-eye-slash x-show="show" class="w-4 text-gray-700 dark:text-gray-300" />
                 </button>
             </div>
+
             <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
         </div>
 
@@ -44,6 +45,7 @@
                     <x-fas-eye-slash x-show="show" class="w-4 text-gray-700 dark:text-gray-300" />
                 </button>
             </div>
+
             <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
         </div>
 
@@ -62,6 +64,7 @@
                     <x-fas-eye-slash x-show="show" class="w-4 text-gray-700 dark:text-gray-300" />
                 </button>
             </div>
+
             <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
         </div>
 
@@ -69,13 +72,8 @@
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
             @if (session('status') === 'password-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600 dark:text-gray-400"
-                >{{ __('Saved.') }}</p>
+                <p x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)"
+                    class="text-sm text-gray-600 dark:text-gray-400">{{ __('Saved.') }}</p>
             @endif
         </div>
     </form>

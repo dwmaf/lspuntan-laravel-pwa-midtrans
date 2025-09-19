@@ -1,5 +1,10 @@
 
 <div>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Sertifikasi') }}
+        </h2>
+    </x-slot>
     {{-- Notifikasi --}}
     <div x-data="{ show: false, message: '' }"
         x-on:notify.window="message=$event.detail.message;show=true;setTimeout(()=>show=false,3000)" x-show="show"
@@ -8,7 +13,7 @@
     </div>
     @if ($formMode === 'create')
         {{-- Tampilan Form Create --}}
-        <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Tambah Skema Sertifikasi</h2>
             <form wire:submit.prevent="save" class="mt-4 flex flex-col gap-4">
                 @include('livewire.admin.partials.skema-form-fields')

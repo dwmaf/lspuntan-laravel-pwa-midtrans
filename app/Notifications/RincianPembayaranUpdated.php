@@ -6,9 +6,6 @@ use Illuminate\Bus\Queueable;
 use App\Models\Sertification;
 use App\Models\Asesi;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Fcm\FcmChannel;
-use NotificationChannels\Fcm\FcmMessage;
-use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class RincianPembayaranUpdated extends Notification
 {
@@ -25,7 +22,7 @@ class RincianPembayaranUpdated extends Notification
 
     public function via($notifiable)
     {
-        return ['database', FcmChannel::class];
+        return ['database'];
     }
 
     public function toArray($notifiable)
@@ -38,15 +35,4 @@ class RincianPembayaranUpdated extends Notification
         ];
     }
 
-    public function toFcm($notifiable)
-    {
-        $notificationId = $this->id;
-        return (new FcmMessage(notification: new FcmNotification(
-            title: 'Rincian pembayaran diupdate untuk sertifikasi',
-            image: asset('logo-lsp.png')
-        )))
-            ->data([
-                'link' => route('asesi.applied.payment.create', [$this->sertification->id, $this->asesi->id, 'notification_id' => $notificationId])
-            ]);
-    }
 }

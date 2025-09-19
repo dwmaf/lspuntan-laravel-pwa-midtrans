@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 
+#[Layout('layouts.admin')]
 class Asesorlivewire extends Component
 {
     // Properti untuk daftar

@@ -22,7 +22,7 @@ class AsesiUploadBuktiPembayaran extends Notification
 
     public function via($notifiable)
     {
-        return ['database', FcmChannel::class];
+        return ['database'];
     }
 
     public function toArray($notifiable)
@@ -35,20 +35,6 @@ class AsesiUploadBuktiPembayaran extends Notification
         ];
     }
 
-    public function toFcm($notifiable)
-    {
-        $notificationId = $this->id;
-        return (new FcmMessage(notification: new FcmNotification(
-            title: 'Pembayaran Baru Diterima',
-            body: 'Seorang asesi telah mengunggah bukti pembayaran. Silakan periksa.',
-            // Anda bisa menambahkan URL gambar logo di sini
-            image: asset('logo-lsp.png')
-        )))
-            // PERBAIKAN 2: Pastikan link di data menyertakan notification_id
-            ->data([
-                'link' => route('admin.sertifikasi.pendaftar.show', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId])
-            ]);
-    }
     /*
     * @param  mixed  $notifiable
      * @return \NotificationChannels\Fonnte\FonnteMessage

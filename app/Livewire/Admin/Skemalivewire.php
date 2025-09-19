@@ -5,8 +5,10 @@ namespace App\Livewire\Admin;
 use App\Models\Skema;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Storage;
 
+#[Layout('layouts.admin')]
 class Skemalivewire extends Component
 {
     use WithFileUploads;

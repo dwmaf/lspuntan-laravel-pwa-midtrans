@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
     @include('layouts.admin-sertifikasi-menu')
-    <livewire:admin.pengumuman :sertification-id="$sertification->id" />
+    
     {{-- <div x-data="{ showForm: false, showConfirmModal: false, deleteUrl: '' }">
         @if ($sertification->status == 'berlangsung')
             <div class="p-6 mb-2 bg-white dark:bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-md">

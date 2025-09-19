@@ -4,7 +4,7 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-    <livewire:admin.kelola-sertifikasi />
+    
     {{-- @if (session('success'))
         <div class="mb-4 p-4 bg-green-100 dark:bg-green-700 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-100 rounded-md"
             role="alert">

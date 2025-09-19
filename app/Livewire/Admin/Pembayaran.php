@@ -8,7 +8,11 @@ use App\Notifications\RincianPembayaranUpdated;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-
+use Livewire\Attributes\Layout;
+use Kreait\Firebase\Contract\Messaging; 
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification; 
+#[Layout('layouts.admin')]
 class Pembayaran extends Component
 {
     // Properti untuk menyimpan data
@@ -29,10 +33,10 @@ class Pembayaran extends Component
     ];
 
     // Fungsi ini berjalan sekali saat komponen dimuat (pengganti Controller::index)
-    public function mount(int $sertificationId)
+    public function mount($sert_id)
     {
-        $this->sertificationId = $sertificationId;
-        $this->sertification = Sertification::findOrFail($sertificationId);
+        $this->sertificationId = $sert_id;
+        $this->sertification = Sertification::with('skema')->findOrFail($sert_id);
 
         // Atur state awal
         $this->editingRincian = !$this->sertification->punya_rincian_pembayaran;
@@ -42,7 +46,7 @@ class Pembayaran extends Component
     }
 
     // Fungsi ini berjalan saat tombol "Simpan" diklik (pengganti Controller::update)
-    public function save()
+    public function save(Messaging $messaging)
     {
         $this->validate();
 
@@ -60,7 +64,39 @@ class Pembayaran extends Component
             $this->sertification->rincianbayar_updatedat = now();
         }
         $this->sertification->save();
+        $asesis = Asesi::with('student.user')
+            ->where('sertification_id', $this->sertificationId)
+            ->where('status', 'dilanjutkan_asesmen')
+            ->whereHas('student.user', function ($query) {
+                $query->whereNotNull('fcm_token');
+            })
+            ->get();
 
+        if ($asesis->isNotEmpty()) {
+            // 2. Siapkan konten notifikasi
+            $title = 'Rincian Pembayaran Diperbarui untuk sertifikasi'. $this->sertification->skema->nama_skema;
+            $body = 'Silakan periksa rincian pembayaran terbaru untuk skema';
+
+            // 3. Kirim pesan ke setiap asesi secara individual karena URL-nya unik
+            foreach ($asesis as $asesi) {
+                if ($user = $asesi->student->user) {
+                    // Buat URL unik untuk setiap asesi
+                    $url = route('asesi.applied.payment.create', [$this->sertification->id, $asesi->id]);
+                    
+                    // Buat pesan spesifik untuk user ini
+                    $message = CloudMessage::new()
+                        ->withNotification(FirebaseNotification::create($title, $body))
+                        ->withData(['url' => $url]);
+
+                    // Kirim pesan menggunakan try-catch untuk menangani error per pengguna
+                    try {
+                        $messaging->send($message->toToken($user->fcm_token));
+                    } catch (\Throwable $e) {
+                        // Log::error("Gagal mengirim notifikasi pembayaran ke user {$user->id}: " . $e->getMessage());
+                    }
+                }
+            }
+        }
         // Kirim notifikasi ke Asesi
         $this->notifyAsesi();
 

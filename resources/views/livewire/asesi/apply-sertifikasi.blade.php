@@ -4,7 +4,7 @@
             Daftar Sertifikasi: {{ $sertification->skema->nama_skema }}
         </h2>
     </x-slot>
-<div x-data="{ show: false, message: '' }"
+    <div x-data="{ show: false, message: '' }"
         x-on:notify.window="message=$event.detail.message;show=true;setTimeout(()=>show=false,3000)" x-show="show"
         x-transition x-text="message" class="fixed top-20 right-4 text-xs px-3 py-2 rounded bg-green-600 text-white z-50"
         style="display:none">
@@ -30,7 +30,7 @@
                 </div>
                 <div id=" tgl lahir">
                     <x-input-label>Tanggal Lahir<span style="color: red">*</span></x-input-label>
-                    <x-text-input wire:model.defer="tgl_lhr" type="date" class="mt-1 block w-full"/>
+                    <x-text-input wire:model.defer="tgl_lhr" type="date" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('tgl_lhr')" />
                 </div>
                 <div id="kelamin">
@@ -51,50 +51,51 @@
                 </div>
                 <div id="kebangsaan">
                     <x-input-label>Kebangsaan<span style="color: red">*</span></x-input-label>
-                    <x-text-input wire:model.defer="kebangsaan" type="text" class="mt-1 block w-full"/>
+                    <x-text-input wire:model.defer="kebangsaan" type="text" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('kebangsaan')" />
                 </div>
                 <div id="no tlp HP">
                     <x-input-label>No. Tlp HP(WA)<span style="color: red">*</span></x-input-label>
-                    <x-text-input wire:model.defer="no_tlp_hp" type="text" class="mt-1 block w-full"/>
+                    <x-text-input wire:model.defer="no_tlp_hp" type="text" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('no_tlp_hp')" />
                 </div>
                 <div id="no tlp rumah">
                     <x-input-label>No. Tlp Rumah</x-input-label>
-                    <x-text-input wire:model.defer="no_tlp_rmh" type="text" class="mt-1 block w-full"/>
+                    <x-text-input wire:model.defer="no_tlp_rmh" type="text" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('no_tlp_rmh')" />
                 </div>
                 <div id="no tlp kantor">
                     <x-input-label>No. Tlp Kantor</x-input-label>
-                    <x-text-input wire:model.defer="no_tlp_kntr" type="text" class="mt-1 block w-full"/>
+                    <x-text-input wire:model.defer="no_tlp_kntr" type="text" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('no_tlp_kntr')" />
                 </div>
 
                 <div id="Kualifikasi Pendidikan (tulis: Mahasiswa S1)*">
-                    <x-input-label>Kualifikasi Pendidikan (tulis: Mahasiswa S1)<span style="color: red">*</span></x-input-label>
-                    <x-text-input wire:model.defer="kualifikasi_pendidikan" type="text" class="mt-1 block w-full"/>
+                    <x-input-label>Kualifikasi Pendidikan (tulis: Mahasiswa S1)<span
+                            style="color: red">*</span></x-input-label>
+                    <x-text-input wire:model.defer="kualifikasi_pendidikan" type="text" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('kualifikasi_pendidikan')" />
                 </div>
 
                 <h3 class="dark:text-gray-300">a. Data Pekerjaan Sekarang</h3>
                 <div id="nama institusi/perusahaan">
                     <x-input-label>Nama Institusi/Perusahaan</x-input-label>
-                    <x-text-input wire:model.defer="nama_institusi" type="text" class="mt-1 block w-full"/>
+                    <x-text-input wire:model.defer="nama_institusi" type="text" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('nama_institusi')" />
                 </div>
                 <div id="jabatan">
                     <x-input-label>Jabatan</x-input-label>
-                    <x-text-input wire:model.defer="jabatan" type="text" class="mt-1 block w-full"/>
+                    <x-text-input wire:model.defer="jabatan" type="text" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('jabatan')" />
                 </div>
                 <div id="alamat kantor">
                     <x-input-label>Alamat Kantor</x-input-label>
-                    <x-text-input wire:model.defer="alamat_kantor" type="text" class="mt-1 block w-full"/>
+                    <x-text-input wire:model.defer="alamat_kantor" type="text" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('alamat_kantor')" />
                 </div>
                 <div id="No telepon/fax/email">
                     <x-input-label>No. Tlp/Email/Fax</x-input-label>
-                    <x-text-input wire:model.defer="no_tlp_email_fax" type="text" class="mt-1 block w-full"/>
+                    <x-text-input wire:model.defer="no_tlp_email_fax" type="text" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('no_tlp_email_fax')" />
                 </div>
 
@@ -110,23 +111,44 @@
                     <x-input-error class="mt-2" :messages="$errors->get('tujuan_sert')" />
                 </div>
                 {{-- Bagian Dinamis untuk Mata Kuliah --}}
-                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-md">
-                    <x-input-label>Mata Kuliah terkait (lihat di APL 1)<span style="color: red">*</span></x-input-label>
-                    @foreach ($makulNilais as $index => $makul)
-                        <div class="flex items-center gap-2 mb-2" wire:key="makul-{{ $index }}">
-                            <x-text-input wire:model.defer="makulNilais.{{ $index }}.nama_makul" type="text"
-                                class="mt-1 block w-full" placeholder="Nama Mata Kuliah" />
-                            <x-text-input wire:model.defer="makulNilais.{{ $index }}.nilai_makul"
-                                type="text" class="mt-1 block w-1/4" placeholder="Nilai" />
-                            @if (count($makulNilais) > 1)
-                                <button type="button" wire:click="removeMakul({{ $index }})"
+                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-md" x-data="{
+                    makulNilais: @entangle('makulNilais'),
+                    addMakul() {
+                        this.makulNilais.push({ nama_makul: '', nilai_makul: '' });
+                    },
+                    removeMakul(index) {
+                        this.makulNilais.splice(index, 1);
+                    }
+                }">
+                    <x-input-label>Mata Kuliah terkait (lihat di APL 1)<span
+                            style="color: red">*</span></x-input-label>
+
+                    {{-- Loop menggunakan template Alpine.js --}}
+                    <template x-for="(makul, index) in makulNilais" :key="index">
+                        <div class="flex items-center gap-2 mb-2">
+                            {{-- Input nama makul --}}
+                            <input x-model="makul.nama_makul" type="text"
+                                :name="`makulNilais[${index}][nama_makul]`"
+                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                placeholder="Nama Mata Kuliah" />
+                            {{-- Input nilai makul --}}
+                            <input x-model="makul.nilai_makul" type="text"
+                                :name="`makulNilais[${index}][nilai_makul]`"
+                                class="mt-1 block w-1/4 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                placeholder="Nilai" />
+                            {{-- Tombol Hapus --}}
+                            <template x-if="makulNilais.length > 1">
+                                <button type="button" @click="removeMakul(index)"
                                     class="p-2 text-red-500">&times;</button>
-                            @endif
+                            </template>
                         </div>
-                    @endforeach
-                    <button type="button" wire:click="addMakul" class="mt-2 text-sm font-medium text-blue-600">+
-                        Tambah
-                        Mata Kuliah</button>
+                    </template>
+
+                    {{-- Tombol Tambah --}}
+                    <button type="button" @click="addMakul"
+                        class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700 cursor-pointer">
+                        + Tambah Mata Kuliah
+                    </button>
                 </div>
 
                 {{-- Bagian untuk File Upload --}}
@@ -138,6 +160,7 @@
                         Lihat Template
                     </a>
                     <x-file-input type="file" wire:model.defer="apl_1" />
+                    <div wire:loading wire:target="apl_1" class="text-sm text-gray-500 mt-1">Mengunggah File APL 1...</div>
                     <x-input-error class="mt-2" :messages="$errors->get('apl_1')" />
                 </div>
                 <div id="file apl 2">
@@ -149,6 +172,7 @@
                         Lihat Template
                     </a>
                     <x-file-input type="file" wire:model.defer="apl_2" />
+                    <div wire:loading wire:target="apl_2" class="text-sm text-gray-500 mt-1">Mengunggah File APL 2...</div>
                     <x-input-error class="mt-2" :messages="$errors->get('apl_2')" />
                 </div>
                 <div id="foto_ktp">
@@ -162,6 +186,7 @@
                     @endif
                     <!-- Input file -->
                     <x-file-input type="file" wire:model.defer="foto_ktp" />
+                    <div wire:loading wire:target="foto_ktp" class="text-sm text-gray-500 mt-1">Mengunggah File KTP...</div>
                     <x-input-error class="mt-2" :messages="$errors->get('foto_ktp')" />
                 </div>
                 <div id="foto_ktm">
@@ -175,6 +200,7 @@
                         </p>
                     @endif
                     <x-file-input type="file" wire:model.defer="foto_ktm" />
+                    <div wire:loading wire:target="foto_ktm" class="text-sm text-gray-500 mt-1">Mengunggah File KTM...</div>
                     <x-input-error class="mt-2" :messages="$errors->get('foto_ktm')" />
                 </div>
 
@@ -183,7 +209,7 @@
                             style="color: red">*</span></x-input-label>
                     {{-- Tampilkan daftar file KHS yang sudah ada --}}
                     @php
-                        $khsFiles = $student->studentattachmentfile->where('type', 'kartu_hasil_studi');
+                        $khsFiles = $student->studentattachmentfiles->where('type', 'kartu_hasil_studi');
                     @endphp
                     @if ($khsFiles->isNotEmpty())
                         <div class=" text-sm text-gray-600 dark:text-gray-400">
@@ -201,7 +227,8 @@
                         </div>
                     @endif
 
-                    <x-file-input type="file" multiple wire:model.defer="kartu_hasil_studi[]" />
+                    <x-file-input type="file" multiple wire:model.defer="kartu_hasil_studi" />
+                    <div wire:loading wire:target="kartu_hasil_studi" class="text-sm text-gray-500 mt-1">Mengunggah File KHS...</div>
                     <x-input-error class="mt-2" :messages="$errors->get('kartu_hasil_studi.*')" />
                     <x-input-error class="mt-2" :messages="$errors->get('kartu_hasil_studi')" />
                 </div>
@@ -216,19 +243,22 @@
                         </p>
                     @endif
                     <x-file-input type="file" wire:model.defer="pas_foto" />
+                    <div wire:loading wire:target="pas_foto" class="text-sm text-gray-500 mt-1">Mengunggah File Pas Foto...</div>
                     <x-input-error class="mt-2" :messages="$errors->get('pas_foto')" />
                 </div>
                 <div id="surat keterangan magang">
                     <x-input-label>Surat
                         Keterangan Magang/PKL/MBKM (maks 5, ukuran file maksimal 3 MB)</x-input-label>
-                    <x-file-input type="file" multiple wire:model.defer="surat_ket_magang[]" />
+                    <x-file-input type="file" multiple wire:model.defer="surat_ket_magang" />
+                    <div wire:loading wire:target="surat_ket_magang" class="text-sm text-gray-500 mt-1">Mengunggah File Surat Magang...</div>
                     <x-input-error class="mt-2" :messages="$errors->get('surat_ket_magang.*')" />
                     <x-input-error class="mt-2" :messages="$errors->get('surat_ket_magang')" />
                 </div>
                 <div id="sertif pelatihan">
                     <x-input-label>Scan
                         Sertifikat Pelatihan (maks 5, ukuran file maksimal 3 MB)</x-input-label>
-                    <x-file-input type="file" multiple wire:model.defer="sertif_pelatihan[]" />
+                    <x-file-input type="file" multiple wire:model.defer="sertif_pelatihan" />
+                    <div wire:loading wire:target="sertif_pelatihan" class="text-sm text-gray-500 mt-1">Mengunggah File Sertifikat Pelatihan...</div>
                     <x-input-error class="mt-2" :messages="$errors->get('sertif_pelatihan.*')" />
                     <x-input-error class="mt-2" :messages="$errors->get('sertif_pelatihan')" />
                 </div>
@@ -236,12 +266,14 @@
                     <x-input-label>Dokumen
                         pendukung lainnya: dapat berupa Laporan kegiatan PKL/Magang/MBKM/Publikasi Jurnal/dll (maks 5,
                         ukuran file maksimal 5 MB)</x-input-label>
-                    <x-file-input type="file" multiple wire:model.defer="dok_pendukung_lain[]" />
+                    <x-file-input type="file" multiple wire:model.defer="dok_pendukung_lain" />
+                    <div wire:loading wire:target="dok_pendukung_lain" class="text-sm text-gray-500 mt-1">Mengunggah File Dokumen Pendukung lainnya...</div>
                     <x-input-error class="mt-2" :messages="$errors->get('dok_pendukung_lain.*')" />
                     <x-input-error class="mt-2" :messages="$errors->get('dok_pendukung_lain')" />
                 </div>
                 <div class="flex items-center gap-4 pt-2">
-                    <x-primary-button wire:loading.attr="disabled">
+                    <x-primary-button wire:loading.attr="disabled"
+                    wire:target="save, apl_1, apl_2, foto_ktp, foto_ktm, kartu_hasil_studi, pas_foto, surat_ket_magang, sertif_pelatihan, dok_pendukung_lain">
                         Daftar
                     </x-primary-button>
                     <span wire:loading wire:target="save" class="flex items-center">

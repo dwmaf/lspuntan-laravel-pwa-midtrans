@@ -22,7 +22,7 @@ class TugasAsesmenBaru extends Notification
 
     public function via($notifiable)
     {
-        return ['database', FcmChannel::class];
+        return ['database'];
     }
 
     public function toArray($notifiable)
@@ -35,15 +35,4 @@ class TugasAsesmenBaru extends Notification
         ];
     }
 
-    public function toFcm($notifiable)
-    {
-        $notificationId = $this->id;
-        return (new FcmMessage(notification: new FcmNotification(
-            title: 'Instruksi Tugas asesmen diperbaharui.',
-            image: asset('logo-lsp.png')
-        )))
-            ->data([
-                'link' => route('asesi.assessmen.index', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId])
-            ]);
-    }
 }

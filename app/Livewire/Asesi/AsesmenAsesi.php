@@ -13,7 +13,9 @@ use App\Notifications\AsesiUploadTugasAsesmen;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
-
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 #[Layout('layouts.app')]
 class AsesmenAsesi extends Component
 {
@@ -25,10 +27,10 @@ class AsesmenAsesi extends Component
     public function mount($sert_id, $asesi_id)
     {
         $this->sertification = Sertification::with('pembuatrinciantugasasesmen.asesor')->find($sert_id);
-        $this->asesi = Asesi::with('asesiasesmenfiles')->find($asesi_id);   
+        $this->asesi = Asesi::with('asesiasesmenfiles')->find($asesi_id);
     }
 
-    public function save()
+    public function save(Messaging $messaging)
     {
         $this->validate([
             'asesiasesmenfiles' => 'required|array|max:5',
@@ -57,8 +59,34 @@ class AsesmenAsesi extends Component
                 Asesiasesmenfile::insert($newFilesData);
             }
         }
+        $sertification = Sertification::with(['asesor.user'])
+            ->find($this->sertification->id);
+        $asesor = $sertification->asesor->user;
+        if ($asesor->isNotEmpty()) {
+            // 2. Siapkan konten notifikasi
+            $title = 'Asesi mengunggah tugas asesmennya.';
+            $body = 'Seorang asesi telah mengunggah tugas asesmennya. Silakan periksa. ';
+            $url = route('admin.sertifikasi.rincian.assessment.asesi.index', [$this->sertification->id, $this->asesi->id]);
+
+            // 3. Buat template pesan
+            $message = CloudMessage::new()
+                ->withNotification(FirebaseNotification::create($title, $body))
+                ->withData(['url' => $url]);
+
+            // 4. Kirim pesan ke setiap admin yang memiliki token
+            // Dapatkan semua token dalam satu array
+            $deviceTokens = $asesor->pluck('fcm_token')->filter()->all();
+
+            if (!empty($deviceTokens)) {
+                // Kirim ke banyak perangkat sekaligus
+                $report = $messaging->sendMulticast($message, $deviceTokens);
+                if ($report->hasFailures()) {
+                    // Log::error('Gagal mengirim notifikasi FCM ke beberapa token.');
+                }
+            }
+        }
         $this->notifyAdmin();
-        
+
         $this->asesi->refresh(); // Muat ulang relasi asesiasesmenfiles
         $this->reset('asesiasesmenfiles'); // Kosongkan input file setelah berhasil
         $this->dispatch('notify', message: 'Berhasil unggah file asesmen.');

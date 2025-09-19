@@ -25,7 +25,7 @@ class StatusAsesiUpdated extends Notification
 
     public function via($notifiable)
     {
-        return ['database', FcmChannel::class];
+        return ['database'];
     }
 
     public function toArray($notifiable)
@@ -36,17 +36,5 @@ class StatusAsesiUpdated extends Notification
             //tujuan functionnya ada di KelolaSertifikasiAsesiController, function detail_applied_sertifikasi
             'link' => route('asesi.sertifikasi.applied.show', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId]),
         ];
-    }
-
-    public function toFcm($notifiable)
-    {
-        $notificationId = $this->id;
-        return (new FcmMessage(notification: new FcmNotification(
-            title: 'Status asesmen Anda diubah menjadi: ' . $this->status,
-            image: asset('logo-lsp.png')
-        )))
-            ->data([
-                'link' => route('asesi.sertifikasi.applied.show', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId])
-            ]);
     }
 }

@@ -6,9 +6,12 @@
     dark:text-white text-gray-600 ">
             Detail
         </a>
-        @if (Route::is(['admin.kelolasertifikasi.show','admin.kelolasertifikasi.edit']))
+        @if ($this->getName() == 'admin.detail-sertifikasi-admin')
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
+        {{-- @if (Route::is(['admin.kelolasertifikasi.show','admin.kelolasertifikasi.edit']) ||  (isset($isEditing) && $isEditing))
+            <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
+        @endif --}}
     </div>
     {{-- Praasesmen, disabled --}}
     {{-- <div>
@@ -27,7 +30,7 @@
             dark:text-white text-gray-600 "> 
             Pembayaran
         </a>
-        @if (Route::is('admin.sertifikasi.payment-desc.index'))
+        @if ($this->getName() == 'pembayaran')
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
@@ -38,7 +41,8 @@
             dark:text-white text-gray-600 ">
             Pengumuman
         </a>
-        @if (Route::is('admin.sertifikasi.assessment-announcement.*'))
+
+        @if ($this->getName() == 'pengumuman')
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
@@ -49,7 +53,7 @@
             dark:text-white text-gray-600 ">
             Asesmen
         </a>
-        @if (Route::is(['admin.sertifikasi.assessment.edit','admin.sertifikasi.rincian.assessment.asesi.index']))
+        @if ($this->getName() == 'asesmen')
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
@@ -60,7 +64,7 @@
             dark:text-white text-gray-600 ">
             Peserta
         </a>
-        @if (Route::is('admin.sertifikasi.pendaftar.*'))
+        @if ($this->getName() == 'pendaftar')
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
