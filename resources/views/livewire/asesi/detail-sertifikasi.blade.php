@@ -463,7 +463,7 @@
                                 </dt>
                                 <dd class="mt-1 text-sm">
                                     @php
-                                        $kartuHasilStudiFiles = $student->studentattachmentfile->where(
+                                        $kartuHasilStudiFiles = $student->studentattachmentfiles->where(
                                             'type',
                                             'kartu_hasil_studi',
                                         );

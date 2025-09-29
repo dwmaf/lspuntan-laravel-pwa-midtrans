@@ -7,12 +7,12 @@
     @include('layouts.asesi-sertifikasi-menu')
     <div>
         
-        @if ($pengumumans->isEmpty())
+        @if ($pengumumanasesmen->isEmpty())
             <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Belum ada pengumuman apapun.
             </p>
         @else
-            @foreach ($pengumumans as $pengumuman)
+            @foreach ($pengumumanasesmen as $pengumuman)
                 <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="flex-shrink-0">
@@ -24,7 +24,7 @@
                         </div>
                         <div>
                             <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                @if ($pengumuman->pembuatpengumuman->asesor)
+                                @if ($pengumuman->pembuatpengumuman && $pengumuman->pembuatpengumuman->asesor)
                                     {{-- Jika pembuatnya adalah seorang asesor, tampilkan nama dari tabel asesor --}}
                                     {{ $pengumuman->pembuatpengumuman->asesor->name }}
                                 @else
@@ -44,6 +44,7 @@
                         </div>
                     </div>
                     <h6 class="font-medium text-sm text-gray-800 dark:text-gray-100">{!! $pengumuman?->rincian_pengumuman_asesmen !!}</h6>
+                    
                 </div>
             @endforeach
         @endif

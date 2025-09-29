@@ -15,12 +15,17 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification as FirebaseNotification; // <-- IMPORT INI
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
+use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Exception\Messaging\NotFound;
+use Illuminate\Database\Eloquent\Collection;
+
 #[Layout('layouts.admin')]
 class Asesmen extends Component
 {
     use WithFileUploads;
-
+    public Sertification $sertification;
+    public Collection $filteredAsesi;
     public int $sertificationId;
     public bool $editingRincian = false;
 
@@ -42,14 +47,20 @@ class Asesmen extends Component
     public function mount($sert_id)
     {
         $this->sertificationId = $sert_id;
-        $sert = Sertification::with('tugasasesmenattachmentfile')->findOrFail($sert_id);
+        $this->sertification = Sertification::with('tugasasesmenattachmentfile','asesi.transaction')->findOrFail($sert_id);
 
-        $this->editingRincian = ! $sert->punya_rincian_asesmen;
-        $this->rincian_tugas_asesmen = $sert->rincian_tugas_asesmen
+        $this->editingRincian = ! $this->sertification->punya_rincian_asesmen;
+        $this->rincian_tugas_asesmen = $this->sertification->rincian_tugas_asesmen
             ?? Sertification::RINCIAN_DEFAULT_ASESMEN;
-        $this->batas_pengumpulan_tugas_asesmen = $sert->batas_pengumpulan_tugas_asesmen;
+        $this->batas_pengumpulan_tugas_asesmen = $this->sertification->batas_pengumpulan_tugas_asesmen;
 
-        $this->existingFiles = $sert->tugasasesmenattachmentfile;
+        $this->existingFiles = $this->sertification->tugasasesmenattachmentfile;
+        $this->filteredAsesi = $this->sertification->asesi->filter(function ($asesi) {
+            $latestTransaction = $asesi->transaction->sortByDesc('created_at')->first();
+            return $asesi->status === 'dilanjutkan_asesmen'
+                && $latestTransaction
+                && $latestTransaction->status === 'bukti_pembayaran_terverifikasi';
+        });
     }
 
     public function updatedNewFiles()
@@ -61,6 +72,11 @@ class Asesmen extends Component
         if ($this->totalCount() > $this->maxFiles) {
             $this->addError('newFiles', 'Maksimal total 5 file.');
         }
+    }
+
+    public function edit()
+    {
+        $this->editingRincian = true;
     }
 
     public function deleteFile(int $id)
@@ -109,11 +125,8 @@ class Asesmen extends Component
             }
         }
         $asesis = Asesi::with('student.user')
-            ->where('sertification_id', $this->sert->id)
+            ->where('sertification_id', $sert->id)
             ->where('status', 'dilanjutkan_asesmen')
-            ->whereHas('student.user', function ($query) {
-                $query->whereNotNull('fcm_token');
-            })
             ->get();
 
 
@@ -121,25 +134,28 @@ class Asesmen extends Component
             // 2. Siapkan konten notifikasi
             $title = 'Instruksi Tugas asesmen diperbaharui.';
             $body = 'Silakan periksa instruksi tugas asesmen terbaru untuk Sertifikasi: ' . $sert->skema->nama_skema;
-            
+
             foreach ($asesis as $asesi) {
                 if ($user = $asesi->student->user) {
                     $url = route('asesi.assessmen.index', ['sert_id' => $this->sert->id, $asesi->id]);
-                    $message = CloudMessage::new()
-                        ->withNotification(FirebaseNotification::create($title, $body))
-                        ->withData(['url' => $url]);
+                    if ($user->fcm_token) {
+                        $message = CloudMessage::new()
+                            ->withNotification(FirebaseNotification::create($title, $body))
+                            ->withData(['url' => $url]);
 
-                    try {
-                        $messaging->send($message->toToken($user->fcm_token));
-                    } catch (\Throwable $e) {
-                        // Log::error("Gagal mengirim notifikasi tugas asesmen ke user {$user->id}: " . $e->getMessage());
+                        try {
+                            $messaging->send($message->toToken($user->fcm_token));
+                        } catch (NotFound $e) {
+                            Log::warning("Token FCM tidak valid untuk user {$user->id}. Menghapus token.");
+                            $user->update(['fcm_token' => null]);
+                        } catch (\Throwable $e) {
+                            Log::error("Gagal mengirim notifikasi tugas asesmen ke user {$user->id}: " . $e->getMessage());
+                        }
                     }
+                    Notification::send($user, new TugasAsesmenBaru($sert->id, $asesi->id));
                 }
             }
-            // 3. Buat template pesan
-
         }
-        $this->notifyAsesi($sert->id);
         $this->reset('newFiles');
         $this->refreshFilesOnly();
 
@@ -147,27 +163,10 @@ class Asesmen extends Component
         $this->editingRincian = false;
     }
 
-    protected function notifyAsesi($sertId)
-    {
-        $asesis = Asesi::with('student.user')
-            ->where('sertification_id', $sertId)
-            ->where('status', 'dilanjutkan_asesmen')
-            ->get();
-
-        foreach ($asesis as $asesi) {
-            $user = $asesi->student->user ?? null;
-            if ($user) {
-                Notification::send($user, new TugasAsesmenBaru($sertId, $asesi->id));
-            }
-        }
-    }
-
-
-
     protected function refreshFilesOnly()
     {
-        $sert = Sertification::with('tugasasesmenattachmentfile')->find($this->sertificationId);
-        $this->existingFiles = $sert->tugasasesmenattachmentfile;
+        $sertification = Sertification::with('tugasasesmenattachmentfile')->find($this->sertificationId);
+        $this->existingFiles = $sertification->tugasasesmenattachmentfile;
     }
 
     protected function totalCount(): int

@@ -1,4 +1,4 @@
-<div >
+<div>
     {{-- Notifikasi (copy dari komponen Asesmen) --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -40,10 +40,15 @@
                         </div>
                     </div>
                 </div>
-                <x-edit-button type="button" wire:click="$set('editingRincian', true)">Edit</x-edit-button>
+                <x-edit-button type="button" wire:click="edit">
+                    <x-loading-spinner wire:target="edit" wire:loading></x-loading-spinner>
+                    <span>
+                        Edit
+                    </span>
+                </x-edit-button>
 
             </div>
-            
+
             <div class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2">
                 {!! nl2br(e($sertification->rincian_pembayaran)) !!}
             </div>
@@ -66,56 +71,38 @@
         <div x-data="{ harga: @entangle('harga') }" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-4">
             <div class="flex justify-between items-center mb-2">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Edit Rincian Instruksi Pembayaran</h3>
-                
-            </div>
-            
-            <div>
-                <x-input-label>Rincian Pembayaran</x-input-label>
-                <textarea wire:model.defer="rincian_pembayaran" rows="8"
-                    class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
-                <x-input-error class="mt-2" :messages="$errors->get('rincian_pembayaran')" />
 
             </div>
-
-            
-            <div>
-                <x-input-label>Biaya Sertifikasi</x-input-label>
-                <p x-show="harga" class="text-sm font-medium text-gray-800 dark:text-gray-400" style="display: none;">
-                    <span
-                        x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(harga)"></span>
-                </p>
-                <x-text-input id="harga" wire:model.defer="harga" x-model="harga" type="number" min="0"
-                    class="mt-1 block w-full" required />
-                <x-input-error class="mt-2" :messages="$errors->get('harga')" />
-
-            </div>
-
-            
-            <div>
-                <x-input-label>Batas Akhir Pembayaran</x-input-label>
-                <x-text-input id="tgl_bayar_ditutup" wire:model.defer="tgl_bayar_ditutup" type="datetime-local"
-                    class="mt-1 block w-full" required />
-                <x-input-error class="mt-2" :messages="$errors->get('tgl_bayar_ditutup')" />
-
-            </div>
-
-            
-            <div class="flex gap-2 items-center">
-                <span wire:loading wire:target="save" class="flex items-center">
-                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                            stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                </span>
-                <x-primary-button wire:click="save" wire:loading.attr="disabled">Simpan</x-primary-button>
-                <x-secondary-button wire:click="$set('editingRincian', false)">Batal</x-secondary-button>
-                
-            </div>
+            <form wire:submit.prevent="save" class="flex flex-col gap-4">
+                <div>
+                    <x-input-label>Rincian Pembayaran</x-input-label>
+                    <textarea wire:model.defer="rincian_pembayaran" rows="8"
+                        class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
+                    <x-input-error class="mt-2" :messages="$errors->get('rincian_pembayaran')" />
+                </div>
+                <div>
+                    <x-input-label>Biaya Sertifikasi</x-input-label>
+                    <p x-show="harga" class="text-sm font-medium text-gray-800 dark:text-gray-400"
+                        style="display: none;">
+                        <span
+                            x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(harga)"></span>
+                    </p>
+                    <x-text-input id="harga" wire:model.defer="harga" x-model="harga" type="number" min="0"
+                        class="mt-1 block w-full" required />
+                    <x-input-error class="mt-2" :messages="$errors->get('harga')" />
+                </div>
+                <div>
+                    <x-input-label>Batas Akhir Pembayaran</x-input-label>
+                    <x-text-input id="tgl_bayar_ditutup" wire:model.defer="tgl_bayar_ditutup" type="datetime-local"
+                        class="mt-1 block w-full" required />
+                    <x-input-error class="mt-2" :messages="$errors->get('tgl_bayar_ditutup')" />
+                </div>
+                <div class="flex gap-2 items-center">
+                    <x-loading-spinner wire:loading wire:target="save"></x-loading-spinner>
+                    <x-primary-button wire:loading.attr="disabled">Simpan</x-primary-button>
+                    <x-secondary-button wire:click="$set('editingRincian', false)">Batal</x-secondary-button>
+                </div>
+            </form>
         </div>
     @endif
 </div>

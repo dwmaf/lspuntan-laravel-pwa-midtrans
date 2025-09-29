@@ -4,7 +4,7 @@
             {{ __('Sertifikasi') }}
         </h2>
     </x-slot>
-<div x-data="{ show: false, message: '' }"
+    <div x-data="{ show: false, message: '' }"
         x-on:notify.window="message=$event.detail.message;show=true;setTimeout(()=>show=false,3000)" x-show="show"
         x-transition x-text="message" class="fixed top-20 right-4 text-xs px-3 py-2 rounded bg-green-600 text-white z-50"
         style="display:none">
@@ -82,12 +82,17 @@
                         @else
                             <span class="text-xs text-gray-900 dark:text-gray-100">Belum ada file.</span>
                         @endif
-                        <x-file-input type="file" multiple wire:model.defer="asesiasesmenfiles[]"  />
+                        <x-file-input type="file" multiple wire:model.defer="asesiasesmenfiles" />
                         <x-input-error class="mt-2" :messages="$errors->get('asesiasesmenfiles.*')" />
                         <x-input-error class="mt-2" :messages="$errors->get('asesiasesmenfiles')" />
-                        <x-primary-button wire:loading.attr="disabled">
-                            Kumpulkan
-                        </x-primary-button>
+                        <div class="flex items-center mt-2">
+                            <x-primary-button wire:loading.attr="disabled" wire:target="asesiasesmenfiles">
+                                Kumpulkan
+                            </x-primary-button>
+                            <div wire:loading wire:target="save, asesiasesmenfiles">
+                                <x-loading-spinner></x-loading-spinner>
+                            </div>
+                        </div>
                     </form>
                 </div>
             @else

@@ -15,7 +15,10 @@ use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
+use Illuminate\Support\Facades\Notification;
 use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
+use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Exception\Messaging\NotFound;
 #[Layout('layouts.app')]
 class AsesmenAsesi extends Component
 {
@@ -62,7 +65,8 @@ class AsesmenAsesi extends Component
         $sertification = Sertification::with(['asesor.user'])
             ->find($this->sertification->id);
         $asesor = $sertification->asesor->user;
-        if ($asesor->isNotEmpty()) {
+        if ($asesor) {
+            Notification::send($asesor, new AsesiUploadTugasAsesmen($this->sertification->id, $this->asesi->id));
             // 2. Siapkan konten notifikasi
             $title = 'Asesi mengunggah tugas asesmennya.';
             $body = 'Seorang asesi telah mengunggah tugas asesmennya. Silakan periksa. ';
@@ -73,19 +77,18 @@ class AsesmenAsesi extends Component
                 ->withNotification(FirebaseNotification::create($title, $body))
                 ->withData(['url' => $url]);
 
-            // 4. Kirim pesan ke setiap admin yang memiliki token
-            // Dapatkan semua token dalam satu array
-            $deviceTokens = $asesor->pluck('fcm_token')->filter()->all();
-
-            if (!empty($deviceTokens)) {
-                // Kirim ke banyak perangkat sekaligus
-                $report = $messaging->sendMulticast($message, $deviceTokens);
-                if ($report->hasFailures()) {
-                    // Log::error('Gagal mengirim notifikasi FCM ke beberapa token.');
-                }
+            try {
+                $messaging->send($message->toToken($asesor->fcm_token));
+            } catch (NotFound $e) {
+                Log::warning("Token FCM tidak valid untuk user {$asesor->id}. Menghapus token.");
+                $asesor->update(['fcm_token' => null]);
+            } catch (\Throwable $e) {
+                Log::error("Gagal mengirim notifikasi asesi mendaftar sertifikasi ke user {$asesor->id}: " . $e->getMessage());
             }
+            
         }
-        $this->notifyAdmin();
+        
+        
 
         $this->asesi->refresh(); // Muat ulang relasi asesiasesmenfiles
         $this->reset('asesiasesmenfiles'); // Kosongkan input file setelah berhasil
@@ -103,13 +106,7 @@ class AsesmenAsesi extends Component
             $this->dispatch('notify', message: 'File berhasil dihapus.');
         }
     }
-    protected function notifyAdmin()
-    {
-        $sertification = Sertification::with(['asesor.user'])
-            ->find($this->sertification->id);
-        $asesor = $sertification->asesor->user;
-        $asesor->notify(new AsesiUploadTugasAsesmen($this->sertification->id, $this->asesi->id));
-    }
+   
 
     public function render()
     {

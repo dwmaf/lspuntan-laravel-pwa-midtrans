@@ -133,74 +133,68 @@
         </div> --}}
 
         <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
-            @if ($sertification->rincian_pembayaran)
-                {{-- foto profil, nama, dan tanggal rincian pembayaran dibuat --}}
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="flex-shrink-0">
-                        <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
-                            fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            @if ($sertification->pembuatrincianpembayaran->asesor)
-                                {{-- Jika pembuatnya adalah seorang asesor, tampilkan nama dari tabel asesor --}}
-                                {{ $sertification->pembuatrincianpembayaran->asesor->user->name }}
-                            @else
-                                {{-- Fallback jika karena suatu hal data pembuat tidak ada --}}
-                                Admin
-                            @endif
-                        </h5>
-                        <div class="text-xs text-gray-400">
-                            @if (\Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->isToday())
-                                {{-- Jika hari ini, tampilkan jam --}}
-                                {{ \Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->format('H:i') }}
-                            @else
-                                {{-- Jika sudah lewat, tampilkan tanggal --}}
-                                {{ \Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->format('d M Y') }}
-                            @endif
+            <form wire:submit.prevent="save" class="space-y-6">
+                @if ($sertification->rincian_pembayaran)
+                    {{-- foto profil, nama, dan tanggal rincian pembayaran dibuat --}}
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="flex-shrink-0">
+                            <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                @if ($sertification->pembuatrincianpembayaran->asesor)
+                                    {{-- Jika pembuatnya adalah seorang asesor, tampilkan nama dari tabel asesor --}}
+                                    {{ $sertification->pembuatrincianpembayaran->asesor->user->name }}
+                                @else
+                                    {{-- Fallback jika karena suatu hal data pembuat tidak ada --}}
+                                    Admin
+                                @endif
+                            </h5>
+                            <div class="text-xs text-gray-400">
+                                @if (\Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->isToday())
+                                    {{-- Jika hari ini, tampilkan jam --}}
+                                    {{ \Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->format('H:i') }}
+                                @else
+                                    {{-- Jika sudah lewat, tampilkan tanggal --}}
+                                    {{ \Carbon\Carbon::parse($sertification->rincian_bayar_dibuat_pada)->format('d M Y') }}
+                                @endif
+                            </div>
                         </div>
                     </div>
-                </div>
-                <h6 class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2">{!! $sertification?->rincian_pembayaran !!}</h6>
-                <div class="flex">
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">Biaya Sertifikasi : </dt>
-                    <dd class="text-sm text-gray-900 dark:text-gray-100">Rp
-                        {{ number_format($sertification->harga, 0, ',', '.') ?? 'N/A' }}</dd>
-                </div>
-                <form wire:submit.prevent="save" class="mt-6 space-y-6">
+                    <h6 class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2">{!! $sertification?->rincian_pembayaran !!}</h6>
+                    <div class="flex">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">Biaya Sertifikasi : </dt>
+                        <dd class="text-sm text-gray-900 dark:text-gray-100">Rp
+                            {{ number_format($sertification->harga, 0, ',', '.') ?? 'N/A' }}</dd>
+                    </div>
+
+
+                    {{-- Input file dan tombol submit HANYA ditampilkan jika ada rincian --}}
                     <div>
                         <x-input-label>Bukti Pembayaran</x-input-label>
-                        <x-file-input type="file" wire:model.defer="bukti_bayar"
-                            @if (!$sertification->rincian_pembayaran) disabled @endif />
+                        <x-file-input type="file" wire:model.defer="bukti_bayar" />
+                        <div wire:loading wire:target="apl_1" class="text-sm text-gray-500 mt-1">Mengunggah Bukti Pembayaran</div>
                         <x-input-error class="mt-2" :messages="$errors->get('bukti_bayar')" />
                     </div>
                     <div class="flex items-center gap-4 pt-2">
-                        <span wire:loading wire:target="save" class="flex items-center">
-                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                                fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4">
-                                </circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                        </span>
-                        <x-primary-button wire:loading.remove wire:target="save" @if (!$sertification->rincian_pembayaran) disabled @endif>
+                        <div wire:loading wire:target="save">
+                            <x-loading-spinner></x-loading-spinner>
+                        </div>
+                        <x-primary-button wire:loading.attr="disabled" wire:target="save, bukti_bayar">
                             Submit Bukti Pembayaran
                         </x-primary-button>
-                        
                     </div>
-                    
-                </form>
-            @else
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Admin belum memberikan rincian pembayaran
-                </p>
-            @endif
+                @else
+                    {{-- Tampilkan pesan ini jika TIDAK ada rincian pembayaran --}}
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Admin belum memberikan rincian pembayaran. Anda belum bisa mengunggah bukti bayar.
+                    </p>
+                @endif
+            </form>
         </div>
     @endif
 

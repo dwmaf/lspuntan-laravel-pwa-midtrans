@@ -11,32 +11,31 @@
         style="display:none">
     </div>
 
-    <!-- Tombol Tab (Ganti @click dengan wire:click) -->
     <nav class="flex flex-wrap space-x-4 mt-1" aria-label="Tabs">
         <div>
-            <button wire:click="$set('tab', 'mulai')"
+            <button @click="$wire.set('tab', 'mulai')"
                 class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600 cursor-pointer">
                 Mulai Sertifikasi
             </button>
-            <div style="margin-top: -4px"
-                class="{{ $tab === 'mulai' ? 'w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md' : '' }}"></div>
+            <div style="margin-top: -4px" x-show="$wire.tab === 'mulai'"
+                class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         </div>
         <div>
-            <button wire:click="$set('tab', 'berlangsung')"
+            <button @click="$wire.set('tab', 'berlangsung')"
                 class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600 cursor-pointer">
                 Sertifikasi Berlangsung
             </button>
-            <div style="margin-top: -4px"
-                class="{{ $tab === 'berlangsung' ? 'w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md' : '' }}">
+            <div style="margin-top: -4px" x-show="$wire.tab === 'berlangsung'"
+                class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md">
             </div>
         </div>
         <div>
-            <button wire:click="$set('tab', 'selesai')"
+            <button @click="$wire.set('tab', 'selesai')"
                 class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600 cursor-pointer">
                 Riwayat Sertifikasi
             </button>
-            <div style="margin-top: -4px"
-                class="{{ $tab === 'selesai' ? 'w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md' : '' }}"></div>
+            <div style="margin-top: -4px" x-show="$wire.tab === 'selesai'"
+                class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         </div>
     </nav>
     <hr class="border-gray-200 dark:border-gray-700 mb-2">
@@ -44,7 +43,7 @@
     <!-- Konten Tab -->
     <div>
         {{-- Konten untuk Tab Berlangsung --}}
-        <div wire:key="tab-berlangsung" class="{{ $tab === 'berlangsung' ? 'block' : 'hidden' }}">
+        <div x-show="$wire.tab === 'berlangsung'">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 @forelse ($sertifications_berlangsung as $sert)
                     <div class="bg-white p-6 rounded-lg dark:bg-gray-800">
@@ -67,8 +66,7 @@
                             </p>
                         </div>
                         <div class="mt-4">
-                            <a href="{{ route('admin.kelolasertifikasi.show', $sert->id) }}" wire:navigate
-                                class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Lihat</a>
+                            <x-primary-link-button :href="route('admin.kelolasertifikasi.show', $sert->id)" wire:navigate>detail</x-primary-link-button>
                         </div>
                     </div>
                 @empty
@@ -79,7 +77,7 @@
         </div>
 
         {{-- Konten untuk Tab Selesai (Disederhanakan dengan Livewire) --}}
-        <div wire:key="tab-selesai" class="{{ $tab === 'selesai' ? 'block' : 'hidden' }}" x-data="{ showFilter: false }">
+        <div x-show="$wire.tab === 'selesai'" x-data="{ showFilter: false }">
             <div class="flex justify-end items-center mb-4">
                 <div class="relative">
                     <button @click="showFilter = !showFilter"
@@ -116,17 +114,10 @@
                 </div>
             </div>
             {{-- Loading Indicator Livewire --}}
-            <div wire:loading wire:target="filterRiwayat" class="flex justify-center items-center py-8">
-                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                    fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                        stroke-width="4">
-                    </circle>
-                    <path class="opacity-75" fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                    </path>
-                </svg>
+            <div wire:loading.flex wire:target="filterRiwayat" class="justify-center items-center py-8">
+                <x-loading-spinner />
             </div>
+
             {{-- Tampilkan data setelah loading selesai --}}
             <div wire:loading.remove wire:target="filterRiwayat" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 @forelse ($sertifications_selesai as $sert)
@@ -151,8 +142,8 @@
                                 </p>
                             </div>
                             <div class="mt-4">
-                                <a href="{{ route('admin.kelolasertifikasi.show', $sert->id) }}" wire:navigate
-                                    class="self-start font-medium bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-700 cursor-pointer">Lihat</a>
+
+                                <x-primary-link-button :href="route('admin.kelolasertifikasi.show', $sert->id)" wire:navigate>detail</x-primary-link-button>
                             </div>
                         </div>
                     </div>
@@ -164,14 +155,13 @@
         </div>
 
         {{-- Konten untuk mulai sertifikasi (Ganti dengan wire:submit) --}}
-        <div wire:key="tab-mulai"
-            class="{{ $tab === 'mulai' ? 'block' : 'hidden' }} p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div x-show="$wire.tab === 'mulai'" class=" p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Mulai Sertifikasi</h2>
             <form x-data="{ harga: @entangle('harga') }" wire:submit.prevent="save" class="mt-4 flex flex-col gap-4">
                 {{-- Ganti semua input dengan wire:model --}}
                 <div>
                     <x-input-label>Pilih Skema dan Asesor:</x-input-label>
-                    <select wire:model.live="asesor_skema"
+                    <select wire:model="asesor_skema"
                         class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
                         <option value="" disabled>--Silahkan pilih asesor dan skema--</option>
                         @foreach ($asesors as $asesor)
@@ -185,18 +175,17 @@
                 </div>
                 <div>
                     <x-input-label>Tanggal Daftar Dibuka</x-input-label>
-                    <x-text-input wire:model.live="tgl_apply_dibuka" type="date" class="mt-1 block w-full" />
+                    <x-text-input wire:model="tgl_apply_dibuka" type="date" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('tgl_apply_dibuka')" />
                 </div>
                 <div id="tanggal_apply_ditutup">
                     <x-input-label>Tanggal Daftar Ditutup</x-input-label>
-                    <x-text-input wire:model.live="tgl_apply_ditutup" type="date" class="mt-1 block w-full" />
+                    <x-text-input wire:model="tgl_apply_ditutup" type="date" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('tgl_apply_ditutup')" />
                 </div>
                 <div id="tanggal_bayar_ditutup">
                     <x-input-label>Tanggal Bayar Ditutup</x-input-label>
-                    <x-text-input wire:model.live="tgl_bayar_ditutup" type="datetime-local"
-                        class="mt-1 block w-full" />
+                    <x-text-input wire:model="tgl_bayar_ditutup" type="datetime-local" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('tgl_bayar_ditutup')" />
                 </div>
                 <div id="biaya_sertifikasi">
@@ -206,30 +195,22 @@
                         <span
                             x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(harga)"></span>
                     </p>
-                    <x-text-input wire:model.live="harga" type="number" x-model="harga" min="0"
+                    <x-text-input wire:model="harga" type="number" x-model="harga" min="0"
                         class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('harga')" />
                 </div>
                 <div id="tuk">
                     <x-input-label>Tempat Uji Sertifikasi</x-input-label>
-                    <x-text-input id="tuk" wire:model.live="tuk" type="text" class="mt-1 block w-full" />
+                    <x-text-input id="tuk" wire:model="tuk" type="text" class="mt-1 block w-full" />
                     <x-input-error class="mt-2" :messages="$errors->get('tuk')" />
                 </div>
                 <div class="flex items-center gap-4 pt-2">
                     <x-primary-button class="">
                         Simpan
                     </x-primary-button>
-                    <span wire:loading wire:target="save" class="flex items-center">
-                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                    </span>
+                    <div wire:loading wire:target="save">
+                        <x-loading-spinner />
+                    </div>
                 </div>
             </form>
         </div>

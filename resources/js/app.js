@@ -42,6 +42,16 @@ window.initRichEditor = (element, initialValue, onUpdate) => {
     });
 };
 
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
+            console.log('Service Worker registered with scope:', registration.scope);
+        }, function(err) {
+            console.log('Service Worker registration failed:', err);
+        });
+    });
+}
+
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 // import $ from 'jquery';

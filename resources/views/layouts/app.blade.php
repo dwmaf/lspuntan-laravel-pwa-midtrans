@@ -10,8 +10,8 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
-    <link rel="icon" href="{{ asset('logo-lsp.png') }}" type="image/png">
-    
+    {{-- <link rel="icon" href="{{ asset('logo-lsp.png') }}" type="image/png"> --}}
+    @laravelPWA
 </head>
 <style>
     .min-h-12 {
@@ -38,7 +38,7 @@
                     </div>
                     <div class="relative flex items-center ml-4">
                         {{-- Ikon Lonceng --}}
-                        <button @click="showNotifikasi = !showNotifikasi" class="relative focus:outline-none">
+                        <button @click="showNotifikasi = !showNotifikasi" class="relative focus:outline-none cursor-pointer">
                             <x-fas-bell class="w-5 h-5 text-gray-700 dark:text-gray-200" />
                             @auth
                                 @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
@@ -63,7 +63,7 @@
                                             $data = $notif->data;
                                             $isUnread = is_null($notif->read_at);
                                         @endphp
-                                        <a href="{{ $data['link'] ?? '#' }}"
+                                        <a href="{{ $data['link'] ?? '#' }}" wire:navigate
                                             class="notification-item block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
                                             <div class="flex items-start justify-between">
                                                 <div class="{{ $isUnread ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400' }} truncate">

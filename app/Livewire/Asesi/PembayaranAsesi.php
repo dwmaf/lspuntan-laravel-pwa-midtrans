@@ -14,8 +14,10 @@ use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Exception\Messaging\NotFound;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
+use Illuminate\Support\Facades\Log;
 #[Layout('layouts.app')]
 class PembayaranAsesi extends Component
 {
@@ -23,18 +25,18 @@ class PembayaranAsesi extends Component
     public Sertification $sertification;
     public Asesi $asesi;
     public $bukti_bayar;
-    
+
     public function mount($sert_id, $asesi_id)
     {
-        $this->sertification = Sertification::with('asesor', 'skema','pembuatrincianpembayaran.asesor')->find($sert_id);
-        $this->asesi = Asesi::with('student')->find($asesi_id);   
+        $this->sertification = Sertification::with('asesor', 'skema', 'pembuatrincianpembayaran.asesor')->find($sert_id);
+        $this->asesi = Asesi::with('student')->find($asesi_id);
     }
     public function save(Messaging $messaging)
     {
         $this->validate([
             'bukti_bayar' => 'required|image|mimes:jpeg,png,jpg,gif,pdf|max:2048',
         ]);
-        
+
         $transaction = Transaction::firstOrCreate(
             ['asesi_id' => $this->asesi->id, 'sertification_id' => $this->sertification->id],
             ['status' => 'pending', 'tipe' => 'manual']
@@ -48,25 +50,29 @@ class PembayaranAsesi extends Component
         $transaction['status'] = 'pending';
         $transaction->save();
         $admins = User::role('admin')->get();
-        Notification::send($admins, new AsesiUploadBuktiPembayaran($this->sertification->id, $this->asesi->id));
+        
         if ($admins->isNotEmpty()) {
+            Notification::send($admins, new AsesiUploadBuktiPembayaran($this->sertification->id, $this->asesi->id));
             // 2. Siapkan konten notifikasi
             $title = 'Pembayaran Baru Diterima';
             $body = 'Seorang asesi telah mengunggah bukti pembayaran. Silakan periksa.';
             $url = route('admin.sertifikasi.pendaftar.show', [$this->sertification->id, $this->asesi->id]);
-            // 3. Buat template pesan (tanpa data URL karena setiap asesi punya URL berbeda)
-            $message = CloudMessage::new()
-                ->withNotification(FirebaseNotification::create($title, $body))->withData(['url' => $url]);
+            foreach ($admins as $admin) {
+                if ($user = $admin->user) {
+                    if ($user->fcm_token) {
+                        $message = CloudMessage::new()
+                            ->withNotification(FirebaseNotification::create($title, $body))->withData(['url' => $url]);
 
-            // 4. Kirim pesan ke setiap asesi secara individual karena URL-nya unik
-            if (!empty($deviceTokens)) {
-                $report = $messaging->sendMulticast($message, $deviceTokens);
-
-                // (Opsional) Periksa jika ada kegagalan
-                if ($report->hasFailures()) {
-                    // Log::warning('Gagal mengirim beberapa notifikasi pengumuman.');
-                    // Anda bisa menambahkan logging yang lebih detail di sini jika perlu
-                }
+                        try {
+                            $messaging->send($message->toToken($user->fcm_token));
+                        } catch (NotFound $e) {
+                            Log::warning("Token FCM tidak valid untuk user {$user->id}. Menghapus token.");
+                            $user->update(['fcm_token' => null]);
+                        } catch (\Throwable $e) {
+                            Log::error("Gagal mengirim notifikasi asesi membayar sertfikasi ke user {$user->id}: " . $e->getMessage());
+                        }
+                    }
+                } 
             }
         }
         // PERBAIKAN 3: Beri feedback ke pengguna

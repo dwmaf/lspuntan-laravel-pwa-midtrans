@@ -11,7 +11,7 @@
     </div>
     <div class="max-w-7xl mx-auto">
         <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <form wire:submit.prevent="save" class="mt-6 space-y-6">
+            <form wire:submit.prevent="save" class="mt-6 flex flex-col gap-4">
                 <h3 class="dark:text-gray-300">a. Data Pribadi</h3>
                 <div>
                     <x-input-label>Nama Lengkap (Sesuai KTP)<span style="color: red">*</span></x-input-label>

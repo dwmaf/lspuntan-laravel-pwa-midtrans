@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Storage;
 use Kreait\Firebase\Contract\Messaging; // <-- IMPORT INI
 use Kreait\Firebase\Messaging\CloudMessage; // <-- IMPORT INI
 use Kreait\Firebase\Messaging\Notification as FirebaseNotification; // <-- IMPORT INI
+use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Exception\Messaging\NotFound;
 
 #[Layout('layouts.app')]
 class ApplySertifikasi extends Component
@@ -155,29 +157,32 @@ class ApplySertifikasi extends Component
                 $this->handleMultipleUploads('surat_ket_magang', $this->student, $newAsesi);
                 $this->handleMultipleUploads('sertif_pelatihan', $this->student, $newAsesi);
                 $this->handleMultipleUploads('dok_pendukung_lain', $this->student, $newAsesi);
-                $admins = User::role('admin')->whereNotNull('fcm_token')->get();
+                $admins = User::role('admin')->get();
 
                 if ($admins->isNotEmpty()) {
                     // 2. Siapkan konten notifikasi
                     $title = 'Pendaftar Baru';
                     $body = $this->student->name . ' telah mendaftar untuk sertifikasi' . $this->sertification->skema->nama_skema;
                     $url = route('admin.sertifikasi.pendaftar.index', ['sert_id' => $this->sertification->id]);
-
-                    // 3. Buat template pesan
-                    $message = CloudMessage::new()
-                        ->withNotification(FirebaseNotification::create($title, $body))
-                        ->withData(['url' => $url]);
-
-                    // 4. Kirim pesan ke setiap admin yang memiliki token
-                    // Dapatkan semua token dalam satu array
-                    $deviceTokens = $admins->pluck('fcm_token')->filter()->all();
-
-                    if (!empty($deviceTokens)) {
-                        // Kirim ke banyak perangkat sekaligus
-                        $report = $messaging->sendMulticast($message, $deviceTokens);
-                        if ($report->hasFailures()) {
-                            // Log::error('Gagal mengirim notifikasi FCM ke beberapa token.');
+                    foreach ($admins as $admin) {
+                        if ($user = $admin->user) {
+                            if ($user->fcm_token) {
+                                $message = CloudMessage::new()
+                                    ->withNotification(FirebaseNotification::create($title, $body))
+                                    ->withData(['url' => $url]);
+                                try {
+                                    $messaging->send($message->toToken($user->fcm_token));
+                                } catch (NotFound $e) {
+                                    Log::warning("Token FCM tidak valid untuk user {$user->id}. Menghapus token.");
+                                    $user->update(['fcm_token' => null]);
+                                } catch (\Throwable $e) {
+                                    Log::error("Gagal mengirim notifikasi asesi mendaftar sertifikasi ke user {$user->id}: " . $e->getMessage());
+                                }
+                            }
+                            Notification::send($admin, new PendaftarBaru($newAsesi));
                         }
+                        
+
                     }
                 }
                 return $newAsesi;
@@ -234,11 +239,7 @@ class ApplySertifikasi extends Component
         }
     }
 
-    protected function notifyAdmin(Asesi $asesi)
-    {
-        $admins = User::role('admin')->get();
-        Notification::send($admins, new PendaftarBaru($asesi));
-    }
+    
     public function render()
     {
         return view('livewire.asesi.apply-sertifikasi');

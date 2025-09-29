@@ -21,7 +21,7 @@ class Asesorlivewire extends Component
 
     // Properti untuk state & form
     public ?string $formMode = null; // 'create', 'edit', atau null
-    public ?Asesor $editingAsesor = null;
+    public ?Asesor $asesor = null;
 
     public string $name = '';
     public string $email = '';
@@ -32,7 +32,7 @@ class Asesorlivewire extends Component
     // Aturan validasi
     protected function rules()
     {
-        $userId = $this->editingAsesor?->user_id;
+        $userId = $this->asesor?->user_id;
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -99,12 +99,12 @@ class Asesorlivewire extends Component
     {
         $this->resetForm();
         $this->formMode = 'edit';
-        $this->editingAsesor = Asesor::with('user', 'skemas')->findOrFail($asesorId);
+        $this->asesor = Asesor::with('user', 'skemas')->findOrFail($asesorId);
 
-        $this->name = $this->editingAsesor->user->name;
-        $this->email = $this->editingAsesor->user->email;
-        $this->no_tlp_hp = $this->editingAsesor->user->no_tlp_hp;
-        $this->selectedSkemas = $this->editingAsesor->skemas->pluck('id')->toArray();
+        $this->name = $this->asesor->user->name;
+        $this->email = $this->asesor->user->email;
+        $this->no_tlp_hp = $this->asesor->user->no_tlp_hp;
+        $this->selectedSkemas = $this->asesor->skemas->pluck('id')->toArray();
     }
 
     public function update()
@@ -123,8 +123,8 @@ class Asesorlivewire extends Component
         //     $userData['password'] = Hash::make($this->password);
         // }
 
-        $this->editingAsesor->user->update($userData);
-        $this->editingAsesor->skemas()->sync($this->selectedSkemas);
+        $this->asesor->user->update($userData);
+        $this->asesor->skemas()->sync($this->selectedSkemas);
 
         $this->dispatch('notify', message: 'Data asesor berhasil diperbarui!');
         $this->resetForm();
@@ -148,7 +148,7 @@ class Asesorlivewire extends Component
 
     public function resetForm()
     {
-        $this->reset(['formMode', 'editingAsesor', 'name', 'email', 'no_tlp_hp', 'password', 'selectedSkemas']);
+        $this->reset(['formMode', 'asesor', 'name', 'email', 'no_tlp_hp', 'password', 'selectedSkemas']);
         $this->resetErrorBag();
     }
 

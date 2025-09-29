@@ -30,7 +30,7 @@
             dark:text-white text-gray-600 "> 
             Pembayaran
         </a>
-        @if ($this->getName() == 'pembayaran')
+        @if ($this->getName() == 'admin.pembayaran')
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
@@ -42,7 +42,7 @@
             Pengumuman
         </a>
 
-        @if ($this->getName() == 'pengumuman')
+        @if ($this->getName() == 'admin.pengumuman')
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
@@ -53,7 +53,7 @@
             dark:text-white text-gray-600 ">
             Asesmen
         </a>
-        @if ($this->getName() == 'asesmen')
+        @if ($this->getName() == 'admin.asesmen')
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>
@@ -64,7 +64,7 @@
             dark:text-white text-gray-600 ">
             Peserta
         </a>
-        @if ($this->getName() == 'pendaftar')
+        @if (in_array($this->getName(), ['admin.pendaftar-list','admin.pendaftar-detail']))
             <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
         @endif
     </div>

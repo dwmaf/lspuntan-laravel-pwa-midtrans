@@ -17,6 +17,9 @@ use Livewire\Attributes\Layout;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Exception\Messaging\NotFound;
 
 #[Layout('layouts.admin')]
 class Pengumuman extends Component
@@ -62,7 +65,7 @@ class Pengumuman extends Component
     public function showCreateForm()
     {
         $this->resetForm();
-        $this->editingPengumuman = new Pengumumanasesmen(); // Mode create
+        $this->editingPengumuman = new Pengumumanasesmen();
         $this->formMode = 'create';
     }
 
@@ -106,9 +109,6 @@ class Pengumuman extends Component
         $asesis = Asesi::with('student.user')
             ->where('sertification_id', $this->sertificationId)
             ->where('status', 'dilanjutkan_asesmen')
-            ->whereHas('student.user', function ($query) {
-                $query->whereNotNull('fcm_token');
-            })
             ->get();
 
         if ($asesis->isNotEmpty()) {
@@ -116,23 +116,33 @@ class Pengumuman extends Component
             $title = $isCreating ? 'Ada Pengumuman Baru' : 'Pengumuman Diperbarui';
             $body = 'Pengumuman baru untuk sertifikasi: ' . $this->sertification->skema->nama_skema;
             $url = route('asesi.pengumuman.index', [$this->sertificationId]);
-            // 3. Buat template pesan (tanpa data URL karena setiap asesi punya URL berbeda)
-            $message = CloudMessage::new()
-                ->withNotification(FirebaseNotification::create($title, $body))->withData(['url' => $url]);
+            $notificationClass = $isCreating ? PengumumanBaru::class : PengumumanUpdated::class;
+            foreach ($asesis as $asesi) {
+                if ($user = $asesi->student->user) {
+                    // Buat URL unik untuk setiap asesi
+                    $url = route('asesi.pengumuman.index', ['sert_id' => $this->sertificationId, 'asesi_id' => $asesi->id]);
 
-            // 4. Kirim pesan ke setiap asesi secara individual karena URL-nya unik
-            if (!empty($deviceTokens)) {
-                $report = $messaging->sendMulticast($message, $deviceTokens);
+                    // 1. Kirim Notifikasi FCM (jika user punya token)
+                    if ($user->fcm_token) {
+                        $message = CloudMessage::new()
+                            ->withNotification(FirebaseNotification::create($title, $body))
+                            ->withData(['url' => $url]);
+                        try {
+                            $messaging->send($message->toToken($user->fcm_token));
+                        } catch (NotFound $e) {
+                            Log::warning("Token FCM tidak valid untuk user {$user->id}. Menghapus token.");
+                            $user->update(['fcm_token' => null]);
+                        } catch (\Throwable $e) {
+                            Log::error("Gagal mengirim notifikasi pengumuman ke user {$user->id}: " . $e->getMessage());
+                        }
+                    }
 
-                // (Opsional) Periksa jika ada kegagalan
-                if ($report->hasFailures()) {
-                    // Log::warning('Gagal mengirim beberapa notifikasi pengumuman.');
-                    // Anda bisa menambahkan logging yang lebih detail di sini jika perlu
+                    // 2. Kirim Notifikasi ke Database (selalu lakukan ini)
+                    Notification::send($user, new $notificationClass($this->sertificationId, $asesi->id));
                 }
             }
         }
-        // Kirim notifikasi
-        $this->notifyAsesi($isCreating);
+
 
         $this->dispatch('notify', message: 'Pengumuman berhasil ' . ($isCreating ? 'dibuat!' : 'diperbarui!'));
         if ($isCreating) {
@@ -165,21 +175,7 @@ class Pengumuman extends Component
         $this->loadPengumumans();
     }
 
-    protected function notifyAsesi(bool $isCreating)
-    {
-        $asesis = Asesi::with('student.user')
-            ->where('sertification_id', $this->sertificationId)
-            ->where('status', 'dilanjutkan_asesmen')
-            ->get();
 
-        $notificationClass = $isCreating ? PengumumanBaru::class : PengumumanUpdated::class;
-
-        foreach ($asesis as $asesi) {
-            if ($user = $asesi->student->user) {
-                $user->notify(new $notificationClass($this->sertificationId, $asesi->id));
-            }
-        }
-    }
 
     public function resetForm()
     {

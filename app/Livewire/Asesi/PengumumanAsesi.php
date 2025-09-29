@@ -5,6 +5,7 @@ namespace App\Livewire\Asesi;
 use App\Models\Sertification;
 use App\Models\Pengumumanasesmen;
 use App\Models\Asesi;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 #[Layout('layouts.app')]
@@ -12,7 +13,7 @@ class PengumumanAsesi extends Component
 {
     public Sertification $sertification;
     public Asesi $asesi;
-    public Pengumumanasesmen $pengumumanasesmen;
+    public Collection $pengumumanasesmen;
 
     public function mount($sert_id, $asesi_id)
     {

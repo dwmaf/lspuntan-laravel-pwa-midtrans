@@ -180,7 +180,5 @@
             </table>
         </div>
     </div>
-    @push('scripts-asesmen')
-        
-    @endpush
+    
 </x-admin-layout>

@@ -7,6 +7,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\FileHelper;
 
 #[Layout('layouts.admin')]
 class Skemalivewire extends Component
@@ -17,7 +18,7 @@ class Skemalivewire extends Component
     public $skemas;
 
     public ?string $formMode = null; // Bisa 'create', 'edit', atau null
-    public ?Skema $editingSkema = null;
+    public ?Skema $skema = null;
 
     public string $nama_skema = '';
     public $format_apl_1;
@@ -33,12 +34,6 @@ class Skemalivewire extends Component
         ];
     }
 
-    // Fungsi ini berjalan setiap kali properti diperbarui (real-time validation)
-    public function updated($propertyName)
-    {
-        $this->validateOnly($propertyName);
-    }
-
     // Berjalan saat komponen pertama kali dimuat
     public function mount()
     {
@@ -49,55 +44,47 @@ class Skemalivewire extends Component
     {
         $this->skemas = Skema::latest()->get();
     }
+    
     public function showCreateForm()
     {
         $this->resetForm();
-        $this->editingSkema = new Skema(); // Inisialisasi model kosong
+        $this->skema = new Skema();
         $this->formMode = 'create';
     }
 
     public function save()
     {
-        if (!$this->editingSkema) return; // Safety check
+        // if (!$this->skema) return; // Safety check
 
         $this->validate();
-
-        $isCreating = !$this->editingSkema->exists;
-
-        // Isi nama skema
-        $this->editingSkema->nama_skema = $this->nama_skema;
-
-        // Proses file APL 1 jika ada yang baru
+        $this->skema->nama_skema = $this->nama_skema;
         if ($this->format_apl_1) {
-            // Jika ini adalah update, hapus file lama terlebih dahulu
-            if (!$isCreating && $this->editingSkema->format_apl_1) {
-                Storage::disk('public')->delete($this->editingSkema->format_apl_1);
+            if ($this->formMode === 'edit' && $this->skema->format_apl_1) {
+                Storage::disk('public')->delete($this->skema->format_apl_1);
             }
-            $this->editingSkema->format_apl_1 = $this->format_apl_1->store('apl_files', 'public');
+            $this->skema->format_apl_1 = FileHelper::storeFileWithUniqueName($this->format_apl_1, 'apl_files')['path'];
         }
 
-        // Proses file APL 2 jika ada yang baru
         if ($this->format_apl_2) {
-            // Jika ini adalah update, hapus file lama terlebih dahulu
-            if (!$isCreating && $this->editingSkema->format_apl_2) {
-                Storage::disk('public')->delete($this->editingSkema->format_apl_2);
+            if ($this->formMode === 'edit' && $this->skema->format_apl_2) {
+                Storage::disk('public')->delete($this->skema->format_apl_2);
             }
-            $this->editingSkema->format_apl_2 = $this->format_apl_2->store('apl_files', 'public');
+            $this->skema->format_apl_2 = FileHelper::storeFileWithUniqueName($this->format_apl_2, 'apl_files')['path'];
         }
 
-        $this->editingSkema->save(); // Eloquent akan menangani create atau update secara otomatis
+        $this->skema->save();
 
-        $this->dispatch('notify', message: 'Skema berhasil ' . ($isCreating ? 'ditambahkan!' : 'diperbarui!'));
+        $this->dispatch('notify', message: 'Skema berhasil ' . ($this->formMode === 'create' ? 'ditambahkan!' : 'diperbarui!'));
         $this->resetForm();
         $this->loadSkemas();
     }
     
-    public function edit(int $skemaId)
+    public function showEditForm($skemaId)
     {
         $this->resetForm();
-        $this->formMode = 'edit'; // Set mode ke 'edit'
-        $this->editingSkema = Skema::findOrFail($skemaId);
-        $this->nama_skema = $this->editingSkema->nama_skema;
+        $this->formMode = 'edit';
+        $this->skema = Skema::findOrFail($skemaId);
+        $this->nama_skema = $this->skema->nama_skema;
     }
 
     public function destroy(int $skemaId)
@@ -116,7 +103,7 @@ class Skemalivewire extends Component
 
     public function resetForm()
     {
-        $this->reset(['formMode','editingSkema', 'nama_skema', 'format_apl_1', 'format_apl_2']);
+        $this->reset(['formMode','skema', 'nama_skema', 'format_apl_1', 'format_apl_2']);
         $this->resetErrorBag();
     }
 

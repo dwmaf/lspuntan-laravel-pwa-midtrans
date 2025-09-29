@@ -26,7 +26,20 @@ class KelolaSertifikasi extends Component
 
     // Properti untuk filter "Riwayat"
     public string $selectedFilter = 'semua';
+    public function mulai()
+    {
+        $this->tab = 'mulai';
+    }
 
+    public function berlangsung()
+    {
+        $this->tab = 'berlangsung';
+    }
+
+    public function selesai()
+    {
+        $this->tab = 'selesai';
+    }
     // Aturan validasi untuk form
     protected function rules()
     {

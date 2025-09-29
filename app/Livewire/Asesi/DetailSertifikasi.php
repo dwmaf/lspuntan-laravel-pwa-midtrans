@@ -9,12 +9,14 @@ use App\Models\Studentattachmentfile;
 use App\Models\Sertification;
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Layout;
 use App\Helpers\FileHelper;
+use App\Http\Controllers\NotificationController;
 use App\Notifications\PendaftarBaru;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
@@ -78,8 +80,9 @@ class DetailSertifikasi extends Component
         ];
     }
 
-    public function mount($sert_id, $asesi_id)
+    public function mount($sert_id, $asesi_id, Request $request)
     {
+        NotificationController::markAsRead($request);
         $this->sertification = Sertification::with('skema')->findOrFail($sert_id);
         $this->asesi = Asesi::with('makulnilais', 'asesiattachmentfiles')->findOrFail($asesi_id);
         $this->user = Auth::user();

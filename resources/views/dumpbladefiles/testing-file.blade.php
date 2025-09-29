@@ -1,11 +1,18 @@
-<x-admin-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Sertifikasi') }}
-        </h2>
-    </x-slot>
-    {{-- Navigasi Tab --}}
-    @include('layouts.admin-sertifikasi-menu')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Test Page</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
+    {{-- <link rel="icon" href="{{ asset('logo-lsp.png') }}" type="image/png"> --}}
+    @laravelPWA
+</head>
+<body class="p-5">
+    
+    <x-link-button wire:navigate>Lihat</x-link-button>
     <div style="overflow-x: scroll;">
         <table style="min-width: max-content;">
             <thead>
@@ -499,11 +506,10 @@
                     <td>Value 19</td>
                     <td>Value 20</td>
                 </tr>
-
+    
             </tbody>
         </table>
     </div>
-    <div class="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
-
-    </div>
-</x-admin-layout>
+    @livewireScripts
+</body>
+</html>

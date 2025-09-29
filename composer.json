@@ -16,6 +16,7 @@
         "mallardduck/blade-boxicons": "^2.4",
         "midtrans/midtrans-php": "^2.6",
         "owenvoke/blade-fontawesome": "^2.9",
+        "silviolleite/laravelpwa": "^2.0",
         "spatie/laravel-permission": "^6.20"
     },
     "require-dev": {

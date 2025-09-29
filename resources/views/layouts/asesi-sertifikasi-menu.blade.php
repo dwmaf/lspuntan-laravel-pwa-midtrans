@@ -78,7 +78,7 @@
      hover:bg-gray-100 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600">
                 Asesmen
             </a>
-            @if (Route::is(['asesi.assessmen.index']))
+            @if ($this->getName() == 'asesi.asesmen-asesi')
                 <div style="margin-top:-4px" class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
             @endif
         </div>
