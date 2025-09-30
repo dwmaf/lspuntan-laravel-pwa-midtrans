@@ -9,9 +9,10 @@
     <title>{{ config('app.name', 'LSP UNTAN') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @livewireStyles
+    {{-- @livewireStyles --}}
     {{-- <link rel="icon" href="{{ asset('logo-lsp.png') }}" type="image/png"> --}}
     @laravelPWA
+    @inertiaHead
 </head>
 <style>
     .min-h-12 {
@@ -63,7 +64,7 @@
                                             $data = $notif->data;
                                             $isUnread = is_null($notif->read_at);
                                         @endphp
-                                        <a href="{{ $data['link'] ?? '#' }}" wire:navigate
+                                        <a href="{{ $data['link'] ?? '#' }}"
                                             class="notification-item block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
                                             <div class="flex items-start justify-between">
                                                 <div class="{{ $isUnread ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400' }} truncate">
@@ -121,7 +122,8 @@
             }
         }
     </script>
-    @livewireScripts
+    {{-- @livewireScripts --}}
+    @inertia
 </body>
 
 </html>

@@ -1,6 +1,36 @@
 import "./bootstrap";
 // import "trix";
 // import "trix/dist/trix.css";
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
+
+library.add(faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket)
+
+import { createApp, h } from "vue";
+import { createInertiaApp } from "@inertiajs/vue3";
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { ZiggyVue } from "ziggy-js";
+const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+createInertiaApp({
+    title: (title) => `${title} - ${appName}`,
+    resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
+    setup({ el, App, props, plugin }) {
+        return createApp({ render: () => h(App, props) })
+            .use(plugin)
+            .use(ZiggyVue, props.initialPage.props.ziggy)
+            .component('FontAwesomeIcon', FontAwesomeIcon)
+            .mount(el);
+    },
+    progress: {
+        color: '#4B5563',
+    },
+});
+// app.component('FontAwesomeIcon', FontAwesomeIcon)
+
+
+
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 window.initRichEditor = (element, initialValue, onUpdate) => {

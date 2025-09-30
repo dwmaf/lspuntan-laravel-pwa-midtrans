@@ -95,20 +95,11 @@ class KelolaSertifikasiController extends Controller
     // untuk menghapus data sertifikasi yg udh dimulai tadi
     public function destroy($sert_id)
     {
-        // if($skema->link_foto){
-        //     Storage::delete($skema->link_foto);
-        // }
         Sertification::destroy($sert_id);
         return redirect()->back()->with('success', 'Sertifikasi berhasil dihapus');
     }
 
-    // untuk mengubah status sertifikasi dari sedang berlangsung ke dimulai
-    // public function complete(Request $request)
-    // {
-    //     $sertification = Sertification::find($request->id);
-    //     $sertification->update(['status' => 'selesai']);
-    //     return redirect()->route('admin.kelolasertifikasi.show', $sertification->id)->with('success', 'Status sertifikasi berhasil diubah menjadi Selesai.');
-    // }
+    
     public function rincian_laporan($sert_id, Request $request)
     {
         // dd($request);
@@ -137,7 +128,6 @@ class KelolaSertifikasiController extends Controller
                 $query->whereYear('created_at', now()->year);
                 break;
             default:
-                // 'semua' - no additional filter
                 break;
         }
 

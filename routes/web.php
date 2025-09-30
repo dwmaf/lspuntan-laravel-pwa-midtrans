@@ -36,6 +36,7 @@ use App\Livewire\Asesi\DetailSertifikasi;
 use App\Livewire\Asesi\PengumumanAsesi;
 use App\Livewire\Asesi\PembayaranAsesi;
 use App\Livewire\Asesi\AsesmenAsesi;
+use Inertia\Inertia;
 
 Route::get('/debug-firebase', function () {
     try {
@@ -53,8 +54,12 @@ Route::get('/debug-firebase', function () {
 });
 
 Route::get('/', function () {
-    return view('auth.login');
+    return Inertia::render('Auth/Login', [
+            'canResetPassword' => Route::has('password.request'),
+            'status' => session('status'),
+        ]);
 })->middleware('guest');
+
 Route::get('/test', function () {
     return view('dumpbladefiles.testing-file',[
         'sertification' => Sertification::find(1)
@@ -80,7 +85,7 @@ Route::middleware('auth')->group(function () {
 //nanti harus dikasih middleware 'verified'
 Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', function () {
-        return view('admin.dashboardadmin.dashboardadmin');
+        return Inertia::render('Admin/DashboardAdmin');
     })->name('dashboard'); // Hasil: admin.dashboard
 
     // Menggunakan Route::resource untuk CRUD standar, lebih bersih.

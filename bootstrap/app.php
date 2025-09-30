@@ -21,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest' => MiddlewareRedirectIfAuthenticated::class
         ]);
 
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+        ]);
+
         $middleware->validateCsrfTokens(except: [
             'midtrans/webhook',
         ]);

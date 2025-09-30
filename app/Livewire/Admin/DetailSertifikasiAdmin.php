@@ -51,27 +51,13 @@ class DetailSertifikasiAdmin extends Component
         $this->harga = $this->sertification->harga;
         $this->tuk = $this->sertification->tuk;
         $this->status = $this->sertification->status;
-        
     } 
-
-    public function enterEditMode()
-    {
-        $this->isEditing = true;
-    }
-
-    public function cancelEdit()
-    {
-        $this->isEditing = false;
-        $this->resetErrorBag();
-        $this->mount($this->sertification->id);
-    }
 
     public function update()
     {
         $this->validate();
 
         DB::transaction(function () {
-            // Logika penyimpanan dari controller (hanya untuk create)
             [$asesor_id, $skema_id] = explode(',', $this->asesor_skema);
             $this->sertification->update([
                 'asesor_id' => $asesor_id,
@@ -83,12 +69,9 @@ class DetailSertifikasiAdmin extends Component
                 'tuk' => $this->tuk,
                 'status' => $this->status,
             ]);
-            
-
-
         });
 
-        $this->isEditing = false; // Kembali ke mode 'show'
+        $this->isEditing = false;
         $this->dispatch('notify', message: 'Data berhasil diperbarui!');
     }
 

@@ -36,11 +36,11 @@ class AppServiceProvider extends ServiceProvider
         // 2. Letakkan kode View Composer di sini
         // Ini akan membagikan data notifikasi ke semua view yang menggunakan layout ini.
         // Pastikan nama layout di dalam array sesuai dengan nama file blade Anda.
-        View::composer(['layouts.admin', 'layouts.app'], function ($view) {
-            if (Auth::check()) {
-                $unreadNotifications = Auth::user()->unreadNotifications;
-                $view->with('unreadNotifications', $unreadNotifications);
-            }
-        });
+        // View::composer(['layouts.admin', 'layouts.app'], function ($view) {
+        //     if (Auth::check()) {
+        //         $unreadNotifications = Auth::user()->unreadNotifications;
+        //         $view->with('unreadNotifications', $unreadNotifications);
+        //     }
+        // });
     }
 }
