@@ -12,26 +12,31 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use App\Helpers\FileHelper;
+use Inertia\Inertia;
+
 class ProfileController extends Controller
 {
     
     
     // buat nampilin halaman edit profile dari sisi admin
-    public function edit(Request $request): View
+    public function edit(Request $request)
     {
-        return view('admin.profile.edit', [
-            'user' => $request->user(),
-            'student' => $request->user()->student()
+        return Inertia::render('Admin/Profile/ProfileAdmin', [
+            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'status' => session('status'),
         ]);
     }
     // buat nampilin halaman edit profile dari sisi asesi
-    public function edit_asesi(Request $request): View
+    public function edit_asesi(Request $request)
     {
         $user = $request->user()->load('student.studentattachmentfiles');
-        return view('asesi.profile.edit', [
+        return Inertia::render('Asesi/Profile/ProfilAsesi', [
+            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'status' => session('status'),
             'user'=>$user,
             'student' => $user->student
         ]);
@@ -47,7 +52,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return back()->with('success', 'Profil berhasil diperbaharui');
+        return back()->with('message', 'Profil berhasil diperbaharui');
     }
     // buat mengupdate profile yg tadi diedit dari sisi asesi
     public function update_asesi(Request $request)
@@ -128,7 +133,7 @@ class ProfileController extends Controller
             $user->save();
         }
 
-        return back()->with('success', 'Profil berhasil diperbarui');
+        return back()->with('message', 'Profil berhasil diperbarui');
     }
 
     // untuk menghapus akun

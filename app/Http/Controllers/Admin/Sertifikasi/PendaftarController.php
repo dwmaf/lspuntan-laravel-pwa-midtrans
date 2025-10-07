@@ -14,6 +14,7 @@ use App\Notifications\SertifikatDiunggah;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
 use App\Notifications\StatusBayarAsesiUpdated;
+use Inertia\Inertia;
 
 class PendaftarController extends Controller
 {
@@ -21,8 +22,11 @@ class PendaftarController extends Controller
     public function list_asesi($sert_id, Request $request)
     {
         // dd($student);
-        $sertification = Sertification::with('skema', 'asesi.transaction')->find($sert_id);
-        return view('admin.sertifikasi.pendaftar.indexpendaftar', [
+        $sertification = Sertification::with('skema', 'asesi.student.user','asesi.transaction')->findOrFail($sert_id);
+        $sertification->asesi->each(function ($asesi) {
+            $asesi->latest_transaction = $asesi->transaction->sortByDesc('created_at')->first();
+        });
+        return Inertia::render('Admin/PendaftarList', [
             'sertification' => $sertification,
         ]);
     }
@@ -31,10 +35,11 @@ class PendaftarController extends Controller
     public function rincian_data_asesi($sert_id, $asesi_id, Request $request)
     {
         NotificationController::markAsRead($request);
-        $asesi = Asesi::with('student.studentattachmentfile', 'transaction','sertifikat')->find($asesi_id);
+        $asesi = Asesi::with(['student.user','student.studentattachmentfiles','asesiattachmentfiles', 'makulnilais','transaction'=> fn($q) => $q->latest(),'sertifikat'])->findOrFail($asesi_id);
+        $asesi->latest_transaction = $asesi->transaction->first();
         // dd($asesi->transaction);
-        $sertification = $asesi->sertification;
-        return view('admin.sertifikasi.pendaftar.rincianpendaftar', [
+        $sertification = Sertification::findOrFail($sert_id);
+        return Inertia::render('Admin/PendaftarDetail', [
             'asesi' => $asesi,
             'sertification' => $sertification
         ]);
@@ -51,7 +56,7 @@ class PendaftarController extends Controller
         
         $user = $asesi->student->user;
         $user->notify(new StatusAsesiUpdated($sert_id, $asesi->id, $asesi->status));
-        return redirect()->back()->with('success', 'Status berhasil diperbarui');
+        return redirect()->back()->with('message', 'Status asesi berhasil diperbarui');
     }
 
     public function update_status_pembayaran($sert_id, $transaction_id, Request $request)
@@ -63,7 +68,7 @@ class PendaftarController extends Controller
         $transaction->save();
         $user = $transaction->asesi->student->user;
         $user->notify(new StatusBayarAsesiUpdated($sert_id, $transaction->asesi->id, $transaction->status));
-        return redirect()->back()->with('success', 'Status pembayaran asesi berhasil diperbarui!');
+        return redirect()->back()->with('message', 'Status pembayaran asesi berhasil diperbarui!');
     }
 
     public function upload_certificate($asesi_id, $sert_id, Request $request)
@@ -108,7 +113,7 @@ class PendaftarController extends Controller
         $user = $asesi->student->user;
         $user->notify(new SertifikatDiunggah($sert_id, $asesi->id));
         
-        return back()->with('success', 'Sertifikat berhasil disimpan.');
+        return back()->with('message', 'Sertifikat berhasil disimpan.');
     }
 
 }

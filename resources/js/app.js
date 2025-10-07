@@ -3,9 +3,9 @@ import "./bootstrap";
 // import "trix/dist/trix.css";
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
+import { faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket, faCalendarDays, faMoneyBill1Wave } from '@fortawesome/free-solid-svg-icons'
 
-library.add(faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket)
+library.add(faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket, faCalendarDays, faMoneyBill1Wave)
 
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";

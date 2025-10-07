@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
+use Inertia\Inertia;
 
 class PengumumanAsesiController extends Controller
 {
@@ -19,11 +20,11 @@ class PengumumanAsesiController extends Controller
     {
         // dd($request);
         NotificationController::markAsRead($request);
-        $sertification = Sertification::with('pengumumanasesmen.pembuatpengumuman.asesor')->find($sert_id);
-        return view('asesi.sertifikasi.pengumuman.index-pengumuman-asesi', [
+        $sertification = Sertification::with('pengumumanasesmen.pembuatpengumuman.asesor','pengumumanasesmen.pengumumanasesmenfile')->findOrFail($sert_id);
+        return Inertia::render('asesi.sertifikasi.pengumuman.index-pengumuman-asesi', [
             'pengumumans' => $sertification->pengumumanasesmen,
             'sertification' => $sertification,
-            'asesi' => Asesi::with('student')->find($asesi_id)
+            'asesi' => Asesi::with('student')->findOrFail($asesi_id)
         ]);
     }
 

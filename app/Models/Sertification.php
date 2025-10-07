@@ -5,7 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute; // <-- Tambahkan ini
-use Carbon\Carbon; // <-- Tambahkan ini
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class Sertification extends Model
 {
@@ -113,5 +114,23 @@ class Sertification extends Model
                 return $this->batas_pengumpulan_tugas_asesmen->format('d M Y H:i');
             }
         );
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Sertification $sertification) {
+            // 1. Hapus semua file lampiran tugas asesmen terkait
+            foreach ($sertification->tugasasesmenattachmentfile as $file) {
+                if ($file->path_file) {
+                    Storage::disk('public')->delete($file->path_file);
+                }
+                $file->delete(); // Hapus record dari database
+            }
+
+            // 2. Hapus semua pengumuman asesmen terkait (ini akan memicu event di model PengumumanAsesmen)
+            foreach ($sertification->pengumumanasesmen as $pengumuman) {
+                $pengumuman->delete(); // Memanggil delete() akan memicu event di model anak
+            }
+        });
     }
 }

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Notifications\AsesiUploadBuktiPembayaran;
 use App\Helpers\FileHelper;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Inertia;
 
 class PembayaranAsesiController extends Controller
 {
@@ -22,9 +23,21 @@ class PembayaranAsesiController extends Controller
     {
         // dd($request);
         NotificationController::markAsRead($request);
-        return view('asesi.sertifikasi.bayar.indexbayar', [
-            'sertification' => Sertification::with('asesor', 'skema','pembuatrincianpembayaran.asesor')->find($sert_id),
-            'asesi' => Asesi::with('student')->find($asesi_id)
+        $asesi = Asesi::with([
+            'student',
+            'transaction' => fn($q) => $q->latest(), // Ambil semua transaksi, urutkan terbaru
+        ])->findOrFail($asesi_id);
+
+        // Pastikan asesi ini milik user yang sedang login
+        if ($asesi->student->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        // Siapkan transaksi terakhir untuk kemudahan di frontend
+        $asesi->latest_transaction = $asesi->transaction->first();
+        return Inertia::render('asesi.sertifikasi.bayar.indexbayar', [
+            'sertification' => Sertification::with('skema', 'pembuatrincianpembayaran.user')->findOrFail($sert_id),
+            'asesi' => $asesi,
         ]);
     }
 
@@ -53,7 +66,7 @@ class PembayaranAsesiController extends Controller
         $admins = User::role('admin')->get();
         Notification::send($admins, new AsesiUploadBuktiPembayaran($sert_id, $asesi_id));
         
-        return redirect()->back()->with('success', 'Berhasil upload bukti pembayaran, admin akan memverifikasinya.');
+        return redirect()->back()->with('message', 'Berhasil upload bukti pembayaran, admin akan memverifikasinya.');
     }
 
 }

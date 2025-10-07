@@ -1,19 +1,43 @@
 <script setup>
-import { ref } from "vue";
 import Dropdown from "@/Components/Dropdown.vue";
 import DropdownLink from "@/Components/DropdownLink.vue";
 import NavLink from "@/Components/NavLink.vue";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
 import Navigation from "../Components/Navigation.vue";
 import TopNavigation from "../Components/TopNavigation.vue";
+import { ref, computed, watch } from "vue";
+import { usePage } from "@inertiajs/vue3";
 
-import { Link } from "@inertiajs/vue3";
+const page = usePage();
+const notification = computed(() => page.props.flash?.message);
+const isNotificationVisible = ref(false);
+let notificationTimer = null;
 
-const showingNavigationDropdown = ref(false);
+watch(notification, (newValue) => {
+    if (newValue) {
+        isNotificationVisible.value = true;
+        clearTimeout(notificationTimer);
+        notificationTimer = setTimeout(() => {
+            isNotificationVisible.value = false;
+        }, 3000);
+    }
+});
 </script>
 
 <template>
     <div>
+        <Transition
+            enter-active-class="transition ease-out duration-300"
+            enter-from-class="transform opacity-0 translate-x-full"
+            enter-to-class="transform opacity-100 translate-x-0"
+            leave-active-class="transition ease-in duration-300"
+            leave-from-class="transform opacity-100 translate-x-0"
+            leave-to-class="transform opacity-0 translate-x-full"
+        >
+            <div v-if="isNotificationVisible" class="fixed top-20 right-4 text-sm px-4 py-2 rounded-lg shadow-lg bg-green-600 text-white z-50">
+                {{ notification }}
+            </div>
+        </Transition>
         <div class="flex min-h-screen bg-gray-100 dark:bg-gray-900">
             <div class="hidden md:flex">
                 <Navigation/>

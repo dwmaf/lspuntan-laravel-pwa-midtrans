@@ -13,6 +13,7 @@ use App\Helpers\FileHelper;
 use App\Models\Asesiasesmenfile;
 use App\Notifications\AsesiUploadBuktiPembayaran;
 use App\Notifications\AsesiUploadTugasAsesmen;
+use Inertia\Inertia;
 
 class AsesmenAsesiController extends Controller
 {
@@ -21,9 +22,9 @@ class AsesmenAsesiController extends Controller
     {
         // dd($id);
         NotificationController::markAsRead(($request));
-        return view('asesi.sertifikasi.asesmen.asesi-index-asesmen', [
-            'sertification' => Sertification::with('pembuatrinciantugasasesmen.asesor')->find($sert_id),
-            'asesi' => Asesi::with('asesiasesmenfiles')->find($asesi_id)
+        return Inertia::render('asesi.sertifikasi.asesmen.asesi-index-asesmen', [
+            'sertification' => Sertification::with('pembuatrinciantugasasesmen.asesor')->findOrFail($sert_id),
+            'asesi' => Asesi::with('asesiasesmenfiles')->findOrFail($asesi_id)
         ]);
     }
 
@@ -58,18 +59,13 @@ class AsesmenAsesiController extends Controller
         $asesor = $sertification->asesor->user;
         $asesor->notify(new AsesiUploadTugasAsesmen($sert_id, $asesi_id));
         
-        return redirect()->back()->with('success', 'Berhasil unggah file asesmen.');
+        return redirect()->back()->with('message', 'Berhasil unggah file asesmen.');
     }
 
     // fungsi ajax buat hapus file dari tugas asesmen
-    public function ajaxDeleteTugasAsesmenFile(Request $request)
+    public function destroyTugasAsesmenFile($file_id)
     {
-        $fileId = $request->getContent(); // body request berisi ID file (plain text)
-        if (empty($fileId)) {
-            return response()->json(['error' => 'File ID tidak valid.'], 400);
-        }
-
-        $file = Asesiasesmenfile::find($fileId);
+        $file = Asesiasesmenfile::find($file_id);
         if ($file) {
             // Hapus file fisik
             if (Storage::disk('public')->exists($file->path_file)) {
@@ -77,9 +73,7 @@ class AsesmenAsesiController extends Controller
             }
             // Hapus record database
             $file->delete();
-            return response()->json(['success' => true]);
-        } else {
-            return response()->json(['error' => 'File tidak ditemukan.'], 404);
+            return redirect()->back()->with('message', 'File berhasil dihapus.');
         }
     }
 }

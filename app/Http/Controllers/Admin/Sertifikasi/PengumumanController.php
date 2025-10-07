@@ -12,29 +12,30 @@ use App\Models\Pengumumanasesmenfile;
 use App\Helpers\FileHelper;
 use App\Notifications\PengumumanUpdated;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class PengumumanController extends Controller
 {
 
     //buat nampilin halaman daftar pengumuman asesmen di sisi admin/asesor sekaligus untuk buat nambah pengumuman
-    public function index_pengumuman_asesmen($id, Request $request)
+    public function index_pengumuman_asesmen($sert_id, Request $request)
     {
         // dd($id);
-        $sertification = Sertification::with('pengumumanasesmen.pembuatpengumuman.asesor')->find($id);
-        return view('admin.sertifikasi.pengumuman.indexpengumuman', [
+        $sertification = Sertification::with('pengumumanasesmen.pembuatpengumuman.asesor','pengumumanasesmen.pengumumanasesmenfile')->findOrFail($sert_id);
+        return Inertia::render('Admin/PengumumanAdmin', [
             'pengumumans' => $sertification->pengumumanasesmen,
             'sertification' => $sertification,
         ]);
     }
     //buat update rincian pra asesmen di sisi admin, NOT USED ANYMORE
-    public function store_pengumuman_asesmen($id, Request $request)
+    public function store_pengumuman_asesmen($sert_id, Request $request)
     {
         // dd($request);
         $validatedData = $request->validate([
             'rincian_pengumuman_asesmen' => 'required|string',
-            'sertification_id' => 'required'
         ]);
         $validatedData['pengumuman_madeby']= $request->user()->id; // Ambil ID user yang login yg buat perubahan
+        $validatedData['sertification_id'] = $sert_id;
         $pengumumanAsesmen = Pengumumanasesmen::create(
             $validatedData
         );
@@ -52,7 +53,7 @@ class PengumumanController extends Controller
         }
         // ambil semua Asesi yang cocok
         $asesis = Asesi::with(['student.user']) // pastikan relasi student->user ada
-            ->where('sertification_id', $id)
+            ->where('sertification_id', $sert_id)
             ->where('status', 'dilanjutkan_asesmen')
             ->get();
 
@@ -60,11 +61,11 @@ class PengumumanController extends Controller
         foreach ($asesis as $asesi) {
             $user = $asesi->student->user ?? null;
             if ($user) {
-                $user->notify(new PengumumanBaru($id, $asesi->id));
+                $user->notify(new PengumumanBaru($sert_id, $asesi->id));
             }
         }
 
-        return redirect()->back()->with('success', 'Berhasil membuat pengumuman');
+        return redirect()->back()->with('message', 'Berhasil membuat pengumuman');
     }
     //buat update pengumuman asesmen di sisi admin/asesor
     public function edit_pengumuman_asesmen($id, $peng_id, Request $request)
@@ -139,17 +140,9 @@ class PengumumanController extends Controller
     }
     public function destroy_pengumuman_asesmen($id, $peng_id, Request $request)
     {
-        $pengumuman = Pengumumanasesmen::with('pengumumanasesmenfile')->find($peng_id);
-        // dd($pengumuman->pengumumanasesmenfile);
-        foreach ($pengumuman->pengumumanasesmenfile as $file) {
-            // Cek apakah file benar-benar ada di storage sebelum menghapus
-            if (Storage::disk('public')->exists($file->path_file)) {
-                Storage::disk('public')->delete($file->path_file);
-            }
-            // Record file di database akan terhapus otomatis karena cascade delete
-        }
+        $pengumuman = Pengumumanasesmen::with('pengumumanasesmenfile')->findOrFail($peng_id);
         $pengumuman->delete();
-        return redirect()->back()->with('success', 'Pengumuman berhasil dihapus');
+        return redirect()->back()->with('message', 'Pengumuman berhasil dihapus');
     }
 
 }

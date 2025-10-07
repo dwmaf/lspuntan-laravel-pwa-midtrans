@@ -40,6 +40,9 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'roles' => $request->user()?->roles->pluck('name')->toArray() ?? [],
             ],
+            'flash' => [
+                'message' => fn () => $request->session()->get('message'),
+            ],
         ]);
     }
 }

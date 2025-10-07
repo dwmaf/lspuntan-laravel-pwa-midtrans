@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Asesi;
 use App\Notifications\RincianPembayaranUpdated;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Inertia;
 
 class PembayaranController extends Controller
 {
@@ -16,7 +17,7 @@ class PembayaranController extends Controller
     // buat nampilin daftar sertifikasi yg tersedia di sisi asesi
     public function index_rincian_pembayaran($id, Request $request)
     {
-        return view('admin.sertifikasi.pembayaran.indexpembayaran', [
+        return Inertia::render('Admin/PembayaranAdmin', [
             'sertification' => Sertification::with('pembuatrincianpembayaran')->find($id)
         ]);
     }
@@ -58,7 +59,7 @@ class PembayaranController extends Controller
                 $user->notify(new RincianPembayaranUpdated($sertification, $asesi));
             }
         }
-        return redirect()->back()->with('success', 'Rincian pembayaran berhasil disimpan!');
+        return redirect()->back()->with('message', 'Rincian pembayaran berhasil disimpan!');
     }
 
 }

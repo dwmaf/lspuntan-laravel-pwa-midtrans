@@ -13,17 +13,20 @@ use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
 use App\Notifications\TugasAsesmenBaru;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Inertia; 
 
 class AsesmenController extends Controller
 {
-    public function rincian_asesmen($id, Request $request)
+    public function edit($id)
     {
         // dd($id);
         $sertification = Sertification::with([
             'asesi.transaction',
-            'pembuatrinciantugasasesmen.asesor',
+            'asesi.student.user',
+            'asesi.asesiasesmenfiles',
+            'pembuatrinciantugasasesmen',
             'tugasasesmenattachmentfile'
-        ])->find($id);
+        ])->findOrFail($id);
 
         // Filter asesi sesuai kriteria
         $filteredAsesi = $sertification->asesi->filter(function ($asesi) {
@@ -33,22 +36,23 @@ class AsesmenController extends Controller
                 && $latestTransaction->status === 'bukti_pembayaran_terverifikasi';
         });
 
-        return view('admin.sertifikasi.asesmen.indexasesmen', [
+        return Inertia::render('Admin/AsesmenAdmin', [
             'sertification' => $sertification,
             'filteredAsesi' => $filteredAsesi
         ]);
     }
 
     //buat update tugas asesmen di sisi admin/asesor
-    public function update_tugas_asesmen($id, Request $request)
+    public function update($id, Request $request)
     {
         // dd($request);
         $request->validate([
             'rincian_tugas_asesmen' => 'required|string',
             'batas_pengumpulan_tugas_asesmen' => 'nullable|date',
+            'newFiles.*' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,pdf,docx,pptx,xls,xlsx',
         ]);
 
-        $sertification = Sertification::find($id);
+        $sertification = Sertification::findOrFail($id);
         $sertification->rincian_tugas_asesmen = $request->rincian_tugas_asesmen;
         $sertification->batas_pengumpulan_tugas_asesmen = $request->batas_pengumpulan_tugas_asesmen;
         $sertification->tugasasesmen_madeby = $request->user()->id; // Ambil ID user yang login yg buat perubahan
@@ -84,7 +88,7 @@ class AsesmenController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Data berhasil disimpan!');
+        return redirect()->back()->with('message', 'Data berhasil disimpan!');
     }
 
     // buat nampilin daftar submitan tugas asesmen yg dikirim asesi
@@ -98,14 +102,14 @@ class AsesmenController extends Controller
         ]);
     }    
 
-    public function ajaxDeleteAsesmenFile($id_file, Request $request)
+    public function destroyAsesmenFile($sert_id, $id_file, Request $request)
     {
         // $fileId = $request->getContent(); // body request berisi ID file (plain text)
         // if (empty($fileId)) {
         //     return response()->json(['error' => 'File ID tidak valid.'], 400);
         // }
 
-        $file = Tugasasesmenattachmentfile::find($id_file);
+        $file = Tugasasesmenattachmentfile::findOrFail($id_file);
         if ($file) {
             // Hapus file fisik
             if (Storage::disk('public')->exists($file->path_file)) {
@@ -113,7 +117,7 @@ class AsesmenController extends Controller
             }
             // Hapus record database
             $file->delete();
-            return response()->noContent();
+            return redirect()->back()->with('message', 'Lampiran berhasil dihapus.');
         } else {
             return response()->json(['error' => 'File tidak ditemukan.'], 404);
         }

@@ -9,13 +9,14 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use App\Helpers\FileHelper;
+use Inertia\Inertia;
 class SkemaController extends Controller
 {
     
     // nampilin halaman untuk nambah skema sertifikasi
     public function create()
     {
-        return view('admin.skema.create-skema',[
+        return Inertia::render('Admin/SkemaSertifAdmin',[
             'skemas'=>Skema::all()
         ]);
     }
@@ -36,16 +37,9 @@ class SkemaController extends Controller
             }
         }
         Skema::create($skemaData);
-        return redirect(route('admin.skema.create'))->with('success', 'Berhasil Simpan data skema');
+        return redirect(route('admin.skema.create'))->with('message', 'Berhasil Simpan data skema');
     }
 
-    // untuk nampilin halaman untuk mengedit sertifikasi
-    public function edit(Request $request, $id)
-    {
-        return view('admin.skema.edit-skema',[
-            'skema'=>Skema::find($id)
-        ]);
-    }
 
     // untuk mengupdate skema yg tadi diedit
     public function update(Request $request, $id)
@@ -53,6 +47,8 @@ class SkemaController extends Controller
         $skema = Skema::find($id);
         $request->validate([
             'nama_skema' => ['required', 'string','max:255'],
+            'format_apl_1' => 'nullable|file|mimes:docx,pdf|max:2048',
+            'format_apl_2' => 'nullable|file|mimes:docx,pdf|max:2048',
         ]);
         $skema->fill($request->only([
             'nama_skema',
@@ -69,7 +65,7 @@ class SkemaController extends Controller
         if ($skema->isDirty()) {
             $skema->save();
         }
-        return redirect(route('admin.skema.create'))->with('success', 'Berhasil update data skema');
+        return redirect(route('admin.skema.create'))->with('message', 'Berhasil update data skema');
     }
 
     // untuk menghapus skema
@@ -82,6 +78,6 @@ class SkemaController extends Controller
             }
         }
         Skema::destroy($id);
-        return redirect(route('admin.skema.create'))->with('success', 'Skema berhasil dihapus');
+        return redirect(route('admin.skema.create'))->with('message', 'Skema berhasil dihapus');
     }
 }

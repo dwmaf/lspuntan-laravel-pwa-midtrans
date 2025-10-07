@@ -16,6 +16,7 @@ use App\Models\Asesiattachmentfile;
 use App\Models\Studentattachmentfile;
 use App\Notifications\PendaftarBaru;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Inertia;
 
 class KelolaSertifikasiAsesiController extends Controller
 {
@@ -30,8 +31,12 @@ class KelolaSertifikasiAsesiController extends Controller
         $asesi = Asesi::where('student_id', $student->id)
                       ->get()
                       ->keyBy('sertification_id');
-        return view('asesi.sertifikasi.kelolasertifikasi.asesi-daftar-sertifikasi', [
-            'sertifications' => Sertification::with('skema')->get(),
+        $sertifications = Sertification::with('skema')
+            ->where('status', 'berlangsung')
+            ->orderBy('tgl_apply_dibuka', 'desc')
+            ->get();
+        return Inertia::render('asesi.sertifikasi.kelolasertifikasi.asesi-daftar-sertifikasi', [
+            'sertifications' => $sertifications,
             'asesi' => $asesi
         ]);
      }
@@ -39,12 +44,12 @@ class KelolaSertifikasiAsesiController extends Controller
     public function form_daftar_sertifikasi($id, Request $request)
     {
         $user = $request->user();
-        $student = $user->student;
+        $student = $user->student()->with('studentattachmentfile')->first();
         // dd($student);
         // Ambil semua asesi milik student
         // $asesiBySertificationId = $student->asesi->keyBy('sertification_id');
-        return view('asesi.sertifikasi.kelolasertifikasi.apply-page', [
-            'sertification' => Sertification::with('skema')->find($id),
+        return Inertia::render('asesi.sertifikasi.kelolasertifikasi.apply-page', [
+            'sertification' => Sertification::with('skema')->findOrFail($id),
             'student' => $student,
             'user' => $user,
         ]);
@@ -66,11 +71,10 @@ class KelolaSertifikasiAsesiController extends Controller
             'no_tlp_hp' => 'required|string|max:255',
             'kualifikasi_pendidikan' => 'required|string|max:255',
             'tujuan_sert' => 'required|string|max:255',
-            // 'makul_nilai' => 'required|string|max:255',
-            'nama_makul' => 'required|array',
-            'nama_makul.*' => 'required|string|max:255',
-            'nilai_makul' => 'required|array',
-            'nilai_makul.*' => 'required|string|max:10',
+            
+            'makulNilais' => 'required|array',
+            'makulNilais.*.nama_makul' => 'required|string|max:255',
+            'makulNilais.*.nilai_makul' => 'required|string|max:10',
             'apl_1' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
             'apl_2' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
             'foto_ktp' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -189,27 +193,22 @@ class KelolaSertifikasiAsesiController extends Controller
     {
         NotificationController::markAsRead($request);
         $user = $request->user();
-        $student = $user->student()->with('studentattachmentfile')->first();
-        $asesi = Asesi::with('asesiattachmentfiles', 'transaction','makulnilais','sertifikat')->find($asesi_id);
+        $asesi = Asesi::with([
+            'student.user',
+            'student.studentattachmentfiles',
+            'asesiattachmentfiles',
+            'makulnilais',
+            'transaction' => fn($q) => $q->latest(),
+            'sertifikat'
+        ])->findOrFail($asesi_id);
         // dd($student);
-        return view('asesi.sertifikasi.kelolasertifikasi.show-applied-page', [
-            'sertification' => Sertification::with('skema')->find($sert_id),
-            'student' => $student,
+        // Pastikan asesi ini milik user yang sedang login
+        if ($asesi->student->user_id !== $request->user()->id) {
+            abort(403);
+        }
+        return Inertia::render('Asesi/DetailSertifAsesi', [
+            'sertification' => Sertification::with('skema')->findOrFail($sert_id),
             'asesi' => $asesi
-        ]);
-    }
-
-    public function edit_applied_sertifikasi($sert_id, $asesi_id, Request $request)
-    {
-        $user = $request->user();
-        $student = $user->student;
-        $asesi = Asesi::with('asesiattachmentfiles')->find($asesi_id);
-        // dd($asesi->asesiasesmenfile());
-        return view('asesi.sertifikasi.kelolasertifikasi.edit-apply-page', [
-            'sertification' => Sertification::with('skema')->find($sert_id),
-            'student' => $student,
-            'asesi' => $asesi
-
         ]);
     }
 
@@ -230,11 +229,9 @@ class KelolaSertifikasiAsesiController extends Controller
             'kualifikasi_pendidikan' => 'required|string|max:255',
             'tujuan_sert' => 'required|string|max:255',
             // 'makul_nilai' => 'required|string|max:255',
-            // Tambahkan validasi untuk array
-            'makul_nama' => 'required|array',
-            'makul_nama.*' => 'required|string|max:255',
-            'makul_nilai' => 'required|array',
-            'makul_nilai.*' => 'required|string|max:10',
+            'makulNilais' => 'required|array|min:1',
+            'makulNilais.*.nama_makul' => 'required|string|max:255',
+            'makulNilais.*.nilai_makul' => 'required|string|max:10',
             'apl_1' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
             'apl_2' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
             'foto_ktp' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -304,21 +301,13 @@ class KelolaSertifikasiAsesiController extends Controller
         // 1. Hapus semua record MakulNilai yang lama terkait dengan asesi ini.
         MakulNilai::where('asesi_id', $asesi->id)->delete();
 
-        // 2. Ambil data baru dari request.
-        $makulNamas = $request->input('makul_nama');
-        $makulNilais = $request->input('makul_nilai');
-
         // 3. Buat ulang record MakulNilai berdasarkan data baru (logika yang sama seperti di store).
-        if (is_array($makulNamas)) {
-            foreach ($makulNamas as $index => $namaMakul) {
-                if (!empty($namaMakul) && isset($makulNilais[$index])) {
-                    MakulNilai::create([
-                        'asesi_id' => $asesi->id,
-                        'nama_makul' => $namaMakul,
-                        'nilai_makul' => $makulNilais[$index],
-                    ]);
-                }
-            }
+        foreach ($request->makulNilais as $makul) {
+            MakulNilai::create([
+                'asesi_id' => $asesi->id,
+                'nama_makul' => $makul['nama_makul'],
+                'nilai_makul' => $makul['nilai_makul'],
+            ]);
         }
         //untuk input multiple
         $fileTypes = ['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain'];
@@ -365,7 +354,7 @@ class KelolaSertifikasiAsesiController extends Controller
 
 
 
-        return redirect()->back()->with('success', 'Berhasil update data sertifikasi');
+        return redirect()->back()->with('message', 'Berhasil update data sertifikasi');
         // return redirect('/dashboard')->with('Success', 'Berhasil update data sertifikasi');
     }
 }

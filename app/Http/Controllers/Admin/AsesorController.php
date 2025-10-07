@@ -13,13 +13,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Validation\Rules;
+use Inertia\Inertia;
 class AsesorController extends Controller
 {
     // buat nampilin daftar asesor sekaligus untuk nambah asesor
     public function index()
     {
-        return view('admin.asesor.buatasesor', [
-            'asesors' => Asesor::with('skemas')->withCount('sertifications')->get(),
+        return Inertia::render('Admin/AsesorAdmin', [
+            'asesors' => Asesor::with('skemas','user')->withCount('sertifications')->get(),
             'skemas' => Skema::all()
         ]);
     }
@@ -62,26 +63,7 @@ class AsesorController extends Controller
             $user->notify(new AsesorAccountCreated()); // <-- Kirim notifikasi baru
         });
         
-        return redirect('/admin/asesor')->with('success','Data asesor berhasil ditambah, Asesor akan menerima Email untuk buat password');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Asesor $asesor)
-    {
-        //
-    }
-
-    // buat mengedit akun asesor mereka
-    public function edit(Asesor $asesor)
-    {
-        $user_asesor = $asesor->user;
-        return view('admin.asesor.editasesor', [
-            'asesor' => $asesor,
-            'user_asesor' => $user_asesor,
-            'skemas'=> Skema::all()
-        ]);
+        return redirect('/admin/asesor')->with('message','Data asesor berhasil ditambah, Asesor akan menerima Email untuk buat password');
     }
 
     // buat mengupdate akun asesor mereka yg udh diedit
@@ -105,7 +87,7 @@ class AsesorController extends Controller
         $user_asesor->update($userData);
         $asesor->skemas()->sync($request->selectedSkemas);
 
-        return redirect('/admin/asesor')->with('success','Data asesor berhasil diperbaharui');
+        return redirect('/admin/asesor')->with('message','Data asesor berhasil diperbaharui');
     }
 
     // buat menghapus akun asesor
@@ -118,6 +100,6 @@ class AsesorController extends Controller
         if($user) {
             $user->delete();
         }
-        return redirect('/asesor')->with('success','Data asesor berhasil dihapus');
+        return redirect('/asesor')->with('message','Data asesor berhasil dihapus');
     }
 }
