@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tugasasesmenattachmentfiles', function (Blueprint $table) {
+        Schema::create('newsfiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sertification_id')->constrained();
+            $table->foreignId('news_id')->constrained()->onDelete('cascade');
             $table->string('path_file')->nullable();
-            $table->string('type')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tugasasesmenattachmentfiles');
+        Schema::dropIfExists('newsfiles');
     }
 };

@@ -7,6 +7,8 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import EditButton from "../../Components/EditButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
+import DateInput from "../../Components/DateInput.vue";
+import NumberInput from "../../Components/NumberInput.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import { ref, computed, onMounted } from "vue";
 const props = defineProps({
@@ -21,15 +23,12 @@ const form = useForm({
 const edit = () => {
     form.rincian_pembayaran = props.sertification.rincian_pembayaran;
     form.harga = props.sertification.harga;
-    form.tgl_bayar_ditutup = props.sertification.tgl_bayar_ditutup
-        ? new Date(props.sertification.tgl_bayar_ditutup)
-            .toISOString()
-            .split("T")[0]
-        : "";
+    const batas = props.sertification.tgl_bayar_ditutup;
+    form.tgl_bayar_ditutup = batas ? batas.replace(' ', 'T').slice(0, 16) : null;
     isEditing.value = true;
 };
 const submit = () => {
-    form.post(
+    form.patch(
         route("admin.sertifikasi.payment-desc.update", props.sertification.id),
         {
             onSuccess: () => {
@@ -74,13 +73,9 @@ const formattedHarga = computed(() => {
                         </svg>
                     </div>
                     <div>
-                        <h5 v-if="
-                            props.sertification.pembuatrincianpembayaran
-                                .asesor
-                        " class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                        <h5 v-if="props.sertification.pembuatrincianpembayaran" class="text-sm font-semibold text-gray-800 dark:text-gray-200">
                             {{
-                                props.sertification.pembuatrincianpembayaran
-                                    .asesor.user.name
+                                props.sertification.pembuatrincianpembayaran.name ?? 'Admin'
                             }}
                         </h5>
                         <div class="text-xs text-gray-400">
@@ -92,10 +87,13 @@ const formattedHarga = computed(() => {
                 <EditButton @click="edit">Edit</EditButton>
             </div>
 
-            <div class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2">
+            <div v-if="props.sertification.rincian_pembayaran" class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2">
                 {{ props.sertification.rincian_pembayaran }}
             </div>
-            <div class="flex mb-2">
+            <p v-if="!props.sertification.rincian_pembayaran" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Admin belum memberikan rincian pembayaran sehingga Asesi belum bisa mengunggah bukti bayar.
+            </p>
+            <div v-if="props.sertification.rincian_pembayaran" class="flex mb-2">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">
                     Biaya Sertifikasi :
                 </dt>
@@ -104,12 +102,12 @@ const formattedHarga = computed(() => {
                     {{ new Intl.NumberFormat('id-ID').format(props.sertification.harga) }}
                 </dd>
             </div>
-            <div class="flex">
+            <div v-if="props.sertification.rincian_pembayaran" class="flex">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">
                     Batas Akhir Pembayaran :
                 </dt>
                 <dd class="text-sm text-gray-900 dark:text-gray-100">
-                    {{ props.sertification.tgl_bayar_ditutup }}
+                    {{ props.sertification.batas_pembayaran_formatted }}
                 </dd>
             </div>
         </div>
@@ -131,22 +129,23 @@ const formattedHarga = computed(() => {
                 <div>
                     <InputLabel value="Biaya Sertifikasi" />
                     <p v-if="formattedHarga" class="text-sm font-medium text-gray-800 dark:text-gray-400">{{ formattedHarga }}</p>
-                    <TextInput min="0" type="number" v-model="form.harga" required />
+                    <!-- <TextInput min="0" type="number" v-model="form.harga" required /> -->
+                    <NumberInput min="0" v-model="form.harga" required/>
                     <InputError :message="form.errors.harga" />
                 </div>
                 <div>
                     <InputLabel value="Tanggal Bayar Ditutup" />
-                    <TextInput type="date" v-model="form.tgl_bayar_ditutup" required />
+                    <DateInput v-model="form.tgl_bayar_ditutup" required />
                     <InputError :message="form.errors.tgl_bayar_ditutup" />
                 </div>
                 <div class="flex gap-2 items-center">
-                    <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                    <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                         Simpan
                     </PrimaryButton>
                     <SecondaryButton @click="isEditing = false">Batal</SecondaryButton>
                 </div>
             </form>
         </div>
-        @endif
+        
     </AdminLayout>
 </template>

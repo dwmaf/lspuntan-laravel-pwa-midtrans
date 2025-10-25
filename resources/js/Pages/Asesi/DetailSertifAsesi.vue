@@ -8,73 +8,77 @@ import SecondaryButton from "@/Components/SecondaryButton.vue";
 import EditButton from "@/Components/EditButton.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
+import SingleFileInput from "../../Components/SingleFileInput.vue";
+import MultiFileInput from "../../Components/MultiFileInput.vue";
 import InputError from "@/Components/InputError.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
     sertification: Object,
+    student: Object,
     asesi: Object,
 });
+// console.log(props.asesi.status);
+
 
 // State untuk mode edit
 const isEditing = ref(false);
 
 // Inisialisasi form dengan data yang ada
 const form = useForm({
-    _method: 'PUT', // Untuk update
+    _method: 'patch',
     name: props.asesi.student.user.name,
     nik: props.asesi.student.nik,
-    tmpt_lhr: props.student?.tmpt_lhr || '',
-    tgl_lhr: props.student?.tgl_lhr || '',
-    kelamin: props.student?.kelamin || 'Laki-laki',
-    kebangsaan: props.student?.kebangsaan || '',
-    no_tlp_hp: props.user?.no_tlp_hp || '',
-    no_tlp_rmh: props.student?.no_tlp_rmh || '',
-    no_tlp_kntr: props.student?.no_tlp_kntr || '',
-    kualifikasi_pendidikan: props.student?.kualifikasi_pendidikan || 'Mahasiswa S1',
-    nama_institusi: props.student?.nama_institusi || '',
-    jabatan: props.student?.jabatan || '',
-    alamat_kantor: props.student?.alamat_kantor || '',
-    no_tlp_email_fax: props.student?.no_tlp_email_fax || '',
+    tmpt_lhr: props.asesi.student?.tmpt_lhr || '',
+    tgl_lhr: props.asesi.student?.tgl_lhr || '',
+    kelamin: props.asesi.student?.kelamin || 'Laki-laki',
+    kebangsaan: props.asesi.student?.kebangsaan || '',
+    no_tlp_hp: props.asesi.student.user?.no_tlp_hp || '',
+    no_tlp_rmh: props.asesi.student?.no_tlp_rmh || '',
+    no_tlp_kntr: props.asesi.student?.no_tlp_kntr || '',
+    kualifikasi_pendidikan: props.asesi.student?.kualifikasi_pendidikan || 'Mahasiswa S1',
+    nama_institusi: props.asesi.student?.nama_institusi || '',
+    jabatan: props.asesi.student?.jabatan || '',
+    alamat_kantor: props.asesi.student?.alamat_kantor || '',
+    no_tlp_email_fax: props.asesi.student?.no_tlp_email_fax || '',
     tujuan_sert: props.asesi.tujuan_sert,
     makulNilais: props.asesi.makulnilais.length > 0 ? props.asesi.makulnilais.map(m => ({ nama_makul: m.nama_makul, nilai_makul: m.nilai_makul })) : [{ nama_makul: '', nilai_makul: '' }],
     apl_1: null,
     apl_2: null,
     foto_ktp: null,
     foto_ktm: null,
-    kartu_hasil_studi: [],
     pas_foto: null,
+    kartu_hasil_studi: [],
     surat_ket_magang: [],
     sertif_pelatihan: [],
     dok_pendukung_lain: [],
+    delete_files_collection: [],
+    delete_files_student: [],
+    delete_files_asesi: []
 });
 
-// Fungsi untuk masuk/keluar mode edit
 const enterEditMode = () => {
     isEditing.value = true;
+    console.log(!form.apl_1);
 };
 const cancelEdit = () => {
     isEditing.value = false;
-    form.reset(); // Reset form ke nilai awal
+    form.reset();
     form.clearErrors();
 };
 
-// Fungsi untuk submit form update
 const update = () => {
     form.post(route('asesi.sertifikasi.applied.update', { sert_id: props.sertification.id, asesi_id: props.asesi.id }), {
         onSuccess: () => cancelEdit(),
-        preserveScroll: true,
     });
 };
 
-// Fungsi untuk input dinamis Mata Kuliah
 const addMakul = () => form.makulNilais.push({ nama_makul: '', nilai_makul: '' });
 const removeMakul = (index) => form.makulNilais.splice(index, 1);
 
-// Notifikasi
-const notification = computed(() => usePage().props.flash?.message || usePage().props.flash?.Success);
-// Helper Status
+
+
 const getAsesiStatusClass = (status) => {
     const classes = {
         'daftar': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
@@ -89,7 +93,7 @@ const getPaymentStatusInfo = (transaction) => {
     if (!transaction) {
         return { text: 'Belum Submit Bukti Pembayaran', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' };
     }
-    if (transaction.status === 'belum bayar') {
+    if (transaction.status === 'belum_bayar') {
         return { text: 'Belum Bayar', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', secondclass: "border-gray-300 dark:border-gray-600" };
     }
     if (transaction.tipe === 'manual' && transaction.bukti_bayar && transaction.status === 'pending') {
@@ -103,6 +107,32 @@ const getPaymentStatusInfo = (transaction) => {
     }
     return { text: 'N/A', class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200' };
 };
+
+const getFiles = (collection, type) => {
+    if (!collection) return [];
+    return collection.filter(file => file.type === type);
+};
+
+const kartuHasilStudiFiles = computed(() => getFiles(props.asesi.asesifiles, 'kartu_hasil_studi'));
+const suratMagangFiles = computed(() => getFiles(props.asesi.asesifiles, 'surat_ket_magang'));
+const sertifPelatihanFiles = computed(() => getFiles(props.asesi.asesifiles, 'sertif_pelatihan'));
+const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_pendukung_lain'));
+const removeFileStudent = (fieldName) => {
+    if (form[fieldName]) {
+        form[fieldName] = null;
+    }
+    else if (props.student[fieldName] && !form.delete_files_student.includes(fieldName)) {
+        form.delete_files_student.push(fieldName);
+    }
+};
+const removeFileAsesi = (fieldName) => {
+    if (form[fieldName]) {
+        form[fieldName] = null;
+    }
+    else if (props.asesi[fieldName] && !form.delete_files_asesi.includes(fieldName)) {
+        form.delete_files_asesi.push(fieldName);
+    }
+};
 </script>
 
 <template>
@@ -113,18 +143,12 @@ const getPaymentStatusInfo = (transaction) => {
             </h2>
         </template>
 
-        <!-- Notifikasi -->
-        <div v-if="notification" class="fixed top-20 right-4 text-sm px-4 py-2 rounded bg-green-600 text-white z-50">
-            {{ notification }}
-        </div>
-
-        <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi" :latest-transaction="props.asesi.latest_transaction" />
+        <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
+            :latest-transaction="props.asesi.latest_transaction" />
 
         <div class="max-w-7xl mx-auto">
-            <!-- Tampilan Form Edit -->
             <div v-if="isEditing" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <form @submit.prevent="update" class="mt-6 space-y-6">
-                    <!-- Semua field form di sini, mirip dengan ApplySertifAsesi.vue -->
                     <h3 class="dark:text-gray-300 font-semibold">A. Data Pribadi</h3>
                     <div>
                         <InputLabel value="Nama Lengkap" required />
@@ -237,79 +261,53 @@ const getPaymentStatusInfo = (transaction) => {
 
                     <!-- Bukti Kelengkapan -->
                     <h3 class="dark:text-gray-300 font-semibold pt-4">D. Bukti Kelengkapan</h3>
-                    <div>
-                        <InputLabel value="Form APL.01" required />
-                        <a :href="`/storage/${sertification.skema.format_apl_1}`"
-                            class="text-blue-500 hover:text-blue-300 text-sm" target="_blank">Lihat Template</a>
-                        <TextInput @input="form.apl_1 = $event.target.files[0]" type="file" required />
-                        <!-- <input @input="form.apl_1 = $event.target.files[0]" type="file" class="mt-1 w-full ..." required /> -->
-                        <InputError :message="form.errors.apl_1" />
-                    </div>
-                    <div>
-                        <InputLabel value="Form APL.02" required />
-                        <a :href="`/storage/${sertification.skema.format_apl_2}`"
-                            class="text-blue-500 hover:text-blue-300 text-sm" target="_blank">Lihat Template</a>
-                        <TextInput @input="form.apl_2 = $event.target.files[0]" type="file" required />
-                        <InputError :message="form.errors.apl_2" />
-                    </div>
-
-                    <div>
-                        <InputLabel value="Scan KTP" :required="!student.foto_ktp" />
-                        <p v-if="student.foto_ktp" class="text-sm text-gray-500 mb-1">File sudah ada: <a
-                                :href="`/storage/${student.foto_ktp}`" class="text-blue-500" target="_blank">Lihat
-                                File</a></p>
-                        <TextInput @input="form.foto_ktp = $event.target.files[0]" type="file"
-                            :required="!student.foto_ktp" />
-                        <!-- <input id="foto_ktp" @input="form.foto_ktp = $event.target.files[0]" type="file" class="mt-1 w-full ..." :required="!student.foto_ktp" /> -->
-                        <InputError :message="form.errors.foto_ktp" />
-                    </div>
-                    <div>
-                        <InputLabel value="Scan KTM (ukuran file maksimal 1 MB)" :required="!student.foto_ktm" />
-                        <p v-if="student.foto_ktm" class="text-sm text-gray-500 mb-1">File sudah ada: <a
-                                :href="`/storage/${student.foto_ktm}`" class="text-blue-500" target="_blank">Lihat
-                                File</a></p>
-                        <TextInput @input="form.foto_ktm = $event.target.files[0]" type="file"
-                            :required="!student.foto_ktm" />
-                        <InputError :message="form.errors.foto_ktm" />
-                    </div>
-
-                    <div>
-                        <InputLabel value="Scan Kartu Hasil Studi (Bisa upload lebih dari satu)"
-                            :required="khsFiles.length === 0" />
-                        <div v-if="khsFiles.length > 0" class="text-sm text-gray-600 dark:text-gray-400">
-                            <p>File yang sudah diunggah:</p>
-                            <ul>
-                                <li v-for="file in khsFiles" :key="file.id"><a class="text-blue-500 hover:text-blue-300"
-                                        :href="`/storage/${file.path_file}`" target="_blank">Lihat File</a></li>
-                            </ul>
-                        </div>
-                        <TextInput @input="form.kartu_hasil_studi = $event.target.files" type="file" multiple
-                            :required="khsFiles.length === 0" />
-                        <InputError :message="form.errors.kartu_hasil_studi" />
-                    </div>
-                    <div>
-                        <InputLabel
-                            value="Pasfoto terbaru dengan latar belakang merah, berukuran 4x6 (ukuran file maksimal 1 MB)"
-                            :required="!student.pas_foto" />
-                        <p v-if="student.pas_foto" class="text-sm text-gray-500 mb-1">File sudah ada: <a
-                                :href="`/storage/${student.pas_foto}`" class="text-blue-500" target="_blank">Lihat
-                                File</a></p>
-                        <TextInput @input="form.pas_foto = $event.target.files[0]" type="file"
-                            :required="!student.pas_foto" />
-                        <InputError :message="form.errors.pas_foto" />
-                    </div>
-                    <div>
-                        <InputLabel value="Scan Surat Keterangan Magang/PKL/MBKM (maks 5, ukuran file maksimal 3 MB)" />
-                        <TextInput @input="form.surat_ket_magang = $event.target.files" type="file" multiple />
-                        <InputError :message="form.errors.surat_ket_magang" />
-                    </div>
-                    <div>
-                        <InputLabel
-                            value="Dokumen pendukung lainnya: dapat berupa Laporan kegiatan PKL/Magang/MBKM/Publikasi Jurnal/dll (maks 5, ukuran file maksimal 5 MB)" />
-                        <TextInput @input="form.dok_pendukung_lain = $event.target.files" type="file" multiple />
-                        <InputError :message="form.errors.dok_pendukung_lain" />
-                    </div>
-
+                    <SingleFileInput v-model="form.apl_1" label="Form APL.01" is-label-required
+                        :template-url="`/storage/${sertification.skema.format_apl_1}`"
+                        :existing-file-url="asesi?.apl_1 ? `/storage/${asesi.apl_1}` : null"
+                        :is-marked-for-deletion="form.delete_files_asesi.includes('apl_1')" accept=".pdf,.doc,.docx"
+                        :error="form.errors.apl_1" @remove="removeFileAsesi('apl_1')"
+                        :required="!asesi?.apl_1 || form.delete_files_asesi.includes('apl_1')" />
+                    <SingleFileInput v-model="form.apl_2" label="Form APL.02" is-label-required
+                        :template-url="`/storage/${sertification.skema.format_apl_2}`"
+                        :existing-file-url="asesi?.apl_2 ? `/storage/${asesi.apl_2}` : null"
+                        :is-marked-for-deletion="form.delete_files_asesi.includes('apl_2')" accept=".pdf,.doc,.docx"
+                        :error="form.errors.apl_2" @remove="removeFileAsesi('apl_2')"
+                        :required="!asesi?.apl_2 || form.delete_files_asesi.includes('apl_2')" />
+                        
+                        
+                    <SingleFileInput v-model="form.foto_ktp" label="Scan KTP" is-label-required
+                        :existing-file-url="student?.foto_ktp ? `/storage/${student.foto_ktp}` : null"
+                        :is-marked-for-deletion="form.delete_files_student.includes('foto_ktp')" accept=".jpg,.png,.jpeg,.pdf"
+                        :error="form.errors.foto_ktp" @remove="removeFileStudent('foto_ktp')"
+                        :required="!student?.foto_ktp || form.delete_files_student.includes('foto_ktp')" />
+                    <SingleFileInput v-model="form.pas_foto"
+                        label="Pasfoto terbaru dengan latar belakang merah, berukuran 4x6 (ukuran file maksimal 1 MB)"
+                        is-label-required :existing-file-url="student?.pas_foto ? `/storage/${student.pas_foto}` : null"
+                        :is-marked-for-deletion="form.delete_files_student.includes('pas_foto')" accept=".jpg,.png,.jpeg,.pdf"
+                        :error="form.errors.pas_foto" @remove="removeFileStudent('pas_foto')"
+                        :required="!student?.pas_foto || form.delete_files_student.includes('pas_foto')" />
+                    <SingleFileInput v-model="form.foto_ktm" label="Scan KTM (ukuran file maksimal 1 MB)"
+                        is-label-required :existing-file-url="asesi?.foto_ktm ? `/storage/${asesi.foto_ktm}` : null"
+                        :is-marked-for-deletion="form.delete_files_asesi.includes('foto_ktm')" accept=".jpg,.png,.jpeg,.pdf"
+                        :error="form.errors.foto_ktm" @remove="removeFileAsesi('foto_ktm')"
+                        :required="!asesi?.foto_ktm || form.delete_files_asesi.includes('foto_ktm')" />
+                    <MultiFileInput v-model="form.kartu_hasil_studi" v-model:deleteList="form.delete_files_collection"
+                        label="Scan Kartu Hasil Studi (Bisa upload lebih dari satu)"
+                        :existing-files="kartuHasilStudiFiles" :max-files="5" accept=".jpg,.png,.jpeg,.pdf,.docx"
+                        :required="kartuHasilStudiFiles.length === 0 || form.kartu_hasil_studi.length === 0"
+                        :error="form.errors.kartu_hasil_studi" :error-list="form.errors['kartu_hasil_studi.0']" />
+                    <MultiFileInput v-model="form.surat_ket_magang" v-model:deleteList="form.delete_files_collection"
+                        label="Scan Surat Keterangan Magang/PKL/MBKM (maks 5, ukuran file maksimal 3 MB)"
+                        :existing-files="suratMagangFiles" :max-files="5" accept=".jpg,.png,.jpeg,.pdf"
+                        :error="form.errors.surat_ket_magang" :error-list="form.errors['surat_ket_magang.0']" />
+                    <MultiFileInput v-model="form.sertif_pelatihan" v-model:deleteList="form.delete_files_collection"
+                        label="Scan Sertifikat Pelatihan (maks 5, ukuran file maksimal 3 MB)"
+                        :existing-files="sertifPelatihanFiles" :max-files="5" accept=".jpg,.png,.jpeg,.pdf"
+                        :error="form.errors.sertif_pelatihan" :error-list="form.errors['sertif_pelatihan.0']" />
+                    <MultiFileInput v-model="form.dok_pendukung_lain" v-model:deleteList="form.delete_files_collection"
+                        label="Dokumen pendukung lainnya (maks 5, ukuran file maksimal 5 MB)"
+                        :existing-files="dokPendukungFiles" :max-files="5" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
+                        :error="form.errors.dok_pendukung_lain" :error-list="form.errors['dok_pendukung_lain.0']" />
                     <div class="flex items-center gap-4">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Update
                         </PrimaryButton>
@@ -318,15 +316,20 @@ const getPaymentStatusInfo = (transaction) => {
                 </form>
             </div>
 
-            <!-- Tampilan Show Detail -->
+            <!-- Mode Tampilan -->
             <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <div class="flex justify-end mb-4">
                     <EditButton @click="enterEditMode">Edit Data</EditButton>
                 </div>
-                <!-- Menggunakan kembali komponen dari Admin untuk menampilkan data -->
+                <div v-if="asesi.status === 'perlu_perbaikan_berkas' && asesi.catatan_perbaikan"
+                    class="p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-800"
+                    role="alert">
+                    <span class="font-medium">Perhatian!</span> Admin meminta perbaikan berkas dengan catatan:
+                    <p class="mt-2 font-mono">{{ asesi.catatan_perbaikan }}</p>
+                </div>
                 <PendaftarDetailDataStatis :asesi="props.asesi" />
 
-                <!-- Status Section -->
+
                 <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">E. Status
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
@@ -337,25 +340,20 @@ const getPaymentStatusInfo = (transaction) => {
                                 :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getAsesiStatusClass(asesi.status)]">
                                 {{ asesi.status.replace(/_/g, ' ') }}
                             </span>
-                            <EditButton @click="showStatusModal = true">Ubah Status</EditButton>
                         </dd>
                     </div>
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Pembayaran</dt>
-                        <dd
-                            :class="[mt - 1 text - sm rounded - lg p - 2 border, getPaymentStatusInfo(asesi.latest_transaction).secondclass]">
+                        <dd>
                             <span
                                 :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getPaymentStatusInfo(asesi.latest_transaction).class]">
                                 {{ getPaymentStatusInfo(asesi.latest_transaction).text }}
                             </span>
-                            <div v-if="props.asesi.latest_transaction" class="flex justify-end">
-                                <EditButton @click="showPaymentModal = true">Ubah Status</EditButton>
-                            </div>
                         </dd>
                     </div>
                 </div>
 
-                <!-- Sertifikat Section -->
+
                 <div v-if="props.asesi.sertifikat">
                     <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">F.
                         Sertifikat
@@ -365,10 +363,9 @@ const getPaymentStatusInfo = (transaction) => {
                             <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Sertifikat
                                 Asesi
                             </dt>
-                            <dd class="mt-1 text-sm mr-1 space-y-2">
-                                <a :href="`/storage/${asesi.sertifikat.file_path}`"
-                                  target="_blank"
-                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">
+                            <dd v-if="asesi.status === 'lulus_sertifikasi'" class="mt-1 text-sm space-y-2">
+                                <a :href="`/storage/${asesi.sertifikat.file_path}`" target="_blank"
+                                    class="text-blue-500 hover:text-blue-700">
                                     Lihat Sertifikat
                                 </a>
                             </dd>

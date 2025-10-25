@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-class Pengumumanasesmen extends Model
+class News extends Model
 {
     protected $guarded = [
         'id',
@@ -16,9 +16,9 @@ class Pengumumanasesmen extends Model
     {
         return $this->belongsTo(Sertification::class);
     }
-    public function pengumumanasesmenfile()
+    public function newsfiles()
     {
-        return $this->hasMany(Pengumumanasesmenfile::class);
+        return $this->hasMany(Newsfile::class);
     }
     public function pembuatpengumuman()
     {
@@ -29,13 +29,13 @@ class Pengumumanasesmen extends Model
 
     protected static function booted(): void
     {
-        static::deleting(function (PengumumanAsesmen $pengumuman) {
+        static::deleting(function (News $news) {
             // Hapus semua file lampiran terkait
-            foreach ($pengumuman->pengumumanasesmenfile as $file) {
+            foreach ($news->newsfile as $file) {
                 if ($file->path_file) {
                     Storage::disk('public')->delete($file->path_file);
                 }
-                $file->delete(); // Hapus record dari database
+                $file->delete();
             }
         });
     }

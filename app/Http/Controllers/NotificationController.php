@@ -11,10 +11,7 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $notifications = $user->notifications()->paginate(15);
-
-        // Tandai notifikasi yang belum dibaca sebagai sudah dibaca
-        $user->unreadNotifications->markAsRead();
+        $notifications = $user->notificationLogs()->paginate(15);
 
         return view('admin.notifikasi.notifikasi', compact('notifications'));
     }
@@ -22,7 +19,7 @@ class NotificationController extends Controller
     public function markAllRead(Request $request): JsonResponse
     {
         $user = $request->user();
-        $user->unreadNotifications->markAsRead();
+        $user->notificationLogs()->whereNull('read_at')->update(['read_at' => now()]);
 
         return response()->json(['status' => 'ok']);
     }
@@ -30,9 +27,11 @@ class NotificationController extends Controller
     public static function markAsRead(Request $request)
     {
         if ($request->has('notification_id')) {
-            $notification = $request->user()->notifications()->where('id', $request->notification_id)->first();
+            // dd($request->notification_id);
+            $notification = $request->user()->notificationLogs()->where('id', $request->notification_id)->first();
             if ($notification) {
-                $notification->markAsRead();
+                // dd('notif found');
+                $notification->update(['read_at' => now()]);
             }
         }
     }

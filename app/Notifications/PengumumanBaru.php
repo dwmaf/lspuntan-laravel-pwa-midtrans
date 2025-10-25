@@ -10,11 +10,13 @@ class PengumumanBaru extends Notification
     use Queueable;
     protected $sert_id;
     protected $asesi_id;
+    protected $news_id;
 
-    public function __construct($sert_id, $asesi_id)
+    public function __construct($sert_id, $asesi_id, $news_id)
     {
         $this->sert_id = $sert_id;
         $this->asesi_id = $asesi_id;
+        $this->news_id = $news_id;
     }
 
     public function via($notifiable)
@@ -26,9 +28,10 @@ class PengumumanBaru extends Notification
     {
         $notificationId = $this->id; 
         return [
+            'news_id' => $this->news_id,
             'message' => 'Pengumuman baru: ',
             //tujuan functionnya ada di PengumumanAsesiController, function index_pengumuman_asesi
-            'link' => route('asesi.pengumuman.index', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId]),
+            'link' => route('asesi.pengumuman.index', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId, 'news_id'=> $this->news_id]),
         ];
     }
     

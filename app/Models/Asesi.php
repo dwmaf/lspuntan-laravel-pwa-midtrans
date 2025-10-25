@@ -25,9 +25,9 @@ class Asesi extends Model
     {
         return $this->belongsTo(Sertification::class);
     }
-    public function asesiattachmentfiles()
+    public function asesifiles()
     {
-        return $this->hasMany(Asesiattachmentfile::class);
+        return $this->hasMany(Asesifile::class);
     }
     public function transaction()
     {

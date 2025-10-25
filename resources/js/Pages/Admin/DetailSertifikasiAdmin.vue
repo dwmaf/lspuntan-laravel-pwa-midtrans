@@ -9,6 +9,7 @@ import EditButton from "@/Components/EditButton.vue";
 import DeleteButton from "@/Components/DeleteButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import NumberInput from "@/Components/NumberInput.vue";
+import DateInput from "../../Components/DateInput.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
 const props = defineProps({
@@ -129,17 +130,17 @@ const formattedHarga = computed(() => {
                     </div>
                     <div>
                         <InputLabel value="Tanggal Daftar Dibuka" />
-                        <TextInput type="date" v-model="form.tgl_apply_dibuka" required />
+                        <DateInput type="date" v-model="form.tgl_apply_dibuka" required />
                         <InputError :message="form.errors.tgl_apply_dibuka" />
                     </div>
                     <div id="tanggal_apply_ditutup">
                         <InputLabel value="Tanggal Daftar Ditutup" />
-                        <TextInput type="date" v-model="form.tgl_apply_ditutup" required />
+                        <DateInput type="date" v-model="form.tgl_apply_ditutup" required />
                         <InputError :message="form.errors.tgl_apply_ditutup" />
                     </div>
                     <div id="tanggal_bayar_ditutup">
                         <InputLabel value="Tanggal Bayar Ditutup" />
-                        <TextInput type="date" v-model="form.tgl_bayar_ditutup" required />
+                        <DateInput v-model="form.tgl_bayar_ditutup" required />
                         <InputError :message="form.errors.tgl_bayar_ditutup" />
                     </div>
                     <div id="biaya_sertifikasi">

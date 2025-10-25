@@ -11,13 +11,15 @@ class RincianPembayaranUpdated extends Notification
 {
     use Queueable;
 
-    protected $sertification;
-    protected $asesi;
+    protected $sert_id;
+    protected $asesi_id;
+    protected $nama_skema;
 
-    public function __construct(Sertification $sertification, Asesi $asesi)
+    public function __construct($sert_id, $asesi_id, $nama_skema)
     {
-        $this->sertification = $sertification;
-        $this->asesi = $asesi;
+        $this->sert_id = $sert_id;
+        $this->asesi_id = $asesi_id;
+        $this->nama_skema = $nama_skema;
     }
 
     public function via($notifiable)
@@ -29,9 +31,8 @@ class RincianPembayaranUpdated extends Notification
     {
         $notificationId = $this->id; 
         return [
-            'message' => 'Rincian pembayaran diupdate untuk sertifikasi ' . $this->sertification->skema->nama_skema,
-            //tujuan functionnya ada di PembayaranAsesiController, function index_rincian_pembayaran
-            'link' => route('asesi.applied.payment.create', [$this->sertification->id, $this->asesi->id, 'notification_id' => $notificationId]),
+            'message' => 'Rincian pembayaran diupdate untuk sertifikasi ' . $this->nama_skema,
+            'link' => route('asesi.payment.create', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId]),
         ];
     }
 

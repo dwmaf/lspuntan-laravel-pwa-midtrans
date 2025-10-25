@@ -5,6 +5,8 @@ import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import PrimaryLinkButton from "../../Components/PrimaryLinkButton.vue";
 import TextInput from "@/Components/TextInput.vue";
+import NumberInput from "../../Components/NumberInput.vue";
+import DateInput from "../../Components/DateInput.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
 
@@ -24,7 +26,7 @@ const applyFilter = (filterValue) => {
     });
     showFilter.value = false;
 };
-const tab = ref("mulai");
+const tab = ref("berlangsung");
 const form = useForm({
     asesor_skema: "",
     tgl_apply_dibuka: "",
@@ -43,9 +45,15 @@ const formattedHarga = computed(() => {
         minimumFractionDigits: 0,
     }).format(number);
 });
+const formatDate = (dateString) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return new Intl.DateTimeFormat('id-ID', options).format(date);
+};
 const submit = () => {
-    form.post(route("admin.kelolasertifikasi.update"), {
-        onSudccess: () => form.reset(),
+    form.post(route("admin.kelolasertifikasi.store"), {
+        onSuccess: () => form.reset(),
     });
 };
 
@@ -102,9 +110,9 @@ const submit = () => {
                                 class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                             <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">
                                 Pendaftaran:
-                                {{ sert.tgl_apply_dibuka }}
+                                {{ formatDate(sert.tgl_apply_dibuka) }}
                                 &ndash;
-                                {{ sert.tgl_apply_ditutup }}
+                                {{ formatDate(sert.tgl_apply_ditutup) }}
                             </p>
                         </div>
                         <div class="flex items-center mt-4">
@@ -189,8 +197,8 @@ const submit = () => {
                                     class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                                 <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">
                                     Pendaftaran:
-                                    {{ sert.tgl_apply_dibuka }} &ndash;
-                                    {{ sert.tgl_apply_ditutup }}
+                                    {{ formatDate(sert.tgl_apply_dibuka) }} &ndash;
+                                    {{ formatDate(sert.tgl_apply_ditutup) }}
                                 </p>
                             </div>
                             <div class="flex items-center mt-4">
@@ -258,7 +266,7 @@ const submit = () => {
                     </div>
                     <div id="tanggal_bayar_ditutup">
                         <InputLabel value="Tanggal Bayar Ditutup" />
-                        <TextInput type="date" v-model="form.tgl_bayar_ditutup" required />
+                        <DateInput v-model="form.tgl_bayar_ditutup" required />
                         <InputError :message="form.errors.tgl_bayar_ditutup" />
                     </div>
                     <div id="biaya_sertifikasi">
@@ -266,7 +274,7 @@ const submit = () => {
                         <p v-if="formattedHarga" class="text-sm font-medium text-gray-800 dark:text-gray-400">
                             {{ formattedHarga }}
                         </p>
-                        <TextInput min="0" type="number" v-model="form.harga" required />
+                        <NumberInput min="0" v-model="form.harga" required/>
                         <InputError :message="form.errors.harga" />
                     </div>
                     <div id="tuk">
@@ -275,7 +283,7 @@ const submit = () => {
                         <InputError :message="form.errors.tuk" />
                     </div>
                     <div class="flex">
-                        <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }"
+                        <PrimaryButton :class="{ 'opacity-25': form.processing }"
                             :disabled="form.processing">
                             Mulai
                         </PrimaryButton>

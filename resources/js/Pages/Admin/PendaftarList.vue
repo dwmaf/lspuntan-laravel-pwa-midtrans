@@ -2,6 +2,7 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import SecondaryLinkButton from "../../Components/SecondaryLinkButton.vue";
+import SmallLinkButton from "../../Components/SmallLinkButton.vue";
 const props = defineProps({
     sertification: Object,
 });
@@ -100,10 +101,10 @@ const getPaymentStatusInfo = (transaction) => {
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <SecondaryLinkButton
+                                <SmallLinkButton
                                     :href="route('admin.sertifikasi.pendaftar.show', [props.sertification.id, asesi.id])">
                                     Detail
-                                </SecondaryLinkButton>
+                                </SmallLinkButton>
                             </td>
                         </tr>
                         <tr v-else>

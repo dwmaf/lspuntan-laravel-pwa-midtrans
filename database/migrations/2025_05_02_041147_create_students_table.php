@@ -29,8 +29,6 @@ return new class extends Migration
             $table->string('alamat_kantor')->nullable();
             $table->string('no_tlp_email_fax')->nullable();
             $table->string('foto_ktp')->nullable();
-            $table->string('foto_ktm')->nullable();
-            $table->string('foto_khs')->nullable();
             $table->string('pas_foto')->nullable();
             $table->timestamps();
         });

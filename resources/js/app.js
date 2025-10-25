@@ -3,9 +3,9 @@ import "./bootstrap";
 // import "trix/dist/trix.css";
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket, faCalendarDays, faMoneyBill1Wave } from '@fortawesome/free-solid-svg-icons'
+import { faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket, faCalendarDays, faMoneyBill1Wave, faEye, faEyeSlash, faCircleXmark, faXmark, faLock, faTrash, faImage } from '@fortawesome/free-solid-svg-icons'
 
-library.add(faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket, faCalendarDays, faMoneyBill1Wave)
+library.add(faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket, faCalendarDays, faMoneyBill1Wave, faEye, faEyeSlash, faCircleXmark, faXmark, faLock, faTrash, faImage)
 
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
@@ -27,50 +27,46 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
-// app.component('FontAwesomeIcon', FontAwesomeIcon)
 
 
 
-import { Editor } from "@tiptap/core";
-import StarterKit from "@tiptap/starter-kit";
-window.initRichEditor = (element, initialValue, onUpdate) => {
-    // PERBAIKAN: element SEKARANG adalah wrapper itu sendiri
-    const editorWrapper = element.querySelector('.rich-text-editor-wrapper');
-    if (!editorWrapper) {
-        console.error('Rich editor wrapper not found inside the component root.');
-        return;
-    }
 
-    const editorContent = editorWrapper.querySelector('.editor-content');
-    const toolbar = editorWrapper.querySelector('.toolbar');
+// import { Editor } from "@tiptap/core";
+// import StarterKit from "@tiptap/starter-kit";
+// window.initRichEditor = (element, initialValue, onUpdate) => {
+//     const editorWrapper = element.querySelector('.rich-text-editor-wrapper');
+//     if (!editorWrapper) {
+//         console.error('Rich editor wrapper not found inside the component root.');
+//         return;
+//     }
 
-    if (!editorContent || !toolbar) {
-        console.error('Editor content or toolbar not found.');
-        return;
-    }
+//     const editorContent = editorWrapper.querySelector('.editor-content');
+//     const toolbar = editorWrapper.querySelector('.toolbar');
 
-    const editor = new Editor({
-        element: editorContent,
-        extensions: [StarterKit],
-        content: initialValue, // Mulai dengan nilai dari @entangle
-        onUpdate: ({ editor }) => {
-            // Panggil callback untuk memberitahu Alpine/Livewire tentang perubahan
-            onUpdate(editor.getHTML());
-        }
-    });
+//     if (!editorContent || !toolbar) {
+//         console.error('Editor content or toolbar not found.');
+//         return;
+//     }
 
-    // Simpan instance editor ke elemen agar bisa diakses oleh $watch
-    element.editor = editor;
+//     const editor = new Editor({
+//         element: editorContent,
+//         extensions: [StarterKit],
+//         content: initialValue,
+//         onUpdate: ({ editor }) => {
+//             onUpdate(editor.getHTML());
+//         }
+//     });
+//     element.editor = editor;
 
-    toolbar.querySelectorAll('[data-command]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const command = btn.dataset.command;
-            if (command && typeof editor.chain().focus()[command] === 'function') {
-                editor.chain().focus()[command]().run();
-            }
-        });
-    });
-};
+//     toolbar.querySelectorAll('[data-command]').forEach(btn => {
+//         btn.addEventListener('click', () => {
+//             const command = btn.dataset.command;
+//             if (command && typeof editor.chain().focus()[command] === 'function') {
+//                 editor.chain().focus()[command]().run();
+//             }
+//         });
+//     });
+// };
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
@@ -87,12 +83,6 @@ import { getMessaging, getToken, onMessage } from "firebase/messaging";
 // import $ from 'jquery';
 // window.$ = window.jQuery = $;
 
-// import 'summernote/dist/summernote-lite.min.js';
-// import 'summernote/dist/summernote-lite.min.css';
-
-// import Quill from 'quill';
-// import 'quill/dist/quill.snow.css'; // Tema Snow (populer)
-// window.Quill = Quill;
 
 // Import FilePond
 // import * as FilePond from 'filepond';
@@ -109,10 +99,7 @@ import { getMessaging, getToken, onMessage } from "firebase/messaging";
 // Make FilePond globally available (opsional, tapi bisa berguna untuk akses dari script di Blade)
 // window.FilePond = FilePond;
 
-// import Alpine from "alpinejs";
-// window.Alpine = Alpine;
 
-// Alpine.start();
 // Jalankan skrip setelah seluruh halaman dimuat
 // document.addEventListener("DOMContentLoaded", () => {
 //     // Cari semua container editor di halaman (bisa lebih dari satu)

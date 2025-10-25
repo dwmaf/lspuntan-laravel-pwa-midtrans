@@ -28,11 +28,13 @@ const form = useForm({
     email: '',
     no_tlp_hp: '',
     selectedSkemas: [],
+    _method: 'POST',
 });
 
 // Fungsi untuk menampilkan form tambah
 const showCreateForm = () => {
     form.reset();
+    form._method = 'POST';
     formMode.value = 'create';
 };
 
@@ -41,8 +43,9 @@ const showEditForm = (asesor) => {
     form.id = asesor.id;
     form.name = asesor.user.name;
     form.email = asesor.user.email;
-    form.no_tlp_hp = asesor.user.no_tlp_hp ?? '';
+    form.no_tlp_hp = asesor.user.no_tlp_hp;
     form.selectedSkemas = asesor.skemas.map(s => s.id);
+    form._method = 'PATCH';
     formMode.value = 'edit';
 };
 
@@ -56,12 +59,20 @@ const backToList = () => {
 
 // Fungsi untuk submit (create atau update)
 const save = () => {
+    form.clearErrors('selectedSkemas');
+
+    // Cek apakah array selectedSkemas kosong
+    if (form.selectedSkemas.length === 0) {
+        // Jika kosong, set error manual untuk field 'selectedSkemas'
+        form.setError('selectedSkemas', 'Pilih minimal satu skema.');
+        return; // Hentikan eksekusi fungsi agar form tidak terkirim
+    }
     if (formMode.value === 'create') {
         form.post(route('admin.asesor.store'), {
             onSuccess: () => backToList(),
         });
     } else if (formMode.value === 'edit') {
-        form.put(route('admin.asesor.update', form.id), {
+        form.post(route('admin.asesor.update', form.id), {
             onSuccess: () => backToList(),
         });
     }
@@ -126,9 +137,9 @@ onUnmounted(() => {
                             class="absolute left-0 w-full rounded-b-md z-20 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 dark:text-white"
                             style="display: none;">
                             <div class="p-2 max-h-60 overflow-y-auto">
-                                <label v-for="skema in skemas" :key="skema.id" @clicl.stop
+                                <label v-for="skema in skemas" :key="skema.id" 
                                     class="flex items-center p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded cursor-pointer">
-                                    <input type="checkbox" :value="skema.id" v-model="form.selectedSkemas" required
+                                    <input type="checkbox" :value="skema.id" v-model="form.selectedSkemas"
                                         class="mr-2 rounded text-indigo-600 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
                                     <span class="text-sm text-gray-700 dark:text-gray-300">{{ skema.nama_skema }}</span>
                                 </label>
@@ -149,7 +160,7 @@ onUnmounted(() => {
                 </div>
                 <div>
                     <InputLabel value="No. HP" />
-                    <TextInput v-model="form.no_tlp_hp" type="text" />
+                    <TextInput v-model="form.no_tlp_hp" type="text" required/>
                     <InputError :message="form.errors.no_tlp_hp" />
                 </div>
 

@@ -1,21 +1,20 @@
-<!-- filepath: d:\Laravel-App\lsp-untan-laravel-pwa\resources\js\Components\AsesiSertifikasiMenu.vue -->
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps({
     sertificationId: Number,
-    asesi: Object, // Kirim objek asesi dari parent
-    latestTransaction: Object, // Kirim transaksi terakhir dari parent
+    asesi: Object, 
+    latestTransaction: Object,
 });
 
 const isDetailEnabled = !!props.asesi;
-const isPembayaranEnabled = props.asesi && props.asesi.status === 'dilanjutkan_asesmen';
-const isPengumumanEnabled = props.asesi && props.asesi.status === 'dilanjutkan_asesmen';
+const isPembayaranEnabled = props.asesi && (props.asesi.status === 'dilanjutkan_asesmen' || props.asesi.status === 'lulus_sertifikasi');
+const isPengumumanEnabled = props.asesi && (props.asesi.status === 'dilanjutkan_asesmen' || props.asesi.status === 'lulus_sertifikasi');
 const isAsesmenEnabled = props.asesi &&
     props.latestTransaction &&
     props.latestTransaction.status === 'bukti_pembayaran_terverifikasi' &&
-    props.asesi.status === 'dilanjutkan_asesmen';
+    (props.asesi.status === 'dilanjutkan_asesmen' || props.asesi.status === 'lulus_sertifikasi');
 
 const routeActive = (name) => route().current(name);
 </script>
@@ -49,7 +48,7 @@ const routeActive = (name) => route().current(name);
                 </template>
                 <template v-else>
                     <div class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase rounded-t-md dark:text-gray-200 text-slate-400">
-                        <span class="w-4 h-4 inline-block">🔒</span>
+                        <FontAwesomeIcon icon="fa-lock" class="text-base text-gray-700 dark:text-gray-200" />
                         Bayar
                     </div>
                 </template>
@@ -65,7 +64,7 @@ const routeActive = (name) => route().current(name);
                 </template>
                 <template v-else>
                     <div class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase rounded-t-md dark:text-gray-200 text-slate-400">
-                        <span class="w-4 h-4 inline-block">🔒</span>
+                        <FontAwesomeIcon icon="fa-lock" class="text-base text-gray-700 dark:text-gray-200" />
                         Pengumuman
                     </div>
                 </template>
@@ -81,7 +80,7 @@ const routeActive = (name) => route().current(name);
                 </template>
                 <template v-else>
                     <div class="flex items-center gap-2 px-4 py-3 font-semibold text-xs uppercase rounded-t-md dark:text-gray-200 text-slate-400">
-                        <span class="w-4 h-4 inline-block">🔒</span>
+                        <FontAwesomeIcon icon="fa-lock" class="text-base text-gray-700 dark:text-gray-200" />
                         Asesmen
                     </div>
                 </template>

@@ -6,14 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    // tabel untuk nyimpan daftar pengumuman asesmen, bisa aja jika ada lebih dari 1 pengumuman yg akan dibuat
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('pengumumanasesmens', function (Blueprint $table) {
+        Schema::create('asesmenfiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sertification_id')->constrained();
-            $table->text('rincian_pengumuman_asesmen');
-            $table->foreignId('pengumuman_madeby')->nullable()->constrained('users');
+            $table->string('path_file')->nullable();
+            $table->string('type')->nullable();
             $table->timestamps();
         });
     }
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pengumumanasesmens');
+        Schema::dropIfExists('asesmenfiles');
     }
 };

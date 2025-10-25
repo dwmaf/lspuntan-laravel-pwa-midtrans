@@ -1,5 +1,6 @@
 <?php
 //ketika admin ngunggah sertifikat ke asesi
+//lets discuss ini perlu atau tidak utk yg push notif
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
@@ -13,25 +14,29 @@ class AsesiUploadTugasAsesmen extends Notification
     use Queueable;
     protected $sert_id;
     protected $asesi_id;
+    protected $body;
 
-    public function __construct($sert_id, $asesi_id)
+    public function __construct($sert_id, $asesi_id, $body)
     {
         $this->sert_id = $sert_id;
         $this->asesi_id = $asesi_id;
+        $this->body = $body;
+    }
+    /**
+     * Dapatkan channel notifikasi.
+     * Kita tidak lagi menggunakan channel 'database' bawaan.
+     * @return array<int, string>
+     */
+    public function via($notifiable): array
+    {
+        return [];
     }
 
-    public function via($notifiable)
+    public function getData(): array
     {
-        return ['database'];
-    }
-
-    public function toArray($notifiable)
-    {
-        $notificationId = $this->id; 
         return [
-            'message' => 'Asesi mengunggah tugas asesmennya.',
-            //tujuan functionnya ada di AsesmenController, function rincian_asesmen_asesi
-            'link' => route('admin.sertifikasi.rincian.assessment.asesi.index', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId]),
+            'message' => $this->body,
+            'link' => route('admin.sertifikasi.rincian.assessment.asesi.index', [$this->sert_id, $this->asesi_id]),
         ];
     }
 }

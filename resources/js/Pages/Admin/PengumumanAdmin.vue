@@ -3,6 +3,7 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import TextInput from "../../Components/TextInput.vue";
 import FileInput from "../../Components/FileInput.vue";
+import MultiFileInput from "../../Components/MultiFileInput.vue";
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
@@ -13,21 +14,20 @@ import AddButton from "../../Components/AddButton.vue";
 import EditButton from "../../Components/EditButton.vue";
 import DeleteButton from "../../Components/DeleteButton.vue";
 
-// 1. Terima props dari controller
 const props = defineProps({
     sertification: Object,
     pengumumans: Array,
 });
 
-// 2. State management untuk mode form
+
 const formMode = ref('list'); // 'list', 'create', 'edit'
 const editingPengumumanId = ref(null);
 
-// 3. Form helper Inertia
 const form = useForm({
     rincian_pengumuman_asesmen: '',
     newFiles: [],
-    _method: 'POST', // Untuk membedakan antara POST dan PUT
+    delete_files: [],
+    _method: 'POST',
 });
 
 const showCreateForm = () => {
@@ -37,8 +37,10 @@ const showCreateForm = () => {
 };
 
 const showEditForm = (pengumuman) => {
+    form.reset();
     form.rincian_pengumuman_asesmen = pengumuman.rincian_pengumuman_asesmen;
     form.newFiles = [];
+    form.delete_files = [];
     form._method = 'PATCH';
     editingPengumumanId.value = pengumuman.id;
     formMode.value = 'edit';
@@ -46,28 +48,20 @@ const showEditForm = (pengumuman) => {
 
 const cancelForm = () => {
     form.reset();
+    delete form._method;
     formMode.value = 'list';
     editingPengumumanId.value = null;
 };
 
 const submit = () => {
     if (formMode.value === 'create') {
-        form.post(route('admin.sertifikasi.assessment-announcement.store', {sert_id : props.sertification.id}), {
+        form.post(route('admin.sertifikasi.assessment-announcement.store', { sert_id: props.sertification.id }), {
             onSuccess: () => cancelForm(),
         });
     } else if (formMode.value === 'edit') {
-        // Gunakan form.post dengan _method 'PUT' untuk upload file
+
         form.post(route('admin.sertifikasi.assessment-announcement.update', { sert_id: props.sertification.id, peng_id: editingPengumumanId.value }), {
             onSuccess: () => cancelForm(),
-        });
-    }
-};
-
-// 6. Fungsi untuk menghapus file dan pengumuman
-const deleteFile = (fileId) => {
-    if (confirm('Yakin ingin menghapus file ini?')) {
-        router.delete(route('admin.sertifikasi.assessment-announcement.file.delete', fileId), {
-            preserveScroll: true,
         });
     }
 };
@@ -80,6 +74,8 @@ const deletePengumuman = (pengumumanId) => {
     }
 };
 
+const MAX_TOTAL_FILES = 5;
+
 
 </script>
 <template>
@@ -91,10 +87,8 @@ const deletePengumuman = (pengumumanId) => {
         </template>
         <div>
             <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
-            <div v-if="formMode === 'create' || formMode === 'edit'"
-                class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">{{ formMode === 'create' ?
-                    'BuatPengumuman' : 'Edit Pengumuman' }}</h2>
+            <div v-if="formMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit Pengumuman</h2>
                 <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
                     <div>
                         <InputLabel value="Rincian" />
@@ -103,36 +97,42 @@ const deletePengumuman = (pengumumanId) => {
                         <InputError :message="form.errors.rincian_pengumuman_asesmen" />
                     </div>
                     <div>
-                        <InputLabel value="Lampiran" />
-                        <!-- File yang sudah ada (hanya di mode edit) -->
-                        <div v-if="formMode === 'edit'" class="grid grid-cols-1 md:grid-cols-2 gap-2 my-2">
-                            <div v-for="file in props.pengumumans.find(p => p.id === editingPengumumanId)?.pengumumanasesmenfile"
-                                :key="file.id"
-                                class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-md text-xs text-blue-600 dark:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-600">
-                                <a :href="`/storage/${file.path_file}`" target="_blank"
-                                    class="text-blue-600 dark:text-blue-400 truncate flex-1">{{
-                                    file.path_file.split('/').pop() }}</a>
-                                <button type="button" @click="deleteFile(file.id)"
-                                    class="flex-shrink-0 p-1 rounded-full text-gray-500 hover:bg-gray-300 dark:hover:bg-gray-600">
-                                    <FontAwesomeIcon icon="fa-solid fa-xmark" />
-                                </button>
-                            </div>
-                        </div>
-                        <FileInput v-model="form.newFiles" accept="image/jpeg,image/png,application/pdf,docx" multiple />
-                        
-                        <InputError :message="form.errors.newFiles" />
-                        <InputError  :message="form.errors['newFiles.0']" />
-                        
+                        <MultiFileInput v-model="form.newFiles" v-model:deleteList="form.delete_files" label="Lampiran"
+                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xlx"
+                            :existing-files="props.pengumumans.find(p => p.id === editingPengumumanId)?.newsfiles || []"
+                            :error="form.errors.newFiles" :error-list="form.errors['newFiles.0']" required />
                     </div>
                     <div class="flex items-center gap-4 pt-2">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                            {{ formMode === 'edit' ? 'Update' : 'Simpan' }}
+                            Update
                         </PrimaryButton>
                         <SecondaryButton type="button" @click="cancelForm">Batal</SecondaryButton>
                     </div>
                 </form>
             </div>
-            <div v-else>
+            <div v-if="formMode === 'create'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Buat Pengumuman</h2>
+                <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
+                    <div>
+                        <InputLabel value="Rincian" />
+                        <textarea v-model="form.rincian_pengumuman_asesmen" rows="8"
+                            class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
+                        <InputError :message="form.errors.rincian_pengumuman_asesmen" />
+                    </div>
+                    <div>
+                        <MultiFileInput v-model="form.newFiles" label="Lampiran"
+                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xlx" :error="form.errors.newFiles"
+                            :error-list="form.errors['newFiles.0']" required />
+                    </div>
+                    <div class="flex items-center gap-4 pt-2">
+                        <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                            Simpan
+                        </PrimaryButton>
+                        <SecondaryButton type="button" @click="cancelForm">Batal</SecondaryButton>
+                    </div>
+                </form>
+            </div>
+            <div v-if="formMode === 'list'">
                 <div class="p-6 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <div class="flex justify-between items-center">
                         <p class="text-gray-500 dark:text-gray-400 text-xs">Buat pengumuman baru untuk para asesi.</p>
@@ -174,13 +174,15 @@ const deletePengumuman = (pengumumanId) => {
 
                         <h6 class="font-medium text-sm text-gray-800 dark:text-gray-100">{{
                             pengumuman.rincian_pengumuman_asesmen }}</h6>
-                        <div v-if="pengumuman.pengumumanasesmenfile.length > 0"
-                            class="mt-3 border-t dark:border-gray-700 pt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <a v-for="file in pengumuman.pengumumanasesmenfile" :key="file.id"
-                                :href="`/storage/${file.path_file}`" target="_blank"
-                                class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-md text-xs text-blue-600 dark:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-600">
-                                <span class="truncate">{{ file.path_file.split('/').pop() }}</span>
-                            </a>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                            <div v-if="pengumuman.newsfiles.length > 0" v-for="file in pengumuman.newsfiles"
+                                :key="file.id"
+                                class="flex items-center justify-between gap-4 px-3 py-2 border-1 border-gray-300 dark:border-gray-700 rounded-md text-xs">
+                                <a :href="`/storage/${file.path_file}`" target="_blank"
+                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
+                                    {{ file.path_file.split('/').pop() }}
+                                </a>
+                            </div>
                         </div>
                     </div>
 

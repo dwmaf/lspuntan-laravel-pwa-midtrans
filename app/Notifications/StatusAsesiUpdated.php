@@ -14,13 +14,13 @@ class StatusAsesiUpdated extends Notification
     use Queueable;
     protected $sert_id;
     protected $asesi_id;
-    protected $status;
+    protected $messageNotif;
 
-    public function __construct($sert_id, $asesi_id, $status)
+    public function __construct($sert_id, $asesi_id, $messageNotif)
     {
         $this->sert_id = $sert_id;
         $this->asesi_id = $asesi_id;
-        $this->status = $status;
+        $this->messageNotif = $messageNotif;
     }
 
     public function via($notifiable)
@@ -32,7 +32,7 @@ class StatusAsesiUpdated extends Notification
     {
         $notificationId = $this->id;
         return [
-            'message' => 'Status asesmen Anda diubah menjadi: ' . $this->status,
+            'message' => $this->messageNotif,
             //tujuan functionnya ada di KelolaSertifikasiAsesiController, function detail_applied_sertifikasi
             'link' => route('asesi.sertifikasi.applied.show', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId]),
         ];

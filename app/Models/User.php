@@ -56,6 +56,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Student::class);
     }
+    public function notificationLogs()
+    {
+        return $this->hasMany(NotificationLog::class);
+    }
     /**
      * Route notifications for the FCM channel.
      *

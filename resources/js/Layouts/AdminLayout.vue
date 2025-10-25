@@ -5,6 +5,7 @@ import NavLink from "@/Components/NavLink.vue";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
 import Navigation from "../Components/Navigation.vue";
 import TopNavigation from "../Components/TopNavigation.vue";
+import NotificationBell from "../Components/NotificationBell.vue";
 import { ref, computed, watch } from "vue";
 import { usePage } from "@inertiajs/vue3";
 
@@ -39,7 +40,7 @@ watch(notification, (newValue) => {
             </div>
         </Transition>
         <div class="flex min-h-screen bg-gray-100 dark:bg-gray-900">
-            <div class="hidden md:flex">
+            <div class="hidden md:flex relative z-30">
                 <Navigation/>
             </div>
 
@@ -48,12 +49,14 @@ watch(notification, (newValue) => {
                     <TopNavigation/>
                 </div>
                 <header
-                    class="bg-white dark:bg-gray-800 shadow-sm p-4 m-2 flex items-center justify-between relative z-10"
+                    class="bg-white dark:bg-gray-800 shadow-sm p-4 m-2 flex items-center justify-between relative"
                     v-if="$slots.header"
                 >
-                    <div class="flex-1">
+                    <div  class="flex-1">
                         <slot name="header" />
                     </div>
+                    <!-- <div v-else class="flex-1"></div> -->
+                    <NotificationBell/>
                 </header>
                 <main class="p-2">
                     <slot />

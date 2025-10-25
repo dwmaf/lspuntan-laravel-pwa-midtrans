@@ -9,7 +9,7 @@ return new class extends Migration
     // di sini tabel untuk nyimpan file" yg diattach mahasiswa ketika daftar sertifikasi
     public function up(): void
     {
-        Schema::create('asesiattachmentfiles', function (Blueprint $table) {
+        Schema::create('asesifiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('asesi_id')->constrained();
             $table->string('path_file')->nullable();

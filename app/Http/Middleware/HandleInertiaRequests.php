@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -43,6 +44,26 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),
             ],
+            'notifications' => function () {
+                /** @var App\Models\User $user*/
+                $user = Auth::user();
+
+                if ($user) {
+                    return [
+                        'unreadCount' => $user->notificationLogs()->whereNull('read_at')->count(),
+                        'latest' => $user->notificationLogs()->latest()->take(5)->get()->map(function ($notif) {
+                            return [
+                                'id'=> $notif->id,
+                                'message'=>$notif->message,
+                                'link' => $notif->link,
+                                'read_at' => $notif->read_at,
+                                'created_at' => $notif->created_at->diffForHumans(),
+                            ];
+                        }),
+                    ];
+                }
+                return null;
+            },
         ]);
     }
 }

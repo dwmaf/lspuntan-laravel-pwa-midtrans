@@ -12,20 +12,20 @@ const hasAdminRole = computed(() => roles.value.includes('admin'));
 const hasAsesorRole = computed(() => roles.value.includes('asesor'));
 const hasAsesiRole = computed(() => roles.value.includes('asesi'));
 const navLinks = computed(() => {
-    if (hasAdminRole || hasAsesorRole) {
+    if (hasAdminRole.value || hasAsesorRole.value) {
         const links = [
             { href: route('admin.dashboard'), label: 'Dashboard', active: route().current('admin.dashboard') },
             { href: route('admin.kelolasertifikasi.index'), label: 'Sertifikasi', active: route().current('admin.kelolasertifikasi.*') },
             { href: route('profile.edit'), label: 'Profile', active: route().current('profile.edit') },
         ];
-        if (hasAdminRole) {
+        if (hasAdminRole.value) {
             links.push(
                 { href: route('admin.skema.create'), label: 'Skema', active: route().current('admin.skema.*') },
                 { href: route('admin.asesor.index'), label: 'Asesor', active: route().current('admin.asesor.*') }
             );
         }
         return links;
-    } else if (hasAsesiRole) {
+    } else if (hasAsesiRole.value) {
         return [
             { href: route('asesi.dashboard'), label: 'Dashboard', active: route().current('asesi.dashboard') },
             { href: route('asesi.sertifikasi.index'), label: 'Sertifikasi', active: route().current('asesi.sertifikasi.*') },
@@ -78,12 +78,16 @@ const navLinks = computed(() => {
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
             <div class="space-y-1">
-                <!-- Authentication -->
-                <form @submit.prevent="$inertia.post(route('logout'))">
-                    <ResponsiveNavLink :href="route('logout')" as="button">
-                        Log Out
-                    </ResponsiveNavLink>
-                </form>
+                <ResponsiveNavLink :href="route('logout')" method="post" as="button">
+                    Log Out
+                </ResponsiveNavLink>
+                <!-- <ResponsiveNavLink
+                                :href="route('logout')"
+                                method="post"
+                                as="button"
+                            >
+                                Log Out
+                            </ResponsiveNavLink> -->
             </div>
         </div>
     </div>

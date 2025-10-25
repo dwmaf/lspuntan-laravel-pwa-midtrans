@@ -14,14 +14,20 @@ class PendaftarBaru extends Notification
 {
     use Queueable;
 
-    protected $asesi;
+    protected $asesi_id;
+    protected $sertification_id;
+    protected $nama_skema;
+    protected $name;
 
     /**
      * Buat instance notifikasi baru.
      */
-    public function __construct(Asesi $asesi)
+    public function __construct($name, $asesi_id, $sertification_id, $nama_skema)
     {
-        $this->asesi = $asesi;
+        $this->asesi_id = $asesi_id;
+        $this->sertification_id = $sertification_id;
+        $this->nama_skema = $nama_skema;
+        $this->name = $name;
     }
 
     /**
@@ -39,10 +45,9 @@ class PendaftarBaru extends Notification
     {
         $notificationId = $this->id; 
         return [
-            'message' => 'Pendaftar baru untuk sertifikasi: ' . $this->asesi->sertification->skema->nama_skema,
+            'message' => $this->name.' mendaftar untuk sertifikasi ' . $this->nama_skema,
             //tujuan functionnya ada di PendaftarController, function rincian_data_asesi
-            'link' => route('admin.sertifikasi.pendaftar.show', [$this->asesi->sertification->id, $this->asesi->id, 'notification_id' => $notificationId]), // Link menuju rincian pendaftar
-            'asesi_name' => $this->asesi->student->name,
+            'link' => route('admin.sertifikasi.pendaftar.show', [$this->sertification_id, $this->asesi_id, 'notification_id' => $notificationId]),
         ];
     }
 

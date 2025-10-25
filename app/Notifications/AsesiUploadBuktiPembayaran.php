@@ -13,11 +13,15 @@ class AsesiUploadBuktiPembayaran extends Notification
     use Queueable;
     protected $sert_id;
     protected $asesi_id;
+    protected $name;
+    protected $nama_skema;
 
-    public function __construct($sert_id, $asesi_id)
+    public function __construct($sert_id, $asesi_id, $name, $nama_skema)
     {
         $this->sert_id = $sert_id;
         $this->asesi_id = $asesi_id;
+        $this->name = $name;
+        $this->nama_skema = $nama_skema;
     }
 
     public function via($notifiable)
@@ -29,7 +33,7 @@ class AsesiUploadBuktiPembayaran extends Notification
     {
         $notificationId = $this->id;
         return [
-            'message' => 'Asesi mengunggah bukti pembayaran.',
+            'message' => $this->name.'mengunggah bukti pembayaran untuk sertifikasi'.$this->nama_skema,
             //tujuan functionnya ada di PendaftarController, function rincian_data_asesi
             'link' => route('admin.sertifikasi.pendaftar.show', [$this->sert_id, $this->asesi_id, 'notification_id' => $notificationId]),
         ];

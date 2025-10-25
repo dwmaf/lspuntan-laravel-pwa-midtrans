@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Praasesmenfile extends Model
+class NotificationLog extends Model
 {
     protected $guarded = [
         'id',
         'created_at',
         'updated_at',
     ];
-    public function sertification()
+    public function user()
     {
-        return $this->belongsTo(Sertification::class);
+        return $this->belongsTo(User::class);
     }
 }

@@ -1,8 +1,8 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 
-import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
-import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
+import UpdateProfileAdmin from './Partials/UpdateProfileAdmin.vue';
+import UpdatePasswordAdmin from './Partials/UpdatePasswordAdmin.vue';
 
 
 defineProps({
@@ -30,7 +30,7 @@ defineProps({
             <div
                 class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800"
             >
-                <UpdateProfileInformationForm
+                <UpdateProfileAdmin
                     :must-verify-email="mustVerifyEmail"
                     :status="status"
                     class="max-w-xl"
@@ -40,7 +40,7 @@ defineProps({
             <div
                 class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800"
             >
-                <UpdatePasswordForm class="max-w-xl" />
+                <UpdatePasswordAdmin class="max-w-xl" />
             </div>
 
         </div>

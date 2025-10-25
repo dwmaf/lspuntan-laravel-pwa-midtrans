@@ -5,15 +5,20 @@ namespace App\Http\Controllers\Asesi\Sertifikasi;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
-use App\Models\Tugasasesmenattachmentfile;
+use App\Models\NotificationLog;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
 use App\Models\Asesiasesmenfile;
-use App\Notifications\AsesiUploadBuktiPembayaran;
 use App\Notifications\AsesiUploadTugasAsesmen;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Notification;
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification; // <-- IMPORT INI
+use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Exception\Messaging\NotFound;
 
 class AsesmenAsesiController extends Controller
 {
@@ -21,59 +26,72 @@ class AsesmenAsesiController extends Controller
     public function index_asesmen_asesi($sert_id, $asesi_id, Request $request)
     {
         // dd($id);
-        NotificationController::markAsRead(($request));
-        return Inertia::render('asesi.sertifikasi.asesmen.asesi-index-asesmen', [
-            'sertification' => Sertification::with('pembuatrinciantugasasesmen.asesor')->findOrFail($sert_id),
-            'asesi' => Asesi::with('asesiasesmenfiles')->findOrFail($asesi_id)
+        NotificationController::markAsRead($request);
+        $asesi = Asesi::with(['asesiasesmenfiles', 'transaction' => fn($q) => $q->latest()])->findOrFail($asesi_id);
+        $asesi->latest_transaction = $asesi->transaction->first();
+        return Inertia::render('Asesi/AsesmenAsesi', [
+            'sertification' => Sertification::with('pembuatrinciantugasasesmen.asesor', 'asesmenfiles')->findOrFail($sert_id),
+            'asesi' => $asesi
         ]);
     }
 
-    public function update_asesmen_asesi($sert_id, $asesi_id, Request $request)
+    public function update_asesmen_asesi($sert_id, $asesi_id, Request $request, Messaging $messaging)
     {
         // dd($request);
         $request->validate([
-            'asesiasesmenfiles' => 'required|array|max:5',
-            'asesiasesmenfiles.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120', // 5MB
+            'newFiles' => 'nullable|array|max:5',
+            'newFiles.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120', // 5MB
+            'delete_files' => 'nullable|array',
+            'delete_files.*' => 'integer|exists:asesiasesmenfiles,id',
         ]);
-        if ($request->hasFile('asesiasesmenfiles')) {
-            // 1. Hapus file lama dari DB dan storage untuk tipe ini
-            $oldFiles = Asesiasesmenfile::where('asesi_id', $asesi_id)
-                ->get();
-            foreach ($oldFiles as $oldFile) {
-                if ($oldFile && Storage::disk('public')->exists($oldFile->path_file)) {
-                    Storage::disk('public')->delete($oldFile->path_file);
-                }
-                $oldFile->delete();
+        if ($request->filled('delete_files')) {
+            $filesToDelete = Asesiasesmenfile::whereIn('id', $request->delete_files)->get();
+            foreach ($filesToDelete as $file) {
+                Storage::disk('public')->delete($file->path_file);
+                $file->delete();
             }
-            foreach ($request->file('asesiasesmenfiles') as $file) {
-                $fileData = FileHelper::storeFileWithUniqueName($file, "asesi_asesmen_attachments");
+        }
+        if ($request->hasFile('newFiles')) {
+            foreach ($request->file('newFiles') as $file) {
+                $fileData = FileHelper::storeFileWithUniqueName($file, "asesi_files")['path'];
                 Asesiasesmenfile::create([
                     'asesi_id' => $asesi_id,
-                    'path_file' => $fileData['path'],
+                    'path_file' => $fileData,
                 ]);
             }
         }
-        // ambil semua Asesi yang cocok
-        $sertification = Sertification::with(['asesor.user']) // pastikan relasi student->user ada
-            ->find($sert_id);
-        $asesor = $sertification->asesor->user;
-        $asesor->notify(new AsesiUploadTugasAsesmen($sert_id, $asesi_id));
-        
-        return redirect()->back()->with('message', 'Berhasil unggah file asesmen.');
-    }
-
-    // fungsi ajax buat hapus file dari tugas asesmen
-    public function destroyTugasAsesmenFile($file_id)
-    {
-        $file = Asesiasesmenfile::find($file_id);
-        if ($file) {
-            // Hapus file fisik
-            if (Storage::disk('public')->exists($file->path_file)) {
-                Storage::disk('public')->delete($file->path_file);
-            }
-            // Hapus record database
-            $file->delete();
-            return redirect()->back()->with('message', 'File berhasil dihapus.');
+        $remainingFilesCount = Asesiasesmenfile::where('asesi_id', $asesi_id)->count();
+        if ($remainingFilesCount === 0) {
+            return redirect()->back()->withErrors(['newFiles' => 'Anda harus mengumpulkan setidaknya satu file.']);
         }
+        $asesi = Asesi::with('student.user')->findOrFail($asesi_id);
+        $sertification = Sertification::with(['asesor.user', 'skema'])
+            ->findOrFail($sert_id);
+        $asesor = $sertification->asesor->user;
+        if ($asesor) {
+            $body = $asesi->student->user->name . ' mengunggah tugas asesmen untuk sertifikasi ' . $sertification->skema->nama_skema;
+            $url = route('admin.sertifikasi.rincian.assessment.asesi.index', ['sert_id' => $sertification->id, 'asesi_id' => $asesi_id]);
+            NotificationLog::create([
+                'user_id' => $asesor->id,
+                'type' => 'AsesiUploadTugasAsesmen',
+                'message' => $body,
+                'link' => $url,
+            ]);
+            if ($asesor->fcm_token) {
+                $message = CloudMessage::new()
+                    ->withNotification(FirebaseNotification::create($body))
+                    ->withData(['url' => $url]);
+                try {
+                    $messaging->send($message->toToken($asesor->fcm_token));
+                } catch (NotFound $e) {
+                    Log::warning("Token FCM tidak valid untuk user {$asesor->id}. Menghapus token.");
+                    $asesor->update(['fcm_token' => null]);
+                } catch (\Throwable $e) {
+                    Log::error("Gagal mengirim notifikasi asesi mendaftar sertifikasi ke user {$asesor->id}: " . $e->getMessage());
+                }
+            }
+        }
+
+        return redirect()->back()->with('message', 'Berhasil unggah file asesmen.');
     }
 }

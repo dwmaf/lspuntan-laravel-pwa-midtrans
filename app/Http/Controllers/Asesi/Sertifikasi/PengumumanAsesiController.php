@@ -16,15 +16,18 @@ class PengumumanAsesiController extends Controller
 {
 
     // buat nampilin daftar sertifikasi yg tersedia di sisi asesi
-    public function index_pengumuman_asesi($sert_id, $asesi_id,  Request $request)
+    public function index_pengumuman_asesi($sert_id, $asesi_id, Request $request)
     {
         // dd($request);
         NotificationController::markAsRead($request);
-        $sertification = Sertification::with('pengumumanasesmen.pembuatpengumuman.asesor','pengumumanasesmen.pengumumanasesmenfile')->findOrFail($sert_id);
-        return Inertia::render('asesi.sertifikasi.pengumuman.index-pengumuman-asesi', [
-            'pengumumans' => $sertification->pengumumanasesmen,
+        $sertification = Sertification::with('news.pembuatpengumuman','news.newsfiles')->findOrFail($sert_id);
+        $asesi = Asesi::with(['student','transaction' => fn($q) => $q->latest()])->findOrFail($asesi_id);
+        $asesi->latest_transaction = $asesi->transaction->first();
+        return Inertia::render('Asesi/PengumumanAsesi', [
+            'pengumumans' => $sertification->news,
             'sertification' => $sertification,
-            'asesi' => Asesi::with('student')->findOrFail($asesi_id)
+            'asesi' => $asesi,
+            'initialNewsId' => $request->query('news_id'),
         ]);
     }
 

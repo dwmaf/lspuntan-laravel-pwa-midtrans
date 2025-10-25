@@ -4,6 +4,7 @@ use App\Http\Middleware\RedirectIfAuthenticated as MiddlewareRedirectIfAuthentic
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 
@@ -12,6 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__ . '/../routes/web.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
+        then: function () {
+            Route::get('/offline', \App\Http\Controllers\OfflineController::class)
+                 ->name('laravelpwa.offline');
+        }
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
@@ -20,7 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'guest' => MiddlewareRedirectIfAuthenticated::class
         ]);
-
+        // $middleware->web(prepend: [
+        //     \App\Http\Middleware\PreventInertiaOnOffline::class,
+        // ]);
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);

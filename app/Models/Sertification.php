@@ -28,17 +28,13 @@ class Sertification extends Model
     {
         return $this->hasMany(Asesi::class);
     }
-    public function praasesmenfile()
+    public function news()
     {
-        return $this->hasMany(Praasesmenfile::class);
+        return $this->hasMany(News::class);
     }
-    public function pengumumanasesmen()
+    public function asesmenfiles()
     {
-        return $this->hasMany(Pengumumanasesmen::class);
-    }
-    public function tugasasesmenattachmentfile()
-    {
-        return $this->hasMany(Tugasasesmenattachmentfile::class);
+        return $this->hasMany(Asesmenfile::class);
     }
     public function pembuatrincianpembayaran()
     {
@@ -52,12 +48,17 @@ class Sertification extends Model
 
     public const RINCIAN_DEFAULT = 'Silahkan buat rincian pembayaran...';
     public const RINCIAN_DEFAULT_ASESMEN = 'Silahkan buat rincian tugas asesmen...';
-
+    protected $appends = [
+        'batas_pengumpulan_tugas_asesmen_formatted',
+        'batas_pembayaran_formatted',
+        'tanggal_rincian_asesmen_dibuat_formatted',
+        'tanggal_rincian_bayar_dibuat_formatted',
+    ];
     protected $casts = [
-        'rincianbayar_createdat' => 'datetime',
-        'tgl_bayar_ditutup' => 'datetime',
-        'tugasasesmen_createdat' => 'datetime',
-        'batas_pengumpulan_tugas_asesmen' => 'datetime',
+        'rincianbayar_createdat' => 'string',
+        'tgl_bayar_ditutup' => 'string',
+        'tugasasesmen_createdat' => 'string',
+        'batas_pengumpulan_tugas_asesmen' => 'string',
     ];
 
     protected function punyaRincianPembayaran(): Attribute
@@ -71,13 +72,18 @@ class Sertification extends Model
     {
         return Attribute::make(
             get: function () {
-                if (!$this->rincianbayar_createdat) {
+                $dateString = $this->rincianbayar_createdat;
+                if (!$dateString) {
                     return 'N/A';
                 }
-                if ($this->rincianbayar_createdat->isToday()) {
-                    return $this->rincianbayar_createdat->format('H:i');
+
+                // Konversi string kembali ke objek Carbon
+                $carbonDate = Carbon::parse($dateString);
+
+                if ($carbonDate->isToday()) {
+                    return $carbonDate->format('H:i');
                 }
-                return $this->rincianbayar_createdat->format('d M Y');
+                return $carbonDate->format('d M Y');
             }
         );
     }
@@ -93,25 +99,43 @@ class Sertification extends Model
     {
         return Attribute::make(
             get: function () {
-                if (!$this->tugasasesmen_createdat) {
+                $dateString = $this->tugasasesmen_createdat;
+                if (!$dateString) {
                     return 'N/A';
                 }
-                if ($this->tugasasesmen_createdat->isToday()) {
-                    return $this->tugasasesmen_createdat->format('H:i');
+
+                // Konversi string kembali ke objek Carbon
+                $carbonDate = Carbon::parse($dateString);
+
+                if ($carbonDate->isToday()) {
+                    return $carbonDate->format('H:i');
                 }
-                return $this->tugasasesmen_createdat->format('d M Y');
+                return $carbonDate->format('d M Y');
             }
         );
     }
 
-    protected function batasPengumpulanFormatted(): Attribute
+    protected function batasPengumpulanTugasAsesmenFormatted(): Attribute
     {
         return Attribute::make(
             get: function () {
-                if (!$this->batas_pengumpulan_tugas_asesmen) {
-                    return 'Tidak ada batas pengumpulan';
+                $batas = $this->batas_pengumpulan_tugas_asesmen;
+                if (!$batas) {
+                    return '-';
                 }
-                return $this->batas_pengumpulan_tugas_asesmen->format('d M Y H:i');
+                return Carbon::parse($batas)->locale('id')->isoFormat('D MMMM YYYY, [pukul] HH:mm');
+            }
+        );
+    }
+    protected function batasPembayaranFormatted(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $batas = $this->tgl_bayar_ditutup;
+                if (!$batas) {
+                    return '-';
+                }
+                return Carbon::parse($batas)->locale('id')->isoFormat('D MMMM YYYY, [pukul] HH:mm');
             }
         );
     }
@@ -119,17 +143,15 @@ class Sertification extends Model
     protected static function booted(): void
     {
         static::deleting(function (Sertification $sertification) {
-            // 1. Hapus semua file lampiran tugas asesmen terkait
-            foreach ($sertification->tugasasesmenattachmentfile as $file) {
+            foreach ($sertification->asesmenfiles as $file) {
                 if ($file->path_file) {
                     Storage::disk('public')->delete($file->path_file);
                 }
-                $file->delete(); // Hapus record dari database
+                $file->delete();
             }
 
-            // 2. Hapus semua pengumuman asesmen terkait (ini akan memicu event di model PengumumanAsesmen)
-            foreach ($sertification->pengumumanasesmen as $pengumuman) {
-                $pengumuman->delete(); // Memanggil delete() akan memicu event di model anak
+            foreach ($sertification->news as $pengumuman) {
+                $pengumuman->delete();
             }
         });
     }

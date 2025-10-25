@@ -16,7 +16,6 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 class AsesorController extends Controller
 {
-    // buat nampilin daftar asesor sekaligus untuk nambah asesor
     public function index()
     {
         return Inertia::render('Admin/AsesorAdmin', [
@@ -25,8 +24,6 @@ class AsesorController extends Controller
         ]);
     }
 
-
-    // buat nyimpan asesor baru sekaligus ngirim email ke mereka buat password baru untuk akun mereka
     public function store(Request $request)
     {
         // dd($request);
@@ -38,37 +35,27 @@ class AsesorController extends Controller
             'selectedSkemas.*' => ['exists:skemas,id'],
         ]);
         DB::transaction(function () use ($request) {
-            // 1. Buat user baru dengan password acak yang sangat aman
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'no_tlp_hp' => $request->no_tlp_hp,
-                // Password ini tidak akan pernah digunakan oleh user, hanya sebagai placeholder
                 'password' => Hash::make(Str::random(16)), 
             ]);
-
-            // 2. Beri peran 'asesor'
             $user->assignRole('asesor');
-
-            // 3. Buat data asesor
             $asesor = Asesor::create([
                 'user_id' => $user->id,
             ]);
-
-            // 4. Hubungkan asesor dengan skema yang dipilih
             $asesor->skemas()->attach($request->selectedSkemas);
-
-            // 5. Tandai email sebagai terverifikasi & kirim notifikasi setup password
-            $user->markEmailAsVerified(); // <-- Tandai email sudah verified
-            $user->notify(new AsesorAccountCreated()); // <-- Kirim notifikasi baru
+            $user->markEmailAsVerified();
+            $user->notify(new AsesorAccountCreated());
         });
         
-        return redirect('/admin/asesor')->with('message','Data asesor berhasil ditambah, Asesor akan menerima Email untuk buat password');
+        return redirect(route('admin.asesor.index'))->with('message','Data asesor berhasil ditambah, Asesor akan menerima Email untuk buat password');
     }
 
-    // buat mengupdate akun asesor mereka yg udh diedit
-    public function update(Request $request, Asesor $asesor)
+    public function update($asesor_id, Request $request)
     {
+        $asesor = Asesor::findOrFail($asesor_id);
         $user_asesor = $asesor->user;
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -78,28 +65,30 @@ class AsesorController extends Controller
             'selectedSkemas' => ['required', 'array'],
             'selectedSkemas.*' => ['exists:skemas,id'],
         ]);
-        
-        $userData = ['email'=>$request->email, 'no_tlp_hp'=>$request->no_tlp_hp, 'name'=>$request->name];
-        if ($request->filled('password')) {
-            $userData['password'] = Hash::make($request->password);
-        }
-        
-        $user_asesor->update($userData);
-        $asesor->skemas()->sync($request->selectedSkemas);
+        DB::transaction(function () use ($request, $asesor, $user_asesor) {
+            $userData = ['email'=>$request->email, 'no_tlp_hp'=>$request->no_tlp_hp, 'name'=>$request->name];
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+            
+            $user_asesor->update($userData);
+            $asesor->skemas()->sync($request->selectedSkemas);
+        });
 
-        return redirect('/admin/asesor')->with('message','Data asesor berhasil diperbaharui');
+        return redirect(route('admin.asesor.index'))->with('message','Data asesor berhasil diperbaharui');
     }
 
-    // buat menghapus akun asesor
-    public function destroy(Asesor $asesor)
+    public function destroy($asesor_id)
     {
+        $asesor = Asesor::findOrFail($asesor_id);
         $user = $asesor->user;
-        // dd($user);
-        $asesor->skemas()->detach();
-        $asesor->delete();
-        if($user) {
-            $user->delete();
-        }
-        return redirect('/asesor')->with('message','Data asesor berhasil dihapus');
+        DB::transaction(function () use($asesor, $user) {
+            $asesor->skemas()->detach();
+            $asesor->delete();
+            if($user) {
+                $user->delete();
+            }
+        });
+        return redirect(route('admin.asesor.index'))->with('message','Data asesor berhasil dihapus');
     }
 }

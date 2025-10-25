@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('tujuan_sert');
             $table->string('apl_1');
             $table->string('apl_2');
+            $table->string('foto_ktm')->nullable();
+            $table->text('catatan_perbaikan')->nullable();
             $table->timestamps();
         });
     }
