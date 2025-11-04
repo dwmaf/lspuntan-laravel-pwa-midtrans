@@ -17,13 +17,9 @@ const selectedNews = ref(null);
 const formatDate = (dateString) => {
     const date = new Date(dateString);
     const today = new Date();
-
-    
     if (date.toDateString() === today.toDateString()) {
         return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     }
-
-    
     return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
@@ -46,10 +42,10 @@ const showList = () => {
 }
 
 onMounted(() => {
-    if(props.initialNewsId){
+    if (props.initialNewsId) {
         const newsToOpen = props.pengumumans.find(p => p.id == props.initialNewsId);
         if (newsToOpen) {
-            console.log('pengumuman ditemukan, id pengumuman: ',newsToOpen.value)
+            console.log('pengumuman ditemukan, id pengumuman: ', newsToOpen.value)
             showDetail(newsToOpen);
         }
     }
@@ -72,10 +68,8 @@ onMounted(() => {
             <div v-if="props.pengumumans.length > 0" class="space-y-4">
                 <div v-for="pengumuman in props.pengumumans" :key="pengumuman.id"
                     class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                    <!-- Header Pengumuman -->
                     <div class="flex items-center gap-3 mb-4">
                         <div class="flex-shrink-0">
-                            <!-- Avatar -->
                             <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
                                 fill="currentColor" viewBox="0 0 24 24">
                                 <path
@@ -93,16 +87,14 @@ onMounted(() => {
                             </div>
                         </div>
                     </div>
-
-                    <!-- Isi Pengumuman -->
                     <div v-html="truncateText(pengumuman.rincian_pengumuman_asesmen)"
                         class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-100"></div>
                     <div class="mt-3">
-                        <button @click="showDetail(pengumuman)" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                        <button @click="showDetail(pengumuman)"
+                            class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                             Baca Selengkapnya
                         </button>
                     </div>
-
                     <div v-if="pengumuman.newsfiles.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                         <div v-for="file in pengumuman.newsfiles" :key="file.id"
                             class="flex items-center justify-between gap-4 px-3 py-2 border-1 border-gray-300 dark:border-gray-700 rounded-md text-xs">
@@ -120,17 +112,16 @@ onMounted(() => {
         </div>
         <div class="max-w-7xl mx-auto" v-if="showMode === 'show' && selectedNews">
             <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                <!-- Tombol Kembali -->
                 <button @click="showList"
                     class="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline mb-4">
                     &larr;
                     Kembali ke Daftar
                 </button>
 
-                
+
                 <div class="flex items-center gap-3 mb-4">
                     <div class="flex-shrink-0">
-                        
+
                         <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
                             fill="currentColor" viewBox="0 0 24 24">
                             <path
@@ -149,11 +140,11 @@ onMounted(() => {
                     </div>
                 </div>
 
-                
+
                 <div v-html="selectedNews.rincian_pengumuman_asesmen"
                     class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-100"></div>
 
-                
+
                 <div v-if="selectedNews.newsfiles.length > 0"
                     class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4 pt-4 dark:border-gray-700">
                     <div v-for="file in selectedNews.newsfiles" :key="file.id"

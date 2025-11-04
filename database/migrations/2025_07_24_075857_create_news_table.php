@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    // tabel untuk nyimpan daftar pengumuman asesmen, bisa aja jika ada lebih dari 1 pengumuman yg akan dibuat
     public function up(): void
     {
         Schema::create('news', function (Blueprint $table) {

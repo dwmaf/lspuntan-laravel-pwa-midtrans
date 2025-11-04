@@ -9,8 +9,20 @@ import TopNavigation from "../Components/TopNavigation.vue";
 import { Link } from "@inertiajs/vue3";
 import { ref, computed, watch } from "vue";
 import { usePage } from "@inertiajs/vue3";
+import { UserCircle } from "lucide-vue-next";
 
 const page = usePage();
+const user = computed(() => page.props.auth.user)
+const userInitials = computed(() => {
+    if(user.value && user.value.name) {
+        const parts = user.value.name.split(' ');
+        if(parts.length === 1) {
+            return parts[0][0].toUpperCase();
+        }
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return null;
+});
 const notification = computed(() => page.props.flash?.message);
 const isNotificationVisible = ref(false);
 let notificationTimer = null;
@@ -60,6 +72,13 @@ const showingNavigationDropdown = ref(false);
                         <slot name="header" />
                     </div>
                     <NotificationBell/>
+                    <div class="ml-4">
+                        <div v-if="userInitials"
+                            class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
+                            {{ userInitials }}
+                        </div>
+                        <UserCircle stroke-width="1" v-else class="w-8 h-8 text-gray-500" />
+                    </div>
                 </header>
                 <main class="p-2">
                     <slot />

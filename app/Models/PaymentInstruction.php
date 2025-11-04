@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class Newsfile extends Model
+class PaymentInstruction extends Model
 {
     use LogsActivity;
     protected $guarded = [
@@ -14,18 +14,19 @@ class Newsfile extends Model
         'created_at',
         'updated_at',
     ];
-    public function announcement()
-    {
-        return $this->belongsTo(News::class);
-    }
+    
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->useLogName('File Pengumuman')
-            ->setDescriptionForEvent(fn(string $eventName) => "File lampiran untuk pengumuman (ID: {$this->news_id}) telah di-{$eventName}")
+            ->useLogName('Instruksi Pembayaran')
+            ->setDescriptionForEvent(fn(string $eventName) => "Instruksi Pembayaran telah di-{$eventName}")
             ->logOnlyDirty()
             ->logOnly([
-                'path_file',
+                'content',
+                'sertification_id',
+                'deadline',
+                'biaya',
+                'published_at',
             ]);
     }
 }

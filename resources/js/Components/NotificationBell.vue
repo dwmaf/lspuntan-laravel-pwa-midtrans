@@ -18,8 +18,13 @@ const markAllRead = async () => {
     }
 };
 
-const linkWithId = (link) => {
-    return 'link'.'?notification_id='.link.id;
+const linkWithId = (notif) => {
+    const baseUrl = notif.link;
+    if (!baseUrl) {
+        return '#';
+    }
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    return `${baseUrl}${separator}notification_id=${notif.id}`;
 }
 
 </script>
@@ -44,7 +49,7 @@ const linkWithId = (link) => {
             style="display: none;">
             <div class="max-h-64 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-600">
                 <div v-if="latestNotifications.length > 0">
-                    <Link v-for="notif in latestNotifications" :key="notif.id" :href="linkWithId(notif.link)"
+                    <Link v-for="notif in latestNotifications" :key="notif.id" :href="linkWithId(notif)"
                         class=" block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600"
                         @click="showNotifikasi = false">
                     <div class="flex items-start justify-between ">
@@ -52,7 +57,7 @@ const linkWithId = (link) => {
                             class="truncate">
                             {{ notif.message }}  
                         </div>
-                        <div class="text-xs text-gray-500 ml-2 flex-shrink-0">{{ notif.created_at }}</div>
+                        <div class="text-xs text-gray-500 ml-2 shrink-0">{{ notif.created_at }}</div>
                     </div>
                     </Link>
                 </div>
@@ -81,13 +86,13 @@ const linkWithId = (link) => {
             </div>
             <div class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-600">
                 <div v-if="latestNotifications.length > 0">
-                    <Link v-for="notif in latestNotifications" :key="notif.id" :href="notif.link"
+                    <Link v-for="notif in latestNotifications" :key="notif.id" :href="linkWithId(notif)"
                         class="block px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
                         @click="showNotifikasi = false">
                     <div class="flex items-start justify-between">
                         <div :class="[!notif.read_at ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400']"
                             class="truncate pr-2">{{ notif.message }}</div>
-                        <div class="text-xs text-gray-500 ml-2 flex-shrink-0">{{ notif.created_at }}</div>
+                        <div class="text-xs text-gray-500 ml-2 shrink-0">{{ notif.created_at }}</div>
                     </div>
                     </Link>
                 </div>

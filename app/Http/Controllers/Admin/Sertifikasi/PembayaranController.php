@@ -23,34 +23,31 @@ class PembayaranController extends Controller
     public function index_rincian_pembayaran($sert_id, Request $request)
     {
         return Inertia::render('Admin/PembayaranAdmin', [
-            'sertification' => Sertification::with('pembuatrincianpembayaran')->find($sert_id)
+            'sertification' => Sertification::with('paymentInstruction')->find($sert_id)
         ]);
     }
 
     public function update_rincian_pembayaran($sert_id, Request $request, Messaging $messaging)
     {
         // dd($request);
-        $request->validate([
-            'rincian_pembayaran' => 'required|string',
-            'tgl_bayar_ditutup' => 'required|date',
-            'harga' => 'required|numeric|min:0',
+        $validatedData = $request->validate([
+            'content' => 'required|string',
+            'deadline' => 'required|date',
+            'biaya' => 'required|numeric|min:0',
+            'is_published' => 'required|boolean'
         ]);
 
         $sertification = Sertification::with('skema')->findOrFail($sert_id);
-        $sertification->fill($request->only([
-            'rincian_pembayaran',
-            'tgl_bayar_ditutup',
-            'harga',
-        ]));
-        $sertification->rincian_pembayaran = $request->rincian_pembayaran;
-        $sertification->rincianbayar_madeby = $request->user()->id;
-        if (is_null($sertification->rincianbayar_createdat)) {
-            $sertification->rincianbayar_createdat = now();
-        } else {
-            $sertification->rincianbayar_updatedat = now();
-        }
-        $sertification->save();
-
+        $sertification->paymentInstruction()->updateOrCreate(
+            ['sertification_id' => $sertification->id],
+            [
+                'content' => $validatedData['content'],
+                'biaya' => $validatedData['biaya'],
+                'deadline' => $validatedData['deadline'],
+                'user_id' => $request->user()->id,
+                'published_at' => $request->boolean('is_published') ? now() : null,
+            ]
+        );
 
         $asesis = Asesi::with(['student.user'])
             ->where('sertification_id', $sert_id)
@@ -70,7 +67,7 @@ class PembayaranController extends Controller
                         'link' => $url,
                     ]);
                 }
-                if ($user->fcm_token){
+                if ($user->fcm_token) {
                     $message = CloudMessage::new()
                         ->withNotification(FirebaseNotification::create($body))
                         ->withData(['url' => $url]);

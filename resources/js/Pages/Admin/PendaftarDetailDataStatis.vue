@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import FileIcon from '../../Components/FileIcon.vue';
+import FileIcon from '@/Components/FileIcon.vue';
 const props = defineProps({
     asesi: Object,
 });
@@ -145,7 +145,7 @@ const getFileName = (path) => {
             ]" :key="file.label">
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">{{ file.label }}</dt>
                 <dd class="mt-1 text-sm min-w-0">
-                    <a v-if="file.path" :href="`/storage/${file.path}`" class="flex items-center gap-2 group min-w-0">
+                    <a v-if="file.path" :href="`/storage/${file.path}`" target="_blank" class="flex items-center gap-2 group min-w-0">
                         <FileIcon :path="file.path" />
                         <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">{{
                             file.path.split('/').pop() }}</span>
@@ -164,7 +164,7 @@ const getFileName = (path) => {
                 <dd class="mt-1 text-sm min-w-0">
                     <ul v-if="fileGroup.files.length > 0" class="flex flex-col gap-2">
                         <li v-for="file in fileGroup.files" :key="file.id">
-                            <a v-if="file.path_file" :href="`/storage/${file.path_file}`"
+                            <a v-if="file.path_file" target="_blank" :href="`/storage/${file.path_file}`"
                                 class="flex items-center gap-2 group min-w-0">
                                 <FileIcon :path="file.path_file" />
                                 <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">{{

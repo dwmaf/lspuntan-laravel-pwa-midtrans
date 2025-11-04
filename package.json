@@ -19,17 +19,17 @@
         "vite": "^6.0"
     },
     "dependencies": {
-        "@fortawesome/fontawesome-svg-core": "^7.0.1",
-        "@fortawesome/free-solid-svg-icons": "^7.0.1",
-        "@fortawesome/vue-fontawesome": "^3.1.2",
         "@inertiajs/vue3": "^2.2.3",
+        "@tabler/icons-vue": "^3.35.0",
         "@tiptap/core": "^3.0.9",
         "@tiptap/extension-underline": "^3.0.9",
         "@tiptap/starter-kit": "^3.0.9",
         "axios": "1.7.4",
         "firebase": "^12.2.1",
         "jquery": "^3.7.1",
+        "lucide-vue-next": "^0.548.0",
         "vue": "^3.5.22",
+        "vue-multiselect": "^3.4.0",
         "ziggy-js": "^2.6.0"
     }
 }

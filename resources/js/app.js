@@ -1,12 +1,4 @@
 import "./bootstrap";
-// import "trix";
-// import "trix/dist/trix.css";
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket, faCalendarDays, faMoneyBill1Wave, faEye, faEyeSlash, faCircleXmark, faXmark, faLock, faTrash, faImage } from '@fortawesome/free-solid-svg-icons'
-
-library.add(faGauge, faCertificate, faBook, faUser, faChalkboardTeacher, faRightFromBracket, faCalendarDays, faMoneyBill1Wave, faEye, faEyeSlash, faCircleXmark, faXmark, faLock, faTrash, faImage)
-
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -20,7 +12,6 @@ createInertiaApp({
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue, props.initialPage.props.ziggy)
-            .component('FontAwesomeIcon', FontAwesomeIcon)
             .mount(el);
     },
     progress: {
@@ -205,7 +196,7 @@ function requestPermissionAndGetToken() {
         if (permission === 'granted') {
             console.log('Notification permission granted.');
             // Dapatkan token
-            getToken(messaging, { vapidKey: 'BMrTLuoCHunyHVyUW3iA8b-_os4U84ESXBG-NMch2nR6gFRCaiO5xYcbU2p1S_ZFr95JSCXHvCNvNj3YWX8D75k' }) // Ganti dengan VAPID key Anda
+            getToken(messaging, { vapidKey: 'BMrTLuoCHunyHVyUW3iA8b-_os4U84ESXBG-NMch2nR6gFRCaiO5xYcbU2p1S_ZFr95JSCXHvCNvNj3YWX8D75k' })
                 .then((currentToken) => {
                     if (currentToken) {
                         console.log('FCM Token:', currentToken);

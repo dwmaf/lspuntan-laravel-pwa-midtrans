@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Asesi extends Model
 {
+    use LogsActivity;
     /** @use HasFactory<\Database\Factories\AsesiFactory> */
     protected $guarded = [
         'id',
@@ -40,5 +43,22 @@ class Asesi extends Model
     public function sertifikat()
     {
         return $this->hasOne(Sertifikat::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Asesi')
+            ->setDescriptionForEvent(fn(string $eventName) => "Data asesi {$this->student->user->name} telah di-{$eventName}")
+            ->logOnlyDirty()
+            ->logOnly([
+                'status',
+                'sertification_id',
+                'catatan_perbaikan',
+                'apl_1',
+                'apl_2',
+                'foto_ktm',
+            ]);
+
     }
 }

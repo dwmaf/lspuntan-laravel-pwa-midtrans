@@ -20,18 +20,17 @@ use Kreait\Firebase\Exception\Messaging\NotFound;
 
 class AsesmenController extends Controller
 {
-    public function edit($id)
+    public function edit($id, Request $request)
     {
         // dd($id);
         $sertification = Sertification::with([
-            'asesi.transaction',
-            'asesi.student.user',
-            'asesi.asesiasesmenfiles',
-            'pembuatrinciantugasasesmen',
-            'asesmenfiles'
+            'asesis.transaction',
+            'asesis.student.user',
+            'asesis.asesiasesmenfiles',
+            'asesmen.asesmenfiles'
         ])->findOrFail($id);
 
-        $filteredAsesi = $sertification->asesi->filter(function ($asesi) {
+        $filteredAsesi = $sertification->asesis->filter(function ($asesi) {
             $latestTransaction = $asesi->transaction->sortByDesc('created_at')->first();
             return $asesi->status === 'dilanjutkan_asesmen'
                 && $latestTransaction
@@ -40,48 +39,47 @@ class AsesmenController extends Controller
 
         return Inertia::render('Admin/AsesmenAdmin', [
             'sertification' => $sertification,
-            'filteredAsesi' => $filteredAsesi
+            'filteredAsesi' => $filteredAsesi,
+            'initialAsesiId' => $request->query('asesi_id'),
         ]);
     }
 
     public function update_tugas_asesmen($sert_id, Request $request, Messaging $messaging)
     {
         // dd($request);
-        $request->validate([
-            'rincian_tugas_asesmen' => 'required|string',
-            'batas_pengumpulan_tugas_asesmen' => 'nullable|date',
+        $validatedData = $request->validate([
+            'content' => 'required|string',
+            'is_published' => 'required|boolean',
+            'deadline' => 'nullable|date',
             'newFiles' => 'nullable|array|max:5',
             'newFiles.*' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,pdf,docx,pptx,xls,xlsx',
             'delete_files_collection' => 'nullable|array',
             'delete_files_collection.*' => 'integer|exists:asesmenfiles,id',
         ]);
-        if ($request->has('delete_files_collection')) {
+        $sertification = Sertification::with('skema')->findOrFail($sert_id);
+        $asesmen = $sertification->asesmen()->updateOrCreate(
+            ['sertification_id' => $sertification->id],
+            [
+                'content' => $validatedData['content'],
+                'deadline' => $validatedData['deadline'],
+                'user_id' => $request->user()->id,
+                'published_at' => $request->boolean('is_published') ? now() : null,
+            ]
+        );
+        if ($request->filled('delete_files_collection')) {
             $filesToDelete = Asesmenfile::whereIn('id', $request->delete_files_collection)->get();
             foreach ($filesToDelete as $file) {
                 Storage::disk('public')->delete($file->path_file);
                 $file->delete();
             }
         }
-        $sertification = Sertification::findOrFail($sert_id);
-        $sertification->rincian_tugas_asesmen = $request->rincian_tugas_asesmen;
-        $sertification->batas_pengumpulan_tugas_asesmen = $request->batas_pengumpulan_tugas_asesmen;
-        $sertification->tugasasesmen_madeby = $request->user()->id;
-        if (is_null($sertification->tugasasesmen_createdat)) {
-            $sertification->tugasasesmen_createdat = now();
-        } else {
-            $sertification->tugasasesmen_updatedat = now();
-        }
-        $sertification->save();
-
         if ($request->hasFile('newFiles')) {
             foreach ($request->file('newFiles') as $file) {
-                if ($file->isValid()) {
-                    $path = FileHelper::storeFileWithUniqueName($file, 'sert_files')['path'];
-                    Asesmenfile::create([
-                        'sertification_id' => $sert_id,
-                        'path_file' => $path,
-                    ]);
-                }
+                $path = FileHelper::storeFileWithUniqueName($file, 'sert_files')['path'];
+                Asesmenfile::create([
+                    'asesmen_id' => $asesmen->id,
+                    'path_file' => $path,
+                ]);
             }
         }
 

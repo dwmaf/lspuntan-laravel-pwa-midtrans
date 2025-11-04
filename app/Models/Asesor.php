@@ -22,6 +22,6 @@ class Asesor extends Model
     }
     public function sertifications()
     {
-        return $this->hasMany(Sertification::class);
+        return $this->belongsToMany(Sertification::class, 'asesor_sertification');
     }
 }

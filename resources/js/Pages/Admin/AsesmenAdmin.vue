@@ -6,9 +6,9 @@ import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import EditButton from "@/Components/EditButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
-import TextInput from "@/Components/TextInput.vue";
-import DateInput from "../../Components/DateInput.vue";
-import FileInput from "@/Components/FileInput.vue";
+import MultiFileInput from "@/Components/MultiFileInput.vue";
+import ToggleSwitch from "@/Components/ToggleSwitch.vue";
+import DateInput from "@/Components/DateInput.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { ref, computed, onMounted } from 'vue';
 
@@ -16,6 +16,7 @@ import { ref, computed, onMounted } from 'vue';
 const props = defineProps({
     sertification: Object,
     filteredAsesi: Array,
+    initialAsesiId: [String, Number],
 });
 
 
@@ -36,33 +37,18 @@ const showListView = () => {
 
 const form = useForm({
     _method: 'PATCH',
-    rincian_tugas_asesmen: '',
-    batas_pengumpulan_tugas_asesmen: '',
+    content: '',
+    deadline: '',
     newFiles: [],
+    is_published: false,
     delete_files_collection: [],
 });
-const displayedFiles = computed(() => {
-    // Filter file lama yang TIDAK ada di daftar hapus
-    const existingFiles = (props.sertification.asesmenfiles || [])
-        .filter(file => !form.delete_files_collection.includes(file.id))
-        .map(file => ({ ...file, isNew: false })); // Tandai sebagai file lama
 
-    // Map file baru untuk memiliki struktur yang sama
-    const newFiles = (form.newFiles || []).map((file, index) => ({
-        id: `new-${index}-${file.name}`, // Buat ID unik sementara
-        path_file: file.name,
-        fileObject: file,
-        isNew: true, // Tandai sebagai file baru
-    }));
-
-    return [...existingFiles, ...newFiles];
-});
 
 const enterEditMode = () => {
-    form.rincian_tugas_asesmen = props.sertification.rincian_tugas_asesmen || 'Isi rincian tugas asesmen di sini...';
-    const batas = props.sertification.batas_pengumpulan_tugas_asesmen;
-
-    form.batas_pengumpulan_tugas_asesmen = batas ? batas.replace(' ', 'T').slice(0, 16) : null;
+    form.content = props.sertification.asesmen?.content || 'Isi rincian tugas asesmen di sini...';
+    form.deadline = props.sertification.asesmen?.deadline || '';
+    form.is_published = !!(props.sertification.asesmen?.published_at);
     isEditing.value = true;
 };
 
@@ -74,18 +60,17 @@ const cancelEdit = () => {
 
 
 onMounted(() => {
-    if (!props.sertification.rincian_tugas_asesmen) {
+    if (!props.sertification.asesmen) {
         enterEditMode();
     }
+    if (props.initialAsesiId) {
+        const asesiToOpen = props.filteredAsesi.find(a => a.id == props.initialAsesiId);
+        if (asesiToOpen) {
+            console.log('asesi ditemukan, ');
+            showDetailView(asesiToOpen);
+        }
+    }
 });
-
-const remainingFileSlots = computed(() => {
-    const maxTotalFiles = 5;
-    return maxTotalFiles - displayedFiles.value.length;
-});
-console.log(remainingFileSlots);
-
-
 
 const submit = () => {
     form.post(route('admin.sertifikasi.assessment.update', props.sertification.id), {
@@ -93,29 +78,6 @@ const submit = () => {
             cancelEdit();
         },
     });
-};
-
-
-const removeFile = (file) => {
-    if (file.isNew) {
-        // Hapus dari array form.newFiles
-        form.newFiles = form.newFiles.filter(f => f !== file.fileObject);
-    } else {
-        // Tambahkan ID ke daftar hapus
-        if (!form.delete_files_collection.includes(file.id)) {
-            form.delete_files_collection.push(file.id);
-        }
-    }
-};
-
-const handleFileSelection = (newlySelectedFiles) => {
-    const existingFileCount = (props.sertification.asesmenfiles || [])
-        .filter(file => !form.delete_files_collection.includes(file.id))
-        .length;
-    const maxTotalFiles = 5;
-    const combinedNewFiles = [...form.newFiles, ...newlySelectedFiles];
-    const limitForNewFiles = maxTotalFiles - existingFileCount;
-    form.newFiles = combinedNewFiles.slice(0, limitForNewFiles);
 };
 </script>
 <template>
@@ -131,7 +93,7 @@ const handleFileSelection = (newlySelectedFiles) => {
         <div v-if="!isEditing" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
             <div class="flex justify-between items-center mb-2">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="flex-shrink-0">
+                    <div class="shrink-0">
                         <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
                             fill="currentColor" viewBox="0 0 24 24">
                             <path
@@ -139,23 +101,21 @@ const handleFileSelection = (newlySelectedFiles) => {
                         </svg>
                     </div>
                     <div>
-                        <h5 v-if="props.sertification.pembuatrinciantugasasesmen"
+                        <h5 v-if="props.sertification.asesmen"
                             class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            {{ props.sertification.pembuatrinciantugasasesmen.name || 'Admin' }}
+                            {{ props.sertification.asesmen.name || 'Admin' }}
                         </h5>
 
-                        <div class="text-xs text-gray-400">
-                            {{ props.sertification.tanggal_rincian_asesmen_dibuat_formatted }}
-                            <span v-if="props.sertification.tugasasesmen_updatedat">(diedit)</span>
-
+                        <div v-if="props.sertification.asesmen" class="text-xs text-gray-400">
+                            {{ new Date(props.sertification.asesmen.created_at).toLocaleString() }}
+                            <span v-if="props.sertification.asesmen.updated_at != props.sertification.asesmen.created_at">(diedit)</span>
                         </div>
                     </div>
                 </div>
                 <EditButton @click="enterEditMode">Edit</EditButton>
             </div>
 
-            <div v-if="props.sertification.rincian_tugas_asesmen"
-                v-html="props.sertification.rincian_tugas_asesmen.replace(/\n/g, '<br>')"
+            <div v-if="props.sertification.asesmen?.content" v-html="props.sertification.asesmen.content.replace(/\n/g, '<br>')"
                 class="font-medium text-sm text-gray-800 dark:text-gray-100"></div>
             <p v-else class="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Asesor belum memberikan rincian tugas asesmen, buat tugas asesmen agar asesi bisa mengumpulkan tugas
@@ -164,13 +124,14 @@ const handleFileSelection = (newlySelectedFiles) => {
 
             <div class="flex">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">Batas Akhir Pengumpulan : </dt>
-                <dd class="text-sm text-gray-900 dark:text-gray-100">
-                    {{ props.sertification.batas_pengumpulan_tugas_asesmen_formatted }}
+                <dd v-if="props.sertification.asesmen" class="text-sm text-gray-900 dark:text-gray-100">
+                    {{ props.sertification.asesmen.deadline }}
                 </dd>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                <div v-for="file in props.sertification.asesmenfiles" :key="file.id"
-                    class="flex items-center justify-between gap-4 px-3 py-2 border-1 border-gray-300 dark:border-gray-700 rounded-md text-xs">
+                <div v-if="props.sertification.asesmen" v-for="file in props.sertification.asesmen.asesmenfiles"
+                    :key="file.id"
+                    class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
                     <a :href="`/storage/${file.path_file}`" target="_blank"
                         class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
                         {{ file.path_file.split('/').pop() }}
@@ -187,72 +148,29 @@ const handleFileSelection = (newlySelectedFiles) => {
             </div>
             <form @submit.prevent="submit" class="flex flex-col gap-4">
                 <div>
-                    <InputLabel value="Rincian" />
-                    <textarea v-model="form.rincian_tugas_asesmen" rows="8"
+                    <InputLabel value="Rincian" required/>
+                    <textarea v-model="form.content" rows="8"
                         class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
-                    <InputError :message="form.errors.rincian_tugas_asesmen" />
+                    <InputError :message="form.errors.content" />
                 </div>
                 <div>
                     <InputLabel value="Batas Pengumpulan" />
-                    <DateInput v-model="form.batas_pengumpulan_tugas_asesmen" />
-                    <InputError :message="form.errors.batas_pengumpulan_tugas_asesmen" />
+                    <DateInput v-model="form.deadline" />
+                    <InputError :message="form.errors.deadline" />
                 </div>
-
+                
+                
+                <MultiFileInput v-model="form.newFiles" v-model:deleteList="form.delete_files_collection"
+                :existing-files="props.sertification.asesmen?.asesmenfiles ?? []" 
+                    label="Lampiran" :max-files="5" accept=".jpg,.png,.jpeg,.pdf,.docx" :error="form.errors.newFiles"
+                    :error-list="form.errors['newFiles.0']" />
                 <div>
-                    <InputLabel :value="`Lampiran ${props.sertification.asesmenfiles.length}/5`" />
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-
-                        <!-- Loop melalui file yang akan ditampilkan -->
-                        <div v-for="file in displayedFiles" :key="file.id"
-                            class="flex items-center justify-between gap-4 px-3 py-2 border rounded-md text-xs"
-                            :class="file.isNew ? 'border-green-400 dark:border-green-600' : 'border-gray-300 dark:border-gray-700'">
-                            <div class="flex items-center gap-2 min-w-0"> <!-- 1. Tambahkan min-w-0 di sini -->
-                                <!-- Tampilan untuk file lama -->
-                                <template v-if="!file.isNew">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 flex-shrink-0"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <a :href="`/storage/${file.path_file}`" target="_blank"
-                                        class="text-sm text-blue-500 hover:text-blue-400 truncate">
-                                        <!-- 2. truncate tetap di sini -->
-                                        {{ file.path_file.split('/').pop() }}
-                                    </a>
-                                </template>
-                                <!-- Tampilan untuk file baru -->
-                                <template v-else>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 flex-shrink-0"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span class="text-gray-800 dark:text-gray-200 truncate">
-                                        {{ file.path_file }}
-                                    </span>
-                                </template>
-                            </div>
-                            <button @click.prevent="removeFile(file)" type="button"
-                                class="cursor-pointer p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                                <FontAwesomeIcon icon="fa-xmark" />
-                            </button>
-                        </div>
-
-                        <p v-if="displayedFiles.length === 0" class="text-sm text-gray-500 col-span-full">Belum ada file
-                            lampiran.</p>
-
+                    <div class="flex items-center justify-between">
+                        <InputLabel for="is_published" value="Publikasikan Instruksi?" />
+                        <ToggleSwitch id="is_published" v-model="form.is_published" />
                     </div>
-
-                    <!-- Sembunyikan input jika slot sudah habis -->
-                    <FileInput v-if="remainingFileSlots > 0" @update:modelValue="handleFileSelection"
-                        accept="image/jpeg,image/png,image/jpg,application/pdf,docx" multiple
-                        :max-files="remainingFileSlots" />
-                    <p class="text-[11px] text-gray-500">Tipe: JPG, JPEG, PNG, PDF, DOCX, PPTX, XLS/XLSX. Maks 5 total.
-                    </p>
-                    <InputError :message="form.errors.newFiles" />
-                    <InputError :message="form.errors['newFiles.0']" />
+                    <InputError :message="form.errors.is_published" />
                 </div>
-
                 <div class="flex items-center gap-2">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                     </PrimaryButton>

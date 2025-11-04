@@ -7,6 +7,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { Eye, EyeOff } from 'lucide-vue-next';
 
 defineProps({
     canResetPassword: {
@@ -58,10 +59,8 @@ const submit = () => {
                         required autocomplete="current-password">
                     <button type="button" @click="showPassword = !showPassword"
                         class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
-                        <FontAwesomeIcon v-if="showPassword" icon="fa-eye"
-                            class="text-lg text-gray-700 dark:text-gray-200" />
-                        <FontAwesomeIcon v-if="!showPassword" icon="fa-eye-slash"
-                            class="text-lg text-gray-700 dark:text-gray-200" />
+                        <Eye v-if="showPassword" class="text-lg text-gray-700 dark:text-gray-200"/>
+                        <EyeOff v-if="!showPassword" class="text-lg text-gray-700 dark:text-gray-200"/>
                     </button>
                 </div>
                 

@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('notification_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // User yang menerima notif
-            $table->string('type'); // Tipe notifikasi, misal: App\Notifications\AsesiUploadTugasAsesmen
-            $table->text('message'); // Kolom message terpisah
-            $table->string('link', 2048)->nullable(); // Kolom link terpisah
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); 
+            $table->string('type'); 
+            $table->text('message'); 
+            $table->string('link', 2048)->nullable();
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });

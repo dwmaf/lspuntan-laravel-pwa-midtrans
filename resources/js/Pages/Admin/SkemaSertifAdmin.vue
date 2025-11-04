@@ -41,7 +41,7 @@ const showCreateForm = () => {
 const showEditForm = (skema) => {
     form.id = skema.id;
     form.nama_skema = skema.nama_skema;
-    form.format_apl_1 = null; 
+    form.format_apl_1 = null;
     form.format_apl_2 = null;
     formMode.value = 'edit';
     form._method = 'PATCH';
@@ -71,14 +71,14 @@ const destroy = (id) => {
     }
 };
 
-const removeFile = (fieldName) => {
-    if (form[fieldName]) {
-        form[fieldName] = null;
-    }
-    else if (props.skemas.find(s => s.id === form.id)[fieldName] && !form.delete_files.includes(fieldName)) {
-        form.delete_files.push(fieldName);
-    }
-};
+// const removeFile = (fieldName) => {
+//     if (form[fieldName]) {
+//         form[fieldName] = null;
+//     }
+//     else if (props.skemas.find(s => s.id === form.id)[fieldName] && !form.delete_files.includes(fieldName)) {
+//         form.delete_files.push(fieldName);
+//     }
+// };
 </script>
 
 <template>
@@ -89,7 +89,7 @@ const removeFile = (fieldName) => {
             </h2>
         </template>
 
-        <!-- Form Tambah/Edit -->
+        <!-- Form Tambah -->
         <div v-if="formMode === 'create'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
                 Tambah Skema Sertifikasi
@@ -100,12 +100,14 @@ const removeFile = (fieldName) => {
                     <TextInput v-model="form.nama_skema" type="text" required />
                     <InputError :message="form.errors.nama_skema" />
                 </div>
-                <SingleFileInput v-model="form.format_apl_1" label="Format APL.01"
-                    :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".jpg,.png,.jpeg,.pdf"
-                    :error="form.errors.format_apl_1" @remove="removeFile('format_apl_1')" />
-                <SingleFileInput v-model="form.format_apl_2" label="Format APL.02"
-                    :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".jpg,.png,.jpeg,.pdf"
-                    :error="form.errors.format_apl_2" @remove="removeFile('format_apl_2')" />
+                <SingleFileInput v-model="form.format_apl_1" v-model:deleteList="form.delete_files"
+                    delete-identifier="format_apl_1" label="Format APL.01"
+                     accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
+                    :error="form.errors.format_apl_1" />
+                <SingleFileInput v-model="form.format_apl_2" v-model:deleteList="form.delete_files"
+                    delete-identifier="format_apl_2" label="Format APL.02"
+                     accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
+                    :error="form.errors.format_apl_2"/>
                 <div class="flex items-center gap-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                     </PrimaryButton>
@@ -123,14 +125,14 @@ const removeFile = (fieldName) => {
                     <TextInput v-model="form.nama_skema" type="text" required />
                     <InputError :message="form.errors.nama_skema" />
                 </div>
-                <SingleFileInput v-model="form.format_apl_1" label="Format APL.01"
+                <SingleFileInput v-model="form.format_apl_1" label="Format APL.01" v-model:deleteList="form.delete_files" delete-identifier="format_apl_1"
                     :existing-file-url="props.skemas.find(s => s.id === form.id)?.format_apl_1 ? `/storage/${props.skemas.find(s => s.id === form.id)?.format_apl_1}` : null"
-                    :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".jpg,.png,.jpeg,.pdf"
-                    :error="form.errors.format_apl_1" @remove="removeFile('format_apl_1')" />
-                <SingleFileInput v-model="form.format_apl_2" label="Format APL.02"
+                    :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
+                    :error="form.errors.format_apl_1" />
+                <SingleFileInput v-model="form.format_apl_2" label="Format APL.02" v-model:deleteList="form.delete_files" delete-identifier="format_apl_2"
                     :existing-file-url="props.skemas.find(s => s.id === form.id)?.format_apl_2 ? `/storage/${props.skemas.find(s => s.id === form.id)?.format_apl_2}` : null"
-                    :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".jpg,.png,.jpeg,.pdf"
-                    :error="form.errors.format_apl_2" @remove="removeFile('format_apl_2')" />
+                    :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
+                    :error="form.errors.format_apl_2" />
                 <div class="flex items-center gap-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                     </PrimaryButton>

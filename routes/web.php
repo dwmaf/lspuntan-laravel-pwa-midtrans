@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\Sertifikasi\AsesmenController;
 use App\Http\Controllers\Admin\Sertifikasi\KelolaSertifikasiController;
 use App\Http\Controllers\Admin\Sertifikasi\PembayaranController;
@@ -11,13 +12,14 @@ use App\Http\Controllers\Asesi\Sertifikasi\AsesmenAsesiController;
 // use App\Http\Controllers\Asesi\Sertifikasi\PengumumanAsesiController;
 use App\Http\Controllers\Asesi\Sertifikasi\KelolaSertifikasiAsesiController;
 use App\Http\Controllers\Admin\AsesorController;
+use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Asesi\Sertifikasi\PengumumanAsesiController;
 use App\Http\Controllers\FcmController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OfflineController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\Public\CertificateVerificationController;
+use App\Http\Controllers\CertificateVerificationController;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\RoleMiddleware;
@@ -83,12 +85,10 @@ Route::middleware('auth')->group(function () {
 
 
 
-//versi lebih baik asesor admin
+
 //nanti harus dikasih middleware 'verified'
 Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Admin/DashboardAdmin');
-    })->name('dashboard'); //admin.dashboard
+    Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard'); //admin.dashboard
 
     Route::prefix('skema')->name('skema.')->group(function () {
         Route::get('/', [SkemaController::class, 'create'])->name('create'); // admin.skema.create
@@ -103,7 +103,6 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
         Route::delete('/{id}/destroy', [AsesorController::class, 'destroy'])->name('destroy'); // admin.asesor.destroy
     });
     Route::prefix('kelolasertifikasi')->name('kelolasertifikasi.')->group(function () {
-        // Route::post('/filter-riwayat_sertifikasi', [KelolaSertifikasiController::class, 'filter_riwayat_sertifikasi'])->name('.filter-riwayat_sertifikasi'); // admin.kelolasertifikasi.filter-riwayat_sertifikasi
         Route::get('/index', [KelolaSertifikasiController::class, 'index'])->name('index'); // admin.kelolasertifikasi.index
         Route::post('/store', [KelolaSertifikasiController::class, 'store'])->name('store'); // admin.kelolasertifikasi.store
         Route::get('/{sert_id}/show', [KelolaSertifikasiController::class, 'show'])->name('show'); // admin.kelolasertifikasi.show
@@ -115,16 +114,15 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
         // untuk munculin halaman edit asesmen dan updatenya
         Route::get('/assessment/edit', [AsesmenController::class, 'edit'])->name('assessment.edit'); // admin.sertifikasi.assessment.edit
         Route::patch('/assessment/update', [AsesmenController::class, 'update_tugas_asesmen'])->name('assessment.update'); // admin.sertifikasi.assessment.update
-        Route::get('/{asesi_id}/rincian-assessment-asesi/index', [AsesmenController::class, 'rincian_asesmen_asesi'])->name('rincian.assessment.asesi.index'); // admin.sertifikasi.rincian.assessment.asesi.index
         // untuk mnunculin halaman edit rincian pembayaran dan updatenya
         Route::get('/payment-desc/index', [PembayaranController::class, 'index_rincian_pembayaran'])->name('payment-desc.index'); // admin.sertifikasi.payment-desc.index
         Route::patch('/payment-desc/update', [PembayaranController::class, 'update_rincian_pembayaran'])->name('payment-desc.update'); // admin.sertifikasi.payment-desc.update
         // Mengelola konten pengumuman
-        Route::get('/assessment-announcement/index', [PengumumanController::class, 'index_pengumuman_asesmen'])->name('assessment-announcement.index'); // admin.sertifikasi.assessment-announcement.index
-        Route::post('/assessment-announcement/store', [PengumumanController::class, 'store_pengumuman_asesmen'])->name('assessment-announcement.store'); // admin.sertifikasi.assessment-announcement.store
-        Route::patch('/assessment-announcement/update/{peng_id}', [PengumumanController::class, 'update_pengumuman_asesmen'])->name('assessment-announcement.update'); // admin.sertifikasi.assessment-announcement.update
-        Route::delete('/assessment-announcement/destroy/{peng_id}', [PengumumanController::class, 'destroy_pengumuman_asesmen'])->name('assessment-announcement.destroy'); // admin.sertifikasi.assessment-announcement.update
-        Route::delete('/assessment-announcement/file/{id_file}', [PengumumanController::class, 'destroyPengumumanFile'])->name('assessment-announcement.file.destroy');
+        Route::get('/announcement/index', [PengumumanController::class, 'index_pengumuman_asesmen'])->name('assessment-announcement.index'); // admin.sertifikasi.assessment-announcement.index
+        Route::post('/announcement/store', [PengumumanController::class, 'store_pengumuman_asesmen'])->name('announcement.store'); // admin.sertifikasi.assessment-announcement.store
+        Route::patch('/announcement/update/{peng_id}', [PengumumanController::class, 'update_pengumuman_asesmen'])->name('assessment-announcement.update'); // admin.sertifikasi.assessment-announcement.update
+        Route::delete('/announcement/destroy/{peng_id}', [PengumumanController::class, 'destroy_pengumuman_asesmen'])->name('assessment-announcement.destroy'); // admin.sertifikasi.assessment-announcement.update
+        Route::delete('/announcement/file/{id_file}', [PengumumanController::class, 'destroyPengumumanFile'])->name('assessment-announcement.file.destroy');
     });
 
     Route::prefix('sertifikasi/{sert_id}')->name('sertifikasi.')->group(function () {
@@ -134,6 +132,7 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
         Route::patch('/{transaction_id}/pendaftar/update-payment-status', [PendaftarController::class, 'update_status_pembayaran'])->name('pendaftar.update-payment-status'); // admin.sertifikasi.pendaftar.update-payment-status
         Route::patch('/{asesi_id}/pendaftar/upload-certificate/patch', [PendaftarController::class, 'upload_certificate'])->name('pendaftar.upload-certificate.update'); // admin.sertifikasi.pendaftar.upload-certificate.update
     });
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
 });
 
 
@@ -154,7 +153,7 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
     Route::prefix('sertifikasi')->name('sertifikasi.')->group(function () {
         Route::get('/index', [KelolaSertifikasiAsesiController::class, 'asesi_daftar_sertifikasi'])->name('index'); // asesi.sertifikasi.index
         Route::get('/{sert_id}/apply/create', [KelolaSertifikasiAsesiController::class, 'form_daftar_sertifikasi'])->name('apply.create'); // asesi.sertifikasi.apply.create
-        Route::post('{student_id}/apply/store', [KelolaSertifikasiAsesiController::class, 'submit_form_daftar_sertifikasi'])->name('apply.store'); // asesi.sertifikasi.apply.store
+        Route::post('/{student_id}/apply/store', [KelolaSertifikasiAsesiController::class, 'submit_form_daftar_sertifikasi'])->name('apply.store'); // asesi.sertifikasi.apply.store
         Route::get('/{sert_id}/{asesi_id}/applied/show', [KelolaSertifikasiAsesiController::class, 'detail_applied_sertifikasi'])->name('applied.show'); // asesi.sertifikasi.applied.show
         Route::patch('/{sert_id}/{asesi_id}/applied/update', [KelolaSertifikasiAsesiController::class, 'update_applied_sertifikasi'])->name('applied.update'); // asesi.sertifikasi.applied.update
     });

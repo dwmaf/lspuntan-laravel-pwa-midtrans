@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('praasesmenfiles', function (Blueprint $table) {
+        Schema::create('asesor_sertification', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sertification_id')->constrained()->onDelete('cascade');
-            $table->string('path_file')->nullable();
+            $table->foreignId('asesor_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('praasesmenfiles');
+        Schema::dropIfExists('asesor_sertification');
     }
 };

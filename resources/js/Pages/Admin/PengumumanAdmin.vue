@@ -24,7 +24,7 @@ const formMode = ref('list'); // 'list', 'create', 'edit'
 const editingPengumumanId = ref(null);
 
 const form = useForm({
-    rincian_pengumuman_asesmen: '',
+    rincian: '',
     newFiles: [],
     delete_files: [],
     _method: 'POST',
@@ -38,7 +38,7 @@ const showCreateForm = () => {
 
 const showEditForm = (pengumuman) => {
     form.reset();
-    form.rincian_pengumuman_asesmen = pengumuman.rincian_pengumuman_asesmen;
+    form.rincian = pengumuman.rincian;
     form.newFiles = [];
     form.delete_files = [];
     form._method = 'PATCH';
@@ -55,7 +55,7 @@ const cancelForm = () => {
 
 const submit = () => {
     if (formMode.value === 'create') {
-        form.post(route('admin.sertifikasi.assessment-announcement.store', { sert_id: props.sertification.id }), {
+        form.post(route('admin.sertifikasi.announcement.store', { sert_id: props.sertification.id }), {
             onSuccess: () => cancelForm(),
         });
     } else if (formMode.value === 'edit') {
@@ -92,15 +92,15 @@ const MAX_TOTAL_FILES = 5;
                 <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
                     <div>
                         <InputLabel value="Rincian" />
-                        <textarea v-model="form.rincian_pengumuman_asesmen" rows="8"
+                        <textarea v-model="form.rincian" rows="8"
                             class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
-                        <InputError :message="form.errors.rincian_pengumuman_asesmen" />
+                        <InputError :message="form.errors.rincian" />
                     </div>
                     <div>
                         <MultiFileInput v-model="form.newFiles" v-model:deleteList="form.delete_files" label="Lampiran"
                             accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xlx"
                             :existing-files="props.pengumumans.find(p => p.id === editingPengumumanId)?.newsfiles || []"
-                            :error="form.errors.newFiles" :error-list="form.errors['newFiles.0']" required />
+                            :error="form.errors.newFiles" :error-list="form.errors['newFiles.0']"/>
                     </div>
                     <div class="flex items-center gap-4 pt-2">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
@@ -115,14 +115,14 @@ const MAX_TOTAL_FILES = 5;
                 <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
                     <div>
                         <InputLabel value="Rincian" />
-                        <textarea v-model="form.rincian_pengumuman_asesmen" rows="8"
+                        <textarea v-model="form.rincian" rows="8"
                             class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
-                        <InputError :message="form.errors.rincian_pengumuman_asesmen" />
+                        <InputError :message="form.errors.rincian" />
                     </div>
                     <div>
                         <MultiFileInput v-model="form.newFiles" label="Lampiran"
                             accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xlx" :error="form.errors.newFiles"
-                            :error-list="form.errors['newFiles.0']" required />
+                            :error-list="form.errors['newFiles.0']"/>
                     </div>
                     <div class="flex items-center gap-4 pt-2">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
@@ -146,7 +146,7 @@ const MAX_TOTAL_FILES = 5;
                         <div class="flex justify-between items-start mb-2">
 
                             <div class="flex items-center gap-3 min-w-0">
-                                <div class="flex-shrink-0">
+                                <div class="shrink-0">
                                     <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
                                         fill="currentColor" viewBox="0 0 24 24">
                                         <path
@@ -173,11 +173,11 @@ const MAX_TOTAL_FILES = 5;
                         </div>
 
                         <h6 class="font-medium text-sm text-gray-800 dark:text-gray-100">{{
-                            pengumuman.rincian_pengumuman_asesmen }}</h6>
+                            pengumuman.rincian }}</h6>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                             <div v-if="pengumuman.newsfiles.length > 0" v-for="file in pengumuman.newsfiles"
                                 :key="file.id"
-                                class="flex items-center justify-between gap-4 px-3 py-2 border-1 border-gray-300 dark:border-gray-700 rounded-md text-xs">
+                                class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
                                 <a :href="`/storage/${file.path_file}`" target="_blank"
                                     class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
                                     {{ file.path_file.split('/').pop() }}

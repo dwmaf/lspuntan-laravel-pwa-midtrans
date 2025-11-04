@@ -1,7 +1,6 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
-import SecondaryLinkButton from "../../Components/SecondaryLinkButton.vue";
 import SmallLinkButton from "../../Components/SmallLinkButton.vue";
 const props = defineProps({
     sertification: Object,
@@ -52,7 +51,7 @@ const getPaymentStatusInfo = (transaction) => {
                     Daftar Pendaftar Skema: {{ props.sertification.skema.nama_skema ?? 'Tidak Diketahui' }}
                 </h3>
             </div>
-
+            <!-- {{ props.sertification.asesis }} -->
             <div class="overflow-x-auto">
                 <table class="min-w-full ">
                     <thead class="bg-gray-50 dark:bg-gray-700">
@@ -81,8 +80,8 @@ const getPaymentStatusInfo = (transaction) => {
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 ">
-
-                        <tr v-if="props.sertification.asesi.length > 0" v-for="(asesi, index) in props.sertification.asesi" :key="asesi.id" class="">
+                        
+                        <tr v-if="props.sertification.asesis.length > 0" v-for="(asesi, index) in props.sertification.asesis" :key="asesi.id" class="">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ index + 1 }}
                             </td>

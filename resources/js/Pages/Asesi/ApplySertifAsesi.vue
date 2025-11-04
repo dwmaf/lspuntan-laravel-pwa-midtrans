@@ -24,7 +24,7 @@ const form = useForm({
     nik: props.student?.nik,
     tmpt_lhr: props.student?.tmpt_lhr,
     tgl_lhr: props.student?.tgl_lhr,
-    kelamin: props.student?.kelamin || 'Laki-laki',
+    kelamin: props.student?.kelamin || '',
     kebangsaan: props.student?.kebangsaan,
     no_tlp_hp: props.user?.no_tlp_hp,
     no_tlp_rmh: props.student?.no_tlp_rmh,
@@ -55,17 +55,17 @@ const addMakul = () => {
 const removeMakul = (index) => {
     form.makulNilais.splice(index, 1);
 };
-const removeFile = (fieldName) => {
-    if (form[fieldName]) {
-        form[fieldName] = null;
-    }
-    else if (props.student[fieldName] && !form.delete_files.includes(fieldName)) {
-        form.delete_files.push(fieldName);
-    }
-};
+// const removeFile = (fieldName) => {
+//     if (form[fieldName]) {
+//         form[fieldName] = null;
+//     }
+//     else if (props.student[fieldName] && !form.delete_files.includes(fieldName)) {
+//         form.delete_files.push(fieldName);
+//     }
+// };
 
 const submit = () => {
-    form.post(route('asesi.sertifikasi.apply.store', props.student.id));
+    form.post(route('asesi.sertifikasi.apply.store', { student_id: props.student.id }));
 };
 
 </script>
@@ -86,82 +86,86 @@ const submit = () => {
             <form @submit.prevent="submit" class="mt-6 space-y-6">
                 <!-- Data Pribadi -->
                 <h3 class="dark:text-gray-300 font-semibold">A. Data Pribadi</h3>
-                <div>
-                    <InputLabel value="Nama Lengkap" required />
-                    <TextInput v-model="form.name" type="text" required />
-                    <InputError :message="form.errors.name" />
-                </div>
-                <div>
-                    <InputLabel value="No. KTP" required />
-                    <TextInput v-model="form.nik" type="text" required />
-                    <InputError :message="form.errors.nik" />
-                </div>
-                <div>
-                    <InputLabel value="Tempat Lahir" required />
-                    <TextInput v-model="form.tmpt_lhr" type="text" required />
-                    <InputError :message="form.errors.tmpt_lhr" />
-                </div>
-                <div>
-                    <InputLabel value="Tanggal Lahir" required />
-                    <TextInput v-model="form.tgl_lhr" type="date" required />
-                    <InputError :message="form.errors.tgl_lhr" />
-                </div>
-                <div>
-                    <InputLabel for="kelamin" value="Jenis Kelamin" required />
-                    <select id="kelamin" v-model="form.kelamin" required
-                        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                        <option value="Laki-laki">Laki-Laki</option>
-                        <option value="Perempuan">Perempuan</option>
-                    </select>
-                    <InputError :message="form.errors.kelamin" />
-                </div>
-                <div>
-                    <InputLabel value="Kebangsaan" required />
-                    <TextInput v-model="form.kebangsaan" type="text" required />
-                    <InputError :message="form.errors.kebangsaan" />
-                </div>
-                <div>
-                    <InputLabel value="No. Tlp HP(WA)" required />
-                    <TextInput v-model="form.no_tlp_hp" type="text" required />
-                    <InputError :message="form.errors.no_tlp_hp" />
-                </div>
-                <div>
-                    <InputLabel value="No. Tlp Rumah" />
-                    <TextInput v-model="form.no_tlp_rmh" type="text" />
-                    <InputError :message="form.errors.no_tlp_rmh" />
-                </div>
-                <div>
-                    <InputLabel value="No. Tlp Kantor" />
-                    <TextInput v-model="form.no_tlp_kntr" type="text" />
-                    <InputError :message="form.errors.no_tlp_kntr" />
-                </div>
-                <div>
-                    <InputLabel value="Kualifikasi Pendidikan (tulis: Mahasiswa S1)" />
-                    <TextInput v-model="form.kualifikasi_pendidikan" type="text" required />
-                    <InputError :message="form.errors.kualifikasi_pendidikan" />
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <InputLabel value="Nama Lengkap" required />
+                        <TextInput v-model="form.name" type="text" required />
+                        <InputError :message="form.errors.name" />
+                    </div>
+                    <div>
+                        <InputLabel value="No. KTP" required />
+                        <TextInput v-model="form.nik" type="text" required />
+                        <InputError :message="form.errors.nik" />
+                    </div>
+                    <div>
+                        <InputLabel value="Tempat Lahir" required />
+                        <TextInput v-model="form.tmpt_lhr" type="text" required />
+                        <InputError :message="form.errors.tmpt_lhr" />
+                    </div>
+                    <div>
+                        <InputLabel value="Tanggal Lahir" required />
+                        <TextInput v-model="form.tgl_lhr" type="date" required />
+                        <InputError :message="form.errors.tgl_lhr" />
+                    </div>
+                    <div>
+                        <InputLabel for="kelamin" value="Jenis Kelamin" required />
+                        <select id="kelamin" v-model="form.kelamin" required
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                            <option value="" disabled>--Pilih Kelamin--</option>
+                            <option value="Laki-laki">Laki-Laki</option>
+                            <option value="Perempuan">Perempuan</option>
+                        </select>
+                        <InputError :message="form.errors.kelamin" />
+                    </div>
+                    <div>
+                        <InputLabel value="Kebangsaan" required />
+                        <TextInput v-model="form.kebangsaan" type="text" required />
+                        <InputError :message="form.errors.kebangsaan" />
+                    </div>
+                    <div>
+                        <InputLabel value="No. Tlp HP(WA)" required />
+                        <TextInput v-model="form.no_tlp_hp" type="text" required />
+                        <InputError :message="form.errors.no_tlp_hp" />
+                    </div>
+                    <div>
+                        <InputLabel value="No. Tlp Rumah" />
+                        <TextInput v-model="form.no_tlp_rmh" type="text" />
+                        <InputError :message="form.errors.no_tlp_rmh" />
+                    </div>
+                    <div>
+                        <InputLabel value="No. Tlp Kantor" />
+                        <TextInput v-model="form.no_tlp_kntr" type="text" />
+                        <InputError :message="form.errors.no_tlp_kntr" />
+                    </div>
+                    <div>
+                        <InputLabel value="Kualifikasi Pendidikan (tulis: Mahasiswa S1)" required />
+                        <TextInput v-model="form.kualifikasi_pendidikan" type="text" required />
+                        <InputError :message="form.errors.kualifikasi_pendidikan" />
+                    </div>
                 </div>
 
-                <!-- Data Pekerjaan -->
                 <h3 class="dark:text-gray-300 font-semibold pt-4">B. Data Pekerjaan Sekarang</h3>
-                <div>
-                    <InputLabel value="Nama Institusi/Perusahaan" />
-                    <TextInput v-model="form.nama_institusi" type="text" />
-                    <InputError :message="form.errors.nama_institusi" />
-                </div>
-                <div>
-                    <InputLabel value="Jabatan" />
-                    <TextInput v-model="form.jabatan" type="text" />
-                    <InputError :message="form.errors.jabatan" />
-                </div>
-                <div>
-                    <InputLabel value="Alamat Kantor" />
-                    <TextInput v-model="form.alamat_kantor" type="text" />
-                    <InputError :message="form.errors.alamat_kantor" />
-                </div>
-                <div>
-                    <InputLabel value="No. Tlp/Email/Fax" />
-                    <TextInput v-model="form.no_tlp_email_fax" type="text" />
-                    <InputError :message="form.errors.no_tlp_email_fax" />
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <InputLabel value="Nama Institusi/Perusahaan" />
+                        <TextInput v-model="form.nama_institusi" type="text" />
+                        <InputError :message="form.errors.nama_institusi" />
+                    </div>
+                    <div>
+                        <InputLabel value="Jabatan" />
+                        <TextInput v-model="form.jabatan" type="text" />
+                        <InputError :message="form.errors.jabatan" />
+                    </div>
+                    <div>
+                        <InputLabel value="Alamat Kantor" />
+                        <TextInput v-model="form.alamat_kantor" type="text" />
+                        <InputError :message="form.errors.alamat_kantor" />
+                    </div>
+                    <div>
+                        <InputLabel value="No. Tlp/Email/Fax" />
+                        <TextInput v-model="form.no_tlp_email_fax" type="text" />
+                        <InputError :message="form.errors.no_tlp_email_fax" />
+                    </div>
                 </div>
 
                 <!-- Data Sertifikasi -->
@@ -179,22 +183,22 @@ const submit = () => {
 
                 <div>
                     <InputLabel value="Mata Kuliah terkait Skema Sertifikasi dan Nilai" required />
-                    <div class="mt-2 space-y-3">
+                    <div class="mt-1 space-y-3">
                         <div v-for="(makul, index) in form.makulNilais" :key="index"
                             class="flex flex-col sm:flex-row items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                            <div class="w-full sm:flex-grow">
+                            <div class="w-full sm:grow">
                                 <InputLabel :for="`makul_nama_${index}`" value="Nama Mata Kuliah" class="text-xs" />
                                 <TextInput :id="`makul_nama_${index}`" v-model="makul.nama_makul"
                                     placeholder="Contoh: Struktur Data Algoritma" required />
                             </div>
-                            <div class="w-full sm:w-24 flex-shrink-0">
+                            <div class="w-full sm:w-24 shrink-0">
                                 <InputLabel :for="`makul_nilai_${index}`" value="Nilai" class="text-xs" />
                                 <TextInput :id="`makul_nilai_${index}`" v-model="makul.nilai_makul"
                                     placeholder="e.g., A" required />
                             </div>
                             <div class="w-full sm:w-auto pt-2 sm:pt-5">
                                 <button @click="removeMakul(index)" type="button" v-show="form.makulNilais.length > 1"
-                                    class="w-auto px-3 py-1 rounded-md sm:w-8 sm:h-8 flex-shrink-0 sm:flex sm:items-center sm:justify-center sm:rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200">
+                                    class="w-auto px-3 py-1 rounded-md sm:w-8 sm:h-8 shrink-0 sm:flex sm:items-center sm:justify-center sm:rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200">
                                     <span class="hidden sm:block">
                                         <FontAwesomeIcon icon=" fa-xmark" class=" text-sm" />
                                     </span>
@@ -214,8 +218,6 @@ const submit = () => {
                         </svg>
                         Tambah Mata Kuliah
                     </button>
-
-                    <!-- Menampilkan Error (jika ada) -->
                     <div v-for="(makul, index) in form.makulNilais">
                         <InputError :message="form.errors[`makulNilais.${index}.nama_makul`]" :key="`err-nama-${index}`"
                             class="mt-1" />
@@ -228,24 +230,23 @@ const submit = () => {
                 <h3 class="dark:text-gray-300 font-semibold pt-4">D. Bukti Kelengkapan</h3>
                 <SingleFileInput v-model="form.apl_1" label="Form APL.01" is-label-required
                     :template-url="`/storage/${sertification.skema.format_apl_1}`" accept=".pdf,.doc,.docx"
-                    :error="form.errors.apl_1" @remove="removeFile('apl_1')" required />
+                    :error="form.errors.apl_1" delete-identifier="apl_1" required />
                 <SingleFileInput v-model="form.apl_2" label="Form APL.02" is-label-required
                     :template-url="`/storage/${sertification.skema.format_apl_2}`" accept=".pdf,.doc,.docx"
-                    :error="form.errors.apl_2" @remove="removeFile('apl_2')" required />
+                    :error="form.errors.apl_2" delete-identifier="apl_2" required />
                 <SingleFileInput v-model="form.foto_ktp" label="Scan KTP" is-label-required
                     :existing-file-url="student?.foto_ktp ? `/storage/${student.foto_ktp}` : null"
                     :is-marked-for-deletion="form.delete_files.includes('foto_ktp')" accept=".jpg,.png,.jpeg,.pdf"
-                    :error="form.errors.foto_ktp" @remove="removeFile('foto_ktp')"
+                    :error="form.errors.foto_ktp" v-model:deleteList="form.delete_files" delete-identifier="foto_ktp"
                     :required="!student?.foto_ktp || form.delete_files.includes('foto_ktp')" />
                 <SingleFileInput v-model="form.pas_foto"
                     label="Pasfoto terbaru dengan latar belakang merah, berukuran 4x6 (ukuran file maksimal 1 MB)"
                     is-label-required :existing-file-url="student?.pas_foto ? `/storage/${student.pas_foto}` : null"
                     :is-marked-for-deletion="form.delete_files.includes('pas_foto')" accept=".jpg,.png,.jpeg,.pdf"
-                    :error="form.errors.pas_foto" @remove="removeFile('pas_foto')"
+                    :error="form.errors.pas_foto" v-model:deleteList="form.delete_files" delete-identifier="pas_foto"
                     :required="!student?.pas_foto || form.delete_files.includes('pas_foto')" />
-
                 <SingleFileInput v-model="form.foto_ktm" label="Scan KTM (ukuran file maksimal 1 MB)" is-label-required
-                    accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.foto_ktm" @remove="removeFile('foto_ktm')"
+                    accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.foto_ktm" delete-identifier="foto_ktm"
                     required />
                 <MultiFileInput v-model="form.kartu_hasil_studi" label="Scan Kartu Hasil Studi (Semester I - V)"
                     accept=".pdf" :error="form.errors.kartu_hasil_studi"
@@ -253,12 +254,10 @@ const submit = () => {
                 <MultiFileInput v-model="form.surat_ket_magang"
                     label="Scan Surat Keterangan Magang/PKL/MBKM (ukuran file maksimal 3 MB)" accept="application/pdf"
                     :error="form.errors.surat_ket_magang" :error-list="form.errors['surat_ket_magang.0']" />
-
                 <MultiFileInput v-model="form.dok_pendukung_lain"
                     label="Dokumen pendukung lainnya: dapat berupa Laporan kegiatan PKL/Magang/MBKM/Publikasi Jurnal/dll (ukuran file maksimal 5 MB)"
                     accept="application/pdf" :error="form.errors.dok_pendukung_lain"
                     :error-list="form.errors['dok_pendukung_lain.0']" />
-
                 <MultiFileInput v-model="form.sertif_pelatihan"
                     label="Scan Sertifikat Pelatihan (ukuran file maksimal 3 MB)" accept="application/pdf"
                     :error="form.errors.sertif_pelatihan" :error-list="form.errors['sertif_pelatihan.0']" />

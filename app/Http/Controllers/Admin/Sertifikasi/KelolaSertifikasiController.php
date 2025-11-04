@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Sertifikasi;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use App\Models\Sertification;
 use App\Models\Skema;
 use App\Models\Asesor;
@@ -14,59 +15,64 @@ class KelolaSertifikasiController extends Controller
 {
     public function index(Request $request)
     {
-        $filter = $request->query('filter', 'semua');
-        $sertifikasiSelesaiQuery = Sertification::with('skema', 'asesor')
-            ->where('status', 'selesai');
 
-        if ($filter === 'bulan_ini') {
-            $sertifikasiSelesaiQuery->whereMonth('tgl_apply_ditutup', now()->month)
-                                    ->whereYear('tgl_apply_ditutup', now()->year);
-        } elseif ($filter === '3_bulan') {
-            $sertifikasiSelesaiQuery->where('tgl_apply_ditutup', '>=', now()->subMonths(3));
-        } elseif ($filter === 'tahun_ini') {
-            $sertifikasiSelesaiQuery->whereYear('tgl_apply_ditutup', now()->year);
-        }
-        return Inertia::render('Admin/KelolaSertifikasiAdmin',[
-            'sertifications_berlangsung' => Sertification::with('skema','asesor')
-                                        ->where('status', 'berlangsung')
-                                        ->orderBy('tgl_apply_dibuka', 'desc')
-                                        ->get(),
-            'sertifications_selesai' => $sertifikasiSelesaiQuery
-                                        ->orderBy('tgl_apply_ditutup', 'desc')
-                                        ->get(),
-            'asesors'=>Asesor::with('skemas','user')->get(),
-            'skemas'=>Skema::all(),
-            'filters' => ['filter' => $filter],
+        return Inertia::render('Admin/KelolaSertifikasiAdmin', [
+            'sertifications_berlangsung' => Sertification::with('skema', 'asesors.user', 'paymentInstruction')
+                ->where('status', 'berlangsung')
+                ->orderBy('tgl_apply_dibuka', 'desc')
+                ->get(),
+            'sertifications_selesai' => Sertification::with('skema', 'asesors.user', 'paymentInstruction')
+                ->where('status', 'selesai')
+                ->orderBy('tgl_apply_ditutup', 'desc')
+                ->get(),
+            'asesors' => Asesor::with('skemas', 'user')->withCount('sertifications')->get(),
+            'skemas' => Skema::all(),
+            // 'filters' => ['filter' => $filter],
         ]);
     }
-    
+
     public function store(Request $request)
     {
         // dd($request);
-        $validatedData=$request->validate([
-            'asesor_skema'=>'required',
-            'tgl_apply_dibuka'=>'required|date',
-            'tgl_apply_ditutup'=>'required|date|after_or_equal:tgl_apply_dibuka',
-            'tgl_bayar_ditutup'=>'required|date',
-            'harga'=>'required|numeric|min:0',
-            'tuk'=>'required',
+        $validatedData = $request->validate([
+            'skema_id' => 'required',
+            'asesor_ids' => 'required|array',
+            'asesor_ids.*' => 'exists:asesors,id',
+            'tgl_apply_dibuka' => 'required|date',
+            'tgl_apply_ditutup' => 'required|date|after_or_equal:tgl_apply_dibuka',
+            'deadline' => 'required|date',
+            'biaya' => 'required|numeric|min:0',
+            'tuk' => 'required',
         ]);
-        list($asesor_id, $skema_id) = explode(',', $request->input('asesor_skema'));
-        $validatedData['asesor_id'] = $asesor_id;
-        $validatedData['skema_id'] = $skema_id;
-        $validatedData['status'] = 'berlangsung';
-        unset($validatedData['asesor_skema']);
-        Sertification::create($validatedData);
-        return redirect()->back()->with('message','Sertifikasi berhasil dimulai!');
+        DB::transaction(function () use ($validatedData, $request) {
+            $sertification = Sertification::create([
+                'skema_id' => $validatedData['skema_id'],
+                'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
+                'tgl_apply_ditutup' => $validatedData['tgl_apply_ditutup'],
+                'tuk' => $validatedData['tuk'],
+                'status' => 'berlangsung',
+            ]);
+            if (!empty($validatedData['asesor_ids'])) {
+                $sertification->asesors()->attach($validatedData['asesor_ids']);
+            }
+            $sertification->paymentInstruction()->create([
+                'biaya' => $validatedData['biaya'],
+                'deadline' => $validatedData['deadline'],
+                'user_id' => $request->user()->id,
+                'content' => 'Silakan lakukan pembayaran sesuai nominal yang tertera.',
+            ]);
+        });
+
+        return redirect()->back()->with('message', 'Sertifikasi berhasil dimulai!');
     }
 
     public function show($sert_id)
     {
-        $sertification = Sertification::with('skema','asesor.user')->findOrFail($sert_id);
-        return Inertia::render('Admin/DetailSertifikasiAdmin',[
-            'sertification'=>$sertification,
-            'asesors'=>Asesor::with('skemas','user')->get(),
-            'skemas'=>Skema::all(),
+        $sertification = Sertification::with('skema', 'asesors.user', 'paymentInstruction')->withCount('asesis')->findOrFail($sert_id);
+        return Inertia::render('Admin/DetailSertifikasiAdmin', [
+            'sertification' => $sertification,
+            'asesors' => Asesor::with('skemas', 'user')->get(),
+            'skemas' => Skema::all(),
         ]);
     }
 
@@ -74,23 +80,42 @@ class KelolaSertifikasiController extends Controller
     {
         // dd($request);
         $validatedData = $request->validate([
-            'asesor_skema' => 'required',
+            'skema_id' => 'required',
+            'asesor_ids' => 'required|array',
+            'asesor_ids.*' => 'exists:asesors,id',
             'tgl_apply_dibuka' => 'required|date',
             'tgl_apply_ditutup' => 'required|date|after_or_equal:tgl_apply_dibuka',
-            'tgl_bayar_ditutup' => 'required|date',
-            'harga' => 'required|numeric|min:0',
-            'tuk'=>'required',
-            'status'=>'required',
+            'deadline' => 'required|date',
+            'biaya' => 'required|numeric|min:0',
+            'tuk' => 'required',
+            'status' => 'required|in:berlangsung,selesai',
         ]);
-
-        list($asesor_id, $skema_id) = explode(',', $request->input('asesor_skema'));
-        $validatedData['asesor_id'] = $asesor_id;
-        $validatedData['skema_id'] = $skema_id;
-        unset($validatedData['asesor_skema']);
         $sertification = Sertification::findOrFail($sert_id);
+        DB::transaction(function () use ($validatedData, $sertification, $request) {
+            $sertification->update([
+                'skema_id' => $validatedData['skema_id'],
+                'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
+                'tgl_apply_ditutup' => $validatedData['tgl_apply_ditutup'],
+                'tuk' => $validatedData['tuk'],
+                'status' => $validatedData['status'],
+            ]);
+            if (isset($validatedData['asesor_ids'])) {
+                $sertification->asesors()->sync($validatedData['asesor_ids']);
+            } else {
+                $sertification->asesors()->sync([]);
+            }
+            $sertification->paymentInstruction()->updateOrCreate(
+                ['sertification_id' => $sertification->id],
+                [
+                    'biaya' => $validatedData['biaya'],
+                    'deadline' => $validatedData['deadline'],
+                    'user_id' => $request->user()->id,
+                ]
+            );
+        });
         $sertification->update($validatedData);
 
-        return redirect(route('admin.kelolasertifikasi.show',$sertification->id))->with('message', 'Data Sertifikasi berhasil diupdate');
+        return redirect()->back()->with('message', 'Data Sertifikasi berhasil diupdate');
     }
 
     public function destroy($sert_id)
@@ -99,12 +124,11 @@ class KelolaSertifikasiController extends Controller
         return to_route('admin.kelolasertifikasi.index')->with('message', 'Sertifikasi berhasil dihapus');
     }
 
-    
+
     public function rincian_laporan($sert_id, Request $request)
     {
         return Inertia::render('Admin/LaporanAdmin', [
-            'sertification' => Sertification::with('asesor.user', 'skema', 'asesi')->findOrFail($sert_id)
+            'sertification' => Sertification::with('asesor.user', 'skema', 'asesis')->findOrFail($sert_id)
         ]);
     }
-
 }

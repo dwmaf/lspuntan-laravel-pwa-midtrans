@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained();
             $table->foreignId('sertification_id')->constrained();
-            $table->string('status')->default('daftar');
+            $table->string('status')->default('menunggu_verifikasi_berkas');
             $table->string('tujuan_sert');
             $table->string('apl_1');
             $table->string('apl_2');

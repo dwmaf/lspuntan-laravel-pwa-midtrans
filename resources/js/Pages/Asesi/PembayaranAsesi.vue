@@ -25,7 +25,7 @@ const form = useForm({
 
 const submit = () => {
     form.post(route('asesi.payment.store', { sert_id: props.sertification.id, asesi_id: props.asesi.id }), {
-        onSuccess: () => form.reset('bukti_bayar','delete_files'),
+        onSuccess: () => form.reset('bukti_bayar', 'delete_files'),
         preserveScroll: true,
     });
 };
@@ -33,19 +33,18 @@ const submit = () => {
 
 const formatCurrency = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 const formatDate = (dateString) => new Date(dateString).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
-const removeFile = (fieldName) => {
-    console.log('exectued remove file');
-    if (form[fieldName]) {
-        form[fieldName] = null;
-
-        return;
-    }
-    else if (props.asesi.latest_transaction && props.asesi.latest_transaction[fieldName] && !form.delete_files.includes(fieldName)) {
-        console.log('file ini akan dihapus');
-        console.log(form.delete_files);
-        form.delete_files.push(fieldName);
-    }
-};
+// const removeFile = (fieldName) => {
+//     console.log('exectued remove file');
+//     if (form[fieldName]) {
+//         form[fieldName] = null;
+//         return;
+//     }
+//     else if (props.asesi.latest_transaction && props.asesi.latest_transaction[fieldName] && !form.delete_files.includes(fieldName)) {
+//         console.log('file ini akan dihapus');
+//         console.log(form.delete_files);
+//         form.delete_files.push(fieldName);
+//     }
+// };
 </script>
 
 <template>
@@ -102,13 +101,12 @@ const removeFile = (fieldName) => {
                 </div>
             </div>
 
-            <!-- Tampilan Form Pembayaran -->
+
             <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <form @submit.prevent="submit" class="space-y-6">
-                    <div v-if="sertification.rincian_pembayaran">
-                        <!-- Info Pembuat Rincian -->
+                    <div v-if="sertification.payment_instruction.published_at">
                         <div class="flex items-center gap-3 mb-4">
-                            <div class="flex-shrink-0">
+                            <div class="shrink-0">
                                 <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
                                     fill="currentColor" viewBox="0 0 24 24">
                                     <path
@@ -116,37 +114,37 @@ const removeFile = (fieldName) => {
                                 </svg>
                             </div>
                             <div>
-                                <h5 v-if="props.sertification.pembuatrincianpembayaran"
+                                <h5 v-if="props.sertification"
                                     class="text-sm font-semibold text-gray-800 dark:text-gray-200">
                                     {{
-                                        props.sertification.pembuatrincianpembayaran.name ?? 'Admin'
+                                        props.sertification.payment_instruction.name ?? 'Admin'
                                     }}
                                 </h5>
                                 <div class="text-xs text-gray-400">
-                                    {{ props.sertification.tanggal_rincian_bayar_dibuat_formatted }}
-                                    <span v-if="props.sertification.rincianbayar_updatedat">(Diedit)</span>
+                                    {{ props.sertification.payment_instruction.created_at }}
+                                    <span
+                                        v-if="props.sertification.payment_instruction.updated_at != props.sertification.payment_instruction.created_at">(Diedit)</span>
                                 </div>
                             </div>
                         </div>
-                        <!-- Rincian Pembayaran -->
-                        <div v-html="sertification.rincian_pembayaran"
+                        <div v-html="sertification.payment_instruction.content"
                             class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-100 mb-2">
                         </div>
                         <div class="flex">
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">Biaya Sertifikasi:
                             </dt>
-                            <dd class="text-sm text-gray-900 dark:text-gray-100">{{ formatCurrency(sertification.harga)
-                            }}</dd>
+                            <dd class="text-sm text-gray-900 dark:text-gray-100">{{
+                                formatCurrency(sertification.payment_instruction.biaya)
+                                }}</dd>
                         </div>
 
 
                         <div class="pt-4">
-                            <SingleFileInput v-model="form.bukti_bayar" label="Unggah Bukti Pembayaran"
-                                is-label-required
+                            <SingleFileInput v-model="form.bukti_bayar" v-model:deleteList="form.delete_files"
+                                delete-identifier="bukti_bayar" label="Unggah Bukti Pembayaran" is-label-required
                                 :is-marked-for-deletion="form.delete_files.includes('bukti_bayar')"
                                 :existing-file-url="asesi.latest_transaction ? `/storage/${asesi.latest_transaction.bukti_bayar}` : null"
-                                accept=".pdf,.jpg,.jpeg,.png" :error="form.errors.bukti_bayar"
-                                @remove="removeFile('bukti_bayar')" required />
+                                accept=".pdf,.jpg,.jpeg,.png" :error="form.errors.bukti_bayar" required />
                         </div>
                         <div class="flex items-center gap-4 pt-2">
                             <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">

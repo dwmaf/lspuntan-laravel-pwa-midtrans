@@ -16,14 +16,14 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification as FirebaseNotification; // <-- IMPORT INI
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Exception\Messaging\NotFound;
 
 class PengumumanController extends Controller
 {
 
-    //buat nampilin halaman daftar pengumuman asesmen di sisi admin/asesor sekaligus untuk buat nambah pengumuman
+    
     public function index_pengumuman_asesmen($sert_id, Request $request)
     {
         // dd($id);
@@ -33,7 +33,7 @@ class PengumumanController extends Controller
             'sertification' => $sertification,
         ]);
     }
-    //buat update rincian pra asesmen di sisi admin, NOT USED ANYMORE
+    
     public function store_pengumuman_asesmen($sert_id, Request $request, Messaging $messaging)
     {
         // dd($request);
@@ -48,16 +48,13 @@ class PengumumanController extends Controller
         $news = News::create(
             $validatedData
         );
-        // Simpan file baru
         if ($request->hasFile('newFiles')) {
             foreach ($request->file('newFiles') as $file) {
-                if ($file->isValid()) {
-                    $path = FileHelper::storeFileWithUniqueName($file, 'sert_files')['path'];
-                    Newsfile::create([
-                        'news_id' => $news->id,
-                        'path_file' => $path,
-                    ]);
-                }
+                $path = FileHelper::storeFileWithUniqueName($file, 'sert_files')['path'];
+                Newsfile::create([
+                    'news_id' => $news->id,
+                    'path_file' => $path,
+                ]);
             }
         }
         $asesis = Asesi::with(['student.user'])
@@ -65,7 +62,6 @@ class PengumumanController extends Controller
             ->where('status', 'dilanjutkan_asesmen')
             ->get();
 
-        // kirim notifikasi secara individual agar link bisa berisi asesi_id
         foreach ($asesis as $asesi) {
             $user = $asesi->student->user ?? null;
             $body = 'Pengumuman baru: ' . $news->rincian;
@@ -96,12 +92,12 @@ class PengumumanController extends Controller
         return redirect()->back()->with('message', 'Berhasil membuat pengumuman');
     }
 
-    //buat update pengumuman asesmen di sisi admin/asesor
+    
     public function update_pengumuman_asesmen($sert_id, $peng_id, Request $request, Messaging $messaging)
     {
         // dd($request);
         $request->validate([
-            'rincian_pengumuman_asesmen' => 'required|string',
+            'rincian' => 'required|string',
             'newFiles' => 'nullable|array|max:5',
             'newFiles.*' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,pdf,docx,pptx,xls,xlsx',
             'delete_files' => 'nullable|array',
@@ -109,7 +105,7 @@ class PengumumanController extends Controller
         ]);
 
         $news = News::findOrFail($peng_id);
-        $news->rincian_pengumuman_asesmen = $request->rincian_pengumuman_asesmen;
+        $news->rincian = $request->rincian;
         $news->save();
         if ($request->filled('delete_files')) {
             $filesToDelete = Newsfile::whereIn('id', $request->delete_files)->get();
@@ -120,13 +116,11 @@ class PengumumanController extends Controller
         }
         if ($request->hasFile('newFiles')) {
             foreach ($request->file('newFiles') as $file) {
-                if ($file->isValid()) {
-                    $path = FileHelper::storeFileWithUniqueName($file, 'sert_files')['path'];
-                    Newsfile::create([
-                        'news_id' => $news->id,
-                        'path_file' => $path,
-                    ]);
-                }
+                $path = FileHelper::storeFileWithUniqueName($file, 'sert_files')['path'];
+                Newsfile::create([
+                    'news_id' => $news->id,
+                    'path_file' => $path,
+                ]);
             }
         }
 

@@ -3,6 +3,8 @@ import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import PrimaryLinkButton from "../../Components/PrimaryLinkButton.vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
+import { MapPin, DollarSign, CalendarRange, BookOpen } from "lucide-vue-next";
+import { IconChalkboardTeacher } from "@tabler/icons-vue";
 
 const props = defineProps({
     sertifications: Array,
@@ -62,21 +64,23 @@ const formatCurrency = (value) => {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div v-for="sert in props.sertifications" :key="sert.id"
                     class="bg-white p-6 rounded-lg dark:bg-gray-800 flex flex-col">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200 flex items-center">
-                        {{ sert.skema.nama_skema }}
+                    <div class="flex items-center gap-2">
+                        <BookOpen class="shrink-0 text-gray-700 dark:text-gray-200" />
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">
+                            {{ sert.skema.nama_skema }}
+                        </h3>
                         <span v-if="getSertifikasiStatus(sert).type === 'open'"
-                            class="ml-3 px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100">
+                            class=" px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100">
                             Dibuka
                         </span>
                         <span v-else-if="getSertifikasiStatus(sert).type === 'closed'"
-                            class="ml-3 px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100">
+                            class="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100">
                             Ditutup
                         </span>
-                    </h3>
+                    </div>
 
                     <div class="flex items-center mt-4">
-                        <FontAwesomeIcon icon="fa-solid fa-calendar-days"
-                            class="w-4 h-4 text-gray-700 dark:text-gray-200" />
+                        <CalendarRange class="shrink-0 w-4 h-4 text-gray-700 dark:text-gray-200" />
                         <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">
                             Pendaftaran: {{ formatDate(sert.tgl_apply_dibuka) }} &ndash; {{
                                 formatDate(sert.tgl_apply_ditutup)
@@ -84,10 +88,9 @@ const formatCurrency = (value) => {
                         </p>
                     </div>
                     <div class="flex items-center mt-2">
-                        <FontAwesomeIcon icon="fa-solid fa-money-bill-1-wave"
-                            class="w-4 h-4 text-gray-700 dark:text-gray-200" />
+                        <DollarSign class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                         <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">
-                            Biaya: {{ formatCurrency(sert.harga) }}
+                            Biaya: {{ formatCurrency(sert.payment_instruction.biaya) }}
                         </p>
                     </div>
 

@@ -6,7 +6,7 @@ import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import EditButton from "../../Components/EditButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
-import TextInput from "@/Components/TextInput.vue";
+import ToggleSwitch from "@/Components/ToggleSwitch.vue";
 import DateInput from "../../Components/DateInput.vue";
 import NumberInput from "../../Components/NumberInput.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
@@ -16,15 +16,16 @@ const props = defineProps({
 });
 const isEditing = ref(false);
 const form = useForm({
-    rincian_pembayaran: "",
-    harga: "",
-    tgl_bayar_ditutup: "",
+    content: "",
+    biaya: "",
+    deadline: "",
+    is_published: false,
 });
 const edit = () => {
-    form.rincian_pembayaran = props.sertification.rincian_pembayaran;
-    form.harga = props.sertification.harga;
-    const batas = props.sertification.tgl_bayar_ditutup;
-    form.tgl_bayar_ditutup = batas ? batas.replace(' ', 'T').slice(0, 16) : null;
+    form.content = props.sertification.payment_instruction.content;
+    form.biaya = props.sertification.payment_instruction.biaya;
+    form.deadline = props.sertification.payment_instruction.deadline;
+    form.is_published = props.sertification.payment_instruction.published_at ? true : false;
     isEditing.value = true;
 };
 const submit = () => {
@@ -39,8 +40,8 @@ const submit = () => {
 };
 
 const formattedHarga = computed(() => {
-    if (!form.harga) return "";
-    const number = parseFloat(form.harga);
+    if (!form.biaya) return "";
+    const number = parseFloat(form.biaya);
     if (isNaN(number)) return "";
     return new Intl.NumberFormat("id-ID", {
         style: "currency",
@@ -51,7 +52,7 @@ const formattedHarga = computed(() => {
 </script>
 <template>
     <AdminLayout>
-        
+
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Sertifikasi
@@ -61,11 +62,11 @@ const formattedHarga = computed(() => {
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
         <!-- Mode Tampilan -->
-
+         
         <div v-if="!isEditing" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
             <div class="flex justify-between items-center mb-2">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="flex-shrink-0">
+                    <div class="shrink-0">
                         <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
                             fill="currentColor" viewBox="0 0 24 24">
                             <path
@@ -73,47 +74,61 @@ const formattedHarga = computed(() => {
                         </svg>
                     </div>
                     <div>
-                        <h5 v-if="props.sertification.pembuatrincianpembayaran" class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                        <h5 v-if="props.sertification.payment_instruction"
+                            class="text-sm font-semibold text-gray-800 dark:text-gray-200">
                             {{
-                                props.sertification.pembuatrincianpembayaran.name ?? 'Admin'
+                                props.sertification.payment_instruction.name ?? 'Admin'
                             }}
                         </h5>
                         <div class="text-xs text-gray-400">
-                            {{ props.sertification.tanggal_rincian_bayar_dibuat_formatted }}
-                            <span v-if="props.sertification.rincianbayar_updatedat">(Diedit)</span>
+                            {{ new Date(props.sertification.payment_instruction.updated_at).toLocaleString() }}
+                            <span v-if="props.sertification.payment_instruction.updated_at">(Diedit)</span>
                         </div>
                     </div>
                 </div>
-                <EditButton @click="edit">Edit</EditButton>
+                
+                <div class="flex items-center gap-3">
+                    <span v-if="props.sertification.payment_instruction?.published_at"
+                        class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300">
+                        Dipublikasikan
+                    </span>
+                    <span v-else
+                        class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-300">
+                        Draft
+                    </span>
+                    <EditButton @click="edit">Edit</EditButton>
+                </div>
             </div>
 
-            <div v-if="props.sertification.rincian_pembayaran" class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2">
-                {{ props.sertification.rincian_pembayaran }}
+            <div v-if="props.sertification.payment_instruction.content"
+                class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2">
+                {{ props.sertification.payment_instruction.content }}
             </div>
-            <p v-if="!props.sertification.rincian_pembayaran" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <p v-if="!props.sertification.payment_instruction.content"
+                class="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Admin belum memberikan rincian pembayaran sehingga Asesi belum bisa mengunggah bukti bayar.
             </p>
-            <div v-if="props.sertification.rincian_pembayaran" class="flex mb-2">
+            <div v-if="props.sertification.payment_instruction.content" class="flex mb-2">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">
                     Biaya Sertifikasi :
                 </dt>
                 <dd class="text-sm text-gray-900 dark:text-gray-100">
                     Rp
-                    {{ new Intl.NumberFormat('id-ID').format(props.sertification.harga) }}
+                    {{ new Intl.NumberFormat('id-ID').format(props.sertification.payment_instruction.biaya) }}
                 </dd>
             </div>
-            <div v-if="props.sertification.rincian_pembayaran" class="flex">
+            <div v-if="props.sertification.payment_instruction.content" class="flex">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">
                     Batas Akhir Pembayaran :
                 </dt>
                 <dd class="text-sm text-gray-900 dark:text-gray-100">
-                    {{ props.sertification.batas_pembayaran_formatted }}
+                    {{ new Date(props.sertification.payment_instruction.deadline).toLocaleString() }}
+                    {{ props.sertification.payment_instruction.deadline }}
                 </dd>
             </div>
         </div>
         <!-- Mode edit -->
-        <div v-if="isEditing"
-            class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-4">
+        <div v-if="isEditing" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-4">
             <div class="flex justify-between items-center mb-2">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
                     Edit Rincian Instruksi Pembayaran
@@ -122,21 +137,29 @@ const formattedHarga = computed(() => {
             <form @submit.prevent="submit" class="flex flex-col gap-4">
                 <div>
                     <InputLabel value="Rincian Pembayaran" />
-                    <textarea v-model="form.rincian_pembayaran" rows="8"
+                    <textarea v-model="form.content" rows="8"
                         class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
-                    <InputError :message="form.errors.rincian_pembayaran" />
+                    <InputError :message="form.errors.content" />
                 </div>
                 <div>
                     <InputLabel value="Biaya Sertifikasi" />
-                    <p v-if="formattedHarga" class="text-sm font-medium text-gray-800 dark:text-gray-400">{{ formattedHarga }}</p>
-                    <!-- <TextInput min="0" type="number" v-model="form.harga" required /> -->
-                    <NumberInput min="0" v-model="form.harga" required/>
-                    <InputError :message="form.errors.harga" />
+                    <p v-if="formattedHarga" class="text-sm font-medium text-gray-800 dark:text-gray-400">{{
+                        formattedHarga }}
+                    </p>
+                    <NumberInput min="0" v-model="form.biaya" required />
+                    <InputError :message="form.errors.biaya" />
                 </div>
                 <div>
                     <InputLabel value="Tanggal Bayar Ditutup" />
-                    <DateInput v-model="form.tgl_bayar_ditutup" required />
-                    <InputError :message="form.errors.tgl_bayar_ditutup" />
+                    <DateInput v-model="form.deadline" required />
+                    <InputError :message="form.errors.deadline" />
+                </div>
+                <div>
+                    <div class="flex items-center justify-between">
+                        <InputLabel for="is_published" value="Publikasikan Instruksi?" />
+                        <ToggleSwitch id="is_published" v-model="form.is_published" />
+                    </div>
+                    <InputError :message="form.errors.is_published" />
                 </div>
                 <div class="flex gap-2 items-center">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
@@ -146,6 +169,6 @@ const formattedHarga = computed(() => {
                 </div>
             </form>
         </div>
-        
+
     </AdminLayout>
 </template>

@@ -21,7 +21,8 @@ const navLinks = computed(() => {
         if (hasAdminRole.value) {
             links.push(
                 { href: route('admin.skema.create'), label: 'Skema', active: route().current('admin.skema.*') },
-                { href: route('admin.asesor.index'), label: 'Asesor', active: route().current('admin.asesor.*') }
+                { href: route('admin.asesor.index'), label: 'Asesor', active: route().current('admin.asesor.*') },
+                { href: route('admin.activity-logs.index'), label: 'Logs', active: route().current('admin.activity-logs.index') },
             );
         }
         return links;
@@ -43,7 +44,7 @@ const navLinks = computed(() => {
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <Link >
+                    <Link :href="route('admin.dashboard')">
                         <img src="/logo-lsp.png" alt="Logo LSP" class="block h-9 w-auto" />
                     </Link>
                 </div>
@@ -81,13 +82,6 @@ const navLinks = computed(() => {
                 <ResponsiveNavLink :href="route('logout')" method="post" as="button">
                     Log Out
                 </ResponsiveNavLink>
-                <!-- <ResponsiveNavLink
-                                :href="route('logout')"
-                                method="post"
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink> -->
             </div>
         </div>
     </div>

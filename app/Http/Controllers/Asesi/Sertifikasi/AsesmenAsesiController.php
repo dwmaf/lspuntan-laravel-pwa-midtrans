@@ -16,7 +16,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Notification;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification as FirebaseNotification; // <-- IMPORT INI
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Exception\Messaging\NotFound;
 
@@ -40,15 +40,17 @@ class AsesmenAsesiController extends Controller
         // dd($request);
         $request->validate([
             'newFiles' => 'nullable|array|max:5',
-            'newFiles.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120', // 5MB
+            'newFiles.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
             'delete_files' => 'nullable|array',
             'delete_files.*' => 'integer|exists:asesiasesmenfiles,id',
         ]);
         if ($request->filled('delete_files')) {
             $filesToDelete = Asesiasesmenfile::whereIn('id', $request->delete_files)->get();
             foreach ($filesToDelete as $file) {
-                Storage::disk('public')->delete($file->path_file);
-                $file->delete();
+                if (Storage::disk('public')->exists($file->path_file)) {
+                    Storage::disk('public')->delete($file->path_file);
+                    $file->delete();
+                }
             }
         }
         if ($request->hasFile('newFiles')) {
@@ -65,29 +67,30 @@ class AsesmenAsesiController extends Controller
             return redirect()->back()->withErrors(['newFiles' => 'Anda harus mengumpulkan setidaknya satu file.']);
         }
         $asesi = Asesi::with('student.user')->findOrFail($asesi_id);
-        $sertification = Sertification::with(['asesor.user', 'skema'])
+        $sertification = Sertification::with(['asesors.user', 'skema'])
             ->findOrFail($sert_id);
-        $asesor = $sertification->asesor->user;
-        if ($asesor) {
+        $asesors = $sertification->asesors->user;
+        if ($asesors->isNotEmpty()) {
             $body = $asesi->student->user->name . ' mengunggah tugas asesmen untuk sertifikasi ' . $sertification->skema->nama_skema;
-            $url = route('admin.sertifikasi.rincian.assessment.asesi.index', ['sert_id' => $sertification->id, 'asesi_id' => $asesi_id]);
-            NotificationLog::create([
-                'user_id' => $asesor->id,
-                'type' => 'AsesiUploadTugasAsesmen',
-                'message' => $body,
-                'link' => $url,
-            ]);
-            if ($asesor->fcm_token) {
+            $url = route('admin.sertifikasi.assessment.edit', [$sertification->id, 'asesi_id' => $asesi_id]);
+            foreach ($asesors as $asesor) {
+                NotificationLog::create([
+                    'user_id' => $asesor->id,
+                    'type' => 'AsesiUploadTugasAsesmen',
+                    'message' => $body,
+                    'link' => $url,
+                ]);
+            }
+            $pushRecipients = $asesors->whereNotNull('fcm_token');
+            if ($pushRecipients->isNotEmpty()) {
+                $tokens = $pushRecipients->pluck('fcm_token')->toArray();
                 $message = CloudMessage::new()
                     ->withNotification(FirebaseNotification::create($body))
                     ->withData(['url' => $url]);
                 try {
-                    $messaging->send($message->toToken($asesor->fcm_token));
-                } catch (NotFound $e) {
-                    Log::warning("Token FCM tidak valid untuk user {$asesor->id}. Menghapus token.");
-                    $asesor->update(['fcm_token' => null]);
+                    $messaging->sendMulticast($message, $tokens);
                 } catch (\Throwable $e) {
-                    Log::error("Gagal mengirim notifikasi asesi mendaftar sertifikasi ke user {$asesor->id}: " . $e->getMessage());
+                    Log::error("Gagal mengirim notifikasi perbaikan berkas: " . $e->getMessage());
                 }
             }
         }

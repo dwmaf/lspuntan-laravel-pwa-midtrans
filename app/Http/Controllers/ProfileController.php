@@ -34,7 +34,7 @@ class ProfileController extends Controller
     // buat nampilin halaman edit profile dari sisi asesi
     public function edit_asesi(Request $request)
     {
-        $user = $request->user()->load('student.studentfiles');
+        $user = $request->user()->load('student');
         return Inertia::render('Asesi/Profile/ProfileAsesi', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),

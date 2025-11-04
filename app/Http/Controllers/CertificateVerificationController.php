@@ -1,7 +1,6 @@
 <?php
-// filepath: app/Http/Controllers/Public/CertificateVerificationController.php
 
-namespace App\Http\Controllers\Public;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Sertification;
@@ -13,7 +12,7 @@ class CertificateVerificationController extends Controller
 {
     public function index(Request $request)
     {
-        $sertifications = Sertification::with('skema')->where('status', '!=', 'belum_berlangsung')->orderBy('tgl_sertifikasi', 'desc')->get();
+        $sertifications = Sertification::with('skema')->where('status', '!=', 'belum_berlangsung')->get();
         $certificate = null;
 
         // Jika ada input pencarian

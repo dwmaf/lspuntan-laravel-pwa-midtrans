@@ -18,7 +18,7 @@ use App\Notifications\StatusBayarAsesiUpdated;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification as FirebaseNotification; // <-- IMPORT INI
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Exception\Messaging\NotFound;
 use Illuminate\Validation\Rule;
@@ -28,8 +28,8 @@ class PendaftarController extends Controller
     public function list_asesi($sert_id, Request $request)
     {
         // dd($student);
-        $sertification = Sertification::with('skema', 'asesi.student.user', 'asesi.transaction')->findOrFail($sert_id);
-        $sertification->asesi->each(function ($asesi) {
+        $sertification = Sertification::with('skema', 'asesis.student.user', 'asesis.transaction')->findOrFail($sert_id);
+        $sertification->asesis->each(function ($asesi) {
             $asesi->latest_transaction = $asesi->transaction->sortByDesc('created_at')->first();
         });
         return Inertia::render('Admin/PendaftarList', [
@@ -40,7 +40,7 @@ class PendaftarController extends Controller
     public function rincian_data_asesi($sert_id, $asesi_id, Request $request)
     {
         NotificationController::markAsRead($request);
-        $asesi = Asesi::with(['student.user', 'student.studentfiles', 'asesifiles', 'makulnilais', 'transaction' => fn($q) => $q->latest(), 'sertifikat'])->findOrFail($asesi_id);
+        $asesi = Asesi::with(['student.user', 'asesifiles', 'makulnilais', 'transaction' => fn($q) => $q->latest(), 'sertifikat'])->findOrFail($asesi_id);
         $asesi->latest_transaction = $asesi->transaction->first();
         // dd($asesi->transaction);
         $sertification = Sertification::findOrFail($sert_id);
@@ -57,7 +57,7 @@ class PendaftarController extends Controller
         $messageNotif = '';
         if ($request->status === 'dilanjutkan_asesmen') {
             $messageNotif = 'Selamat, Anda dilanjutkan ke asesmen, kini anda bisa mengakses form input bukti pembayaran dan pengumuman';
-        } else if ($request->status === 'daftar') {
+        } else if ($request->status === 'menunggu_verifikasi_berkas') {
             $messageNotif = 'Status Anda kembali menjadi daftar';
         } else if ($request->status === 'lulus_sertifikasi') {
             $messageNotif = 'Selamat, Anda dinyatakan lulus sertifikasi, silahkan tunggu Admin mengupload sertifikat Anda.';
@@ -79,7 +79,7 @@ class PendaftarController extends Controller
 
         if ($user) {
             $body = $messageNotif;
-            $url = route('admin.sertifikasi.rincian.assessment.asesi.index', ['sert_id' => $sert_id, 'asesi_id' => $asesi_id, 'messageNotif' => $messageNotif]);
+            $url = route('asesi.sertifikasi.applied.show', ['sert_id' => $sert_id, 'asesi_id' => $asesi_id, 'messageNotif' => $messageNotif]);
             NotificationLog::create([
                 'user_id' => $user->id,
                 'type' => 'StatusAsesiUpdated',

@@ -58,7 +58,7 @@ const showViewMode = () => {
                 <div v-if="props.sertification.rincian_tugas_asesmen">
                     <!-- Info Pembuat Tugas -->
                     <div class="flex items-center gap-3 mb-4">
-                        <div class="flex-shrink-0">
+                        <div class="shrink-0">
                             <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
                                 fill="currentColor" viewBox="0 0 24 24">
                                 <path
@@ -67,16 +67,15 @@ const showViewMode = () => {
                         </div>
                         <div>
                             <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                <div v-if="props.sertification.pembuatrinciantugasasesmen.asesor">
-                                    {{ props.sertification.pembuatrinciantugasasesmen.asesor.name }}
+                                <div v-if="props.sertification.pembuatrinciantugasasesmen">
+                                    {{ props.sertification.pembuatrinciantugasasesmen.name }}
                                 </div>
                                 <div v-else>
                                     Admin
                                 </div>
                             </h5>
-                            <div class="text-xs text-gray-400">
-                                {{ props.sertification.rincian_tugasasesmen_dibuat_pada }}
-                                <!-- Jika sudah lewat, tampilkan tanggal  -->
+                            <div v-if="props.sertification.tanggal_rincian_asesmen_dibuat_formatted" class="text-xs text-gray-400">
+                                {{ props.sertification.tanggal_rincian_asesmen_dibuat_formatted }}
                             </div>
                         </div>
                     </div>
@@ -91,7 +90,7 @@ const showViewMode = () => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
                             <a v-for="file in sertification.asesmenfiles" :key="file.id"
                                 :href="`/storage/${file.path_file}`" target="_blank"
-                                class="flex items-center justify-between gap-4 px-3 py-2 border-1 border-gray-300 dark:border-gray-700 rounded-md text-xs">
+                                class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
                                 <span
                                     class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">{{
                                         file.path_file.split('/').pop() }}</span>
@@ -103,7 +102,7 @@ const showViewMode = () => {
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tugas Terkumpul:</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                             <div v-for="file in props.asesi.asesiasesmenfiles" :key="file.id"
-                                class="flex items-center justify-between gap-4 px-3 py-2 border-1 border-gray-300 dark:border-gray-700 rounded-md text-xs">
+                                class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
                                 <a :href="`/storage/${file.path_file}`" target="_blank"
                                     class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
                                     {{ file.path_file.split('/').pop() }}

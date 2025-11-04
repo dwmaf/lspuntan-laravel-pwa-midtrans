@@ -2,6 +2,16 @@
 import { ref, computed } from "vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import NavLink from "./NavLink.vue";
+import {
+    IconLayoutDashboard,
+    IconCertificate,
+    IconBook,
+    IconUser,
+    IconChalkboardTeacher,
+    IconLogout,
+    IconLayoutSidebar,
+    IconLogs
+} from '@tabler/icons-vue';
 
 const open = ref(true);
 const page = usePage();
@@ -14,14 +24,15 @@ const hasAsesiRole = computed(() => roles.value.includes('asesi'));
 const navLinks = computed(() => {
     if (hasAdminRole.value || hasAsesorRole.value) {
         const links = [
-            { href: route('admin.dashboard'), label: 'Dashboard', active: route().current('admin.dashboard'), icon: 'fa-gauge' },
-            { href: route('admin.kelolasertifikasi.index'), label: 'Sertifikasi', active: route().current('admin.kelolasertifikasi.*'), icon: 'fa-certificate' },
-            { href: route('profile.edit'), label: 'Profile', active: route().current('profile.edit'), icon: 'fa-user' },
+            { href: route('admin.dashboard'), label: 'Dashboard', active: route().current('admin.dashboard'), icon:IconLayoutDashboard },
+            { href: route('admin.kelolasertifikasi.index'), label: 'Sertifikasi', active: route().current('admin.kelolasertifikasi.*'), icon: IconCertificate },
+            { href: route('profile.edit'), label: 'Profile', active: route().current('profile.edit'), icon:IconUser },
         ];
         if (hasAdminRole) {
             links.push(
-                { href: route('admin.skema.create'), label: 'Skema', active: route().current('admin.skema.*'), icon: 'fa-book' },
-                { href: route('admin.asesor.index'), label: 'Asesor', active: route().current('admin.asesor.*'), icon: 'fa-chalkboard-teacher' }
+                { href: route('admin.skema.create'), label: 'Skema', active: route().current('admin.skema.*'), icon: IconBook },
+                { href: route('admin.asesor.index'), label: 'Asesor', active: route().current('admin.asesor.*'), icon: IconChalkboardTeacher },
+                { href: route('admin.activity-logs.index'), label: 'Logs', active: route().current('admin.activity-logs.index'), icon: IconLogs }
             );
         }
         // console.log('role admin/asesor tereksekusi');
@@ -30,9 +41,9 @@ const navLinks = computed(() => {
         // console.log('role asesi tereksekusi');
 
         return [
-            { href: route('asesi.dashboard'), label: 'Dashboard', active: route().current('asesi.dashboard'), icon: 'fa-gauge' },
-            { href: route('asesi.sertifikasi.index'), label: 'Sertifikasi', active: route().current('asesi.sertifikasi.*'), icon: 'fa-certificate' },
-            { href: route('profile_asesi.edit'), label: 'Profile', active: route().current('profile_asesi.edit'), icon: 'fa-user' },
+            { href: route('asesi.dashboard'), label: 'Dashboard', active: route().current('asesi.dashboard'), icon: IconLayoutDashboard },
+            { href: route('asesi.sertifikasi.index'), label: 'Sertifikasi', active: route().current('asesi.sertifikasi.*'), icon: IconCertificate },
+            { href: route('profile_asesi.edit'), label: 'Profile', active: route().current('profile_asesi.edit'), icon: IconUser },
         ];
     }
     return [];
@@ -45,19 +56,23 @@ const navLinks = computed(() => {
     <div>
         <aside class="h-full bg-white dark:bg-gray-800 p-3 transition-all duration-300 overflow-visible z-40"
             :class="open ? 'w-48 translate-x-0' : 'w-16 translate-x-0'">
+            <div class="flex" v-if="open">
+                <div class="shrink-0 flex items-center">
+                    <Link :href="route('admin.dashboard')">
+                        <img src="/logo-lsp.png" alt="Logo LSP" class="block h-15 w-auto" />
+                    </Link>
+                </div>
+            </div>
             <button @click="open = !open"
                 class="text-gray-700 dark:text-gray-200 cursor-pointer mb-2 absolute top-5 right-5">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                <IconLayoutSidebar size="20" strokeWidth="2"/>
             </button>
 
-            <div class="mt-10">
+            <div :class="!open? 'mt-10' : ''">
                 <NavLink v-for="link in navLinks" :key="link.href" :href="link.href" :active="link.active"
                     :icon="link.icon" :is-open="open">{{ link.label }}
                 </NavLink>
-                <NavLink :href="route('logout')" :icon="'fa-right-from-bracket'" method="post" :is-open="open"
+                <NavLink class="border-t border-gray-200 dark:border-gray-600" :href="route('logout')" :icon="IconLogout" method="post" :is-open="open"
                     as="button">
                     Log Out
                 </NavLink>

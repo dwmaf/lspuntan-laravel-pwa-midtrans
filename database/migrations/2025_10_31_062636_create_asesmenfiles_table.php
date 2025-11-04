@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('studentfiles', function (Blueprint $table) {
+        Schema::create('asesmenfiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained();
+            $table->foreignId('asesmen_id')->constrained();
             $table->string('path_file')->nullable();
             $table->string('type')->nullable();
             $table->timestamps();
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('studentfiles');
+        Schema::dropIfExists('asesmenfiles');
     }
 };

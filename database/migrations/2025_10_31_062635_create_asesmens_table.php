@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('asesmenfiles', function (Blueprint $table) {
+        Schema::create('asesmens', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sertification_id')->constrained();
-            $table->string('path_file')->nullable();
-            $table->string('type')->nullable();
+            $table->foreignId('sertification_id')->constrained()->onDelete('cascade');
+            $table->text('content')->nullable();
+            $table->dateTime('deadline')->nullable();
+            $table->foreignId('user_id')->constrained();
+            $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('asesmenfiles');
+        Schema::dropIfExists('asesmens');
     }
 };

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { Image } from 'lucide-vue-next';
 
 const props = defineProps({
     path: {
@@ -12,7 +13,7 @@ const iconDetails = computed(() => {
     const extension = props.path.split('.').pop().toLowerCase();
 
     if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
-        return { type: 'fa', icon:'image', color: 'bg-red-500', text: '' };
+        return { type: 'lucide', icon:'image', color: 'bg-red-500', text: '' };
     }
     if (['doc', 'docx'].includes(extension)) {
         return { type: 'text', color: 'bg-blue-500', text: 'W' };
@@ -32,9 +33,9 @@ const iconDetails = computed(() => {
 </script>
 
 <template>
-    <div :class="[iconDetails.color, 'w-5 h-5 rounded-sm flex-shrink-0 flex items-center justify-center']">
-        
-        <FontAwesomeIcon v-if="iconDetails.type === 'fa'" :icon="iconDetails.icon" class="h-4 w-4 text-white" />
+    <div :class="[iconDetails.color, 'w-5 h-5 rounded-sm shrink-0 flex items-center justify-center']">
+        <Image v-if="iconDetails.type === 'lucide'" class="h-4 w-4 text-white" stroke-width="2"/>
+        <!-- <FontAwesomeIcon v-if="iconDetails.type === 'lucide'" :icon="iconDetails.icon" class="h-4 w-4 text-white" /> -->
         <svg v-else-if="iconDetails.type === 'svg'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" :d="iconDetails.path" />
         </svg>

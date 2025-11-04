@@ -24,7 +24,7 @@ use Kreait\Firebase\Exception\Messaging\NotFound;
 class PembayaranAsesiController extends Controller
 {
 
-    // buat nampilin daftar sertifikasi yg tersedia di sisi asesi
+    
     public function index_rincian_pembayaran($sert_id, $asesi_id,  Request $request)
     {
         // dd($request);
@@ -33,16 +33,14 @@ class PembayaranAsesiController extends Controller
             'student',
             'transaction' => fn($q) => $q->latest(), // Ambil semua transaksi, urutkan terbaru
         ])->findOrFail($asesi_id);
-
-        // Pastikan asesi ini milik user yang sedang login
+        
         if ($asesi->student->user_id !== $request->user()->id) {
             abort(403);
         }
 
-        // Siapkan transaksi terakhir untuk kemudahan di frontend
         $asesi->latest_transaction = $asesi->transaction->first();
         return Inertia::render('Asesi/PembayaranAsesi', [
-            'sertification' => Sertification::with('skema', 'pembuatrincianpembayaran')->findOrFail($sert_id),
+            'sertification' => Sertification::with('skema', 'paymentInstruction')->findOrFail($sert_id),
             'asesi' => $asesi,
         ]);
     }

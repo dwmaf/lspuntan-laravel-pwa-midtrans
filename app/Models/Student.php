@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Student extends Model
 {
-    /** @use HasFactory<\Database\Factories\StudentFactory> */
     protected $guarded = [
         'id',
         'created_at',
@@ -21,8 +20,5 @@ class Student extends Model
     {
         return $this->hasMany(Asesi::class);
     }
-    public function studentfiles()
-    {
-        return $this->hasMany(Studentfile::class);
-    }
+    
 }
