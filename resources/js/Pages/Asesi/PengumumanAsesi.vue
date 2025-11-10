@@ -69,7 +69,7 @@ onMounted(() => {
                 <div v-for="pengumuman in props.pengumumans" :key="pengumuman.id"
                     class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <div class="flex items-center gap-3 mb-4">
-                        <div class="flex-shrink-0">
+                        <div class="shrink-0">
                             <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
                                 fill="currentColor" viewBox="0 0 24 24">
                                 <path
@@ -97,7 +97,7 @@ onMounted(() => {
                     </div>
                     <div v-if="pengumuman.newsfiles.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                         <div v-for="file in pengumuman.newsfiles" :key="file.id"
-                            class="flex items-center justify-between gap-4 px-3 py-2 border-1 border-gray-300 dark:border-gray-700 rounded-md text-xs">
+                            class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
                             <a :href="`/storage/${file.path_file}`" target="_blank"
                                 class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
                                 {{ file.path_file.split('/').pop() }}
@@ -120,7 +120,7 @@ onMounted(() => {
 
 
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="flex-shrink-0">
+                    <div class="shrink-0">
 
                         <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
                             fill="currentColor" viewBox="0 0 24 24">

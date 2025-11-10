@@ -11,9 +11,7 @@ class News extends Model
 {
     use LogsActivity;
     protected $guarded = [
-        'id',
-        'created_at',
-        'updated_at',
+        
     ];
     public function sertification()
     {

@@ -12,12 +12,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Sertification extends Model
 {
-    use LogsActivity;
+    use LogsActivity, HasFactory;
     /** @use HasFactory<\Database\Factories\SertificationFactory> */
     protected $guarded = [
-        'id',
-        'created_at',
-        'updated_at',
+        
     ];
     public function asesors()
     {

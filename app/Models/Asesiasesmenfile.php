@@ -7,9 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Asesiasesmenfile extends Model
 {
     protected $guarded = [
-        'id',
-        'created_at',
-        'updated_at',
+        
     ];
     public function asesi()
     {

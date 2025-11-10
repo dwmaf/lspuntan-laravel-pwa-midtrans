@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin\Sertifikasi;
 
+use App\Enums\AsesiStatus;
+use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Http\Request;
@@ -46,7 +48,15 @@ class PendaftarController extends Controller
         $sertification = Sertification::findOrFail($sert_id);
         return Inertia::render('Admin/PendaftarDetail', [
             'asesi' => $asesi,
-            'sertification' => $sertification
+            'sertification' => $sertification,
+            'asesiStatusOptions' => collect(AsesiStatus::cases())->map(fn($case) => [
+                'value' => $case->value,
+                'label' => str_replace('_', ' ', $case->value),
+            ]),
+            'paymentStatusOptions' => collect(TransactionStatus::cases())->map(fn($case) => [
+                'value' => $case->value,
+                'label' => str_replace('_', ' ', $case->value),
+            ]),
         ]);
     }
 

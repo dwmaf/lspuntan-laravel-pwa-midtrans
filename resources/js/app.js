@@ -71,6 +71,7 @@ if ('serviceWorker' in navigator) {
 
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import axios from 'axios';
 // import $ from 'jquery';
 // window.$ = window.jQuery = $;
 
@@ -190,6 +191,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
+
+window.getToken = getToken;
+window.messaging = messaging;
+
+
 function requestPermissionAndGetToken() {
     console.log("Requesting permission for notifications...");
     Notification.requestPermission().then((permission) => {
@@ -213,30 +219,29 @@ function requestPermissionAndGetToken() {
     });
 }
 
-function sendTokenToServer(token) {
-    fetch("/fcm/token", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-        },
-        body: JSON.stringify({ token: token }),
+window.sendTokenToServer = function(token) {
+    axios.post('/fcm/token', {
+        token: token
     })
-    .then(response => response.json())
-    .then(data => console.log("Token saved to server:", data))
-    .catch(error => console.error("Error sending token to server:", error));
+    .then(response => console.log("Token saved to server:", response.data))
+    .catch(error => {
+        console.error("Error sending token to server:", error);
+        if (error.response) {
+            console.error("Server Response:", error.response.data);
+        }
+    });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const enableNotifBtn = document.getElementById('enable-notifications-btn');
-    if (enableNotifBtn) {
-        enableNotifBtn.addEventListener('click', () => {
-            if (Notification.permission === 'default') {
-                requestPermissionAndGetToken();
-            }
-        });
-    }
-});
+// document.addEventListener('DOMContentLoaded', () => {
+//     const enableNotifBtn = document.getElementById('enable-notifications-btn');
+//     if (enableNotifBtn) {
+//         enableNotifBtn.addEventListener('click', () => {
+//             if (Notification.permission === 'default') {
+//                 requestPermissionAndGetToken();
+//             }
+//         });
+//     }
+// });
 
 // Handle notifikasi saat aplikasi di foreground
 onMessage(messaging, (payload) => {

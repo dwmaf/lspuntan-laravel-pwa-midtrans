@@ -29,6 +29,7 @@ class ProfileController extends Controller
         return Inertia::render('Admin/Profile/ProfileAdmin', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'isSubscribedToNotifications' => !is_null($request->user()->fcm_token),
         ]);
     }
     // buat nampilin halaman edit profile dari sisi asesi
@@ -39,7 +40,8 @@ class ProfileController extends Controller
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
             'user' => $user,
-            'student' => $user->student
+            'student' => $user->student,
+            'isSubscribedToNotifications' => !is_null($request->user()->fcm_token),
         ]);
     }
     // buat mengupdate profile yg tadi diedit dari sisi admin

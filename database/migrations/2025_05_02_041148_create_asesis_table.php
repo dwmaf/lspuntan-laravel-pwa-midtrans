@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AsesiStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained();
             $table->foreignId('sertification_id')->constrained();
-            $table->string('status')->default('menunggu_verifikasi_berkas');
+            $table->string('status')->default(AsesiStatus::MENUNGGU_VERIFIKASI_BERKAS->value);
             $table->string('tujuan_sert');
             $table->string('apl_1');
             $table->string('apl_2');

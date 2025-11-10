@@ -23,6 +23,7 @@ const navLinks = computed(() => {
                 { href: route('admin.skema.create'), label: 'Skema', active: route().current('admin.skema.*') },
                 { href: route('admin.asesor.index'), label: 'Asesor', active: route().current('admin.asesor.*') },
                 { href: route('admin.activity-logs.index'), label: 'Logs', active: route().current('admin.activity-logs.index') },
+                { href: route('admin.users.index'), label: 'User', active: route().current('admin.users.index') },
             );
         }
         return links;

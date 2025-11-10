@@ -1,16 +1,64 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import { MoveRight } from 'lucide-vue-next';
+import Pagination from '@/Components/Pagination.vue';
+import { Head, router } from '@inertiajs/vue3';
+import { ref, reactive, computed, watch } from 'vue';
+import { MoveRight, FunnelIcon } from 'lucide-vue-next';
+import TextInput from '@/Components/TextInput.vue';
+import SelectInput from '@/Components/SelectInput.vue';
+import Dropdown from '@/Components/Dropdown.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
 const props = defineProps({
     logs: Object,
+    filters: Object,
+    filterOptions: Object,
 });
-const viewMode = ref('list'); // 'list' atau 'detail'
-const selectedLog = ref(null); // Untuk menyimpan data log yang dipilih
 
-// --- 2. BUAT FUNGSI UNTUK BERPINDAH TAMPILAN ---
+const filtersForm = reactive({
+    search: props.filters.search || '',
+    date_from: props.filters.date_from || '',
+    date_to: props.filters.date_to || '',
+    subject_type: props.filters.subject_type || '',
+    event: props.filters.event || '',
+});
+let searchTimeoutId = null;
+watch(() => filtersForm.search, (newValue) => {
+    clearTimeout(searchTimeoutId);
+    searchTimeoutId = setTimeout(() => {
+        router.get(route('admin.activity-logs.index'), filtersForm, {
+            preserveState: true,
+            replace: true,
+        });
+    }, 500);
+});
+const applyFilters = () => {
+    router.get(route('admin.activity-logs.index'), filtersForm, {
+        preserveState: true,
+        replace: true,
+    });
+};
+const resetFilters = () => {
+    Object.keys(filtersForm).forEach(key => filtersForm[key] = '');
+    applyFilters();
+};
+const subjectOptions = computed(() => {
+    return [
+        { value: '', text: 'Semua Target' },
+        ...props.filterOptions.subjects.map(s => ({ value: s, text: cleanSubjectType(s) }))
+    ];
+});
+const eventOptions = [
+    { value: '', text: 'Semua Aksi' },
+    { value: 'created', text: 'Created' },
+    { value: 'updated', text: 'Updated' },
+    { value: 'deleted', text: 'Deleted' },
+];
+const viewMode = ref('list');
+const selectedLog = ref(null);
+
+
 const showDetailView = (log) => {
     selectedLog.value = log;
     viewMode.value = 'detail';
@@ -48,6 +96,48 @@ const formatFieldName = (fieldName) => {
         </template>
 
         <div v-if="viewMode === 'list'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <div class="flex justify-end items-center gap-2 mb-4">
+                <div class="w-[243px]">
+                    <TextInput v-model="filtersForm.search" type="text" placeholder="Cari causer..."/>
+                </div>
+                <Dropdown>
+                    <template #trigger>
+                        <button
+                            class="mt-1 inline-flex items-center px-3 py-3 border border-gray-300 dark:border-gray-500 text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                            <FunnelIcon class="w-4 h-4" />
+                        </button>
+                    </template>
+                    <template #content>
+                        <div class="p-4 space-y-4">
+                            
+                            <div>
+                                <InputLabel value="Rentang Waktu" />
+                                <div class="flex flex-col gap-2">
+                                    <TextInput v-model="filtersForm.date_from" type="date" class="w-full" />
+                                    <TextInput v-model="filtersForm.date_to" type="date" class="w-full" />
+                                </div>
+                            </div>
+                            <div>
+                                <InputLabel value="Target Data" />
+                                <SelectInput v-model="filtersForm.subject_type" :options="subjectOptions" />
+                            </div>
+                            
+                            <div>
+                                <InputLabel value="Jenis Aksi" />
+                                <SelectInput v-model="filtersForm.event" :options="eventOptions" />
+                            </div>
+                        </div>
+                        <div
+                            class="border-t border-gray-200 dark:border-gray-600 px-4 py-3 flex justify-between items-center">
+                            <button @click="resetFilters"
+                                class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
+                                Reset
+                            </button>
+                            <PrimaryButton @click="applyFilters">Apply Filter</PrimaryButton>
+                        </div>
+                    </template>
+                </Dropdown>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
@@ -95,15 +185,14 @@ const formatFieldName = (fieldName) => {
                     </tbody>
                 </table>
             </div>
+            <div class="mt-4 flex justify-between items-center">
+                <span v-if="logs.total > 0" class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
+                    Menampilkan {{ logs.from }} sampai {{ logs.to }} dari {{ logs.total }} hasil
+                </span>
+                <span v-else></span>
+                <Pagination :links="logs.links" />
+            </div>
 
-            <!-- <div v-if="logs.links.length > 3" class="mt-6 flex justify-between items-center">
-                <div class="flex flex-wrap -mb-1">
-                    <template v-for="(link, key) in logs.links" :key="key">
-                        <div v-if="link.url === null" class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border rounded" v-html="link.label" />
-                        <Link v-else class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border rounded hover:bg-white focus:border-indigo-500 focus:text-indigo-500" :class="{ 'bg-white': link.active }" :href="link.url" v-html="link.label" />
-                    </template>
-                </div>
-            </div> -->
         </div>
         <div v-else-if="viewMode === 'detail' && selectedLog"
             class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -123,7 +212,7 @@ const formatFieldName = (fieldName) => {
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dilakukan Oleh</dt>
                     <dd class="mt-1 text-base text-gray-900 dark:text-gray-200">{{ selectedLog.causer?.name ?? 'Sistem'
-                        }}</dd>
+                    }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Waktu</dt>
@@ -146,7 +235,7 @@ const formatFieldName = (fieldName) => {
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Target</dt>
                     <dd class="mt-1 text-base text-gray-900 dark:text-gray-200">{{ selectedLog.subject_id }}</dd>
                 </div>
-                
+
                 <div class="sm:col-span-3" v-if="selectedLog.properties && selectedLog.properties.attributes">
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Detail Perubahan</dt>
                     <dd class="mt-2 text-sm">
@@ -172,7 +261,9 @@ const formatFieldName = (fieldName) => {
                                                 class="">
                                                 {{ selectedLog.properties.old[field] }}
                                             </span>
-                                            <MoveRight v-if="selectedLog.properties.old && selectedLog.properties.old[field]" stroke-width="1"/>
+                                            <MoveRight
+                                                v-if="selectedLog.properties.old && selectedLog.properties.old[field]"
+                                                stroke-width="1" />
                                             <span>
                                                 {{ newValue }}
                                             </span>

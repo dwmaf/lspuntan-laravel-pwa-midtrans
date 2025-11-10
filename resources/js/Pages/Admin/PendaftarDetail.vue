@@ -19,6 +19,8 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     asesi: Object,
     sertification: Object,
+    asesiStatusOptions: Array, 
+    paymentStatusOptions: Array, 
 });
 
 const showStatusModal = ref(false);
@@ -243,11 +245,9 @@ const getPaymentStatusInfo = (transaction) => {
                         <InputLabel value="Status Asesi" required />
                         <select v-model="statusForm.status"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option value="menunggu_verifikasi_berkas">Daftar</option>
-                            <option value="ditolak">Ditolak</option>
-                            <option value="perlu_perbaikan_berkas">Perlu Perbaikan Berkas</option>
-                            <option value="dilanjutkan_asesmen">Dilanjutkan ke asesmen</option>
-                            <option value="lulus_sertifikasi">Lulus Sertifikasi</option>
+                            <option v-for="option in asesiStatusOptions" :key="option.value" :value="option.value" class="capitalize">
+                                {{ option.label }}
+                            </option>
                         </select>
                         <InputError :message="statusForm.errors.status" />
                     </div>
@@ -278,10 +278,9 @@ const getPaymentStatusInfo = (transaction) => {
                         <InputLabel value="Status Pembayaran Asesi" />
                         <select v-model="paymentForm.status"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option value="pending">Menunggu Verifikasi</option>
-                            <option value="bukti_pembayaran_ditolak">Bukti Pembayaran Ditolak</option>
-                            <option value="perlu_perbaikan_berkas">Perlu Perbaikan Berkas</option>
-                            <option value="bukti_pembayaran_terverifikasi">Bukti Pembayaran Diterima</option>
+                            <option v-for="option in paymentStatusOptions" :key="option.value" :value="option.value" class="capitalize">
+                                {{ option.label }}
+                            </option>
                         </select>
                         <InputError :message="paymentForm.errors.status" />
                     </div>

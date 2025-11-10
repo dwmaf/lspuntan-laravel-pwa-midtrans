@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AsesiStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
@@ -9,12 +10,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Asesi extends Model
 {
-    use LogsActivity;
+    use LogsActivity, HasFactory;
     /** @use HasFactory<\Database\Factories\AsesiFactory> */
-    protected $guarded = [
-        'id',
-        'created_at',
-        'updated_at',
+    protected $guarded = [];
+    protected $casts = [
+        'status' => AsesiStatus::class,
     ];
     public function student()
     {
@@ -59,6 +59,5 @@ class Asesi extends Model
                 'apl_2',
                 'foto_ktm',
             ]);
-
     }
 }

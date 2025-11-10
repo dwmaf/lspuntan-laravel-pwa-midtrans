@@ -128,7 +128,7 @@ class KelolaSertifikasiController extends Controller
     public function rincian_laporan($sert_id, Request $request)
     {
         return Inertia::render('Admin/LaporanAdmin', [
-            'sertification' => Sertification::with('asesor.user', 'skema', 'asesis')->findOrFail($sert_id)
+            'sertification' => Sertification::with('asesors.user', 'skema', 'asesis.student.user')->findOrFail($sert_id)
         ]);
     }
 }

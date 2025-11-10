@@ -13,6 +13,7 @@ use App\Http\Controllers\Asesi\Sertifikasi\AsesmenAsesiController;
 use App\Http\Controllers\Asesi\Sertifikasi\KelolaSertifikasiAsesiController;
 use App\Http\Controllers\Admin\AsesorController;
 use App\Http\Controllers\Admin\DashboardAdminController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Asesi\Sertifikasi\PengumumanAsesiController;
 use App\Http\Controllers\FcmController;
 use App\Http\Controllers\ProfileController;
@@ -80,6 +81,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
     Route::post('/fcm/token', [FcmController::class, 'saveToken'])->name('fcm.token');
+    Route::delete('/fcm/token', [FcmController::class, 'removeToken'])->name('fcm.token.remove');
     Route::get('/notifications/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 });
 
@@ -133,6 +135,9 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
         Route::patch('/{asesi_id}/pendaftar/upload-certificate/patch', [PendaftarController::class, 'upload_certificate'])->name('pendaftar.upload-certificate.update'); // admin.sertifikasi.pendaftar.upload-certificate.update
     });
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::post('/users/{user}/ban', [UserController::class, 'ban'])->name('users.ban');
 });
 
 

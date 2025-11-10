@@ -228,76 +228,67 @@ const submit = () => {
             </div>
 
             <div v-show="tab === 'selesai'">
-                <div class="flex justify-end items-center mb-4">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                        <FilterDropdown label="Asesor" :options="asesorOptions" v-model="asesorFilter" />
-                        <FilterDropdown label="Skema" :options="skemaOptions" v-model="skemaFilter" />
-                        <FilterDropdown label="Tahun" :options="yearOptions" v-model="tahunFilter" />
-                        <SecondaryButton @click="resetFilters" class="w-full justify-center h-10">
-                            Reset
-                        </SecondaryButton>
-                    </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end mb-4">
+                    <FilterDropdown label="Asesor" :options="asesorOptions" v-model="asesorFilter" />
+                    <FilterDropdown label="Skema" :options="skemaOptions" v-model="skemaFilter" />
+                    <FilterDropdown label="Tahun" :options="yearOptions" v-model="tahunFilter" />
+                    <SecondaryButton @click="resetFilters" class="w-full justify-center h-10">
+                        Reset
+                    </SecondaryButton>
                 </div>
+                
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div v-if="filteredSertificationsSelesai.length > 0" v-for="sert in filteredSertificationsSelesai"
-                        :key="sert.id" class="bg-white p-6 rounded-lg dark:bg-gray-800 opacity-70">
-                        <div class="bg-white p-6 rounded-lg dark:bg-gray-800 opacity-70">
-                            <div class="flex items-center gap-2">
-                                <BookOpen class="shrink-0 text-gray-700 dark:text-gray-200" />
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">
-                                    {{ sert.skema.nama_skema }}
-                                </h3>
-                            </div>
-                            <div class="flex items-center mt-4 gap-2">
-                                <IconChalkboardTeacher class="w-4 h-4 text-gray-700 dark:text-gray-200" />
-                                <p class=" text-gray-600 text-sm dark:text-gray-200">
-                                    <span class="font-semibold">Asesor:</span>
-                                <ul v-if="sert.asesors && sert.asesors.length > 0" class="list-disc list-inside">
-                                    <li v-for="asesor in sert.asesors" :key="asesor.id">
-                                        {{ asesor.user.name }}
-                                    </li>
-                                </ul>
-                                <span v-else>Belum ada asesor ditugaskan.</span>
-                                </p>
-                            </div>
-                            <div class="flex items-center mt-4 gap-2">
-                                <CalendarRange class="shrink-0 w-4 h-4 text-gray-700 dark:text-gray-200" />
-                                <p class=" text-gray-600 text-sm dark:text-gray-200">
-                                    Pendaftaran:
-                                    {{ formatDate(sert.tgl_apply_dibuka) }} &ndash;
-                                    {{ formatDate(sert.tgl_apply_ditutup) }}
-                                </p>
-                            </div>
-                            <div class="flex items-center mt-4 gap-2">
-                                <DollarSign class="w-4 h-4 text-gray-700 dark:text-gray-200" />
-                                <p class=" text-gray-600 text-sm dark:text-gray-200">
-                                    Biaya: Rp
-                                    {{
-                                        new Intl.NumberFormat(
-                                            "id-ID"
-                                        ).format(sert.payment_instruction.biaya)
-                                    }}
-                                </p>
-                            </div>
-                            <div class="flex items-center mt-4">
-                                <MapPin class="w-4 h-4 text-gray-700 dark:text-gray-200" />
-                                <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">
-                                    <span class="font-semibold">
-                                        TUK:
-                                    </span>
-                                    {{
-                                        sert.tuk
-                                    }}
-                                </p>
-                            </div>
-                            <div class="mt-4">
-                                <PrimaryLinkButton :href="route(
-                                    'admin.kelolasertifikasi.show',
-                                    sert.id
-                                )
-                                    ">Detail
-                                </PrimaryLinkButton>
-                            </div>
+                        :key="sert.id" class="bg-white p-6 rounded-lg dark:bg-gray-800">
+                        <div class="flex items-center gap-2">
+                            <BookOpen class="shrink-0 text-gray-700 dark:text-gray-200" />
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">
+                                {{ sert.skema.nama_skema }}
+                            </h3>
+                        </div>
+                        <div v-for="(asesor, index) in sert.asesors" :key="asesor.id" class="flex items-center mt-4 gap-2">
+                            <IconChalkboardTeacher class="w-4 h-4 text-gray-700 dark:text-gray-200" />
+                            <p class=" text-gray-600 text-sm dark:text-gray-200">
+                                <span class="font-semibold">Asesor {{ index + 1 }} : {{ asesor.user.name }}</span>
+                            </p>
+                        </div>
+                        <div class="flex items-center mt-4 gap-2">
+                            <CalendarRange class="shrink-0 w-4 h-4 text-gray-700 dark:text-gray-200" />
+                            <p class=" text-gray-600 text-sm dark:text-gray-200">
+                                Pendaftaran:
+                                {{ formatDate(sert.tgl_apply_dibuka) }} &ndash;
+                                {{ formatDate(sert.tgl_apply_ditutup) }}
+                            </p>
+                        </div>
+                        <div class="flex items-center mt-4 gap-2">
+                            <DollarSign class="w-4 h-4 text-gray-700 dark:text-gray-200" />
+                            <p class=" text-gray-600 text-sm dark:text-gray-200">
+                                Biaya: Rp
+                                {{
+                                    new Intl.NumberFormat(
+                                        "id-ID"
+                                    ).format(sert.payment_instruction.biaya)
+                                }}
+                            </p>
+                        </div>
+                        <div class="flex items-center mt-4">
+                            <MapPin class="w-4 h-4 text-gray-700 dark:text-gray-200" />
+                            <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">
+                                <span class="font-semibold">
+                                    TUK:
+                                </span>
+                                {{
+                                    sert.tuk
+                                }}
+                            </p>
+                        </div>
+                        <div class="mt-4">
+                            <PrimaryLinkButton :href="route(
+                                'admin.kelolasertifikasi.show',
+                                sert.id
+                            )
+                                ">Detail
+                            </PrimaryLinkButton>
                         </div>
                     </div>
 

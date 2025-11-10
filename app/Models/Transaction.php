@@ -2,22 +2,21 @@
 
 namespace App\Models;
 
+use App\Enums\TransactionStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
+    use HasFactory;
     /** @use HasFactory<\Database\Factories\TransactionFactory> */
-    protected $guarded = [
-        'id',
-        'created_at',
-        'updated_at',
+    protected $guarded = [    
+    ];
+    protected $cats = [
+        'status' => TransactionStatus::class,
     ];
 
-    /**
-     * Boot the model.
-     * Method ini akan secara otomatis dijalankan oleh Laravel.
-     */
+    
     protected static function boot()
     {
         parent::boot();

@@ -10,7 +10,8 @@ import {
     IconChalkboardTeacher,
     IconLogout,
     IconLayoutSidebar,
-    IconLogs
+    IconLogs,
+    IconUsers
 } from '@tabler/icons-vue';
 
 const open = ref(true);
@@ -32,7 +33,8 @@ const navLinks = computed(() => {
             links.push(
                 { href: route('admin.skema.create'), label: 'Skema', active: route().current('admin.skema.*'), icon: IconBook },
                 { href: route('admin.asesor.index'), label: 'Asesor', active: route().current('admin.asesor.*'), icon: IconChalkboardTeacher },
-                { href: route('admin.activity-logs.index'), label: 'Logs', active: route().current('admin.activity-logs.index'), icon: IconLogs }
+                { href: route('admin.activity-logs.index'), label: 'Logs', active: route().current('admin.activity-logs.index'), icon: IconLogs },
+                { href: route('admin.users.index'), label: 'User', active: route().current('admin.users.index'), icon: IconUsers }
             );
         }
         // console.log('role admin/asesor tereksekusi');

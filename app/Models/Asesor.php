@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Asesor extends Model
 {
     protected $guarded = [
-        'id',
-        'created_at',
-        'updated_at',
+        
     ];
     public function skemas()
     {

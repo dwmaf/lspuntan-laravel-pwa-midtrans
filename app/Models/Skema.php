@@ -7,11 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Skema extends Model
 {
+    use HasFactory;
     /** @use HasFactory<\Database\Factories\SkemaFactory> */
     protected $guarded = [
-        'id',
-        'created_at',
-        'updated_at',
+        
     ];
     public function asesors()
     {

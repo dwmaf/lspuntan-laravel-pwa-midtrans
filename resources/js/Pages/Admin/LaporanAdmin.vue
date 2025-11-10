@@ -45,7 +45,7 @@ const props = defineProps({
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Asesor</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{
-                            props.sertification.asesor.user.name }}
+                            props.sertification.asesors }}
                         </dd>
                     </div>
                 </div>
@@ -78,7 +78,7 @@ const props = defineProps({
                                             class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
 
 
-                                            <tr v-for="asesi in props.sertification.asesi" :key="asesi.id">
+                                            <tr v-for="(asesi, index) in props.sertification.asesis" :key="asesi.id">
                                                 <td
                                                     class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                     {{ index + 1 }}</td>
@@ -96,7 +96,7 @@ const props = defineProps({
                                                 </td>
                                             </tr>
 
-                                            <tr v-if="!props.sertification.asesi">
+                                            <tr v-if="!props.sertification.asesis">
                                                 <td colspan="4"
                                                     class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                                     Belum ada peserta yang dinyatakan lulus untuk sertifikasi ini.

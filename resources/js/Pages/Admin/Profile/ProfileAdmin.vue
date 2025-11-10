@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 import UpdateProfileAdmin from './Partials/UpdateProfileAdmin.vue';
 import UpdatePasswordAdmin from './Partials/UpdatePasswordAdmin.vue';
+import FCMPermission from '@/Components/FCMPermission.vue';
 
 
 defineProps({
@@ -41,6 +42,11 @@ defineProps({
                 class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800"
             >
                 <UpdatePasswordAdmin class="max-w-xl" />
+            </div>
+            <div
+                class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800"
+            >
+                <FCMPermission />
             </div>
 
         </div>
