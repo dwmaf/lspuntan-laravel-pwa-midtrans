@@ -13,6 +13,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('asesi_id')->constrained();
             $table->string('path_file')->nullable();
+            $table->string('type')->nullable();
             $table->timestamps();
         });
     }

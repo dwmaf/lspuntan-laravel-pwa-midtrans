@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Asesi;
 use App\Models\NotificationLog;
 use App\Notifications\RincianPembayaranUpdated;
+use App\Traits\SendsPushNotifications;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
@@ -19,7 +20,7 @@ use Kreait\Firebase\Exception\Messaging\NotFound;
 
 class PembayaranController extends Controller
 {
-
+use SendsPushNotifications;
     public function index_rincian_pembayaran($sert_id, Request $request)
     {
         return Inertia::render('Admin/PembayaranAdmin', [
@@ -55,31 +56,12 @@ class PembayaranController extends Controller
             ->get();
 
         if ($asesis->isNotEmpty()) {
+            $title = 'Update Rincian Pembayaran';
+            $body = 'Rincian pembayaran diupdate untuk sertifikasi ' . $sertification->skema->nama_skema;
             foreach ($asesis as $asesi) {
                 $user = $asesi->student->user ?? null;
-                $body = 'Rincian pembayaran diupdate untuk sertifikasi ' . $sertification->skema->nama_skema;
                 $url = route('asesi.payment.create', ['sert_id' => $sertification->id, 'asesi_id' => $asesi->id]);
-                if ($user) {
-                    NotificationLog::create([
-                        'user_id' => $user->id,
-                        'type' => 'RincianPembayaranUpdated',
-                        'message' => $body,
-                        'link' => $url,
-                    ]);
-                }
-                if ($user->fcm_token) {
-                    $message = CloudMessage::new()
-                        ->withNotification(FirebaseNotification::create($body))
-                        ->withData(['url' => $url]);
-                    try {
-                        $messaging->send($message->toToken($user->fcm_token));
-                    } catch (NotFound $e) {
-                        Log::warning("Token FCM tidak valid untuk user {$user->id}. Menghapus token.");
-                        $user->update(['fcm_token' => null]);
-                    } catch (\Throwable $e) {
-                        Log::error("Gagal mengirim notifikasi asesi mendaftar sertifikasi ke user {$user->id}: " . $e->getMessage());
-                    }
-                }
+                $this->sendPushNotification($messaging, $user, $title, $body, $url, 'RincianPembayaranUpdated');
             }
         }
         return redirect()->back()->with('message', 'Rincian pembayaran berhasil disimpan!');

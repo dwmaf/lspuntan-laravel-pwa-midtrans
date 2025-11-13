@@ -8,10 +8,15 @@ import { IconChalkboardTeacher } from "@tabler/icons-vue";
 
 const props = defineProps({
     sertifications: Array,
-    asesi: Object, // Ini adalah objek { sertification_id: asesi_object }
+    asesi: Object,
 });
 
-
+const isNew = (sert) => {
+    const createdAt = new Date(sert.created_at);
+    const now = new Date();
+    const diffDays = (now - createdAt) / (1000 * 3600 * 24);
+    return diffDays <= 7;
+}
 
 // Fungsi helper untuk mengecek status pendaftaran
 const getSertifikasiStatus = (sert) => {
@@ -69,6 +74,10 @@ const formatCurrency = (value) => {
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">
                             {{ sert.skema.nama_skema }}
                         </h3>
+                        <span v-if="isNew(sert) && getSertifikasiStatus(sert).type === 'open'"
+                            class=" px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100">
+                            Dibuka
+                        </span>
                         <span v-if="getSertifikasiStatus(sert).type === 'open'"
                             class=" px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100">
                             Dibuka

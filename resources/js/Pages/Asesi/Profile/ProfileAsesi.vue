@@ -12,6 +12,7 @@ const props = defineProps({
     status: String,
     user: Object,
     student: Object,
+    isSubscribed: Boolean,
 });
 
 
@@ -36,7 +37,7 @@ const props = defineProps({
                 <UpdatePassword />
             </div>
             <div class="bg-white p-4 rounded-lg dark:bg-gray-800">
-                <FCMPermission/>
+                <FCMPermission :is-subscribed="isSubscribed"/>
             </div>
         </div>
     </AsesiLayout>

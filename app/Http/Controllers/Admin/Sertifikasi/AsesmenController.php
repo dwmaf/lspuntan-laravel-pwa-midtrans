@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin\Sertifikasi;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\NotificationController;
+use App\Traits\SendsPushNotifications;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use App\Models\Asesi;
@@ -20,6 +20,7 @@ use Kreait\Firebase\Exception\Messaging\NotFound;
 
 class AsesmenController extends Controller
 {
+    use SendsPushNotifications;
     public function edit($id, Request $request)
     {
         // dd($id);
@@ -66,22 +67,8 @@ class AsesmenController extends Controller
                 'published_at' => $request->boolean('is_published') ? now() : null,
             ]
         );
-        if ($request->filled('delete_files_collection')) {
-            $filesToDelete = Asesmenfile::whereIn('id', $request->delete_files_collection)->get();
-            foreach ($filesToDelete as $file) {
-                Storage::disk('public')->delete($file->path_file);
-                $file->delete();
-            }
-        }
-        if ($request->hasFile('newFiles')) {
-            foreach ($request->file('newFiles') as $file) {
-                $path = FileHelper::storeFileWithUniqueName($file, 'sert_files')['path'];
-                Asesmenfile::create([
-                    'asesmen_id' => $asesmen->id,
-                    'path_file' => $path,
-                ]);
-            }
-        }
+        FileHelper::handleCollectionFileDeletes(Asesmenfile::class, $request->input('delete_files_collection', []));
+        FileHelper::handleCollectionFileUploads(Asesmenfile::class, 'asesmen_id', $asesmen->id, $request, ['newFiles'], 'sert_files');
 
         $asesis = Asesi::with(['student.user'])
             ->where('sertification_id', $sert_id)
@@ -89,31 +76,19 @@ class AsesmenController extends Controller
             ->get();
 
         if ($asesis->isNotEmpty()) {
+            $title = 'Update Tugas Asesmen';
+            $body = 'Instruksi Tugas asesmen diperbaharui untuk sertifikasi ' . $sertification->skema->nama_skema;
             foreach ($asesis as $asesi) {
                 $user = $asesi->student->user ?? null;
-                $body = 'Instruksi Tugas asesmen diperbaharui untuk sertifikasi ' . $sertification->skema->nama_skema;
                 $url = route('asesi.assessmen.index', ['sert_id' => $sertification->id, 'asesi_id' => $asesi->id]);
-                if ($user) {
-                    NotificationLog::create([
-                        'user_id' => $user->id,
-                        'type' => 'TugasAsesmenBaru',
-                        'message' => $body,
-                        'link' => $url,
-                    ]);
-                }
-                if ($user->fcm_token) {
-                    $message = CloudMessage::new()
-                        ->withNotification(FirebaseNotification::create($body))
-                        ->withData(['url' => $url]);
-                    try {
-                        $messaging->send($message->toToken($user->fcm_token));
-                    } catch (NotFound $e) {
-                        Log::warning("Token FCM tidak valid untuk user {$user->id}. Menghapus token.");
-                        $user->update(['fcm_token' => null]);
-                    } catch (\Throwable $e) {
-                        Log::error("Gagal mengirim notifikasi asesi mendaftar sertifikasi ke user {$user->id}: " . $e->getMessage());
-                    }
-                }
+                $this->sendPushNotification(
+                    $messaging,
+                    $user,
+                    $title,
+                    $body,
+                    $url,
+                    'TugasAsesmenBaru'
+                );
             }
         }
 

@@ -14,13 +14,11 @@ use Inertia\Inertia;
 
 class PengumumanAsesiController extends Controller
 {
-
-    // buat nampilin daftar sertifikasi yg tersedia di sisi asesi
     public function index_pengumuman_asesi($sert_id, $asesi_id, Request $request)
     {
         // dd($request);
         NotificationController::markAsRead($request);
-        $sertification = Sertification::with('news.pembuatpengumuman','news.newsfiles')->findOrFail($sert_id);
+        $sertification = Sertification::with('news.user','news.newsfiles')->findOrFail($sert_id);
         $asesi = Asesi::with(['student','transaction' => fn($q) => $q->latest()])->findOrFail($asesi_id);
         $asesi->latest_transaction = $asesi->transaction->first();
         return Inertia::render('Asesi/PengumumanAsesi', [

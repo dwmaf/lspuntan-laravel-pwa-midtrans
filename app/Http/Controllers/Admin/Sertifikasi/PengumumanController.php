@@ -11,8 +11,10 @@ use App\Helpers\FileHelper;
 use App\Models\News;
 use App\Models\Newsfile;
 use App\Models\NotificationLog;
+use App\Traits\SendsPushNotifications;
 use App\Notifications\PengumumanUpdated;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
@@ -22,7 +24,7 @@ use Kreait\Firebase\Exception\Messaging\NotFound;
 
 class PengumumanController extends Controller
 {
-
+use SendsPushNotifications;
     
     public function index_pengumuman_asesmen($sert_id, Request $request)
     {
@@ -48,44 +50,18 @@ class PengumumanController extends Controller
         $news = News::create(
             $validatedData
         );
-        if ($request->hasFile('newFiles')) {
-            foreach ($request->file('newFiles') as $file) {
-                $path = FileHelper::storeFileWithUniqueName($file, 'sert_files')['path'];
-                Newsfile::create([
-                    'news_id' => $news->id,
-                    'path_file' => $path,
-                ]);
-            }
-        }
+        FileHelper::handleCollectionFileUploads(Newsfile::class, 'news_id', $news->id, $request, ['newFiles'], 'sert_files');
         $asesis = Asesi::with(['student.user'])
             ->where('sertification_id', $sert_id)
             ->where('status', 'dilanjutkan_asesmen')
             ->get();
-
-        foreach ($asesis as $asesi) {
-            $user = $asesi->student->user ?? null;
-            $body = 'Pengumuman baru: ' . $news->rincian;
-            $url = route('asesi.pengumuman.index', [$sert_id, $asesi->id, 'news_id' => $news->news_id]);
-            if ($user) {
-                NotificationLog::create([
-                    'user_id' => $user->id,
-                    'type' => 'PengumumanBaru',
-                    'message' => $body,
-                    'link' => $url,
-                ]);
-                if ($user->fcm_token) {
-                    $message = CloudMessage::new()
-                        ->withNotification(FirebaseNotification::create($body))
-                        ->withData(['url' => $url]);
-                    try {
-                        $messaging->send($message->toToken($user->fcm_token));
-                    } catch (NotFound $e) {
-                        Log::warning("Token FCM tidak valid untuk user {$user->id}. Menghapus token.");
-                        $user->update(['fcm_token' => null]);
-                    } catch (\Throwable $e) {
-                        Log::error("Gagal mengirim notifikasi asesi mendaftar sertifikasi ke user {$user->id}: " . $e->getMessage());
-                    }
-                }
+        if ($asesis->isNotEmpty()) {
+            $title = 'Pengumuman Baru';
+            $body = 'Pengumuman baru: ' . Str::limit($news->rincian, 100);
+            foreach ($asesis as $asesi) {
+                $user = $asesi->student->user ?? null;
+                $url = route('asesi.pengumuman.index', [$sert_id, $asesi->id, 'news_id' => $news->news_id]);
+                $this->sendPushNotification($messaging, $user, $title, $body, $url, 'PengumumanBaru');
             }
         }
 
@@ -107,72 +83,27 @@ class PengumumanController extends Controller
         $news = News::findOrFail($peng_id);
         $news->rincian = $request->rincian;
         $news->save();
-        if ($request->filled('delete_files')) {
-            $filesToDelete = Newsfile::whereIn('id', $request->delete_files)->get();
-            foreach ($filesToDelete as $file) {
-                Storage::disk('public')->delete($file->path_file);
-                $file->delete();
-            }
-        }
-        if ($request->hasFile('newFiles')) {
-            foreach ($request->file('newFiles') as $file) {
-                $path = FileHelper::storeFileWithUniqueName($file, 'sert_files')['path'];
-                Newsfile::create([
-                    'news_id' => $news->id,
-                    'path_file' => $path,
-                ]);
-            }
-        }
+        FileHelper::handleCollectionFileDeletes(Newsfile::class, $request->input('delete_files', []));
+        FileHelper::handleCollectionFileUploads(Newsfile::class, 'news_id', $news->id, $request, ['newFiles'], 'sert_files');
 
         $asesis = Asesi::with(['student.user'])
             ->where('sertification_id', $sert_id)
             ->where('status', 'dilanjutkan_asesmen')
             ->get();
-
-
-        foreach ($asesis as $asesi) {
-            $user = $asesi->student->user ?? null;
-            $body = 'Pengumuman Updated: ' . $news->rincian;
-            $url = route('asesi.pengumuman.index', [$sert_id, $asesi->id, 'news_id' => $news->news_id]);
-            if ($user) {
-                NotificationLog::create([
-                    'user_id' => $user->id,
-                    'type' => 'PengumumanUpdated',
-                    'message' => $body,
-                    'link' => $url,
-                ]);
-                if ($user->fcm_token) {
-                    $message = CloudMessage::new()
-                        ->withNotification(FirebaseNotification::create($body))
-                        ->withData(['url' => $url]);
-                    try {
-                        $messaging->send($message->toToken($user->fcm_token));
-                    } catch (NotFound $e) {
-                        Log::warning("Token FCM tidak valid untuk user {$user->id}. Menghapus token.");
-                        $user->update(['fcm_token' => null]);
-                    } catch (\Throwable $e) {
-                        Log::error("Gagal mengirim notifikasi asesi mendaftar sertifikasi ke user {$user->id}: " . $e->getMessage());
-                    }
-                }
+        
+        if ($asesis->isNotEmpty()) {
+            $title = 'Pengumuman Diperbarui';
+            $body = 'Pengumuman diperbarui: ' . Str::limit($news->rincian, 100);
+            foreach ($asesis as $asesi) {
+                $user = $asesi->student->user ?? null;
+                $url = route('asesi.pengumuman.index', [$sert_id, $asesi->id, 'news_id' => $news->id]);
+                $this->sendPushNotification($messaging, $user, $title, $body, $url, 'PengumumanUpdated');
             }
         }
 
         return redirect(route('admin.sertifikasi.assessment-announcement.index', $sert_id))->with('message', 'Pengumuman berhasil diupdate!');
     }
 
-    public function destroyPengumumanFile($sert_id, $id_file, Request $request)
-    {
-        $file = Newsfile::findOrFail($id_file);
-        if ($file) {
-            // Hapus file fisik
-            if (Storage::disk('public')->exists($file->path_file)) {
-                Storage::disk('public')->delete($file->path_file);
-            }
-            // Hapus record database
-            $file->delete();
-            return redirect()->back()->with('message', 'Lampiran berhasil dihapus.');
-        }
-    }
     public function destroy_pengumuman_asesmen($id, $peng_id, Request $request)
     {
         $pengumuman = News::with('pengumumanasesmenfile')->findOrFail($peng_id);

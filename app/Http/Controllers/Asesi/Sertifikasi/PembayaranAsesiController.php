@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Asesi\Sertifikasi;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
+use App\Traits\SendsPushNotifications;
 use App\Models\NotificationLog;
 use App\Models\User;
 use App\Models\Transaction;
@@ -23,7 +24,7 @@ use Kreait\Firebase\Exception\Messaging\NotFound;
 
 class PembayaranAsesiController extends Controller
 {
-
+use SendsPushNotifications;
     
     public function index_rincian_pembayaran($sert_id, $asesi_id,  Request $request)
     {
@@ -57,55 +58,19 @@ class PembayaranAsesiController extends Controller
             ['asesi_id' => $asesi_id, 'sertification_id' => $sert_id],
             ['status' => 'pending', 'tipe' => 'manual']
         );
-        if ($request->has('delete_files')) {
-            foreach ($request->delete_files as $fieldName) {
-                if ($transaction->$fieldName) {
-                    Storage::disk('public')->delete($transaction->$fieldName);
-                    $transaction->$fieldName = null;
-                }
-            }
-        }
-        if ($request->hasFile('bukti_bayar')) {
-            if ($transaction->bukti_bayar && Storage::disk('public')->exists($transaction->bukti_bayar)) {
-                Storage::disk('public')->delete($transaction->bukti_bayar);
-            }
-            $fileData = FileHelper::storeFileWithUniqueName($request->file('bukti_bayar'), 'bukti_bayar');
-            $transaction->bukti_bayar = $fileData['path'];
-        }
+        FileHelper::handleSingleFileDeletes($transaction, $request->input('delete_files', []));
+        FileHelper::handleSingleFileUploads($transaction, ['bukti_bayar'], $request, 'bukti_bayar');
         $transaction['status'] = 'pending';
         $transaction->save();
 
         $recipients = User::role('admin')->get();
         $sertification = Sertification::with('skema')->findOrFail($sert_id);
         if ($recipients->isNotEmpty()) {
+            $title = 'Bukti Pembayaran Baru';
             $body = $asesi->student->user->name . ' mengunggah bukti pembayaran untuk sertifikasi ' . $sertification->skema->nama_skema;
             $url = route('admin.sertifikasi.pendaftar.show', ['sert_id' => $sertification->id, 'asesi_id' => $asesi->id]);
             foreach ($recipients as $recipient) {
-                NotificationLog::create([
-                    'user_id' => $recipient->id,
-                    'type' => 'AsesiUploadBuktiPembayaran',
-                    'message' => $body,
-                    'link' => $url,
-                ]);
-            }
-            $pushRecipients = $recipients->whereNotNull('fcm_token');
-            if ($pushRecipients->isNotEmpty()) {
-                $tokens = $pushRecipients->pluck('fcm_token')->toArray();
-                $message = CloudMessage::new()
-                    ->withNotification(FirebaseNotification::create($body))
-                    ->withData(['url' => $url]);
-                try {
-                    $report = $messaging->sendMulticast($message, $tokens);
-                    if ($report->hasFailures()) {
-                        $invalidTokens = $report->invalidTokens();
-                        if (!empty($invalidTokens)) {
-                            Log::warning('Menghapus token FCM yang tidak valid/kedaluwarsa.', ['tokens' => $invalidTokens]);
-                            User::whereIn('fcm_token', $invalidTokens)->update(['fcm_token' => null]);
-                        }
-                    }
-                } catch (\Throwable $e) {
-                    Log::error("Gagal mengirim multicast push notification: " . $e->getMessage());
-                }
+                $this->sendPushNotification($messaging, $recipient, $title, $body, $url, 'AsesiUploadBuktiPembayaran');
             }
         }
 

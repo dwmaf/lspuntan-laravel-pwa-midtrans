@@ -29,7 +29,7 @@ class ProfileController extends Controller
         return Inertia::render('Admin/Profile/ProfileAdmin', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'isSubscribedToNotifications' => !is_null($request->user()->fcm_token),
+            'isSubscribed' => !is_null($request->user()->fcm_token),
         ]);
     }
     // buat nampilin halaman edit profile dari sisi asesi
@@ -41,7 +41,7 @@ class ProfileController extends Controller
             'status' => session('status'),
             'user' => $user,
             'student' => $user->student,
-            'isSubscribedToNotifications' => !is_null($request->user()->fcm_token),
+            'isSubscribed' => !is_null($request->user()->fcm_token),
         ]);
     }
     // buat mengupdate profile yg tadi diedit dari sisi admin
@@ -94,40 +94,12 @@ class ProfileController extends Controller
             'delete_files' => 'nullable|array',
         ]);
 
-        // Update data student
-        $student->fill($request->only([
-            'nik',
-            'tmpt_lhr',
-            'tgl_lhr',
-            'kelamin',
-            'kebangsaan',
-            'no_tlp_rmh',
-            'no_tlp_kntr',
-            'kualifikasi_pendidikan',
-        ]));
+        $student->fill($request->only(['nik','tmpt_lhr','tgl_lhr','kelamin','kebangsaan','no_tlp_rmh','no_tlp_kntr','kualifikasi_pendidikan',]));
         $user->fill($request->only(['no_tlp_hp', 'name',]));
         // dd($user);
-        if ($request->has('delete_files')) {
-            foreach ($request->delete_files as $fieldName) {
-                if ($student->$fieldName) {
-                    Storage::disk('public')->delete($student->$fieldName);
-                    $student->$fieldName = null;
-                }
-            }
-        }
-
-        foreach (['foto_ktp', 'pas_foto'] as $fileField) {
-            if ($request->hasFile($fileField)) {
-                $student->$fileField = FileHelper::storeFileWithUniqueName($request->file($fileField), 'student_files')['path'];
-            }
-        }
-
-        if ($student->isDirty()) {
-            $student->save();
-        }
-        if ($user->isDirty()) {
-            $user->save();
-        }
+        FileHelper::handleSingleFileDeletes($student, $request->input('delete_files', []));
+        FileHelper::handleSingleFileUploads($student, ['pas_foto', 'foto_ktp'], $request, 'student_files');
+        FileHelper::saveIfDirty([$student, $user]);
 
         return back()->with('message', 'Profil berhasil diperbarui');
     }

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('news_id')->constrained()->onDelete('cascade');
             $table->string('path_file')->nullable();
+            $table->string('type')->nullable();
             $table->timestamps();
         });
     }

@@ -21,11 +21,9 @@ class News extends Model
     {
         return $this->hasMany(Newsfile::class);
     }
-    public function pembuatpengumuman()
+    public function user()
     {
-        // Nama kolom foreign key 'rincian_bayar_dibuat_oleh' tidak standar,
-        // jadi kita perlu menentukannya secara eksplisit.
-        return $this->belongsTo(User::class, 'made_by');
+        return $this->belongsTo(User::class);
     }
 
     protected static function booted(): void

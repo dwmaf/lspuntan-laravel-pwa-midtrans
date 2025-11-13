@@ -19,7 +19,7 @@ const markAllRead = async () => {
 };
 
 const linkWithId = (notif) => {
-    const baseUrl = notif.link;
+    const baseUrl = notif.url;
     if (!baseUrl) {
         return '#';
     }

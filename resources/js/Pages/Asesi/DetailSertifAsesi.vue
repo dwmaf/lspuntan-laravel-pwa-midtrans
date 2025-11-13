@@ -13,15 +13,28 @@ import SingleFileInput from "../../Components/SingleFileInput.vue";
 import MultiFileInput from "../../Components/MultiFileInput.vue";
 import InputError from "@/Components/InputError.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 const props = defineProps({
     sertification: Object,
     student: Object,
     asesi: Object,
+    asesiStatusEnum: Object,
+    transactionStatusEnum: Object,
 });
 // console.log(props.asesi.status);
 
+const showUrlNotification = ref(false);
+const urlNotificationMessage = ref('');
+
+onMounted(() => {
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get('messageNotif');
+    if (message) {
+        urlNotificationMessage.value = message;
+        showUrlNotification.value = true;
+    }
+});
 
 // State untuk mode edit
 const isEditing = ref(false);
@@ -82,11 +95,11 @@ const removeMakul = (index) => form.makulNilais.splice(index, 1);
 
 const getAsesiStatusClass = (status) => {
     const classes = {
-        'menunggu_verifikasi_berkas': 'bg-amber-100 text-amber-800 dark:bg-amber-700 dark:text-amber-100',
-        'perlu_perbaikan_berkas': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
-        'ditolak': 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100',
-        'dilanjutkan_asesmen': 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
-        'lulus_sertifikasi': 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+        [props.asesiStatusEnum.MENUNGGU_VERIFIKASI_BERKAS]: 'bg-amber-100 text-amber-800 dark:bg-amber-700 dark:text-amber-100',
+        [props.asesiStatusEnum.PERLU_PERBAIKAN_BERKAS]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+        [props.asesiStatusEnum.DITOLAK]: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100',
+        [props.asesiStatusEnum.DILANJUTKAN_ASESMEN]: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+        [props.asesiStatusEnum.LULUS_SERTIFIKASI]: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
     };
     return classes[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200';
 };
@@ -97,13 +110,13 @@ const getPaymentStatusInfo = (transaction) => {
     if (transaction.status === 'belum_bayar') {
         return { text: 'Belum Bayar', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', secondclass: "border-gray-300 dark:border-gray-600" };
     }
-    if (transaction.tipe === 'manual' && transaction.bukti_bayar && transaction.status === 'pending') {
+    if (transaction.tipe === 'manual' && transaction.bukti_bayar && props.transactionStatusEnum.PENDING) {
         return { text: 'Menunggu Verifikasi', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100', secondclass: "border-yellow-300 dark:border-yellow-700" };
     }
-    if (transaction.tipe === 'manual' && transaction.status === 'bukti_pembayaran_terverifikasi') {
+    if (transaction.tipe === 'manual' && transaction.status === props.transactionStatusEnum.BUKTI_PEMBAYARAN_TERVERIFIKASI) {
         return { text: 'Pembayaran Terverifikasi', class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100', secondclass: "border-green-300 dark:border-green-700" };
     }
-    if (transaction.tipe === 'manual' && transaction.status === 'bukti_pembayaran_ditolak') {
+    if (transaction.tipe === 'manual' && transaction.status === props.transactionStatusEnum.BUKTI_PEMBAYARAN_DITOLAK) {
         return { text: 'Bukti Pembayaran Ditolak', class: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100', secondclass: "border-red-300 dark:border-red-700" };
     }
     return { text: 'N/A', class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200' };
@@ -118,22 +131,7 @@ const kartuHasilStudiFiles = computed(() => getFiles(props.asesi.asesifiles, 'ka
 const suratMagangFiles = computed(() => getFiles(props.asesi.asesifiles, 'surat_ket_magang'));
 const sertifPelatihanFiles = computed(() => getFiles(props.asesi.asesifiles, 'sertif_pelatihan'));
 const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_pendukung_lain'));
-// const removeFileStudent = (fieldName) => {
-//     if (form[fieldName]) {
-//         form[fieldName] = null;
-//     }
-//     else if (props.student[fieldName] && !form.delete_files_student.includes(fieldName)) {
-//         form.delete_files_student.push(fieldName);
-//     }
-// };
-// const removeFileAsesi = (fieldName) => {
-//     if (form[fieldName]) {
-//         form[fieldName] = null;
-//     }
-//     else if (props.asesi[fieldName] && !form.delete_files_asesi.includes(fieldName)) {
-//         form.delete_files_asesi.push(fieldName);
-//     }
-// };
+
 </script>
 
 <template>
@@ -354,7 +352,12 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
                 <div class="flex justify-end mb-4">
                     <EditButton @click="enterEditMode">Edit Data</EditButton>
                 </div>
-                <div v-if="asesi.status === 'perlu_perbaikan_berkas'"
+                <div v-if="showUrlNotification"
+                    class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 border border-green-300 dark:border-green-800"
+                    role="alert">
+                    <span class="font-medium">!Notifikasi</span> {{ urlNotificationMessage }}
+                </div>
+                <div v-if="asesi.status === props.asesiStatusEnum.PERLU_PERBAIKAN_BERKAS"
                     class="p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-800"
                     role="alert">
                     <span class="font-medium">Perhatian!</span> Admin meminta perbaikan berkas dengan catatan:

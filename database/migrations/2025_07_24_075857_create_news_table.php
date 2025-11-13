@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('sertification_id')->constrained();
             $table->text('rincian');
-            $table->foreignId('madeby')->nullable()->constrained('users');
+            $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();
         });
     }

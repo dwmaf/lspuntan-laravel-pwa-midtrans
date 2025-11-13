@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Asesi\Sertifikasi;
 
+use App\Enums\AsesiStatus;
+use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
+use App\Traits\SendsPushNotifications;
 use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
 use App\Models\Student;
 use App\Models\User;
-use App\Models\Asesor;
-use App\Models\NotificationLog;
 use App\Models\Makulnilai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,20 +18,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
 use App\Models\Asesifile;
-use App\Notifications\PendaftarBaru;
-use Illuminate\Contracts\Cache\Store;
-use Illuminate\Support\Facades\Notification;
 use Kreait\Firebase\Contract\Messaging;
-use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification as FirebaseNotification; // <-- IMPORT INI
-use Illuminate\Support\Facades\Log;
-use Kreait\Firebase\Exception\Messaging\NotFound;
 use Inertia\Inertia;
 use Illuminate\Validation\Rule;
 
 class KelolaSertifikasiAsesiController extends Controller
 {
-
+    use SendsPushNotifications;
     public function asesi_daftar_sertifikasi(Request $request)
     {
         $user = $request->user();
@@ -38,7 +32,7 @@ class KelolaSertifikasiAsesiController extends Controller
         $asesi = Asesi::where('student_id', $student->id)
             ->get()
             ->keyBy('sertification_id');
-        $sertifications = Sertification::with('skema','paymentInstruction')
+        $sertifications = Sertification::with('skema', 'paymentInstruction')
             ->where('status', 'berlangsung')
             ->orderBy('tgl_apply_dibuka', 'desc')
             ->get();
@@ -107,7 +101,7 @@ class KelolaSertifikasiAsesiController extends Controller
 
             'kartu_hasil_studi' => 'required|array|max:5',
             'kartu_hasil_studi.*' => 'file|mimes:jpg,jpeg,png,pdf|max:3072',
-            'surat_ket_magang' => 'nullable|array|max:5', 
+            'surat_ket_magang' => 'nullable|array|max:5',
             'surat_ket_magang.*' => 'file|mimes:jpg,jpeg,png,pdf|max:3072',
             'sertif_pelatihan' => 'nullable|array|max:5',
             'sertif_pelatihan.*' => 'file|mimes:jpg,jpeg,png,pdf|max:3072',
@@ -116,117 +110,45 @@ class KelolaSertifikasiAsesiController extends Controller
             'delete_files' => 'nullable|array',
         ]);
         $asesi = DB::transaction(function () use ($request, $student, $messaging) {
-
             $user = $student->user;
-            $student->fill($request->only([
-                'nik',
-                'tmpt_lhr',
-                'tgl_lhr', 
-                'kelamin',
-                'kebangsaan',
-                'no_tlp_rmh',
-                'no_tlp_kntr',
-                'kualifikasi_pendidikan',
-            ]));
+            $student->fill($request->only(['nik','tmpt_lhr','tgl_lhr','kelamin','kebangsaan','no_tlp_rmh','no_tlp_kntr','kualifikasi_pendidikan',]));
             $user->fill($request->only(['no_tlp_hp', 'name']));
-            if ($request->filled('delete_files')) {
-                foreach ($request->delete_files as $fieldName) {
-                    if ($student->$fieldName && Storage::disk('public')->exists($student->$fieldName)) {
-                        Storage::disk('public')->delete($student->$fieldName);
-                        $student->$fieldName = null;
-                    }
-                }
-            }
-            foreach (['foto_ktp', 'pas_foto'] as $fileField) {
-                if ($request->hasFile($fileField)) {
-                    $student->$fileField = FileHelper::storeFileWithUniqueName($request->file($fileField), 'student_files')['path'];
-                }
-            }
-            if ($student->isDirty()) {
-                $student->save();
-            }
-            if ($user->isDirty()) {
-                $user->save();
-            }
-            $asesiData = [
-                'student_id' => $student->id,
-                'sertification_id' => $request->input('sertification_id'),
-                'tujuan_sert' => $request->input('tujuan_sert'),
-            ];
-            foreach (['apl_1', 'apl_2', 'foto_ktm'] as $fileField) {
-                if ($request->hasFile($fileField)) {
-                    $asesiData[$fileField] = FileHelper::storeFileWithUniqueName($request->file($fileField), 'asesi_files')['path'];
-                }
-            }
-            $asesi = Asesi::create($asesiData);
-            $sertification = Sertification::with('asesors.user')->findOrFail($asesi->sertification_id);
+            FileHelper::handleSingleFileDeletes($student, $request->input('delete_files', []));
+            FileHelper::handleSingleFileUploads($student, ['foto_ktp', 'pas_foto'], $request, 'student_files');
+            FileHelper::saveIfDirty([$student, $user]);
+            
+            $asesi = new Asesi($request->only(['sertification_id', 'tujuan_sert']));
+            $asesi->student_id = $student->id;
+            FileHelper::handleSingleFileUploads($asesi, ['apl_1', 'apl_2', 'foto_ktm'], $request, 'asesi_files');
+            $asesi->save();
+            FileHelper::handleCollectionFileUploads(Asesifile::class,'asesi_id',$asesi->id, $request,['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain', 'kartu_hasil_studi'], 'asesi_files');
             foreach ($request->makulNilais as $makul) {
-                MakulNilai::create([
-                    'asesi_id' => $asesi->id,
-                    'nama_makul' => $makul['nama_makul'],
-                    'nilai_makul' => $makul['nilai_makul'],
-                ]);
-            }
-            // buat input multiple 
-            $fileTypes = ['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain', 'kartu_hasil_studi'];
-
-            foreach ($fileTypes as $fileType) {
-                if ($request->hasFile($fileType)) {
-                    foreach ($request->file($fileType) as $file) {
-                        $fileData = FileHelper::storeFileWithUniqueName($file, "asesi_files")['path'];
-                        Asesifile::create([
-                            'asesi_id' => $asesi->id,
-                            'type' => $fileType,
-                            'path_file' => $fileData,
-                        ]);
-                    }
-                }
-            }
-
-            $recipients = User::role('admin')->get();
-            $asesors = $sertification->asesors;
-            foreach ($asesors as $asesor) {
-                if ($asesor->user) {
-                    $recipients->push($asesor->user);
-                }
-            }
-            $recipients = $recipients->unique('id');
-
-            if ($recipients->isNotEmpty()) {
-                $title = 'Pendaftar Baru';
-                $body = $user->name . ' telah mendaftar sertifikasi ' . $sertification->skema->nama_skema;
-                $url = route('admin.sertifikasi.pendaftar.show', [$sertification->id, $asesi->id]);
-                foreach ($recipients as $recipient) {
-                    NotificationLog::create([
-                        'user_id' => $recipient->id,
-                        'type' => 'PendaftarBaru',
-                        'message' => $body,
-                        'link' => $url,
-                    ]);
-                }
-                $pushRecipients = $recipients->whereNotNull('fcm_token');
-                if ($pushRecipients->isNotEmpty()) {
-                    $tokens = $pushRecipients->pluck('fcm_token')->toArray();
-                    $message = CloudMessage::new()
-                        ->withNotification(FirebaseNotification::create($title, $body))
-                        ->withData(['url' => $url]);
-                    try {
-                        $report = $messaging->sendMulticast($message, $tokens);
-                        if ($report->hasFailures()) {
-                            $invalidTokens = $report->invalidTokens();
-                            if (!empty($invalidTokens)) {
-                                Log::warning('Menghapus token FCM yang tidak valid/kedaluwarsa.', ['tokens' => $invalidTokens]);
-                                User::whereIn('fcm_token', $invalidTokens)->update(['fcm_token' => null]);
-                            }
-                        }
-                    } catch (\Throwable $e) {
-                        Log::error("Gagal mengirim multicast push notification: " . $e->getMessage());
-                    }
-                }
+                MakulNilai::create(['asesi_id' => $asesi->id,'nama_makul' => $makul['nama_makul'],'nilai_makul' => $makul['nilai_makul'],]);
             }
 
             return $asesi;
         });
+        $asesiForNotif = Asesi::with('student.user', 'sertification.skema', 'sertification.asesors.user')->findOrFail($asesi->id);
+        $sertification = $asesiForNotif->sertification;
+        $user = $asesiForNotif->student->user;
+
+        $recipients = User::role('admin')->get();
+        $asesors = $sertification->asesors;
+        foreach ($asesors as $asesor) {
+            if ($asesor->user) {
+                $recipients->push($asesor->user);
+            }
+        }
+        $recipients = $recipients->unique('id');
+
+        if ($recipients->isNotEmpty()) {
+            $title = 'Pendaftar Baru';
+            $body = $user->name . ' telah mendaftar sertifikasi ' . $sertification->skema->nama_skema;
+            $url = route('admin.sertifikasi.pendaftar.show', [$sertification->id, $asesiForNotif->id]);
+            foreach ($recipients as $recipient) {
+                $this->sendPushNotification($messaging, $recipient, $title, $body, $url, 'PendaftarBaru');
+            }
+        }
         return redirect(route('asesi.sertifikasi.applied.show', [$asesi->sertification_id, $asesi->id]))->with('message', 'Berhasil daftar sertifikasi');
     }
 
@@ -243,7 +165,6 @@ class KelolaSertifikasiAsesiController extends Controller
         $asesi->latest_transaction = $asesi->transaction->first();
         $student = $asesi->student;
         // dd($student);
-        // Pastikan asesi ini milik user yang sedang login
         if ($asesi->student->user_id !== $request->user()->id) {
             abort(403);
         }
@@ -251,6 +172,8 @@ class KelolaSertifikasiAsesiController extends Controller
             'sertification' => Sertification::with('skema')->findOrFail($sert_id),
             'asesi' => $asesi,
             'student' => $student,
+            'asesiStatusEnum' => array_column(AsesiStatus::cases(), 'value', 'name'),
+            'transactionStatusEnum' => array_column(TransactionStatus::cases(), 'value', 'name'),
         ]);
     }
 
@@ -347,136 +270,58 @@ class KelolaSertifikasiAsesiController extends Controller
             'delete_files_student' => 'nullable|array',
             'delete_files_asesi' => 'nullable|array',
         ]);
-
-        DB::transaction(function () use ($request, $student, $asesi, $user, $messaging) {
+        $shoulSendNotif = false;
+        DB::transaction(function () use ($request, $student, $asesi, $user, &$shoulSendNotif) {
             $initialStatus = $asesi->status;
-            $student->fill($request->only([
-                'nik',
-                'tmpt_lhr',
-                'tgl_lhr',
-                'kelamin',
-                'kebangsaan',
-                'no_tlp_rmh',
-                'no_tlp_kntr',
-                'no_tlp_hp',
-                'kualifikasi_pendidikan',
-            ]));
-            if ($request->filled('delete_files_student')) {
-                foreach ($request->delete_files_student as $fieldName) {
-                    if ($student->$fieldName && Storage::disk('public')->exists($student->$fieldName)) {
-                        Storage::disk('public')->delete($student->$fieldName);
-                        $student->$fieldName = null;
-                    }
-                }
-            }
-            if ($request->filled('delete_files_asesi')) {
-                foreach ($request->delete_files_asesi as $fieldName) {
-                    if ($asesi->$fieldName && Storage::disk('public')->exists($asesi->$fieldName)) {
-                        Storage::disk('public')->delete($asesi->$fieldName);
-                        $asesi->$fieldName = null;
-                    }
-                }
-            }
-            if ($request->filled('delete_files_collection')) {
-                $filesToDelete = Asesifile::whereIn('id', $request->delete_files_collection)->get();
-                foreach ($filesToDelete as $file) {
-                    if (Storage::disk('public')->exists($file->path_file)){
-                        Storage::disk('public')->delete($file->path_file);
-                        $file->delete();
-                    }
-                }
-            }
+            $student->fill($request->only(['nik', 'tmpt_lhr', 'tgl_lhr', 'kelamin', 'kebangsaan', 'no_tlp_rmh', 'no_tlp_kntr', 'no_tlp_hp', 'kualifikasi_pendidikan',]));
             $user->fill($request->only(['no_tlp_hp', 'name']));
-            foreach (['foto_ktp', 'pas_foto'] as $fileField) {
-                if ($request->hasFile($fileField)) {
-                    $student->$fileField = FileHelper::storeFileWithUniqueName($request->file($fileField), 'student_files')['path'];
-                }
-            }
-            if ($student->isDirty()) {
-                $student->save();
-            }
-            if ($user->isDirty()) {
-                $user->save();
-            }
-            // untuk tabel asesi
-            $asesi->fill($request->only([
-                'tujuan_sert',
-            ]));
-            foreach (['apl_1', 'apl_2', 'foto_ktm'] as $fileField) {
-                if ($request->hasFile($fileField)) {
-                    $asesi->$fileField = FileHelper::storeFileWithUniqueName($request->file($fileField), 'asesi_files')['path'];
-                }
-            }
-            if ($asesi->isDirty()) {
-                $asesi->save();
-            }
-            
+            $asesi->fill($request->only(['tujuan_sert',]));
+            FileHelper::handleSingleFileDeletes($student, $request->input('delete_files_student', []));
+            FileHelper::handleSingleFileDeletes($asesi, $request->input('delete_files_asesi', []));
+            FileHelper::handleCollectionFileDeletes(Asesifile::class, $request->input('delete_files_collection', []));
+
+            FileHelper::handleSingleFileUploads($student, ['foto_ktp', 'pas_foto'], $request, 'student_files');
+            FileHelper::handleSingleFileUploads($asesi, ['apl_1', 'apl_2', 'foto_ktm'], $request, 'asesi_files');
+            FileHelper::handleCollectionFileUploads(Asesifile::class,'asesi_id',$asesi->id, $request,['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain', 'kartu_hasil_studi'], 'asesi_files');
+
+            FileHelper::saveIfDirty([$student, $user, $asesi]);
+
             MakulNilai::where('asesi_id', $asesi->id)->delete();
             foreach ($request->makulNilais as $makul) {
-                MakulNilai::create([
-                    'asesi_id' => $asesi->id,
-                    'nama_makul' => $makul['nama_makul'],
-                    'nilai_makul' => $makul['nilai_makul'],
-                ]);
+                MakulNilai::create(['asesi_id' => $asesi->id,'nama_makul' => $makul['nama_makul'],'nilai_makul' => $makul['nilai_makul'],]);
             }
-            //untuk input multiple
-            $fileTypes = ['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain', 'kartu_hasil_studi'];
-            foreach ($fileTypes as $fileType) {
-                if ($request->hasFile($fileType)) {
-                    foreach ($request->file($fileType) as $file) {
-                        $fileData = FileHelper::storeFileWithUniqueName($file, "asesi_files")['path'];
-                        Asesifile::create([
-                            'asesi_id' => $asesi->id,
-                            'type' => $fileType,
-                            'path_file' => $fileData,
-                        ]);
-                    }
-                }
-            }
+
             if ($initialStatus === 'perlu_perbaikan_berkas') {
                 $asesi->status = 'daftar';
                 $asesi->catatan_perbaikan = null;
                 $asesi->save();
+                $shoulSendNotif = true;
+            }
+        });
 
-                $sertification = Sertification::with('skema', 'asesors.user')->findOrFail($asesi->sertification_id);
-                $recipients = User::role('admin')->get();
-                foreach ($sertification->asesors as $asesor) {
-                    if ($asesor->user) {
-                        $recipients->push($asesor->user);
-                    }
-                }
-                $recipients = $recipients->unique('id');
+        if ($shoulSendNotif) {
+            $asesi = Asesi::with('student.user', 'sertification.skema', 'sertification.asesors.user')->findOrFail($asesi_id);
+            $sertification = $asesi->sertification;
+            $user = $asesi->student->user;
 
-                if ($recipients->isNotEmpty()) {
-                    $title = 'Berkas Diperbaiki';
-                    $body = $user->name . ' telah memperbaiki dan mengirim ulang berkas untuk sertifikasi ' . $sertification->skema->nama_skema;
-                    $url = route('admin.sertifikasi.pendaftar.show', [$sertification->id, $asesi->id]);
-
-                    foreach ($recipients as $recipient) {
-                        NotificationLog::create([
-                            'user_id' => $recipient->id,
-                            'type' => 'BerkasDiperbaiki',
-                            'message' => $body,
-                            'link' => $url,
-                        ]);
-                    }
-
-                    $pushRecipients = $recipients->whereNotNull('fcm_token');
-                    if ($pushRecipients->isNotEmpty()) {
-                        $tokens = $pushRecipients->pluck('fcm_token')->toArray();
-                        $message = CloudMessage::new()
-                            ->withNotification(FirebaseNotification::create($title, $body))
-                            ->withData(['url' => $url]);
-                        try {
-                            $messaging->sendMulticast($message, $tokens);
-                        } catch (\Throwable $e) {
-                            Log::error("Gagal mengirim notifikasi perbaikan berkas: " . $e->getMessage());
-                        }
-                    }
+            $recipients = User::role('admin')->get();
+            foreach ($sertification->asesors as $asesor) {
+                if ($asesor->user) {
+                    $recipients->push($asesor->user);
                 }
             }
+            $recipients = $recipients->unique('id');
 
-        });
+            if ($recipients->isNotEmpty()) {
+                $title = 'Berkas Diperbaiki';
+                $body = $user->name . ' telah memperbaiki dan mengirim ulang berkas untuk sertifikasi ' . $sertification->skema->nama_skema;
+                $url = route('admin.sertifikasi.pendaftar.show', [$sertification->id, $asesi->id]);
+
+                foreach ($recipients as $recipient) {
+                    $this->sendPushNotification($messaging, $recipient, $title, $body, $url, 'BerkasDiperbaiki');
+                }
+            }
+        }
         return redirect()->back()->with('message', 'Berhasil update data sertifikasi');
     }
 
@@ -511,4 +356,6 @@ class KelolaSertifikasiAsesiController extends Controller
 
         return redirect(route('asesi.sertifikasi.list'))->with('message', 'Pendaftaran sertifikasi berhasil dibatalkan.');
     }
+
+    
 }

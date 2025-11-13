@@ -13,6 +13,7 @@ defineProps({
     status: {
         type: String,
     },
+    isSubscribed: Boolean,
 });
 </script>
 
@@ -46,7 +47,7 @@ defineProps({
             <div
                 class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800"
             >
-                <FCMPermission />
+                <FCMPermission :is-subscribed="isSubscribed"/>
             </div>
 
         </div>

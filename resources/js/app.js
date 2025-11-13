@@ -3,7 +3,7 @@ import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from "ziggy-js";
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'LSP UNTAN';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -24,40 +24,6 @@ createInertiaApp({
 
 // import { Editor } from "@tiptap/core";
 // import StarterKit from "@tiptap/starter-kit";
-// window.initRichEditor = (element, initialValue, onUpdate) => {
-//     const editorWrapper = element.querySelector('.rich-text-editor-wrapper');
-//     if (!editorWrapper) {
-//         console.error('Rich editor wrapper not found inside the component root.');
-//         return;
-//     }
-
-//     const editorContent = editorWrapper.querySelector('.editor-content');
-//     const toolbar = editorWrapper.querySelector('.toolbar');
-
-//     if (!editorContent || !toolbar) {
-//         console.error('Editor content or toolbar not found.');
-//         return;
-//     }
-
-//     const editor = new Editor({
-//         element: editorContent,
-//         extensions: [StarterKit],
-//         content: initialValue,
-//         onUpdate: ({ editor }) => {
-//             onUpdate(editor.getHTML());
-//         }
-//     });
-//     element.editor = editor;
-
-//     toolbar.querySelectorAll('[data-command]').forEach(btn => {
-//         btn.addEventListener('click', () => {
-//             const command = btn.dataset.command;
-//             if (command && typeof editor.chain().focus()[command] === 'function') {
-//                 editor.chain().focus()[command]().run();
-//             }
-//         });
-//     });
-// };
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
@@ -72,9 +38,6 @@ if ('serviceWorker' in navigator) {
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import axios from 'axios';
-// import $ from 'jquery';
-// window.$ = window.jQuery = $;
-
 
 // Import FilePond
 // import * as FilePond from 'filepond';
@@ -176,48 +139,22 @@ import axios from 'axios';
 //     });
 // });
 
-// Konfigurasi Firebase Anda (ambil dari console Firebase)
 const firebaseConfig = {
-    apiKey: "AIzaSyBDeSpw3IIkOEPoFAPAfyJBjoLvRwgMaFg",
-    authDomain: "snappie-c0775.firebaseapp.com",
-    projectId: "snappie-c0775",
-    storageBucket: "snappie-c0775.appspot.com",
-    messagingSenderId: "66231578373",
-    appId: "1:66231578373:web:04712f38005e7e6b45116c",
-    measurementId: "G-D85LN9BBGZ"
+    apiKey: import.meta.env.VITE_FCM_API_KEY,
+    authDomain: import.meta.env.VITE_FCM_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FCM_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FCM_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FCM_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FCM_APP_ID,
+    measurementId: import.meta.env.VITE_FCM_MEASUREMENT_ID
 };
 
-// Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
 
 window.getToken = getToken;
 window.messaging = messaging;
-
-
-function requestPermissionAndGetToken() {
-    console.log("Requesting permission for notifications...");
-    Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-            console.log('Notification permission granted.');
-            // Dapatkan token
-            getToken(messaging, { vapidKey: 'BMrTLuoCHunyHVyUW3iA8b-_os4U84ESXBG-NMch2nR6gFRCaiO5xYcbU2p1S_ZFr95JSCXHvCNvNj3YWX8D75k' })
-                .then((currentToken) => {
-                    if (currentToken) {
-                        console.log('FCM Token:', currentToken);
-                        sendTokenToServer(currentToken);
-                    } else {
-                        console.log('No registration token available. Request permission to generate one.');
-                    }
-                }).catch((err) => {
-                    console.log('An error occurred while retrieving token. ', err);
-                });
-        } else {
-            console.log('Unable to get permission to notify.');
-        }
-    });
-}
 
 window.sendTokenToServer = function(token) {
     axios.post('/fcm/token', {
@@ -232,22 +169,7 @@ window.sendTokenToServer = function(token) {
     });
 }
 
-// document.addEventListener('DOMContentLoaded', () => {
-//     const enableNotifBtn = document.getElementById('enable-notifications-btn');
-//     if (enableNotifBtn) {
-//         enableNotifBtn.addEventListener('click', () => {
-//             if (Notification.permission === 'default') {
-//                 requestPermissionAndGetToken();
-//             }
-//         });
-//     }
-// });
 
-// Handle notifikasi saat aplikasi di foreground
 onMessage(messaging, (payload) => {
     console.log('Message received while app is in foreground: ', payload);
-    // Tampilkan notifikasi custom di sini, misalnya menggunakan Toastr atau alert
-    alert(`New Notification: ${payload.notification.title}`);
 });
-
-

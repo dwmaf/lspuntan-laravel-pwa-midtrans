@@ -4,10 +4,10 @@ namespace App\Listeners;
 
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Contracts\Queue\ShouldQueue; // <-- Tambahkan ini
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class SendQueuedEmailVerificationNotification implements ShouldQueue // <-- Tambahkan ini
+class SendQueuedEmailVerificationNotification implements ShouldQueue 
 {
     use InteractsWithQueue;
 

@@ -3,16 +3,20 @@
 namespace App\Http\Controllers\Admin\Sertifikasi;
 
 use App\Http\Controllers\Controller;
+use App\Models\Asesi;
 use Illuminate\Support\Facades\DB;
 use App\Models\Sertification;
 use App\Models\Skema;
 use App\Models\Asesor;
+use App\Models\User;
+use App\Traits\SendsPushNotifications;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-
+use Kreait\Firebase\Contract\Messaging;
 
 class KelolaSertifikasiController extends Controller
 {
+    use SendsPushNotifications;
     public function index(Request $request)
     {
 
@@ -31,7 +35,7 @@ class KelolaSertifikasiController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, Messaging $messaging)
     {
         // dd($request);
         $validatedData = $request->validate([
@@ -44,7 +48,7 @@ class KelolaSertifikasiController extends Controller
             'biaya' => 'required|numeric|min:0',
             'tuk' => 'required',
         ]);
-        DB::transaction(function () use ($validatedData, $request) {
+        DB::transaction(function () use ($validatedData, $request, &$sertification) {
             $sertification = Sertification::create([
                 'skema_id' => $validatedData['skema_id'],
                 'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
@@ -62,7 +66,15 @@ class KelolaSertifikasiController extends Controller
                 'content' => 'Silakan lakukan pembayaran sesuai nominal yang tertera.',
             ]);
         });
-
+        if ($sertification) {
+            $recipients = User::role('asesi')->get();
+            if ($recipients->isNotEmpty()) {
+                $title = 'Sertifikasi Baru Dibuka!';
+                $body = "Sertifikasi baru untuk '{$sertification->skema->nama_skema}' telah dibuka. Cek sekarang!";
+                $url = route('asesi.sertifikasi.index');
+                $this->sendMulticastNotification($messaging, $recipients, $title, $body, $url, 'SertifikasiBaru');
+            }
+        }
         return redirect()->back()->with('message', 'Sertifikasi berhasil dimulai!');
     }
 

@@ -13,6 +13,7 @@ use App\Helpers\FileHelper;
 use App\Models\Asesiasesmenfile;
 use App\Notifications\AsesiUploadTugasAsesmen;
 use Inertia\Inertia;
+use App\Traits\SendsPushNotifications;
 use Illuminate\Support\Facades\Notification;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
@@ -22,7 +23,7 @@ use Kreait\Firebase\Exception\Messaging\NotFound;
 
 class AsesmenAsesiController extends Controller
 {
-
+    use SendsPushNotifications;
     public function index_asesmen_asesi($sert_id, $asesi_id, Request $request)
     {
         // dd($id);
@@ -44,24 +45,8 @@ class AsesmenAsesiController extends Controller
             'delete_files' => 'nullable|array',
             'delete_files.*' => 'integer|exists:asesiasesmenfiles,id',
         ]);
-        if ($request->filled('delete_files')) {
-            $filesToDelete = Asesiasesmenfile::whereIn('id', $request->delete_files)->get();
-            foreach ($filesToDelete as $file) {
-                if (Storage::disk('public')->exists($file->path_file)) {
-                    Storage::disk('public')->delete($file->path_file);
-                    $file->delete();
-                }
-            }
-        }
-        if ($request->hasFile('newFiles')) {
-            foreach ($request->file('newFiles') as $file) {
-                $fileData = FileHelper::storeFileWithUniqueName($file, "asesi_files")['path'];
-                Asesiasesmenfile::create([
-                    'asesi_id' => $asesi_id,
-                    'path_file' => $fileData,
-                ]);
-            }
-        }
+        FileHelper::deleteCollectionFiles(Asesiasesmenfile::class, $request->input('delete_files', []));
+        FileHelper::handleCollectionFileUploads(Asesiasesmenfile::class, 'asesi_id', $asesi_id, $request, 'newFiles', 'asesi_files');
         $remainingFilesCount = Asesiasesmenfile::where('asesi_id', $asesi_id)->count();
         if ($remainingFilesCount === 0) {
             return redirect()->back()->withErrors(['newFiles' => 'Anda harus mengumpulkan setidaknya satu file.']);
@@ -69,29 +54,14 @@ class AsesmenAsesiController extends Controller
         $asesi = Asesi::with('student.user')->findOrFail($asesi_id);
         $sertification = Sertification::with(['asesors.user', 'skema'])
             ->findOrFail($sert_id);
-        $asesors = $sertification->asesors->user;
-        if ($asesors->isNotEmpty()) {
+        if ($sertification->asesors->isNotEmpty()) {
+            $title = 'Tugas Asesmen Dikumpulkan';
             $body = $asesi->student->user->name . ' mengunggah tugas asesmen untuk sertifikasi ' . $sertification->skema->nama_skema;
             $url = route('admin.sertifikasi.assessment.edit', [$sertification->id, 'asesi_id' => $asesi_id]);
-            foreach ($asesors as $asesor) {
-                NotificationLog::create([
-                    'user_id' => $asesor->id,
-                    'type' => 'AsesiUploadTugasAsesmen',
-                    'message' => $body,
-                    'link' => $url,
-                ]);
-            }
-            $pushRecipients = $asesors->whereNotNull('fcm_token');
-            if ($pushRecipients->isNotEmpty()) {
-                $tokens = $pushRecipients->pluck('fcm_token')->toArray();
-                $message = CloudMessage::new()
-                    ->withNotification(FirebaseNotification::create($body))
-                    ->withData(['url' => $url]);
-                try {
-                    $messaging->sendMulticast($message, $tokens);
-                } catch (\Throwable $e) {
-                    Log::error("Gagal mengirim notifikasi perbaikan berkas: " . $e->getMessage());
-                }
+            foreach ($sertification->asesors as $asesor) {
+                $this->sendPushNotification(
+                    $messaging, $asesor->user, $title, $body, $url, 'TugasAsesmenDikumpulkan'
+                );
             }
         }
 
