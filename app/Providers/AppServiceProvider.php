@@ -2,16 +2,13 @@
 
 namespace App\Providers;
 
-// 1. Import class yang dibutuhkan
-// use Illuminate\Support\Facades\Event;
-// use Illuminate\Auth\Events\Registered;
-// use App\Listeners\SendQueuedEmailVerificationNotification;
-
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\TransactionRepositoryInterface;
 use App\Repositories\TransactionRepository;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
+use Kreait\Firebase\Contract\Messaging;
+use App\Services\FakeMessagingService; 
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,7 +17,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(TransactionRepositoryInterface::class, TransactionRepository::class);
+        // $this->app->bind(TransactionRepositoryInterface::class, TransactionRepository::class);
+        if ($this->app->environment() !== 'production') {
+            $this->app->singleton(Messaging::class, function ($app) {
+                return new FakeMessagingService();
+            });
+        }
     }
 
     /**

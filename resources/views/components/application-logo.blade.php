@@ -1,1 +1,0 @@
-<img src="{{ url('/logo-lsp.PNG') }}" alt="logo_lsp_untan" width="100px">

@@ -23,9 +23,7 @@ class SkemaController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'nama_skema' => 'required',
-            'string',
-            'max:255',
+            'nama_skema' => ['required','string','max:255'],
             'format_apl_1' => 'nullable|file|mimes:docx|max:1024',
             'format_apl_2' => 'nullable|file|mimes:docx|max:1024',
         ]);
@@ -55,11 +53,7 @@ class SkemaController extends Controller
     public function destroy(Request $request, $id)
     {
         $skema = Skema::findOrFail($id);
-        foreach (['format_apl_1', 'format_apl_2'] as $fileField) {
-            if ($skema->$fileField && Storage::disk('public')->exists($skema->$fileField)) {
-                Storage::disk('public')->delete($skema->$fileField);
-            }
-        }
+        FileHelper::handleSingleFileDeletes($skema, ['format_apl_1', 'format_apl_2']);
         Skema::destroy($id);
         return redirect(route('admin.skema.create'))->with('message', 'Skema berhasil dihapus');
     }
