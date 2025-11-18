@@ -1,10 +1,10 @@
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
-import PrimaryLinkButton from "../../Components/PrimaryLinkButton.vue";
-import { Link, usePage } from "@inertiajs/vue3";
+import PrimaryLinkButton from "@/Components/PrimaryLinkButton.vue";
+import Header from "@/Components/CustomHeader.vue";
+import { usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
 import { MapPin, DollarSign, CalendarRange, BookOpen } from "lucide-vue-next";
-import { IconChalkboardTeacher } from "@tabler/icons-vue";
 
 const props = defineProps({
     sertifications: Array,
@@ -57,14 +57,8 @@ const formatCurrency = (value) => {
 
 <template>
     <AsesiLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Sertifikasi
-            </h2>
-        </template>
-
         
-
+        <Header judul="Daftar Sertifikasi yang Tersedia"/>
         <div class="max-w-7xl mx-auto mb-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div v-for="sert in props.sertifications" :key="sert.id"
@@ -76,7 +70,7 @@ const formatCurrency = (value) => {
                         </h3>
                         <span v-if="isNew(sert) && getSertifikasiStatus(sert).type === 'open'"
                             class=" px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100">
-                            Dibuka
+                            Baru
                         </span>
                         <span v-if="getSertifikasiStatus(sert).type === 'open'"
                             class=" px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100">

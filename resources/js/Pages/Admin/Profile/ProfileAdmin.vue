@@ -1,6 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-
+import Header from '@/Components/CustomHeader.vue';
 import UpdateProfileAdmin from './Partials/UpdateProfileAdmin.vue';
 import UpdatePasswordAdmin from './Partials/UpdatePasswordAdmin.vue';
 import FCMPermission from '@/Components/FCMPermission.vue';
@@ -20,17 +20,10 @@ defineProps({
 <template>
 
     <AdminLayout>
-        <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200"
-            >
-                Profile
-            </h2>
-        </template>
-
+        <Header judul="Profil"/>
         <div class="flex flex-col gap-4">
             <div
-                class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800"
+                class="bg-white p-4 shadow rounded-lg sm:p-8 dark:bg-gray-800"
             >
                 <UpdateProfileAdmin
                     :must-verify-email="mustVerifyEmail"
@@ -40,12 +33,12 @@ defineProps({
             </div>
 
             <div
-                class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800"
+                class="bg-white p-4 shadow rounded-lg sm:p-8 dark:bg-gray-800"
             >
                 <UpdatePasswordAdmin class="max-w-xl" />
             </div>
             <div
-                class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800"
+                class="bg-white p-4 shadow rounded-lg sm:p-8 dark:bg-gray-800"
             >
                 <FCMPermission :is-subscribed="isSubscribed"/>
             </div>

@@ -17,11 +17,32 @@ use Inertia\Inertia;
 
 class AsesorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $asesors = Asesor::query()
+            ->with('skemas', 'user')
+            ->when($request->input('search'), function ($query, $search) {
+                $query->whereHas('user',function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->input('skema'), function ($query, $skema) {
+                $query->whereHas('skemas',function ($q) use ($skema) {
+                    $q->where('skemas.id', $skema);
+                });
+            })
+            ->when($request->input('role'), function ($query, $role) {
+                $query->whereHas('roles', fn($q) => $q->where('name', $role));
+            })
+            ->withCount('sertifications')
+            ->latest()
+            ->paginate(15)
+            ->onEachSide(0)
+            ->withQueryString();
         return Inertia::render('Admin/AsesorAdmin', [
-            'asesors' => Asesor::with('skemas', 'user')->withCount('sertifications')->get(),
-            'skemas' => Skema::all()
+            'asesors' => $asesors,
+            'skemas' => Skema::all(),
+            'filters' => $request->only(['skema','search']),
         ]);
     }
 

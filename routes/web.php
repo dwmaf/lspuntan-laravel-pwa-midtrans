@@ -9,7 +9,6 @@ use App\Http\Controllers\Admin\Sertifikasi\PengumumanController;
 use App\Http\Controllers\Admin\SkemaController;
 use App\Http\Controllers\Asesi\Sertifikasi\PembayaranAsesiController;
 use App\Http\Controllers\Asesi\Sertifikasi\AsesmenAsesiController;
-// use App\Http\Controllers\Asesi\Sertifikasi\PengumumanAsesiController;
 use App\Http\Controllers\Asesi\Sertifikasi\KelolaSertifikasiAsesiController;
 use App\Http\Controllers\Admin\AsesorController;
 use App\Http\Controllers\Admin\DashboardAdminController;
@@ -111,6 +110,7 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
         Route::patch('/{sert_id}/update', [KelolaSertifikasiController::class, 'update'])->name('update'); // admin.kelolasertifikasi.update
         Route::delete('/{sert_id}', [KelolaSertifikasiController::class, 'destroy'])->name('destroy'); // admin.kelolasertifikasi.destroy
         Route::get('/{sert_id}/report', [KelolaSertifikasiController::class, 'rincian_laporan'])->name('report'); // admin.kelolasertifikasi.report
+        Route::get('/{sert_id}/report/print', [KelolaSertifikasiController::class, 'print_laporan'])->name('print_report');
     });
     Route::prefix('sertifikasi/{sert_id}')->name('sertifikasi.')->group(function () {
         // untuk munculin halaman edit asesmen dan updatenya

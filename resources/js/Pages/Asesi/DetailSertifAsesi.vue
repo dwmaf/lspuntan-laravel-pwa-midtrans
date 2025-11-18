@@ -1,7 +1,7 @@
-<!-- filepath: d:\Laravel-App\lsp-untan-laravel-pwa\resources\js\Pages\Asesi\DetailSertifAsesi.vue -->
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
+import Header from "@/Components/CustomHeader.vue";
 import PendaftarDetailDataStatis from "@/Pages/Admin/PendaftarDetailDataStatis.vue"; // Kita bisa pakai ulang komponen ini
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
@@ -136,12 +136,9 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
 
 <template>
     <AsesiLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Detail Pengajuan: {{ sertification.skema.nama_skema }}
-            </h2>
-        </template>
-
+        
+        <Header judul="Detail Pengajuan: {{ sertification.skema?.nama_skema ?? '' }}"/>
+        
         <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 

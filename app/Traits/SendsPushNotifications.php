@@ -60,7 +60,7 @@ trait SendsPushNotifications
 
     /**
      * @param Messaging $messaging
-     * @param Collection $recipients
+     * @param Collection<int, User> $recipients
      * @param string $title
      * @param string $body
      * @param string $url

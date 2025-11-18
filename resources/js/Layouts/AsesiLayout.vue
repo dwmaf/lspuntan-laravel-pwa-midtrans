@@ -1,15 +1,12 @@
 <script setup>
 import NotificationBell from "../Components/NotificationBell.vue";
-import Dropdown from "@/Components/Dropdown.vue";
-import DropdownLink from "@/Components/DropdownLink.vue";
-import NavLink from "@/Components/NavLink.vue";
-import ResponsiveNavLink from "@/Components/ResponsiveNavLink.vue";
 import Navigation from "../Components/Navigation.vue";
-import TopNavigation from "../Components/TopNavigation.vue";
-import { Link } from "@inertiajs/vue3";
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import { UserCircle } from "lucide-vue-next";
+import {
+    IconLayoutDashboard, IconLayoutSidebar
+} from '@tabler/icons-vue';
 
 const page = usePage();
 const user = computed(() => page.props.auth.user)
@@ -37,7 +34,17 @@ watch(notification, (newValue) => {
     }
 });
 
-const showingNavigationDropdown = ref(false);
+const isSidebarOpen = ref(true);
+
+const toggleSidebar = () => {
+    isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+onMounted(() => {
+    if (window.innerWidth < 768) {
+        isSidebarOpen.value = false;
+    }
+});
 </script>
 
 <template>
@@ -54,30 +61,26 @@ const showingNavigationDropdown = ref(false);
                 {{ notification }}
             </div>
         </Transition>
-        <div class="flex min-h-screen bg-gray-100 dark:bg-gray-900">
-            <div class="hidden md:flex relative z-30">
-                <Navigation/>
-            </div>
+        <div v-if="isSidebarOpen" @click="isSidebarOpen = false"
+            class="fixed inset-0 z-20 bg-black/50 md:hidden">
+        </div>
+        <div class="flex min-h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
+            <Navigation :is-open="isSidebarOpen" @close="isSidebarOpen = false"/>
 
-            <div class="flex-1 flex flex-col min-w-0">
-                <div class="md:hidden mb-2">
-                    <TopNavigation/>
-                </div>
+            <div class="flex-1 h-screen overflow-y-auto custom-scrollbar relative z-0">
                 
-                <header
-                    class="bg-white dark:bg-gray-800 shadow-sm p-4 m-2 flex items-center justify-between relative"
-                    v-if="$slots.header"
-                >
-                    <div class="flex-1">
-                        <slot name="header" />
-                    </div>
-                    <NotificationBell/>
-                    <div class="ml-4">
-                        <div v-if="userInitials"
-                            class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
-                            {{ userInitials }}
+                <header class="bg-white dark:bg-gray-800 shadow-sm p-4 flex items-center justify-between sticky top-0 z-10 ml-2 border-b border-gray-300 dark:border-gray-700">
+                    <IconLayoutSidebar @click="toggleSidebar" class="text-gray-700 dark:text-gray-200 cursor-pointer" :size="20"
+                        stroke-width="2" />
+                    <div class="flex items-center">
+                        <NotificationBell/>
+                        <div class="ml-4">
+                            <div v-if="userInitials"
+                                class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
+                                {{ userInitials }}
+                            </div>
+                            <UserCircle stroke-width="1" v-else class="w-8 h-8 text-gray-500" />
                         </div>
-                        <UserCircle stroke-width="1" v-else class="w-8 h-8 text-gray-500" />
                     </div>
                 </header>
                 <main class="p-2">

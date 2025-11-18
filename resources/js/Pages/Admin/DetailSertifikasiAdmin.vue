@@ -1,6 +1,7 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
+import CustomHeader from '@/Components/CustomHeader.vue';
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
@@ -124,11 +125,7 @@ const formattedHarga = computed(() => {
 </script>
 <template>
     <AdminLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Sertifikasi
-            </h2>
-        </template>
+        <CustomHeader judul="Detail Sertifikasi"/>
 
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
         <div class="max-w-7xl mx-auto">
@@ -280,7 +277,7 @@ const formattedHarga = computed(() => {
                                 class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
                                 Sedang Berlangsung
                             </span>
-                            <span v-if="!props.sertification.status === 'berlangsung'"
+                            <span v-if="props.sertification.status === 'selesai'"
                                 class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
                                 Selesai
                             </span>

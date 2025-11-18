@@ -1,5 +1,6 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import CustomHeader from '@/Components/CustomHeader.vue';
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
@@ -82,12 +83,7 @@ const submit = () => {
 </script>
 <template>
     <AdminLayout>
-
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Sertifikasi
-            </h2>
-        </template>
+        <CustomHeader judul="Asesmen"/>
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
         <!-- Mode Tampilan -->
         <div v-if="!isEditing" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">

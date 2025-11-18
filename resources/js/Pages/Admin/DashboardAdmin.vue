@@ -1,5 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import CustomHeader from '@/Components/CustomHeader.vue';
 import { Award, Activity, Users, Wallet, GraduationCap, User2 } from 'lucide-vue-next';
 const props = defineProps({
     pendingRegistrants: Array,
@@ -9,12 +10,7 @@ const props = defineProps({
 
 <template>
     <AdminLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Dashboard Admin
-            </h2>
-        </template>
-
+        <CustomHeader judul="Dashboard Admin"/>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div
                 class="bg-white dark:bg-gray-800 border rounded-lg p-5 flex items-center justify-between">

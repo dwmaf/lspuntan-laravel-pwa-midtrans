@@ -1,61 +1,77 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import CustomHeader from '@/Components/CustomHeader.vue';
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
-import FilterDropdown from "@/Components/FilterDropdown.vue";
+import Pagination from "@/Components/Pagination.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import PrimaryLinkButton from "@/Components/PrimaryLinkButton.vue";
 import TextInput from "@/Components/TextInput.vue";
+import SelectInput from "@/Components/SelectInput.vue";
+import Modal from "@/Components/Modal.vue";
 import NumberInput from "@/Components/NumberInput.vue";
 import DateInput from "@/Components/DateInput.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
-import { ref, computed, watch } from "vue";
-import { MapPin, DollarSign, CalendarRange, BookOpen } from "lucide-vue-next";
+import { ref, computed, watch, reactive } from "vue";
+import { MapPin, DollarSign, CalendarRange, BookOpen, FunnelIcon, X } from "lucide-vue-next";
 import { IconChalkboardTeacher, IconPointFilled } from "@tabler/icons-vue";
-import Multiselect from 'vue-multiselect';
+import Multiselect from "@/Components/MultiSelect.vue";
 
 const props = defineProps({
     sertifications_berlangsung: Array,
-    sertifications_selesai: Array,
+    sertifications_selesai: Object,
     asesors: Array,
     skemas: Array,
+    filters: Object,
     errors: Object,
 });
-const asesorFilter = ref('');
-const skemaFilter = ref('');
-const tahunFilter = ref('');
+const filtersForm = reactive({
+    date_from: props.filters.date_from || '',
+    date_to: props.filters.date_to || '',
+    asesor: props.filters.asesor || '',
+    skema: props.filters.skema || '',
+});
+const hasActiveFilters = computed(() => {
+    const { search, ...advancedFilters } = filtersForm;
+    return Object.values(advancedFilters).some(value => value !== '' && value !== null);
+});
+const showFilterModal = ref(false);
+const openFilterModal = () => {
+    showFilterModal.value = true;
+};
+const closeFilterModal = () => {
+    showFilterModal.value = false;
+};
+
 const asesorOptions = computed(() =>
     props.asesors.map(asesor => ({ value: asesor.id, text: asesor.user.name }))
 );
 const skemaOptions = computed(() =>
     props.skemas.map(skema => ({ value: skema.id, text: skema.nama_skema }))
 );
-const yearOptions = computed(() => {
-    const currentYear = new Date().getFullYear();
-    const startYear = 2025;
-    const years = [];
-    for (let year = startYear; year >= currentYear; year--) {
-        years.push({ value: year, text: year.toString() });
-    }
-    return years;
-});
-const resetFilters = () => {
-    asesorFilter.value = '';
-    skemaFilter.value = '';
-    tahunFilter.value = '';
-};
-const filteredSertificationsSelesai = computed(() => {
-    return props.sertifications_selesai.filter(sert => {
-        const isAsesorMatch = !asesorFilter.value || sert.asesor.id == asesorFilter.value;
-        const isSkemaMatch = !skemaFilter.value || sert.skema.id == skemaFilter.value;
-        const sertYear = new Date(sert.tgl_apply_ditutup).getFullYear();
-        const isTahunMatch = !tahunFilter.value || sertYear == tahunFilter.value;
-        return isAsesorMatch && isSkemaMatch && isTahunMatch;
+const tab = ref(props.filters.tab || "berlangsung");
+
+// keep URL in sync when tab changes (so pagination links include tab)
+watch(tab, (value) => {
+    router.get(route('admin.kelolasertifikasi.index'), { ...filtersForm, tab: value }, {
+        preserveState: true,
+        replace: true,
     });
 });
+const applyFilters = () => {
+    router.get(route('admin.kelolasertifikasi.index'), {...filtersForm, tab: tab.value}, {
+        preserveState: true,
+        replace: true,
+    });
+    closeFilterModal();
+};
+const resetFilters = () => {
+    Object.keys(filtersForm).forEach(key => filtersForm[key] = '');
+    applyFilters();
+};
 
-const tab = ref("berlangsung");
+// const tab = ref("berlangsung");
 const form = useForm({
     skema_id: "",
     asesor_ids: [],
@@ -68,7 +84,7 @@ const form = useForm({
 form.transform((data) => {
     return {
         ...data,
-        asesor_ids: data.asesor_ids.map(asesor => asesor.id)
+        // asesor_ids: data.asesor_ids.map(asesor => asesor.id)
     };
 });
 const availableAsesors = computed(() => {
@@ -113,12 +129,7 @@ const submit = () => {
 
 <template>
     <AdminLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Sertifikasi
-            </h2>
-        </template>
-
+        <CustomHeader judul="Manajemen Sertifikasi" />
         <nav class="flex flex-wrap space-x-4 mt-1" aria-label="Tabs">
             <div>
                 <button @click="tab = 'mulai'"
@@ -170,7 +181,8 @@ const submit = () => {
                                 {{ sert.skema.nama_skema }}
                             </h3>
                         </div>
-                        <div v-for="(asesor, index) in sert.asesors" :key="asesor.id" class="flex items-center mt-4 gap-2">
+                        <div v-for="(asesor, index) in sert.asesors" :key="asesor.id"
+                            class="flex items-center mt-4 gap-2">
                             <IconChalkboardTeacher class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                             <p class=" text-gray-600 text-sm dark:text-gray-200">
                                 <span class="font-semibold">Asesor {{ index + 1 }} : {{ asesor.user.name }}</span>
@@ -228,25 +240,27 @@ const submit = () => {
             </div>
 
             <div v-show="tab === 'selesai'">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end mb-4">
-                    <FilterDropdown label="Asesor" :options="asesorOptions" v-model="asesorFilter" />
-                    <FilterDropdown label="Skema" :options="skemaOptions" v-model="skemaFilter" />
-                    <FilterDropdown label="Tahun" :options="yearOptions" v-model="tahunFilter" />
-                    <SecondaryButton @click="resetFilters" class="w-full justify-center h-10">
-                        Reset
-                    </SecondaryButton>
+                <div class="flex justify-end items-center gap-2 mb-4">
+
+                    <button data-cy="filter-trigger-button" @click="openFilterModal"
+                        class="relative mt-1 inline-flex items-center px-3 py-3 border border-gray-300 dark:border-gray-500 text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                        <FunnelIcon class="w-4 h-4" />
+                        <span v-if="hasActiveFilters"
+                            class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
+                    </button>
                 </div>
-                
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div v-if="filteredSertificationsSelesai.length > 0" v-for="sert in filteredSertificationsSelesai"
-                        :key="sert.id" class="bg-white p-6 rounded-lg dark:bg-gray-800">
+                    <div v-for="sert in sertifications_selesai.data" :key="sert.id"
+                        class="bg-white p-6 rounded-lg dark:bg-gray-800">
                         <div class="flex items-center gap-2">
                             <BookOpen class="shrink-0 text-gray-700 dark:text-gray-200" />
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">
                                 {{ sert.skema.nama_skema }}
                             </h3>
                         </div>
-                        <div v-for="(asesor, index) in sert.asesors" :key="asesor.id" class="flex items-center mt-4 gap-2">
+                        <div v-for="(asesor, index) in sert.asesors" :key="asesor.id"
+                            class="flex items-center mt-4 gap-2">
                             <IconChalkboardTeacher class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                             <p class=" text-gray-600 text-sm dark:text-gray-200">
                                 <span class="font-semibold">Asesor {{ index + 1 }} : {{ asesor.user.name }}</span>
@@ -292,10 +306,18 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <p v-else class="text-gray-500 dark:text-gray-400 col-span-2">
+                    <p v-if="sertifications_selesai.data.length === 0"
+                        class="text-gray-500 dark:text-gray-400 col-span-2">
                         Tidak ada riwayat sertifikasi untuk filter yang
                         dipilih.
                     </p>
+                </div>
+                <div class="mt-4 flex justify-between items-center">
+                    <span v-if="sertifications_selesai.total > 0" class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
+                        Menampilkan {{ sertifications_selesai.from }} sampai {{ sertifications_selesai.to }} dari {{ sertifications_selesai.total }} hasil
+                    </span>
+                    <span v-else></span>
+                    <Pagination :links="sertifications_selesai.links" />
                 </div>
             </div>
 
@@ -316,12 +338,11 @@ const submit = () => {
                         </select>
                         <InputError :message="form.errors.skema_id" />
                     </div>
-                    <div v-if="form.skema_id">
-                        <InputLabel value="Pilih Asesor (bisa lebih dari satu):" required />
+                    <div v-if="form.skema_id" class="relative">
+                        <InputLabel value="Pilih Asesor (bisa lebih dari 1)" required />
                         <Multiselect v-model="form.asesor_ids" :options="availableAsesors" :multiple="true"
-                            :close-on-select="false" placeholder="Cari atau pilih asesor" label="name" track-by="id"
+                            placeholder="Cari atau pilih asesor" label-prop="name" value-prop="id"
                             :class="{ 'border-red-500': form.errors.asesor_ids }">
-                            <template #noOptions>Tidak ada asesor tersedia untuk skema ini.</template>
                         </Multiselect>
                         <InputError :message="form.errors.asesor_ids" />
                     </div>
@@ -364,4 +385,37 @@ const submit = () => {
         </div>
 
     </AdminLayout>
+    <Modal :show="showFilterModal" @close="showFilterModal = false">
+        <div class="flex justify-end p-2">
+            <button @click="closeFilterModal">
+                <X class="w-4 dark:text-white" />
+            </button>
+        </div>
+        <div class="p-6 flex flex-col gap-4">
+
+            <div>
+                <InputLabel value="Rentang Waktu" />
+                <div class="flex flex-col">
+                    <InputLabel value="Dari" />
+                    <TextInput v-model="filtersForm.date_from" type="date" class="w-full" />
+                    <InputLabel value="Ke" />
+                    <TextInput v-model="filtersForm.date_to" type="date" class="w-full" />
+                </div>
+            </div>
+            <div>
+                <InputLabel value="Skema" />
+                <SelectInput v-model="filtersForm.skema" :options="skemaOptions" />
+            </div>
+
+            <div>
+                <InputLabel value="Asesor" />
+                <SelectInput v-model="filtersForm.asesor" :options="asesorOptions" />
+            </div>
+            <div class="my-4 border-t border-gray-200 dark:border-gray-600"></div>
+            <div class="flex gap-3">
+                <SecondaryButton @click="resetFilters"> Reset </SecondaryButton>
+                <PrimaryButton @click="applyFilters">Apply Filter</PrimaryButton>
+            </div>
+        </div>
+    </Modal>
 </template>

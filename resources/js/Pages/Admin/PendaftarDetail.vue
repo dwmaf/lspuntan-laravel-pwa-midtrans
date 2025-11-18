@@ -1,13 +1,14 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
+import CustomHeader from '@/Components/CustomHeader.vue';
 import PendaftarDetailDataStatis from "@/Pages/Admin/PendaftarDetailDataStatis.vue";
 import Modal from "@/Components/Modal.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import EditButton from "@/Components/EditButton.vue";
-import SeeButton from "../../Components/SeeButton.vue";
-import LoadingSpinner from "../../Components/LoadingSpinner.vue";
+import SeeButton from "@/Components/SeeButton.vue";
+import LoadingSpinner from "@/Components/LoadingSpinner.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
 import FileIcon from "@/Components/FileIcon.vue";
@@ -66,14 +67,7 @@ const certificateForm = useForm({
     file_path: null,
     delete_files: [],
 });
-// const removeFileSertifikat = (fieldName) => {
-//     if (form[fieldName]) {
-//         form[fieldName] = null;
-//     }
-//     else if (props.asesi.sertifikat[fieldName] && !form.delete_files.includes(fieldName)) {
-//         form.delete_files.push(fieldName);
-//     }
-// };
+
 const submitCertificate = () => {
     certificateForm.post(route('admin.sertifikasi.pendaftar.upload-certificate.update', { sert_id: props.sertification.id, asesi_id: props.asesi.id }), {
         onSuccess: () => isEditingCertificate.value = false,
@@ -118,11 +112,7 @@ const getPaymentStatusInfo = (transaction) => {
 
 <template>
     <AdminLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Sertifikasi
-            </h2>
-        </template>
+        <CustomHeader judul="Detail Peserta"/>
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
         <!-- Tampilan Detail Utama -->

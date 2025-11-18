@@ -1,18 +1,17 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
-import TextInput from "../../Components/TextInput.vue";
-import FileInput from "../../Components/FileInput.vue";
-import MultiFileInput from "../../Components/MultiFileInput.vue";
+import CustomHeader from '@/Components/CustomHeader.vue';
+import MultiFileInput from "@/Components/MultiFileInput.vue";
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { ref, computed } from 'vue';
-import AddButton from "../../Components/AddButton.vue";
-import EditButton from "../../Components/EditButton.vue";
-import DeleteButton from "../../Components/DeleteButton.vue";
+import AddButton from "@/Components/AddButton.vue";
+import EditButton from "@/Components/EditButton.vue";
+import DeleteButton from "@/Components/DeleteButton.vue";
 
 const props = defineProps({
     sertification: Object,
@@ -80,11 +79,7 @@ const MAX_TOTAL_FILES = 5;
 </script>
 <template>
     <AdminLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Sertifikasi
-            </h2>
-        </template>
+        <CustomHeader judul="Pengumuman Sertifikasi"/>
         <div>
             <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
             <div v-if="formMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">

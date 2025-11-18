@@ -1,6 +1,7 @@
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
+import Header from "@/Components/CustomHeader.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import MultiFileInput from "../../Components/MultiFileInput.vue";
@@ -42,14 +43,8 @@ const showViewMode = () => {
 
 <template>
     <AsesiLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Asesmen
-            </h2>
-        </template>
-
-
-
+        
+        <Header judul="Instruksi Asesmen"/>
         <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 

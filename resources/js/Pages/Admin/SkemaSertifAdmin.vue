@@ -1,5 +1,6 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import CustomHeader from '@/Components/CustomHeader.vue';
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
@@ -54,14 +55,16 @@ const backToList = () => {
 };
 
 const save = () => {
+    const options = {
+        // Setelah sukses, muat ulang props dari server (termasuk 'skemas')
+        // tapi pertahankan state lokal komponen (seperti 'formMode').
+        preserveState: true, 
+        onSuccess: () => backToList(),
+    };
     if (formMode.value === 'create') {
-        form.post(route('admin.skema.store'), {
-            onSuccess: () => backToList(),
-        });
+        form.post(route('admin.skema.store'), options);
     } else if (formMode.value === 'edit') {
-        form.post(route('admin.skema.update', form.id), {
-            onSuccess: () => backToList(),
-        });
+        form.post(route('admin.skema.update', form.id), options);
     }
 };
 
@@ -83,14 +86,11 @@ const destroy = (id) => {
 
 <template>
     <AdminLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Skema Sertifikasi
-            </h2>
-        </template>
+        
+        <CustomHeader judul="Manajemen Skema Sertifikasi"/>
 
         <!-- Form Tambah -->
-        <div v-if="formMode === 'create'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div v-if="formMode === 'create'" class="p-4 sm:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
                 Tambah Skema Sertifikasi
             </h2>
@@ -115,7 +115,7 @@ const destroy = (id) => {
                 </div>
             </form>
         </div>
-        <div v-if="formMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div v-if="formMode === 'edit'" class="p-4 sm:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
                 Edit Skema Sertifikasi
             </h2>
@@ -127,11 +127,11 @@ const destroy = (id) => {
                 </div>
                 <SingleFileInput v-model="form.format_apl_1" label="Format APL.01" v-model:deleteList="form.delete_files" delete-identifier="format_apl_1"
                     :existing-file-url="props.skemas.find(s => s.id === form.id)?.format_apl_1 ? `/storage/${props.skemas.find(s => s.id === form.id)?.format_apl_1}` : null"
-                    :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
+                    :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".pdf,.doc,.docx"
                     :error="form.errors.format_apl_1" />
                 <SingleFileInput v-model="form.format_apl_2" label="Format APL.02" v-model:deleteList="form.delete_files" delete-identifier="format_apl_2"
                     :existing-file-url="props.skemas.find(s => s.id === form.id)?.format_apl_2 ? `/storage/${props.skemas.find(s => s.id === form.id)?.format_apl_2}` : null"
-                    :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
+                    :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".pdf,.doc,.docx"
                     :error="form.errors.format_apl_2" />
                 <div class="flex items-center gap-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
@@ -142,7 +142,7 @@ const destroy = (id) => {
         </div>
 
         <!-- Tampilan Daftar -->
-        <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div v-if="formMode === 'list'" class="p-4 sm:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Daftar Skema</h2>
                 <AddButton @click="showCreateForm">Tambah Skema</AddButton>

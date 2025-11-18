@@ -1,117 +1,129 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
+import CustomHeader from '@/Components/CustomHeader.vue';
+import { Printer } from "lucide-vue-next";
+
 const props = defineProps({
     sertification: Object,
 });
+
 </script>
+
 <template>
     <AdminLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Laporan Sertifikasi
-            </h2>
-        </template>
-
+        <CustomHeader judul="Laporan Sertifikasi" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
+        
 
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+        <div
+            class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{
-                            props.sertification.skema.nama_skema
-                            }}</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Laporan Kelulusan Peserta</p>
-                    </div>
-                    <button onclick="window.print()"
-                        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600">
-                        Cetak
-                    </button>
+
+                <div class="flex justify-end mb-6">
+                    <a :href="route('admin.kelolasertifikasi.print_report', props.sertification.id)" target="_blank"
+                        class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
+                        <Printer class="w-5 h-5" />
+                        Cetak Laporan Resmi
+                    </a>
                 </div>
 
-                <div
-                    class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Pelaksanaan</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ props.sertification.tgl_sertifikasi
-                            }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tempat Uji Kompetensi (TUK)
-                        </dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ props.sertification.tuk }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Asesor</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{
-                            props.sertification.asesors }}
-                        </dd>
-                    </div>
+                <div class="max-w-4xl mx-auto bg-white border border-gray-200 p-6 shadow-sm">
+                    <p class="text-center text-gray-500 italic">
+                        (Klik tombol cetak di atas untuk membuka versi cetak resmi)
+                    </p>
                 </div>
 
-                <div class="mt-8">
-                    <h4 class="text-lg font-medium text-gray-900 dark:text-gray-200">Daftar Peserta Lulus</h4>
-                    <div class="mt-4 flex flex-col">
-                        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                                <div
-                                    class="shadow overflow-hidden border-b border-gray-200 dark:border-gray-700 sm:rounded-lg">
-                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                        <thead class="bg-gray-50 dark:bg-gray-700">
-                                            <tr>
-                                                <th scope="col"
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                    No</th>
-                                                <th scope="col"
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                    Nama Peserta</th>
-                                                <th scope="col"
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                    NIM / ID</th>
-                                                <th scope="col"
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                    Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody
-                                            class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <div class="max-w-4xl mx-auto bg-white ">
 
-
-                                            <tr v-for="(asesi, index) in props.sertification.asesis" :key="asesi.id">
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                    {{ index + 1 }}</td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    {{ asesi.student.user.name }}</td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                    <span
-                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                        Lulus
-                                                    </span>
-                                                </td>
-                                            </tr>
-
-                                            <tr v-if="!props.sertification.asesis">
-                                                <td colspan="4"
-                                                    class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                                                    Belum ada peserta yang dinyatakan lulus untuk sertifikasi ini.
-                                                </td>
-                                            </tr>
-
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                    <div class="border-b-2 border-gray-800 pb-4 mb-6 flex items-center gap-4">
+                        <img src="/logo-lsp.png" alt="Logo LSP" class="h-20 w-auto" />
+                        <div class="text-center flex-1">
+                            <h1 class="text-2xl font-bold uppercase text-gray-900">LSP UNTAN</h1>
+                            <p class="text-sm text-gray-600">Alamat Lengkap LSP, No Telepon, Website</p>
+                            <p class="text-xs text-gray-500 italic">Licenced by BNSP</p>
                         </div>
                     </div>
+
+                    <div class="text-center mb-8">
+                        <h2 class="text-xl font-bold text-gray-900 underline decoration-2 underline-offset-4">
+                            BERITA ACARA HASIL ASESMEN
+                        </h2>
+                        <p class="text-sm mt-1 text-gray-600">Nomor: ...../BA-LSP/..../202..</p>
+                    </div>
+
+                    <div class="mb-6 text-sm text-gray-900 border border-gray-300 p-4 rounded-sm">
+                        <div class="grid grid-cols-[200px_10px_1fr] gap-y-2">
+                            <div class="font-semibold">Skema Sertifikasi</div>
+                            <div>:</div>
+                            <div>{{ props.sertification.skema.nama_skema }}</div>
+
+                            <div class="font-semibold">Nomor Skema</div>
+                            <div>:</div>
+                            <div>{{ props.sertification.skema.kode_skema || '-' }}</div>
+
+                            <div class="font-semibold">Tanggal Pelaksanaan</div>
+                            <div>:</div>
+                            <div>{{ props.sertification.tgl_sertifikasi }}</div>
+
+                            <div class="font-semibold">TUK</div>
+                            <div>:</div>
+                            <div>{{ props.sertification.tuk }}</div>
+
+                            <div class="font-semibold">Nama Asesor</div>
+                            <div>:</div>
+                            <div v-for="asesor in props.sertification.asesors">{{ asesor.user?.name || '' }}</div>
+
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <h4 class="text-md font-bold text-gray-900 mb-2">Rekapitulasi Hasil:</h4>
+                        <table class="w-full border-collapse border border-gray-400 text-sm">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border border-gray-400 px-2 py-2 w-12 text-center">No</th>
+                                    <th class="border border-gray-400 px-4 py-2 text-left">Nama Peserta</th>
+                                    <th class="border border-gray-400 px-4 py-2 text-left">NIM / ID</th>
+                                    <th class="border border-gray-400 px-4 py-2 text-center w-40">Rekomendasi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(asesi, index) in props.sertification.asesis" :key="asesi.id">
+                                    <td class="border border-gray-400 px-2 py-2 text-center">{{ index + 1 }}</td>
+                                    <td class="border border-gray-400 px-4 py-2 font-medium text-gray-900">
+                                        {{ asesi.student.user.name }}
+                                    </td>
+                                    <td class="border border-gray-400 px-4 py-2">
+                                        {{ asesi.student.nim || '-' }}
+                                    </td>
+                                    <td class="border border-gray-400 px-4 py-2 text-center font-bold">
+                                        {{ asesi.status === 'lulus_sertifikasi' ? 'Kompeten (K)' : 'Belum Kompeten (BK)' }}
+                                    </td>
+                                </tr>
+                                <tr v-if="!props.sertification.asesis || props.sertification.asesis.length === 0">
+                                    <td colspan="4" class="border border-gray-400 px-4 py-4 text-center text-gray-500">
+                                        Tidak ada data peserta.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-12 grid grid-cols-2 gap-20 break-inside-avoid">
+                        <div class="text-center">
+                            <p class="mb-20">Mengetahui,<br><strong>Manajer Sertifikasi</strong></p>
+                            <p class="font-bold underline text-gray-900">( Nama Manajer )</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="mb-20">Dibuat Oleh,<br><strong>Asesor Kompetensi</strong></p>
+                            <p class="font-bold underline text-gray-900">{{ props.sertification.asesors.user?.name || ''
+                                }}</p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
-
     </AdminLayout>
 </template>

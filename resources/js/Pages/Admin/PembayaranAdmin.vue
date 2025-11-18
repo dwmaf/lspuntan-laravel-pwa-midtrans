@@ -1,6 +1,7 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
+import CustomHeader from '@/Components/CustomHeader.vue';
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
@@ -52,12 +53,7 @@ const formattedHarga = computed(() => {
 </script>
 <template>
     <AdminLayout>
-
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Sertifikasi
-            </h2>
-        </template>
+        <CustomHeader judul="Instruksi Pembayaran"/>
 
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 

@@ -9,12 +9,18 @@ import {
     IconUser,
     IconChalkboardTeacher,
     IconLogout,
-    IconLayoutSidebar,
     IconLogs,
-    IconUsers
+    IconUsers,
+    IconCaretLeftFilled
 } from '@tabler/icons-vue';
 
-const open = ref(true);
+const emit = defineEmits(['close']);
+const props = defineProps({
+    isOpen: {
+        type: Boolean,
+        default: true
+    }
+});
 const page = usePage();
 const roles = computed(() => page.props.auth.roles ?? []);
 const hasAdminRole = computed(() => roles.value.includes('admin'));
@@ -56,29 +62,30 @@ const navLinks = computed(() => {
 
 <template>
     <div>
-        <aside class="h-full bg-white dark:bg-gray-800 p-3 transition-all duration-300 overflow-visible z-40"
-            :class="open ? 'w-48 translate-x-0' : 'w-16 translate-x-0'">
-            <div class="flex" v-if="open">
+        <aside class="h-full bg-white dark:bg-gray-800 md:bg-transparent md:dark:bg-transparent pl-3 py-3 transition-all duration-300 overflow-visible z-40 fixed md:relative flex flex-col"
+            :class="[props.isOpen ? 'w-60' : 'w-17',
+                props.isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
+            <div class="flex" v-if="props.isOpen">
                 <div class="shrink-0 flex items-center">
                     <Link :href="route('admin.dashboard')">
                         <img src="/logo-lsp.png" alt="Logo LSP" class="block h-15 w-auto" />
                     </Link>
                 </div>
             </div>
-            <button @click="open = !open"
-                class="text-gray-700 dark:text-gray-200 cursor-pointer mb-2 absolute top-5 right-5">
-                <IconLayoutSidebar size="20" strokeWidth="2"/>
+            <button @click="emit('close')"
+                class="text-gray-700 dark:text-gray-200 cursor-pointer mb-2 absolute top-5 right-5 flex md:hidden">
+                <IconCaretLeftFilled size="20" strokeWidth="2"/>
             </button>
 
-            <div :class="!open? 'mt-10' : ''">
+            <div class="flex-1 pr-3" :class="props.isOpen ? 'overflow-y-auto custom-scrollbar' : 'overflow-visible'">
                 <NavLink v-for="link in navLinks" :key="link.href" :href="link.href" :active="link.active"
-                    :icon="link.icon" :is-open="open">{{ link.label }}
+                    :icon="link.icon" :is-open="props.isOpen">{{ link.label }}
                 </NavLink>
-                <NavLink class="border-t border-gray-200 dark:border-gray-600" :href="route('logout')" :icon="IconLogout" method="post" :is-open="open"
+                <div class="my-2 border-t border-gray-200 dark:border-gray-600"></div>
+                <NavLink :href="route('logout')" :icon="IconLogout" method="post" :is-open="props.isOpen"
                     as="button">
                     Log Out
                 </NavLink>
-
             </div>
         </aside>
     </div>

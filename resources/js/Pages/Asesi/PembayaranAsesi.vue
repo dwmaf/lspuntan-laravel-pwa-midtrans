@@ -1,6 +1,7 @@
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
+import Header from "@/Components/CustomHeader.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import SingleFileInput from "@/Components/SingleFileInput.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
@@ -33,30 +34,11 @@ const submit = () => {
 
 const formatCurrency = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 const formatDate = (dateString) => new Date(dateString).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
-// const removeFile = (fieldName) => {
-//     console.log('exectued remove file');
-//     if (form[fieldName]) {
-//         form[fieldName] = null;
-//         return;
-//     }
-//     else if (props.asesi.latest_transaction && props.asesi.latest_transaction[fieldName] && !form.delete_files.includes(fieldName)) {
-//         console.log('file ini akan dihapus');
-//         console.log(form.delete_files);
-//         form.delete_files.push(fieldName);
-//     }
-// };
 </script>
 
 <template>
     <AsesiLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Pembayaran Sertifikasi
-            </h2>
-        </template>
-
-
-
+        <Header judul="Instruksi Pembayaran"/>
         <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 

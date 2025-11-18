@@ -27,6 +27,7 @@ class KelolaSertifikasiAsesiController extends Controller
     use SendsPushNotifications;
     public function asesi_daftar_sertifikasi(Request $request)
     {
+        NotificationController::markAsRead($request);
         $user = $request->user();
         $student = $user->student;
         $asesi = Asesi::where('student_id', $student->id)

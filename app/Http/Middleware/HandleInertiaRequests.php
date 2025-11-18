@@ -55,7 +55,7 @@ class HandleInertiaRequests extends Middleware
                             return [
                                 'id'=> $notif->id,
                                 'message'=>$notif->message,
-                                'link' => $notif->link,
+                                'url' => $notif->url,
                                 'read_at' => $notif->read_at,
                                 'created_at' => $notif->created_at->diffForHumans(),
                             ];

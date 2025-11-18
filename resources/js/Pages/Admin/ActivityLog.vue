@@ -1,11 +1,13 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import Modal from '@/Components/Modal.vue';
 import Pagination from '@/Components/Pagination.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, reactive, computed, watch } from 'vue';
-import { MoveRight, FunnelIcon } from 'lucide-vue-next';
+import { MoveRight, FunnelIcon,X } from 'lucide-vue-next';
 import TextInput from '@/Components/TextInput.vue';
+import CustomHeader from '@/Components/CustomHeader.vue';
 import SelectInput from '@/Components/SelectInput.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -23,6 +25,17 @@ const filtersForm = reactive({
     subject_type: props.filters.subject_type || '',
     event: props.filters.event || '',
 });
+const hasActiveFilters = computed(() => {
+    const {search, ...advancedFilters} = filtersForm;
+    return Object.values(advancedFilters).some(value => value !== '' && value !== null);
+});
+const showFilterModal = ref(false);
+const openFilterModal = () => {
+    showFilterModal.value = true;
+};
+const closeFilterModal = () => {
+    showFilterModal.value = false;
+};
 let searchTimeoutId = null;
 watch(() => filtersForm.search, (newValue) => {
     clearTimeout(searchTimeoutId);
@@ -38,6 +51,7 @@ const applyFilters = () => {
         preserveState: true,
         replace: true,
     });
+    closeFilterModal();
 };
 const resetFilters = () => {
     Object.keys(filtersForm).forEach(key => filtersForm[key] = '');
@@ -57,7 +71,6 @@ const eventOptions = [
 ];
 const viewMode = ref('list');
 const selectedLog = ref(null);
-
 
 const showDetailView = (log) => {
     selectedLog.value = log;
@@ -89,56 +102,20 @@ const formatFieldName = (fieldName) => {
 
 <template>
     <AdminLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Catatan Aktivitas Sistem
-            </h2>
-        </template>
+        <CustomHeader judul="Catatan Aktivitas Sistem"/>
 
         <div v-if="viewMode === 'list'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div class="flex justify-end items-center gap-2 mb-4">
                 <div class="w-[243px]">
-                    <TextInput v-model="filtersForm.search" type="text" placeholder="Cari causer..."/>
+                    <TextInput v-model="filtersForm.search" type="text" placeholder="Cari causer..." />
                 </div>
-                <Dropdown>
-                    <template #trigger>
-                        <button
-                            class="mt-1 inline-flex items-center px-3 py-3 border border-gray-300 dark:border-gray-500 text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                            <FunnelIcon class="w-4 h-4" />
-                        </button>
-                    </template>
-                    <template #content>
-                        <div class="p-4 space-y-4">
-                            
-                            <div>
-                                <InputLabel value="Rentang Waktu" />
-                                <div class="flex flex-col gap-2">
-                                    <TextInput v-model="filtersForm.date_from" type="date" class="w-full" />
-                                    <TextInput v-model="filtersForm.date_to" type="date" class="w-full" />
-                                </div>
-                            </div>
-                            <div>
-                                <InputLabel value="Target Data" />
-                                <SelectInput v-model="filtersForm.subject_type" :options="subjectOptions" />
-                            </div>
-                            
-                            <div>
-                                <InputLabel value="Jenis Aksi" />
-                                <SelectInput v-model="filtersForm.event" :options="eventOptions" />
-                            </div>
-                        </div>
-                        <div
-                            class="border-t border-gray-200 dark:border-gray-600 px-4 py-3 flex justify-between items-center">
-                            <button @click="resetFilters"
-                                class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-                                Reset
-                            </button>
-                            <PrimaryButton @click="applyFilters">Apply Filter</PrimaryButton>
-                        </div>
-                    </template>
-                </Dropdown>
+                <button data-cy="filter-trigger-button" @click="openFilterModal"
+                    class="relative mt-1 inline-flex items-center px-3 py-3 border border-gray-300 dark:border-gray-500 text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                    <FunnelIcon class="w-4 h-4" />
+                    <span v-if="hasActiveFilters" class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
+                </button>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto custom-scrollbar">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
@@ -212,7 +189,7 @@ const formatFieldName = (fieldName) => {
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dilakukan Oleh</dt>
                     <dd class="mt-1 text-base text-gray-900 dark:text-gray-200">{{ selectedLog.causer?.name ?? 'Sistem'
-                    }}</dd>
+                        }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Waktu</dt>
@@ -277,4 +254,37 @@ const formatFieldName = (fieldName) => {
             </dl>
         </div>
     </AdminLayout>
+    <Modal :show="showFilterModal" @close="showFilterModal = false">
+        <div class="flex justify-end p-2">
+            <button @click="closeFilterModal">
+                <X class="w-4 dark:text-white" />
+            </button>
+        </div>
+        <div class="p-6 flex flex-col gap-4">
+            
+            <div>
+                <InputLabel value="Rentang Waktu" />
+                <div class="flex flex-col">
+                    <InputLabel value="Dari" />
+                    <TextInput v-model="filtersForm.date_from" type="date" class="w-full" />
+                    <InputLabel value="Ke" />
+                    <TextInput v-model="filtersForm.date_to" type="date" class="w-full" />
+                </div>
+            </div>
+            <div>
+                <InputLabel value="Target Data" />
+                <SelectInput v-model="filtersForm.subject_type" :options="subjectOptions" />
+            </div>
+
+            <div>
+                <InputLabel value="Jenis Aksi" />
+                <SelectInput v-model="filtersForm.event" :options="eventOptions" />
+            </div>
+            <div class="my-4 border-t border-gray-200 dark:border-gray-600"></div>
+            <div class="flex gap-3">
+                <SecondaryButton @click="resetFilters"> Reset </SecondaryButton>
+                <PrimaryButton @click="applyFilters">Apply Filter</PrimaryButton>
+            </div>
+        </div>
+    </Modal>
 </template>

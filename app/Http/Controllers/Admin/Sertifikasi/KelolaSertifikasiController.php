@@ -26,12 +26,30 @@ class KelolaSertifikasiController extends Controller
                 ->orderBy('tgl_apply_dibuka', 'desc')
                 ->get(),
             'sertifications_selesai' => Sertification::with('skema', 'asesors.user', 'paymentInstruction')
+                ->when($request->input('date_from'), function ($query, $dateFrom) {
+                    $query->whereDate('tgl_apply_dibuka', '>=', $dateFrom);
+                })
+                ->when($request->input('date_to'), function ($query, $dateTo) {
+                    $query->whereDate('tgl_apply_ditutup', '<=', $dateTo);
+                })
+                ->when($request->input('asesor'), function ($query, $asesorId) {
+                    $query->whereHas('asesors', function ($subQuery) use ($asesorId) {
+                        $subQuery->where('asesors.id', $asesorId);
+                    });
+                })
+                ->when($request->input('skema'), function ($query, $skema) {
+                    $query->whereHas('skema', fn($q) => $q->where('id', $skema));
+                })
                 ->where('status', 'selesai')
                 ->orderBy('tgl_apply_ditutup', 'desc')
-                ->get(),
+                ->latest()
+                ->paginate(5)
+                ->onEachSide(0)
+                ->withQueryString(),
             'asesors' => Asesor::with('skemas', 'user')->withCount('sertifications')->get(),
             'skemas' => Skema::all(),
-            // 'filters' => ['filter' => $filter],
+            'filters' => $request->only(['date_from', 'date_to', 'asesor', 'skema', 'tab']),
+
         ]);
     }
 
@@ -141,6 +159,22 @@ class KelolaSertifikasiController extends Controller
     {
         return Inertia::render('Admin/LaporanAdmin', [
             'sertification' => Sertification::with('asesors.user', 'skema', 'asesis.student.user')->findOrFail($sert_id)
+        ]);
+    }
+
+    // App/Http/Controllers/Admin/Sertifikasi/KelolaSertifikasiController.php
+
+    public function print_laporan($sert_id)
+    {
+        $sertification = Sertification::with([
+            'skema',
+            'asesors.user',
+            'asesis.student.user'
+        ])
+            ->findOrFail($sert_id);
+        
+        return Inertia::render('Admin/LaporanPrint', [
+            'sertification' => $sertification,
         ]);
     }
 }

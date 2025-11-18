@@ -1,6 +1,7 @@
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
+import Header from "@/Components/CustomHeader.vue";
 import { ref, onMounted } from "vue";
 
 const props = defineProps({
@@ -55,12 +56,7 @@ onMounted(() => {
 
 <template>
     <AsesiLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Pengumuman
-            </h2>
-        </template>
-
+        <Header judul="Pengumuman"/>
         <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 

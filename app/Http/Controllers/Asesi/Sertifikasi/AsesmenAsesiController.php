@@ -45,8 +45,8 @@ class AsesmenAsesiController extends Controller
             'delete_files' => 'nullable|array',
             'delete_files.*' => 'integer|exists:asesiasesmenfiles,id',
         ]);
-        FileHelper::deleteCollectionFiles(Asesiasesmenfile::class, $request->input('delete_files', []));
-        FileHelper::handleCollectionFileUploads(Asesiasesmenfile::class, 'asesi_id', $asesi_id, $request, 'newFiles', 'asesi_files');
+        FileHelper::handleCollectionFileDeletes(Asesiasesmenfile::class, $request->input('delete_files', []));
+        FileHelper::handleCollectionFileUploads(Asesiasesmenfile::class, 'asesi_id', $asesi_id, $request, ['newFiles'], 'asesi_files');
         $remainingFilesCount = Asesiasesmenfile::where('asesi_id', $asesi_id)->count();
         if ($remainingFilesCount === 0) {
             return redirect()->back()->withErrors(['newFiles' => 'Anda harus mengumpulkan setidaknya satu file.']);

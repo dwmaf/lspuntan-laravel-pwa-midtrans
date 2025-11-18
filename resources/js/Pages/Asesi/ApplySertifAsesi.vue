@@ -1,6 +1,7 @@
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import InputError from "@/Components/InputError.vue";
+import Header from "@/Components/CustomHeader.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import SecondaryLinkButton from "@/Components/SecondaryLinkButton.vue";
@@ -72,11 +73,8 @@ const submit = () => {
 
 <template>
     <AsesiLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Pendaftaran Sertifikasi
-            </h2>
-        </template>
+        
+        <Header judul="Pendaftaran Sertifikasi"/>
 
         <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">

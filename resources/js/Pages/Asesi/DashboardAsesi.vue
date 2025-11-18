@@ -1,16 +1,11 @@
 <script setup>
 import AsesiLayout from '@/Layouts/AsesiLayout.vue';
+import Header from '@/Components/CustomHeader.vue';
 </script>
 
 <template>
     <AsesiLayout>
-        <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200"
-            >
-                Dashboard
-            </h2>
-        </template>
+        <Header judul="Dashboard Asesi"/>
         <div>
             something
         </div>

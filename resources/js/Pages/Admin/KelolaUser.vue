@@ -1,5 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import CustomHeader from '@/Components/CustomHeader.vue';
 import EditButton from '@/Components/EditButton.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import DeleteButton from '@/Components/DeleteButton.vue';
@@ -12,11 +13,10 @@ import MultiSelect from '@/Components/MultiSelect.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { Head, useForm, usePage, router } from '@inertiajs/vue3';
 import { ref, computed, watch, reactive } from 'vue';
-import SuccessButton from '@/Components/SuccessButton.vue'; 
+import SuccessButton from '@/Components/SuccessButton.vue';
 import Pagination from '@/Components/Pagination.vue';
-import Dropdown from '@/Components/Dropdown.vue'; 
-import SelectInput from '@/Components/SelectInput.vue'; 
-import { MoveRight, FunnelIcon } from 'lucide-vue-next';
+import SelectInput from '@/Components/SelectInput.vue';
+import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
 
 const authUser = usePage().props.auth.user;
 const props = defineProps({
@@ -31,7 +31,17 @@ const filtersForm = reactive({
     status: props.filters.status || '',
     verified: props.filters.verified || '',
 });
-
+const hasActiveFilters = computed(() => {
+    const {search, ...advancedFilters} = filtersForm;
+    return Object.values(advancedFilters).some(value => value !== '' && value !== null);
+});
+const showFilterModal = ref(false);
+const openFilterModal = () => {
+    showFilterModal.value = true;
+};
+const closeFilterModal = () => {
+    showFilterModal.value = false;
+};
 let searchTimeoutId = null;
 watch(() => filtersForm.search, (newValue) => {
     clearTimeout(searchTimeoutId);
@@ -47,6 +57,7 @@ const applyFilters = () => {
         preserveState: true,
         replace: true,
     });
+    closeFilterModal();
 };
 const resetFilters = () => {
     filtersForm.search = '';
@@ -151,59 +162,22 @@ const save = () => {
 
 <template>
 
-    <Head title="Manajemen Akun" />
+    
 
     <AdminLayout>
-        <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                Manajemen Akun Pengguna
-            </h2>
-        </template>
-
+        <CustomHeader judul="Manajemen Akun" />
         <div v-if="viewMode === 'list'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div class="flex justify-end items-center gap-2 mb-4">
                 <div class="w-[243px]">
-                    <TextInput v-model="filtersForm.search" type="text" placeholder="Cari nama atau email..."/>
+                    <TextInput v-model="filtersForm.search" type="text" placeholder="Cari nama atau email..." />
                 </div>
-                <Dropdown>
-                    <template #trigger>
-                        <button class="mt-1 inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-500 text-sm font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                            <FunnelIcon class="w-4" />
-                        </button>
-                    </template>
-                    <template #content>
-                        <div class="p-4 flex flex-col gap-4">
-                            <div>
-                                <InputLabel value="Role"/>
-                                <SelectInput v-model="filtersForm.role" :options="[{value: '', text: 'Semua'}, ...roles.map(r => ({value: r, text: r}))]" />
-                            </div>
-                            <div>
-                                <InputLabel value="Status Akun"/>
-                                <SelectInput v-model="filtersForm.status" :options="[
-                                    {value:'',text:'Semua'},
-                                    {value:'active',text:'Aktif'},
-                                    {value:'banned',text:'Ditangguhkan'},
-                                ]" />
-                            </div>
-                            <div>
-                                <InputLabel value="Verifikasi Email"/>
-                                <SelectInput v-model="filtersForm.verified" :options="[
-                                    {value: '', text: 'Semua'},
-                                    {value: 'true', text: 'Terverifikasi'},
-                                    {value: 'false', text: 'Belum Terverifikasi'},
-                                ]"/>
-                            </div>
-                        </div>
-                        <div class="border-t border-gray-200 dark:border-gray-600 px-4 py-2">
-                            <button @click="resetFilters" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-                                Reset Filter
-                            </button>
-                            <PrimaryButton @click="applyFilters">Apply Filter</PrimaryButton>
-                        </div>
-                    </template>
-                </Dropdown>
+                <button @click="openFilterModal"
+                    class="relative mt-1 inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-500 text-sm font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                    <FunnelIcon class="w-4" />
+                    <span v-if="hasActiveFilters" class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
+                </button>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto custom-scrollbar">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
@@ -268,7 +242,8 @@ const save = () => {
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex gap-2">
                                 <EditButton @click="enterEditMode(user)">Edit</EditButton>
                                 <template v-if="user.id !== authUser.id">
-                                    <DeleteButton v-if="!user.banned_at" @click="confirmBanUser(user)">Ban</DeleteButton>
+                                    <DeleteButton v-if="!user.banned_at" @click="confirmBanUser(user)">Ban
+                                    </DeleteButton>
                                     <SuccessButton v-else @click="confirmBanUser(user)">Un-ban</SuccessButton>
                                 </template>
                             </td>
@@ -281,17 +256,26 @@ const save = () => {
                     </tbody>
                 </table>
             </div>
-            
+
             <div class="mt-4 flex justify-between items-center">
                 <span v-if="users.total > 0" class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
                     Menampilkan {{ users.from }} sampai {{ users.to }} dari {{ users.total }} hasil
                 </span>
                 <span v-else></span>
-                <Pagination :links="users.links"/>
+                <Pagination :links="users.links" />
             </div>
         </div>
         <div v-if="viewMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2">
             <form @submit.prevent="save" class="flex flex-col gap-4">
+                <div class="relative">
+                    <InputLabel value="Role" required />
+                    <MultiSelect v-model="form.selectedRoles" placeholder="Pilih role user" :options="roleOptions"
+                        :disabled="isRoleEditingDisabled" />
+                    <InputError :message="form.errors.selectedRoles" />
+                    <p v-if="isRoleEditingDisabled" class="text-xs text-gray-500 dark:text-gray-400 ">
+                        Peran untuk Asesi tidak dapat diubah.
+                    </p>
+                </div>
                 <div>
                     <InputLabel value="Nama" required />
                     <TextInput v-model="form.name" required />
@@ -307,21 +291,19 @@ const save = () => {
                     <TextInput v-model="form.no_tlp_hp" />
                     <InputError :message="form.errors.no_tlp_hp" />
                 </div>
-                <MultiSelect v-model="form.selectedRoles" :options="roleOptions" label="Roles"
-                    :error="form.errors.selectedRoles" :disabled="isRoleEditingDisabled" />
-                <p v-if="isRoleEditingDisabled" class="text-xs text-gray-500 dark:text-gray-400 -mt-2">
-                    Peran untuk Asesi tidak dapat diubah.
-                </p>
+
                 <div v-if="!selectedUser.email_verified_at" class="border-t border-gray-200 dark:border-gray-700 pt-4">
                     <div class="flex items-center justify-between">
                         <span class="flex flex-col">
                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Verifikasi Manual</span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">Aktifkan untuk memverifikasi email pengguna ini secara manual.</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Aktifkan untuk memverifikasi email
+                                pengguna
+                                ini secara manual.</span>
                         </span>
-                        
-                        <ToggleSwitch v-model="form.is_verified"/>
+
+                        <ToggleSwitch v-model="form.is_verified" />
                     </div>
-                    <InputError :message="form.errors.is_verified"/>
+                    <InputError :message="form.errors.is_verified" />
                 </div>
                 <div class="flex items-center gap-2">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
@@ -338,7 +320,8 @@ const save = () => {
             </h2>
 
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Pengguna <span class="font-bold">{{ userToBan?.email }}</span> {{ userToBan?.banned_at ? 'akan bisa login kembali.' : 'tidak akan bisa login.' }}
+                Pengguna <span class="font-bold">{{ userToBan?.email }}</span>
+                {{ userToBan?.banned_at ? 'akan bisa login kembali.' : 'tidak akan bisa login.' }}
             </p>
 
             <div class="mt-6 flex justify-end">
@@ -350,6 +333,35 @@ const save = () => {
                 <PrimaryButton v-else class="ml-3" @click="banUser">
                     Ya, Aktifkan Kembali
                 </PrimaryButton>
+            </div>
+        </div>
+    </Modal>
+    <Modal :show="showFilterModal" @close="showFilterModal = false">
+        <div class="flex justify-end p-2">
+            <button @click="closeFilterModal"><X class="w-4 dark:text-white" /></button>
+        </div>
+        <div class="p-6">
+            <div class="flex flex-col gap-4">
+                <div>
+                    <InputLabel value="Role" />
+                    <SelectInput v-model="filtersForm.role"
+                        :options="[{ value: '', text: 'Semua' }, ...roles.map(r => ({ value: r, text: r }))]" />
+                </div>
+                <div>
+                    <InputLabel value="Status Akun" />
+                    <SelectInput v-model="filtersForm.status"
+                        :options="[{ value: '', text: 'Semua' }, { value: 'active', text: 'Aktif' }, { value: 'banned', text: 'Ditangguhkan' },]" />
+                </div>
+                <div>
+                    <InputLabel value="Verifikasi Email" />
+                    <SelectInput v-model="filtersForm.verified"
+                        :options="[{ value: '', text: 'Semua' }, { value: 'true', text: 'Terverifikasi' }, { value: 'false', text: 'Belum Terverifikasi' },]" />
+                </div>
+            </div>
+            <div class="my-4 border-t border-gray-200 dark:border-gray-600"></div>
+            <div class=" flex gap-3">
+                <SecondaryButton @click="resetFilters"> Reset </SecondaryButton>
+                <PrimaryButton @click="applyFilters">Apply Filter</PrimaryButton>
             </div>
         </div>
     </Modal>

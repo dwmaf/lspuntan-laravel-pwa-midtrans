@@ -20,6 +20,7 @@ const markAllRead = async () => {
 
 const linkWithId = (notif) => {
     const baseUrl = notif.url;
+    // console.log(baseUrl);
     if (!baseUrl) {
         return '#';
     }

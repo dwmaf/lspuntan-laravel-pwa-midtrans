@@ -1,7 +1,8 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
-import SmallLinkButton from "../../Components/SmallLinkButton.vue";
+import CustomHeader from '@/Components/CustomHeader.vue';
+import SmallLinkButton from "@/Components/SmallLinkButton.vue";
 const props = defineProps({
     sertification: Object,
 });
@@ -38,11 +39,8 @@ const getPaymentStatusInfo = (transaction) => {
 </script>
 <template>
     <AdminLayout>
-        <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                Sertifikasi
-            </h2>
-        </template>
+        
+        <CustomHeader judul="Daftar Peserta"/>
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
         <div class="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">

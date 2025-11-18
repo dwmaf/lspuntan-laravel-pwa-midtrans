@@ -24,8 +24,8 @@ class SkemaController extends Controller
     {
         $validatedData = $request->validate([
             'nama_skema' => ['required','string','max:255'],
-            'format_apl_1' => 'nullable|file|mimes:docx|max:1024',
-            'format_apl_2' => 'nullable|file|mimes:docx|max:1024',
+            'format_apl_1' => 'nullable|file|mimes:doc,docx,pdf|max:2048',
+            'format_apl_2' => 'nullable|file|mimes:doc,docx,pdf|max:2048',
         ]);
         $skema = new Skema($validatedData);
         FileHelper::handleSingleFileUploads($skema, ['format_apl_1', 'format_apl_2'], $request, 'apl_files');
@@ -36,13 +36,13 @@ class SkemaController extends Controller
     public function update(Request $request, $id)
     {
         $skema = Skema::findOrFail($id);
-        $validatedData = $request->validate([
+        $request->validate([
             'nama_skema' => ['required', 'string', 'max:255'],
-            'format_apl_1' => 'nullable|file|mimes:docx,pdf|max:2048',
-            'format_apl_2' => 'nullable|file|mimes:docx,pdf|max:2048',
+            'format_apl_1' => 'nullable|file|mimes:doc,docx,pdf|max:2048',
+            'format_apl_2' => 'nullable|file|mimes:doc,docx,pdf|max:2048',
             'delete_files' => 'nullable|array',
         ]);
-        $skema->fill($validatedData);
+        $skema->fill($request->only(['nama_skema', 'format_apl_1','format_apl_2']));
         FileHelper::handleSingleFileDeletes($skema, $request->input('delete_files', []));
         FileHelper::handleSingleFileUploads($skema, ['format_apl_1', 'format_apl_2'], $request, 'apl_files');
         FileHelper::saveIfDirty([$skema]);
