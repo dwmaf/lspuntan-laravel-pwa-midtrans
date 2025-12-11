@@ -14,7 +14,7 @@ import NumberInput from "@/Components/NumberInput.vue";
 import DateInput from "@/Components/DateInput.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { ref, computed, watch, reactive } from "vue";
-import { MapPin, DollarSign, CalendarRange, BookOpen, FunnelIcon, X } from "lucide-vue-next";
+import { MapPin, DollarSign, CalendarRange, BookOpen, FunnelIcon, X, Users } from "lucide-vue-next";
 import { IconChalkboardTeacher, IconPointFilled } from "@tabler/icons-vue";
 import Multiselect from "@/Components/MultiSelect.vue";
 
@@ -52,7 +52,6 @@ const skemaOptions = computed(() =>
 );
 const tab = ref(props.filters.tab || "berlangsung");
 
-// keep URL in sync when tab changes (so pagination links include tab)
 watch(tab, (value) => {
     router.get(route('admin.kelolasertifikasi.index'), { ...filtersForm, tab: value }, {
         preserveState: true,
@@ -60,7 +59,7 @@ watch(tab, (value) => {
     });
 });
 const applyFilters = () => {
-    router.get(route('admin.kelolasertifikasi.index'), {...filtersForm, tab: tab.value}, {
+    router.get(route('admin.kelolasertifikasi.index'), { ...filtersForm, tab: tab.value }, {
         preserveState: true,
         replace: true,
     });
@@ -71,20 +70,18 @@ const resetFilters = () => {
     applyFilters();
 };
 
-// const tab = ref("berlangsung");
 const form = useForm({
     skema_id: "",
     asesor_ids: [],
     tgl_apply_dibuka: "",
     tgl_apply_ditutup: "",
-    deadline: "",
+    deadline_bayar: "",
     tuk: "",
     biaya: "",
 });
 form.transform((data) => {
     return {
         ...data,
-        // asesor_ids: data.asesor_ids.map(asesor => asesor.id)
     };
 });
 const availableAsesors = computed(() => {
@@ -206,11 +203,7 @@ const submit = () => {
                                 <span class="font-semibold">
                                     Biaya: Rp
                                 </span>
-                                {{
-                                    new Intl.NumberFormat("id-ID").format(
-                                        sert.payment_instruction.biaya
-                                    )
-                                }}
+                                {{ new Intl.NumberFormat("id-ID").format(sert.biaya) }}
                             </p>
                         </div>
                         <div class="flex items-center mt-4">
@@ -219,10 +212,16 @@ const submit = () => {
                                 <span class="font-semibold">
                                     TUK:
                                 </span>
-                                {{
-                                    sert.tuk
-                                }}
+                                {{ sert.tuk }}
                             </p>
+                        </div>
+
+                        <div class="flex items-center mt-4">
+                            <div
+                                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
+                                <Users class="w-3.5 h-3.5" />
+                                <span class="text-xs font-semibold">{{ sert.asesis_count }} Asesi Terdaftar</span>
+                            </div>
                         </div>
                         <div class="mt-4">
                             <PrimaryLinkButton :href="route(
@@ -278,30 +277,26 @@ const submit = () => {
                             <DollarSign class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                             <p class=" text-gray-600 text-sm dark:text-gray-200">
                                 Biaya: Rp
-                                {{
-                                    new Intl.NumberFormat(
-                                        "id-ID"
-                                    ).format(sert.payment_instruction.biaya)
-                                }}
+                                {{new Intl.NumberFormat("id-ID").format(sert.biaya)}}
                             </p>
                         </div>
                         <div class="flex items-center mt-4">
                             <MapPin class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                             <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">
-                                <span class="font-semibold">
-                                    TUK:
-                                </span>
-                                {{
-                                    sert.tuk
-                                }}
+                                <span class="font-semibold">TUK:</span>
+                                {{ sert.tuk }}
                             </p>
                         </div>
+                        <div class="flex items-center mt-4">
+                            <div
+                                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
+                                <Users class="w-3.5 h-3.5" />
+                                <span class="text-xs font-semibold">{{ sert.asesis_count }} Asesi Terdaftar</span>
+                            </div>
+                        </div>
                         <div class="mt-4">
-                            <PrimaryLinkButton :href="route(
-                                'admin.kelolasertifikasi.show',
-                                sert.id
-                            )
-                                ">Detail
+                            <PrimaryLinkButton :href="route('admin.kelolasertifikasi.show', sert.id)">
+                                Detail
                             </PrimaryLinkButton>
                         </div>
                     </div>
@@ -313,8 +308,10 @@ const submit = () => {
                     </p>
                 </div>
                 <div class="mt-4 flex justify-between items-center">
-                    <span v-if="sertifications_selesai.total > 0" class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
-                        Menampilkan {{ sertifications_selesai.from }} sampai {{ sertifications_selesai.to }} dari {{ sertifications_selesai.total }} hasil
+                    <span v-if="sertifications_selesai.total > 0"
+                        class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
+                        Menampilkan {{ sertifications_selesai.from }} sampai {{ sertifications_selesai.to }} dari {{
+                            sertifications_selesai.total }} hasil
                     </span>
                     <span v-else></span>
                     <Pagination :links="sertifications_selesai.links" />
@@ -359,8 +356,8 @@ const submit = () => {
                     </div>
                     <div id="tanggal_bayar_ditutup">
                         <InputLabel value="Tanggal Bayar Ditutup" required />
-                        <DateInput v-model="form.deadline" required />
-                        <InputError :message="form.errors.deadline" />
+                        <DateInput v-model="form.deadline_bayar" required />
+                        <InputError :message="form.errors.deadline_bayar" />
                     </div>
                     <div id="biaya_sertifikasi">
                         <InputLabel value="Biaya Sertifikasi" required />

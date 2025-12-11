@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('sertification_id')->constrained()->onDelete('cascade');
             $table->text('content')->nullable();            
-            $table->dateTime('deadline');
-            $table->integer('biaya')->nullable();
             $table->foreignId('user_id')->constrained();
+            $table->timestamp('content_created_at')->nullable();
+            $table->timestamp('revised_at')->nullable();
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });

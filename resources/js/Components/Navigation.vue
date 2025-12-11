@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import NavLink from "./NavLink.vue";
+import DevNavLink from "./Development/DevNavLink.vue";
 import {
     IconLayoutDashboard,
     IconCertificate,
@@ -11,7 +12,8 @@ import {
     IconLogout,
     IconLogs,
     IconUsers,
-    IconCaretLeftFilled
+    IconCaretLeftFilled,
+    IconCode
 } from '@tabler/icons-vue';
 
 const emit = defineEmits(['close']);
@@ -31,9 +33,9 @@ const hasAsesiRole = computed(() => roles.value.includes('asesi'));
 const navLinks = computed(() => {
     if (hasAdminRole.value || hasAsesorRole.value) {
         const links = [
-            { href: route('admin.dashboard'), label: 'Dashboard', active: route().current('admin.dashboard'), icon:IconLayoutDashboard },
+            { href: route('admin.dashboard'), label: 'Dashboard', active: route().current('admin.dashboard'), icon: IconLayoutDashboard },
             { href: route('admin.kelolasertifikasi.index'), label: 'Sertifikasi', active: route().current('admin.kelolasertifikasi.*'), icon: IconCertificate },
-            { href: route('profile.edit'), label: 'Profile', active: route().current('profile.edit'), icon:IconUser },
+            { href: route('profile.edit'), label: 'Profile', active: route().current('profile.edit'), icon: IconUser },
         ];
         if (hasAdminRole) {
             links.push(
@@ -62,19 +64,20 @@ const navLinks = computed(() => {
 
 <template>
     <div>
-        <aside class="h-full bg-white dark:bg-gray-800 md:bg-transparent md:dark:bg-transparent pl-3 py-3 transition-all duration-300 overflow-visible z-40 fixed md:relative flex flex-col"
+        <aside
+            class="h-full bg-white dark:bg-gray-800 md:bg-transparent md:dark:bg-transparent pl-3 py-3 transition-all duration-300 overflow-visible z-40 fixed md:relative flex flex-col"
             :class="[props.isOpen ? 'w-60' : 'w-17',
-                props.isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
+            props.isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
             <div class="flex" v-if="props.isOpen">
                 <div class="shrink-0 flex items-center">
                     <Link :href="route('admin.dashboard')">
-                        <img src="/logo-lsp.png" alt="Logo LSP" class="block h-15 w-auto" />
+                    <img src="/logo-lsp.png" alt="Logo LSP" class="block h-15 w-auto" />
                     </Link>
                 </div>
             </div>
             <button @click="emit('close')"
                 class="text-gray-700 dark:text-gray-200 cursor-pointer mb-2 absolute top-5 right-5 flex md:hidden">
-                <IconCaretLeftFilled size="20" strokeWidth="2"/>
+                <IconCaretLeftFilled size="20" strokeWidth="2" />
             </button>
 
             <div class="flex-1 pr-3" :class="props.isOpen ? 'overflow-y-auto custom-scrollbar' : 'overflow-visible'">
@@ -82,10 +85,11 @@ const navLinks = computed(() => {
                     :icon="link.icon" :is-open="props.isOpen">{{ link.label }}
                 </NavLink>
                 <div class="my-2 border-t border-gray-200 dark:border-gray-600"></div>
-                <NavLink :href="route('logout')" :icon="IconLogout" method="post" :is-open="props.isOpen"
-                    as="button">
+                <NavLink :href="route('logout')" :icon="IconLogout" method="post" :is-open="props.isOpen" as="button">
                     Log Out
                 </NavLink>
+                <DevNavLink :href="route('dev.list.sertifications')" :icon="IconCode" :is-open="props.isOpen"
+                    label="Dev" badge-text="beta" />
             </div>
         </aside>
     </div>

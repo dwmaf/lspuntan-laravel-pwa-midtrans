@@ -1,5 +1,5 @@
 describe('Daftar Sertifikasi (Asesi)', () => {
-  // Helper untuk membuat tanggal dinamis
+  
   const today = new Date();
   const yesterday = new Date(new Date().setDate(today.getDate() - 1));
   const tomorrow = new Date(new Date().setDate(today.getDate() + 1));
@@ -11,7 +11,7 @@ describe('Daftar Sertifikasi (Asesi)', () => {
   });
 
   it('Harus menampilkan tombol "Daftar" untuk sertifikasi yang sedang dibuka', () => {
-    // Simulasikan sertifikasi yang sedang dibuka
+    
     const mockSertification = {
       id: 1,
       skema: { nama_skema: 'Web Developer' },
@@ -24,7 +24,7 @@ describe('Daftar Sertifikasi (Asesi)', () => {
     cy.intercept('GET', '/asesi/sertifikasi', (req) => {
       req.reply((res) => {
         res.body.props.sertifications = [mockSertification];
-        res.body.props.asesi = {}; // Asesi belum mendaftar
+        res.body.props.asesi = {};
         res.send(res.body);
       });
     }).as('getOpenSertifikasi');
@@ -36,12 +36,12 @@ describe('Daftar Sertifikasi (Asesi)', () => {
       cy.contains('a', 'Daftar').should('be.visible').click();
     });
 
-    // Verifikasi redirect ke halaman pendaftaran
+    
     cy.url().should('include', '/asesi/sertifikasi/apply/1');
   });
 
   it('Harus menampilkan tombol "Lihat Status" untuk sertifikasi yang sudah didaftar', () => {
-    // Simulasikan asesi sudah mendaftar
+    
     const mockSertification = {
       id: 2,
       skema: { nama_skema: 'Network Engineer' },
@@ -53,7 +53,7 @@ describe('Daftar Sertifikasi (Asesi)', () => {
     cy.intercept('GET', '/asesi/sertifikasi', (req) => {
       req.reply((res) => {
         res.body.props.sertifications = [mockSertification];
-        res.body.props.asesi = { '2': { id: 99 } }; // Asesi sudah mendaftar sertifikasi ID 2
+        res.body.props.asesi = { '2': { id: 99 } }; 
         res.send(res.body);
       });
     }).as('getAppliedSertifikasi');
@@ -65,7 +65,7 @@ describe('Daftar Sertifikasi (Asesi)', () => {
       cy.contains('a', 'Lihat Status').should('be.visible').click();
     });
 
-    // Verifikasi redirect ke halaman detail
+    
     cy.url().should('include', '/asesi/sertifikasi/applied/2/99');
   });
 
@@ -74,7 +74,7 @@ describe('Daftar Sertifikasi (Asesi)', () => {
       id: 3,
       skema: { nama_skema: 'Data Analyst' },
       tgl_apply_dibuka: lastWeek.toISOString(),
-      tgl_apply_ditutup: yesterday.toISOString(), // Pendaftaran sudah ditutup kemarin
+      tgl_apply_ditutup: yesterday.toISOString(),
       payment_instruction: { biaya: 600000 },
     };
 
@@ -91,7 +91,7 @@ describe('Daftar Sertifikasi (Asesi)', () => {
 
     cy.contains('h3', 'Data Analyst').parent().parent().within(() => {
       cy.contains('span', 'Pendaftaran Ditutup').should('be.visible');
-      cy.get('a').should('not.exist'); // Pastikan tidak ada link/tombol yang bisa diklik
+      cy.get('a').should('not.exist'); 
     });
   });
 
@@ -99,7 +99,7 @@ describe('Daftar Sertifikasi (Asesi)', () => {
     const mockSertification = {
       id: 4,
       skema: { nama_skema: 'UI/UX Designer' },
-      tgl_apply_dibuka: tomorrow.toISOString(), // Pendaftaran baru dibuka besok
+      tgl_apply_dibuka: tomorrow.toISOString(), 
       tgl_apply_ditutup: nextWeek.toISOString(),
       payment_instruction: { biaya: 400000 },
     };
@@ -124,7 +124,7 @@ describe('Daftar Sertifikasi (Asesi)', () => {
   it('Harus menampilkan pesan jika tidak ada sertifikasi yang dibuka', () => {
     cy.intercept('GET', '/asesi/sertifikasi', (req) => {
       req.reply((res) => {
-        res.body.props.sertifications = []; // Tidak ada sertifikasi
+        res.body.props.sertifications = []; 
         res.body.props.asesi = {};
         res.send(res.body);
       });

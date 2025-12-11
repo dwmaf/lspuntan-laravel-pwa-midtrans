@@ -9,11 +9,12 @@ import EditButton from "@/Components/EditButton.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import FileIcon from "@/Components/FileIcon.vue";
 import TextInput from "@/Components/TextInput.vue";
-import SingleFileInput from "../../Components/SingleFileInput.vue";
-import MultiFileInput from "../../Components/MultiFileInput.vue";
+import SingleFileInput from "@/Components/SingleFileInput.vue";
+import MultiFileInput from "@/Components/MultiFileInput.vue";
 import InputError from "@/Components/InputError.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import { ref, computed, onMounted } from 'vue';
+import { X } from 'lucide-vue-next';
 
 const props = defineProps({
     sertification: Object,
@@ -104,20 +105,25 @@ const getAsesiStatusClass = (status) => {
     return classes[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200';
 };
 const getPaymentStatusInfo = (transaction) => {
+
     if (!transaction) {
         return { text: 'Belum Submit Bukti Pembayaran', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' };
     }
     if (transaction.status === 'belum_bayar') {
         return { text: 'Belum Bayar', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', secondclass: "border-gray-300 dark:border-gray-600" };
     }
-    if (transaction.tipe === 'manual' && transaction.bukti_bayar && props.transactionStatusEnum.PENDING) {
+    if (transaction.tipe === 'manual' && transaction.bukti_bayar && transaction.status === props.transactionStatusEnum.PENDING) {
         return { text: 'Menunggu Verifikasi', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100', secondclass: "border-yellow-300 dark:border-yellow-700" };
     }
     if (transaction.tipe === 'manual' && transaction.status === props.transactionStatusEnum.BUKTI_PEMBAYARAN_TERVERIFIKASI) {
+
         return { text: 'Pembayaran Terverifikasi', class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100', secondclass: "border-green-300 dark:border-green-700" };
     }
     if (transaction.tipe === 'manual' && transaction.status === props.transactionStatusEnum.BUKTI_PEMBAYARAN_DITOLAK) {
         return { text: 'Bukti Pembayaran Ditolak', class: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100', secondclass: "border-red-300 dark:border-red-700" };
+    }
+    if (transaction.tipe === 'manual' && transaction.status === props.transactionStatusEnum.PERLU_PERBAIKAN_BUKTI_BAYAR) {
+        return { text: 'Perlu Perbaikan', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100', secondclass: "border-yellow-300 dark:border-yellow-700" };
     }
     return { text: 'N/A', class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200' };
 };
@@ -136,9 +142,9 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
 
 <template>
     <AsesiLayout>
-        
-        <Header judul="Detail Pengajuan: {{ sertification.skema?.nama_skema ?? '' }}"/>
-        
+
+        <Header :judul="`Detail Pengajuan: ${sertification.skema?.nama_skema ?? ''}`" />
+
         <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 
@@ -262,7 +268,7 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
                                         v-show="form.makulNilais.length > 1"
                                         class="w-auto px-3 py-1 rounded-md sm:w-8 sm:h-8 shrink-0 sm:flex sm:items-center sm:justify-center sm:rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200">
                                         <span class="hidden sm:block">
-                                            <FontAwesomeIcon icon=" fa-xmark" class=" text-sm" />
+                                            <X class="w-4 mx-1" />
                                         </span>
                                         <span class="sm:hidden font-medium text-sm">Hapus</span>
                                     </button>
@@ -362,6 +368,23 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
                     <p v-else class="mt-2 font-mono">Tanpa catatan</p>
                 </div>
                 <PendaftarDetailDataStatis :asesi="props.asesi" />
+
+                <div v-if="asesi.latest_transaction?.status === props.transactionStatusEnum.PERLU_PERBAIKAN_BUKTI_BAYAR"
+                    class="p-4 mt-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-800"
+                    role="alert">
+                    <span class="font-medium">Perhatian!</span> Admin meminta perbaikan bukti pembayaran:
+                    <p v-if="asesi.latest_transaction.catatan" class="mt-2 font-mono">{{
+                        asesi.latest_transaction.catatan }}</p>
+                    <p v-else class="mt-2 font-mono">Tanpa catatan</p>
+                </div>
+                <div v-if="asesi.latest_transaction?.status === props.transactionStatusEnum.BUKTI_PEMBAYARAN_DITOLAK"
+                    class="p-4 mt-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 border border-red-300 dark:border-red-800"
+                    role="alert">
+                    <span class="font-medium">Perhatian!</span> Bukti pembayaran ditolak:
+                    <p v-if="asesi.latest_transaction.catatan" class="mt-2 font-mono">{{
+                        asesi.latest_transaction.catatan }}</p>
+                    <p v-else class="mt-2 font-mono">Silahkan upload ulang bukti pembayaran yang benar.</p>
+                </div>
 
 
                 <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">E. Status

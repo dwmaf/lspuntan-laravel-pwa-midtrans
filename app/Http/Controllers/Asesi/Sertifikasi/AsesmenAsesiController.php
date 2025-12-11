@@ -31,7 +31,7 @@ class AsesmenAsesiController extends Controller
         $asesi = Asesi::with(['asesiasesmenfiles', 'transaction' => fn($q) => $q->latest()])->findOrFail($asesi_id);
         $asesi->latest_transaction = $asesi->transaction->first();
         return Inertia::render('Asesi/AsesmenAsesi', [
-            'sertification' => Sertification::with('pembuatrinciantugasasesmen.asesor', 'asesmenfiles')->findOrFail($sert_id),
+            'sertification' => Sertification::with('asesmen.asesmenfiles')->findOrFail($sert_id), // Loaded asesmen instead of pembuatrinciantugasasesmen
             'asesi' => $asesi
         ]);
     }
@@ -52,8 +52,18 @@ class AsesmenAsesiController extends Controller
             return redirect()->back()->withErrors(['newFiles' => 'Anda harus mengumpulkan setidaknya satu file.']);
         }
         $asesi = Asesi::with('student.user')->findOrFail($asesi_id);
-        $sertification = Sertification::with(['asesors.user', 'skema'])
+        $sertification = Sertification::with(['asesors.user', 'skema', 'asesmen'])
             ->findOrFail($sert_id);
+
+        // Validation: Check if Assessment is Published
+        if (!$sertification->asesmen || !$sertification->asesmen->published_at) {
+             return redirect()->back()->withErrors(['newFiles' => 'Tugas asesmen belum dipublikasikan atau ditarik kembali.']);
+        }
+
+        // Validation: Check Deadline
+        if ($sertification->asesmen->deadline && now()->greaterThan($sertification->asesmen->deadline)) {
+             return redirect()->back()->withErrors(['newFiles' => 'Batas waktu pengumpulan tugas telah berakhir.']);
+        }
         if ($sertification->asesors->isNotEmpty()) {
             $title = 'Tugas Asesmen Dikumpulkan';
             $body = $asesi->student->user->name . ' mengunggah tugas asesmen untuk sertifikasi ' . $sertification->skema->nama_skema;

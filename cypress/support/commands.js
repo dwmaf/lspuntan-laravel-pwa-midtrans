@@ -55,5 +55,5 @@ Cypress.Commands.add('loginAsAdmin', () => {
   cy.login('admin@g.c', '1234');
 });
 Cypress.Commands.add('loginAsAsesi', () => {
-  cy.login('asesi@example.com', 'password'); 
+  cy.login('mahasiswa1@student.c', '1234'); 
 });

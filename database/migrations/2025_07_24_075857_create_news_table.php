@@ -11,8 +11,11 @@ return new class extends Migration
         Schema::create('news', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sertification_id')->constrained();
-            $table->text('rincian');
+            $table->text('content');
             $table->foreignId('user_id')->nullable()->constrained();
+            $table->timestamp('content_created_at')->nullable();
+            $table->timestamp('revised_at')->nullable();
+            $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });
     }

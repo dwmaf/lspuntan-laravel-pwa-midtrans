@@ -32,9 +32,23 @@ const truncateText = (html, length = 150) => {
     return text.substring(0, length) + '...';
 }
 
+const markNewsAsRead = (newsId) => {
+    window.axios.post(route('asesi.pengumuman.mark-read', {
+        sert_id: props.sertification.id,
+        asesi_id: props.asesi.id,
+        news_id: newsId
+    })).catch(err => console.error(err));
+}
+
 const showDetail = (pengumuman) => {
     selectedNews.value = pengumuman;
     showMode.value = 'show';
+    showMode.value = 'show';
+    if (!pengumuman.is_read) {
+        markNewsAsRead(pengumuman.id);
+        // Optimistically update UI
+        pengumuman.is_read = true;
+    }
 }
 
 const showList = () => {
@@ -56,7 +70,7 @@ onMounted(() => {
 
 <template>
     <AsesiLayout>
-        <Header judul="Pengumuman"/>
+        <Header judul="Pengumuman" />
         <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 
@@ -74,32 +88,35 @@ onMounted(() => {
                         </div>
                         <div>
                             <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                {{ pengumuman.pembuatpengumuman?.user?.name || 'Admin' }}
+                                {{ pengumuman.user?.name || 'Admin' }}
                             </h5>
                             <div class="text-xs text-gray-400">
-                                {{ formatDate(pengumuman.created_at) }}
-                                <span v-if="pengumuman.updated_at !== pengumuman.created_at"
-                                    class="text-gray-500">(diedit)</span>
+                                {{ formatDate(pengumuman.content_created_at) }}
+                                <span v-if="pengumuman.revised_at" class="text-gray-500">(diedit)</span>
                             </div>
                         </div>
+
+                        <!-- Status Badge -->
+                        <div class="ml-auto shrink-0">
+                            <span v-if="pengumuman.is_read"
+                                class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full dark:bg-green-900 dark:text-green-300 whitespace-nowrap">
+                                Sudah Dibaca
+                            </span>
+                            <span v-else
+                                class="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full dark:bg-red-900 dark:text-red-300 whitespace-nowrap">
+                                Belum Dibaca
+                            </span>
+                        </div>
                     </div>
-                    <div v-html="truncateText(pengumuman.rincian_pengumuman_asesmen)"
+                    <div v-html="truncateText(pengumuman.content)"
                         class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-100"></div>
                     <div class="mt-3">
                         <button @click="showDetail(pengumuman)"
-                            class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                            Baca Selengkapnya
+                            class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                            {{ pengumuman.is_read ? 'Buka Kembali' : 'Buka Pengumuman' }}
                         </button>
                     </div>
-                    <div v-if="pengumuman.newsfiles.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                        <div v-for="file in pengumuman.newsfiles" :key="file.id"
-                            class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
-                            <a :href="`/storage/${file.path_file}`" target="_blank"
-                                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
-                                {{ file.path_file.split('/').pop() }}
-                            </a>
-                        </div>
-                    </div>
+                    <!-- Files hidden in list view -->
                 </div>
             </div>
             <div v-else class="text-center text-gray-500 dark:text-gray-300 py-12">
@@ -126,18 +143,17 @@ onMounted(() => {
                     </div>
                     <div>
                         <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            {{ selectedNews.pembuatpengumuman?.user?.name || 'Admin' }}
+                            {{ selectedNews.user?.name || 'Admin' }}
                         </h5>
                         <div class="text-xs text-gray-400">
-                            {{ formatDate(selectedNews.created_at) }}
-                            <span v-if="selectedNews.updated_at !== selectedNews.created_at"
-                                class="text-gray-500">(diedit)</span>
+                            {{ formatDate(selectedNews.content_created_at) }}
+                            <span v-if="selectedNews.revised_at" class="text-gray-500">(diedit)</span>
                         </div>
                     </div>
                 </div>
 
 
-                <div v-html="selectedNews.rincian_pengumuman_asesmen"
+                <div v-html="selectedNews.content"
                     class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-100"></div>
 
 

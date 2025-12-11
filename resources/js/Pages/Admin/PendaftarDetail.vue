@@ -20,8 +20,8 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     asesi: Object,
     sertification: Object,
-    asesiStatusOptions: Array, 
-    paymentStatusOptions: Array, 
+    asesiStatusOptions: Array,
+    paymentStatusOptions: Array,
 });
 
 const showStatusModal = ref(false);
@@ -45,6 +45,7 @@ const cancelShowStatus = () => {
 };
 const paymentForm = useForm({
     status: props.asesi.latest_transaction?.status || '',
+    catatan: props.asesi.latest_transaction?.catatan || '',
 });
 
 const submitPaymentStatus = () => {
@@ -105,6 +106,9 @@ const getPaymentStatusInfo = (transaction) => {
     if (transaction.tipe === 'manual' && transaction.status === 'bukti_pembayaran_ditolak') {
         return { text: 'Bukti Pembayaran Ditolak', class: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100' };
     }
+    if (transaction.tipe === 'manual' && transaction.status === 'perlu_perbaikan_bukti_bayar') {
+        return { text: 'Perlu Perbaikan', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100' };
+    }
     return { text: 'N/A', class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200' };
 };
 
@@ -112,7 +116,7 @@ const getPaymentStatusInfo = (transaction) => {
 
 <template>
     <AdminLayout>
-        <CustomHeader judul="Detail Peserta"/>
+        <CustomHeader judul="Detail Peserta" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
         <!-- Tampilan Detail Utama -->
@@ -121,7 +125,7 @@ const getPaymentStatusInfo = (transaction) => {
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Rincian Pendaftar</h3>
                 <Link :href="route('admin.sertifikasi.pendaftar.index', props.sertification.id)"
                     class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer">
-                &larr; Kembali</Link>
+                    &larr; Kembali</Link>
             </div>
 
             <PendaftarDetailDataStatis :asesi="props.asesi" />
@@ -210,8 +214,7 @@ const getPaymentStatusInfo = (transaction) => {
                     <TextInput v-model="certificateForm.berlaku_hingga" type="date" required />
                     <InputError :message="certificateForm.errors.berlaku_hingga" />
                 </div>
-                <SingleFileInput v-model="certificateForm.file_path" 
-                    v-model:deleteList="certificateForm.delete_files"
+                <SingleFileInput v-model="certificateForm.file_path" v-model:deleteList="certificateForm.delete_files"
                     delete-identifier="file_path" label="File Sertifikat" is-label-required
                     :existing-file-url="asesi?.sertifikat?.file_path ? `/storage/${asesi.sertifikat.file_path}` : null"
                     :is-marked-for-deletion="certificateForm.delete_files.includes('file_path')"
@@ -235,7 +238,8 @@ const getPaymentStatusInfo = (transaction) => {
                         <InputLabel value="Status Asesi" required />
                         <select v-model="statusForm.status"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option v-for="option in asesiStatusOptions" :key="option.value" :value="option.value" class="capitalize">
+                            <option v-for="option in asesiStatusOptions" :key="option.value" :value="option.value"
+                                class="capitalize">
                                 {{ option.label }}
                             </option>
                         </select>
@@ -268,11 +272,20 @@ const getPaymentStatusInfo = (transaction) => {
                         <InputLabel value="Status Pembayaran Asesi" />
                         <select v-model="paymentForm.status"
                             class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option v-for="option in paymentStatusOptions" :key="option.value" :value="option.value" class="capitalize">
+                            <option v-for="option in paymentStatusOptions" :key="option.value" :value="option.value"
+                                class="capitalize">
                                 {{ option.label }}
                             </option>
                         </select>
                         <InputError :message="paymentForm.errors.status" />
+                    </div>
+                    <div
+                        v-if="paymentForm.status === 'perlu_perbaikan_bukti_bayar' || paymentForm.status === 'bukti_pembayaran_ditolak'">
+                        <InputLabel value="Catatan Perbaikan/Penolakan" />
+                        <textarea v-model="paymentForm.catatan"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                            rows="3" required></textarea>
+                        <InputError :message="paymentForm.errors.catatan" />
                     </div>
                     <div class="flex gap-3 items-center justify-end">
                         <SecondaryButton @click="cancelShowPayment">Batal</SecondaryButton>

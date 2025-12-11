@@ -1,12 +1,6 @@
 <script setup>
 defineProps({
-    /**
-     * Nilai input, untuk v-model.
-     */
     modelValue: String,
-    /**
-     * Tipe input, bisa 'datetime-local' atau 'date'.
-     */
     type: {
         type: String,
         default: 'datetime-local',

@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\SerializesDatesWithoutConversion;
 
 class PaymentInstruction extends Model
 {
-    use LogsActivity, HasFactory;
+    use LogsActivity, HasFactory, SerializesDatesWithoutConversion;
     protected $guarded = [
         
     ];

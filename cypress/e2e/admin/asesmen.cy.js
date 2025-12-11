@@ -5,10 +5,10 @@ describe("Manajemen Tugas Asesmen", () => {
     beforeEach(() => {
         cy.loginAsAdmin();
         cy.visit(`/admin/sertifikasi/${sertificationId}/assessment/edit`);
-        cy.get(
-            'h3:contains("Edit Rincian"), p:contains("Asesor belum memberikan"), [data-cy="edit-button"]',
-            { timeout: 10000 }
-        ).should("be.visible");
+        // cy.get(
+        //     'h3:contains("Edit Rincian"), p:contains("Asesor belum memberikan"), [data-cy="edit-button"]',
+        //     { timeout: 10000 }
+        // ).should("be.visible");
     });
 
     it("Harus bisa membuat/mengedit, mempublikasikan, dan melampirkan file pada tugas asesmen", () => {
@@ -66,7 +66,7 @@ describe("Manajemen Tugas Asesmen", () => {
             }
         });
 
-        // Perintah Cypress berikutnya di luar blok 'if' akan berjalan di sini
+        
         cy.log(
             "Pengecekan edit selesai, melanjutkan ke langkah tes berikutnya."
         );

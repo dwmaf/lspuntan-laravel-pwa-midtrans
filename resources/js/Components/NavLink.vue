@@ -22,7 +22,7 @@ const props = defineProps({
     method: {
         type: String,
         default: 'get',
-    }
+    },
 });
 
 const classes = computed(() =>
@@ -41,9 +41,9 @@ const classes = computed(() =>
             :size="20"
             stroke-width="2"
         />
-        <span v-if="isOpen" class="text-gray-700 dark:text-gray-200 rounded-sm font-semibold text-sm">
-            <slot />
-        </span>
+        <div v-if="isOpen" class="text-gray-700 dark:text-gray-200 rounded-sm font-semibold text-sm">
+            <slot></slot>
+        </div>
         <div id="tooltip"
             v-if="!isOpen"
             class="absolute left-full ml-4 px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 dark:text-white text-gray-700 text-sm border dark:border-gray-200 border-gray-700
@@ -51,7 +51,7 @@ const classes = computed(() =>
                    md:group-hover:visible md:group-hover:opacity-100 md:group-hover:translate-x-0 
                    z-50 whitespace-nowrap"
         >
-            <slot />
+            <slot></slot>
         </div>
     </Link>
 </template>

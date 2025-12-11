@@ -42,15 +42,13 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel value="Email" />
+                <InputLabel for="email" value="Email" />
                 <TextInput id="email" type="email" v-model="form.email" required autofocus autocomplete="username" />
-
-
                 <InputError :message="form.errors.email" />
             </div>
 
             <div class="mt-4">
-                <InputLabel value="Password" />
+                <InputLabel for="password" value="Password" />
                 <!-- <TextInput id="password" type="password" v-model="form.password" required
                     autocomplete="current-password" /> -->
                 <div class="relative">
@@ -63,7 +61,6 @@ const submit = () => {
                         <EyeOff v-if="!showPassword" class="text-lg text-gray-700 dark:text-gray-200"/>
                     </button>
                 </div>
-                
                 <InputError :message="form.errors.password" />
             </div>
 

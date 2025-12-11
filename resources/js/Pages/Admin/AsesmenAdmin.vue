@@ -6,10 +6,14 @@ import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import EditButton from "@/Components/EditButton.vue";
+import AddButton from "@/Components/AddButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
 import MultiFileInput from "@/Components/MultiFileInput.vue";
 import ToggleSwitch from "@/Components/ToggleSwitch.vue";
 import DateInput from "@/Components/DateInput.vue";
+import Modal from "@/Components/Modal.vue";
+import Checkbox from "@/Components/Checkbox.vue";
+import DangerButton from "@/Components/DangerButton.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { ref, computed, onMounted } from 'vue';
 
@@ -22,6 +26,7 @@ const props = defineProps({
 
 
 const isEditing = ref(false);
+const isPreviewing = ref(false);
 
 const viewMode = ref('list');
 const selectedAsesi = ref(null);
@@ -43,6 +48,7 @@ const form = useForm({
     newFiles: [],
     is_published: false,
     delete_files_collection: [],
+    send_notification: true,
 });
 
 
@@ -50,6 +56,7 @@ const enterEditMode = () => {
     form.content = props.sertification.asesmen?.content || 'Isi rincian tugas asesmen di sini...';
     form.deadline = props.sertification.asesmen?.deadline || '';
     form.is_published = !!(props.sertification.asesmen?.published_at);
+    form.send_notification = !props.sertification.asesmen;
     isEditing.value = true;
 };
 
@@ -61,9 +68,6 @@ const cancelEdit = () => {
 
 
 onMounted(() => {
-    if (!props.sertification.asesmen) {
-        enterEditMode();
-    }
     if (props.initialAsesiId) {
         const asesiToOpen = props.filteredAsesi.find(a => a.id == props.initialAsesiId);
         if (asesiToOpen) {
@@ -80,58 +84,129 @@ const submit = () => {
         },
     });
 };
+
+const deleteAsesmen = () => {
+    if (confirm('Apakah Anda yakin ingin menghapus tugas asesmen ini? Instruksi dan lampiran soal akan dihapus, namun tugas yang sudah dikumpulkan asesi akan TETAP TERSIMPAN.')) {
+        router.delete(route('admin.sertifikasi.assessment.destroy', props.sertification.id), {
+            onSuccess: () => {
+                cancelEdit();
+            },
+        });
+    }
+};
+const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const isToday = date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear();
+
+    const isSameYear = date.getFullYear() === now.getFullYear();
+
+    if (isToday) {
+        return new Intl.DateTimeFormat('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        }).format(date);
+    }
+
+    if (isSameYear) {
+        return new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric',
+            month: 'long'
+        }).format(date);
+    }
+
+    return new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }).format(date);
+};
+const formatDateTime = (dateString) => {
+    if (!dateString) return "N/A";
+    const formatted = new Date(dateString).toLocaleString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    }).replace('pukul', ',').replace('.', ':');
+    return `${formatted} WIB`;
+};
 </script>
 <template>
     <AdminLayout>
-        <CustomHeader judul="Asesmen"/>
+        <CustomHeader judul="Asesmen" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
         <!-- Mode Tampilan -->
         <div v-if="!isEditing" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
-            <div class="flex justify-between items-center mb-2">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="shrink-0">
-                        <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
-                            fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
+            <div v-if="!props.sertification.asesmen" class="flex items-center justify-between">
+                <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                    Asesor belum memberikan rincian tugas asesmen, buat tugas asesmen agar asesi bisa mengumpulkan tugas
+                    asesmen
+                </p>
+                <AddButton @click="enterEditMode">Buat Asesmen</AddButton>
+            </div>
+            <div v-else>
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="shrink-0">
+                            <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h5 v-if="props.sertification.asesmen"
+                                class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                {{ props.sertification.asesmen.name || 'Admin' }}
+                            </h5>
+
+                            <div v-if="props.sertification.asesmen" class="text-xs text-gray-400">
+                                {{ formatDate(sertification.asesmen.content_created_at) }}
+                                <span v-if="sertification.asesmen.revised_at">(diedit)</span>
+                            </div>
+                        </div>
                     </div>
                     <div>
-                        <h5 v-if="props.sertification.asesmen"
-                            class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            {{ props.sertification.asesmen.name || 'Admin' }}
-                        </h5>
-
-                        <div v-if="props.sertification.asesmen" class="text-xs text-gray-400">
-                            {{ new Date(props.sertification.asesmen.created_at).toLocaleString() }}
-                            <span v-if="props.sertification.asesmen.updated_at != props.sertification.asesmen.created_at">(diedit)</span>
+                        <div class="flex items-center gap-3">
+                            <span v-if="props.sertification.asesmen?.published_at"
+                                class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300">
+                                Dipublikasikan
+                            </span>
+                            <span v-else
+                                class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-300">
+                                Draft
+                            </span>
+                            <EditButton @click="enterEditMode">Edit</EditButton>
                         </div>
                     </div>
                 </div>
-                <EditButton @click="enterEditMode">Edit</EditButton>
-            </div>
 
-            <div v-if="props.sertification.asesmen?.content" v-html="props.sertification.asesmen.content.replace(/\n/g, '<br>')"
-                class="font-medium text-sm text-gray-800 dark:text-gray-100"></div>
-            <p v-else class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Asesor belum memberikan rincian tugas asesmen, buat tugas asesmen agar asesi bisa mengumpulkan tugas
-                asesmen
-            </p>
-
-            <div class="flex">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-1">Batas Akhir Pengumpulan : </dt>
-                <dd v-if="props.sertification.asesmen" class="text-sm text-gray-900 dark:text-gray-100">
-                    {{ props.sertification.asesmen.deadline }}
-                </dd>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                <div v-if="props.sertification.asesmen" v-for="file in props.sertification.asesmen.asesmenfiles"
-                    :key="file.id"
-                    class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
-                    <a :href="`/storage/${file.path_file}`" target="_blank"
-                        class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
-                        {{ file.path_file.split('/').pop() }}
-                    </a>
+                <div v-html="props.sertification.asesmen.content.replace(/\n/g, '<br>')"
+                    class="font-medium text-sm text-gray-800 dark:text-gray-100"></div>
+                <div class="flex">
+                    <dt class="text-sm font-medium text-gray-800 dark:text-gray-400 mr-1">Batas Akhir Pengumpulan :
+                    </dt>
+                    <dd v-if="props.sertification.asesmen" class="text-sm text-gray-900 dark:text-gray-100">
+                        {{ sertification.asesmen.deadline ? formatDateTime(sertification.asesmen.deadline) : "-" }}
+                    </dd>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                    <div v-if="props.sertification.asesmen" v-for="file in props.sertification.asesmen.asesmenfiles"
+                        :key="file.id"
+                        class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
+                        <a :href="`/storage/${file.path_file}`" target="_blank"
+                            class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
+                            {{ file.path_file.split('/').pop() }}
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -140,11 +215,13 @@ const submit = () => {
         <!-- Mode edit  -->
         <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-2">
             <div class="flex justify-between items-center mb-2">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Edit Rincian Tugas Asesmen</h3>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
+                    {{ props.sertification.asesmen ? "Edit Rincian Tugas Asesmen" : "Buat Rincian Tugas Asesmen" }}
+                </h3>
             </div>
             <form @submit.prevent="submit" class="flex flex-col gap-4">
                 <div>
-                    <InputLabel value="Rincian" required/>
+                    <InputLabel value="Rincian" required />
                     <textarea v-model="form.content" rows="8"
                         class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
                     <InputError :message="form.errors.content" />
@@ -154,28 +231,93 @@ const submit = () => {
                     <DateInput v-model="form.deadline" />
                     <InputError :message="form.errors.deadline" />
                 </div>
-                
-                
+
+
                 <MultiFileInput v-model="form.newFiles" v-model:deleteList="form.delete_files_collection"
-                :existing-files="props.sertification.asesmen?.asesmenfiles ?? []" 
-                    label="Lampiran" :max-files="5" accept=".jpg,.png,.jpeg,.pdf,.docx" :error="form.errors.newFiles"
+                    :existing-files="props.sertification.asesmen?.asesmenfiles ?? []" label="Lampiran" :max-files="5"
+                    accept=".jpg,.png,.jpeg,.pdf,.docx" :error="form.errors.newFiles"
                     :error-list="form.errors['newFiles.0']" />
                 <div>
                     <div class="flex items-center justify-between">
                         <InputLabel for="is_published" value="Publikasikan Instruksi?" />
-                        <ToggleSwitch id="is_published" v-model="form.is_published" />
+                        <div class="flex items-center gap-2">
+                            <span v-if="props.sertification.asesmen?.published_at" class="text-xs text-gray-500 italic">
+                                (Terkunci: Sudah dipublikasikan)
+                            </span>
+                            <ToggleSwitch id="is_published" v-model="form.is_published"
+                                :disabled="!!sertification.asesmen?.published_at" />
+                        </div>
                     </div>
                     <InputError :message="form.errors.is_published" />
                 </div>
-                <div class="flex items-center gap-2">
-                    <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
-                    </PrimaryButton>
-                    <SecondaryButton type="button" @click="cancelEdit">Batal</SecondaryButton>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
+                        </PrimaryButton>
+                        <SecondaryButton type="button" @click="isPreviewing = true">Preview</SecondaryButton>
+                        <SecondaryButton type="button" @click="cancelEdit">Batal</SecondaryButton>
+                    </div>
+                    <DangerButton v-if="props.sertification.asesmen" type="button" @click="deleteAsesmen">
+                        Hapus Asesmen
+                    </DangerButton>
+                </div>
+                <div class="mt-2">
+                    <label class="flex items-center">
+                        <Checkbox v-model:checked="form.send_notification" />
+                        <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">Kirim Notifikasi ke Asesi?</span>
+                    </label>
                 </div>
             </form>
         </div>
 
-        <div v-if="viewMode === 'list'" class="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2">
+        <!-- Preview Modal -->
+        <Modal :show="isPreviewing" @close="isPreviewing = false">
+            <div class="p-6 bg-white dark:bg-gray-800">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Preview Tugas Asesmen</h2>
+                <div class="border-t border-gray-200 dark:border-gray-700 py-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="shrink-0">
+                                <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
+                                    fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                    {{ props.sertification.asesmen?.name || 'Admin' }}
+                                </h5>
+                                <div class="text-xs text-gray-400">
+                                    {{ formatDate(new Date()) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-html="form.content.replace(/\n/g, '<br>')"
+                        class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-4"></div>
+
+                    <div class="flex mb-2">
+                        <dt class="text-sm font-medium text-gray-800 dark:text-gray-400 mr-1">Batas Akhir Pengumpulan :
+                        </dt>
+                        <dd class="text-sm text-gray-900 dark:text-gray-100">
+                            {{ form.deadline ? formatDateTime(form.deadline) : "-" }}
+                        </dd>
+                    </div>
+
+                    <div class="text-xs text-gray-500 mb-2">
+                        *File lampiran tidak ditampilkan di preview (hanya teks dan tanggal).
+                    </div>
+                </div>
+                <div class="flex justify-end mt-4">
+                    <SecondaryButton @click="isPreviewing = false">Tutup Preview</SecondaryButton>
+                </div>
+            </div>
+        </Modal>
+
+        <div v-if="viewMode === 'list'"
+            class="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">

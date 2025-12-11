@@ -17,6 +17,10 @@ const props = defineProps({
         type: Boolean,
         default: false
     },
+    id: {
+        type: String,
+        default: null,
+    },
 });
 
 // Mendefinisikan event yang akan di-emit oleh komponen ini.
@@ -108,7 +112,7 @@ defineExpose({
 </script>
 
 <template>
-    <input type="file" ref="input" :accept="accept" @change="onFileChange"  :multiple="multiple" :required="required"
+    <input type="file" :id="id" ref="input" :accept="accept" @change="onFileChange"  :multiple="multiple" :required="required"
         class="text-md w-full px-3 py-2 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-hidden dark:bg-gray-900 focus-ring-2 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600" />
     <p v-if="localError" class="mt-2 text-sm text-red-600 dark:text-red-400">
         {{ localError }}

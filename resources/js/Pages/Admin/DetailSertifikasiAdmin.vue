@@ -25,7 +25,7 @@ const form = useForm({
     skema_id: "",
     tgl_apply_dibuka: "",
     tgl_apply_ditutup: "",
-    deadline: "",
+    deadline_bayar: "",
     tuk: "",
     biaya: 0,
     status: "",
@@ -81,8 +81,8 @@ const edit = () => {
     form.tgl_apply_ditutup = props.sertification.tgl_apply_ditutup;
     form.tuk = props.sertification.tuk;
     form.status = props.sertification.status;
-    form.biaya = props.sertification.payment_instruction.biaya;
-    form.deadline = props.sertification.payment_instruction.deadline;
+    form.biaya = props.sertification.biaya;
+    form.deadline_bayar = props.sertification.deadline_bayar;
     nextTick(() => {
         // 'props.sertification.asesors' adalah array objek dari relasi
         // Kita perlu mengekstrak ID-nya
@@ -164,8 +164,8 @@ const formattedHarga = computed(() => {
                     </div>
                     <div id="tanggal_bayar_ditutup">
                         <InputLabel value="Tanggal Bayar Ditutup" />
-                        <DateInput v-model="form.deadline" required />
-                        <InputError :message="form.errors.deadline" />
+                        <DateInput v-model="form.deadline_bayar" required />
+                        <InputError :message="form.errors.deadline_bayar" />
                     </div>
                     <div id="biaya_sertifikasi">
                         <InputLabel value="Biaya Sertifikasi" />
@@ -250,13 +250,13 @@ const formattedHarga = computed(() => {
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Batas Akhir Pembayaran</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ formatDateTime(props.sertification.payment_instruction.deadline) }}
+                            {{ formatDateTime(props.sertification.deadline_bayar) }}
                         </dd>
                     </div>
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Biaya Sertifikasi</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp
-                            {{ new Intl.NumberFormat('id-ID').format(props.sertification.payment_instruction.biaya) }}
+                            {{ new Intl.NumberFormat('id-ID').format(props.sertification.biaya) }}
                         </dd>
                     </div>
                     <div>

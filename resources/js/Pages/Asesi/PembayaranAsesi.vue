@@ -86,7 +86,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleString('id-ID', 
 
             <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <form @submit.prevent="submit" class="space-y-6">
-                    <div v-if="sertification.payment_instruction.published_at">
+                    <div v-if="sertification.payment_instruction?.published_at">
                         <div class="flex items-center gap-3 mb-4">
                             <div class="shrink-0">
                                 <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"

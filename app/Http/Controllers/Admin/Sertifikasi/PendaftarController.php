@@ -79,7 +79,6 @@ class PendaftarController extends Controller
             $messageNotif = 'Maaf, pengajuan sertifikasi Anda ditolak';
         }
         $asesi->status = $request->status;
-        // dd($asesi->status, $asesi->id);
         if ($request->status === 'perlu_perbaikan_berkas') {
             $asesi->catatan_perbaikan = $request->catatan_perbaikan;
         } else {
@@ -102,20 +101,22 @@ class PendaftarController extends Controller
     {
         // dd($request);
         $messageNotif = '';
-        if ($request->status === 'dilanjutkan_asesmen') {
-            $messageNotif = 'Selamat, Anda dilanjutkan ke asesmen, kini anda bisa mengakses form input bukti pembayaran dan pengumuman';
-        } else if ($request->status === 'daftar') {
-            $messageNotif = 'Status Anda kembali menjadi daftar';
-        } else if ($request->status === 'lulus_sertifikasi') {
-            $messageNotif = 'Selamat, Anda dinyatakan lulus sertifikasi, silahkan tunggu Admin mengupload sertifikat Anda.';
-        } else if ($request->status === 'perlu_perbaikan_berkas') {
-            $messageNotif = 'Admin meminta anda untuk memperbaiki atau melengkapi berkas';
-        } else if ($request->status === 'ditolak') {
-            $messageNotif = 'Maaf, pengajuan sertifikasi Anda ditolak';
+        if ($request->status === TransactionStatus::PENDING->value) {
+            $messageNotif = 'Status pembayaran Anda sedang menunggu verifikasi.';
+        } else if ($request->status === TransactionStatus::BUKTI_PEMBAYARAN_DITOLAK->value) {
+            $messageNotif = 'Maaf, bukti pembayaran Anda ditolak.';
+        } else if ($request->status === TransactionStatus::BUKTI_PEMBAYARAN_TERVERIFIKASI->value) {
+            $messageNotif = 'Selamat, bukti pembayaran Anda telah diverifikasi.'; 
+        } else if ($request->status === TransactionStatus::PERLU_PERBAIKAN_BUKTI_BAYAR->value) {
+            $messageNotif = 'Admin meminta perbaikan bukti pembayaran.';
         }
         $transaction = Transaction::find($transaction_id);
-        // Memperbarui status sesuai dengan yang diterima dari form
         $transaction->status = $request->status;
+        if ($request->status === TransactionStatus::PERLU_PERBAIKAN_BUKTI_BAYAR->value || $request->status === TransactionStatus::BUKTI_PEMBAYARAN_DITOLAK->value) {
+            $transaction->catatan = $request->catatan;
+        } else {
+            $transaction->catatan = null;
+        }
         $transaction->save();
         $user = $transaction->asesi->student->user;
         if ($user) {

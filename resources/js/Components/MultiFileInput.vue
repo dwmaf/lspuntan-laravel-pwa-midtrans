@@ -28,6 +28,10 @@ const props = defineProps({
     required: {type:Boolean, default: false},
     error: String,
     errorList: String,
+    inputId: {
+        type: String,
+        default: 'file-input'
+    },
 });
 
 const emit = defineEmits(['update:modelValue', 'update:deleteList']);
@@ -85,7 +89,7 @@ const handleFileSelection = (newlySelectedFiles) => {
 
 <template>
     <div>
-        <InputLabel :value="`${label} (${displayedFiles.length}/${maxFiles})`" :required="required" />
+        <InputLabel :for="inputId" :value="`${label} (${displayedFiles.length}/${maxFiles})`" :required="required" />
         
         <div v-if="displayedFiles.length > 0" class="mt-2 space-y-2">
             <div v-for="file in displayedFiles" :key="file.uniqueId"

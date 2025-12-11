@@ -9,4 +9,5 @@ enum AsesiStatus: string
     case DITOLAK = 'ditolak';
     case DILANJUTKAN_ASESMEN = 'dilanjutkan_asesmen';
     case LULUS_SERTIFIKASI = 'lulus_sertifikasi';
+    case TIDAK_LULUS = 'tidak_lulus';
 }

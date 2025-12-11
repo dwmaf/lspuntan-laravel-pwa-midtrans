@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Traits\SerializesDatesWithoutConversion;
 
 class News extends Model
 {
-    use LogsActivity;
+    use LogsActivity, SerializesDatesWithoutConversion;
     protected $guarded = [
         
     ];
@@ -26,10 +27,15 @@ class News extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function reads()
+    {
+        return $this->hasMany(NewsRead::class);
+    }
+
     protected static function booted(): void
     {
         static::deleting(function (News $news) {
-            foreach ($news->newsfile as $file) {
+            foreach ($news->newsfiles as $file) {
                 if ($file->path_file) {
                     Storage::disk('public')->delete($file->path_file);
                 }

@@ -10,11 +10,13 @@ use App\Http\Controllers\Admin\SkemaController;
 use App\Http\Controllers\Asesi\Sertifikasi\PembayaranAsesiController;
 use App\Http\Controllers\Asesi\Sertifikasi\AsesmenAsesiController;
 use App\Http\Controllers\Asesi\Sertifikasi\KelolaSertifikasiAsesiController;
+use App\Http\Controllers\Asesi\DashboardAsesiController;
 use App\Http\Controllers\Admin\AsesorController;
 use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Asesi\Sertifikasi\PengumumanAsesiController;
 use App\Http\Controllers\FcmController;
+use App\Http\Controllers\Dev\DevelopmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OfflineController;
@@ -33,6 +35,16 @@ Route::get('/debug-firebase', function () { //will be commented on production
     } catch (\Throwable $e) {
         dd($e);
     }
+});
+Route::prefix('dev')->name('dev.')->group(function () {
+    Route::get('/list/sertifications', [DevelopmentController::class, 'index'])->name('list.sertifications'); // dev.list.sertifications
+    Route::prefix('sertification')->name('sertification.')->group(function () {
+        Route::get('/{sert_id}/show', [DevelopmentController::class, 'detailSertification'])->name('show'); // dev.sertification.show
+        Route::delete('/{sert_id}/destroy/asesmen', [DevelopmentController::class, 'destroyAsesmen'])->name('destroy.asesmen'); // dev.sertification.destroy.asesmen
+        Route::post('/{sert_id}/store/news', [DevelopmentController::class, 'storeDummyNews'])->name('store.news'); // dev.sertification.store.news
+        Route::delete('/{sert_id}/destroy/news', [DevelopmentController::class, 'destroyNews'])->name('destroy.news'); // dev.sertification.destroy.news
+        Route::get('/{sert_id}/list/asesis', [DevelopmentController::class, 'listAsesis'])->name('list.asesis'); // dev.sertification.list.asesis
+    });
 });
 
 Route::get('/', function () {
@@ -116,15 +128,18 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
         // untuk munculin halaman edit asesmen dan updatenya
         Route::get('/assessment/edit', [AsesmenController::class, 'edit'])->name('assessment.edit'); // admin.sertifikasi.assessment.edit
         Route::patch('/assessment/update', [AsesmenController::class, 'update_tugas_asesmen'])->name('assessment.update'); // admin.sertifikasi.assessment.update
+        Route::delete('/assessment/destroy', [AsesmenController::class, 'destroy'])->name('assessment.destroy'); // admin.sertifikasi.assessment.destroy
         // untuk mnunculin halaman edit rincian pembayaran dan updatenya
         Route::get('/payment-desc/index', [PembayaranController::class, 'index_rincian_pembayaran'])->name('payment-desc.index'); // admin.sertifikasi.payment-desc.index
         Route::patch('/payment-desc/update', [PembayaranController::class, 'update_rincian_pembayaran'])->name('payment-desc.update'); // admin.sertifikasi.payment-desc.update
+        Route::delete('/payment-desc/destroy', [PembayaranController::class, 'destroy'])->name('payment-desc.destroy'); // admin.sertifikasi.payment-desc.destroy
         // Mengelola konten pengumuman
         Route::get('/announcement/index', [PengumumanController::class, 'index_pengumuman_asesmen'])->name('assessment-announcement.index'); // admin.sertifikasi.assessment-announcement.index
         Route::post('/announcement/store', [PengumumanController::class, 'store_pengumuman_asesmen'])->name('announcement.store'); // admin.sertifikasi.assessment-announcement.store
         Route::patch('/announcement/update/{peng_id}', [PengumumanController::class, 'update_pengumuman_asesmen'])->name('assessment-announcement.update'); // admin.sertifikasi.assessment-announcement.update
         Route::delete('/announcement/destroy/{peng_id}', [PengumumanController::class, 'destroy_pengumuman_asesmen'])->name('assessment-announcement.destroy'); // admin.sertifikasi.assessment-announcement.update
         Route::delete('/announcement/file/{id_file}', [PengumumanController::class, 'destroyPengumumanFile'])->name('assessment-announcement.file.destroy');
+        Route::get('/announcement/{news_id}/readers', [PengumumanController::class, 'getReaders'])->name('assessment-announcement.readers');
     });
 
     Route::prefix('sertifikasi/{sert_id}')->name('sertifikasi.')->group(function () {
@@ -143,9 +158,7 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
 
 //versi lebih baik utk asesi, konsistensi bahasa, penggunaan kebab-case, pakai konvensi restful (index, create, store, show, edit, update, destroy), kelompokin route dgn prefix
 Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Asesi/DashboardAsesi');
-    })->name('dashboard'); // asesi.dashboard
+    Route::get('/dashboard', [DashboardAsesiController::class, 'index'])->name('dashboard'); // asesi.dashboard
 
     Route::get('/{sert_id}/{asesi_id}/assessmen/index', [AsesmenAsesiController::class, 'index_asesmen_asesi'])->name('assessmen.index'); // asesi.assessmen.index
     Route::post('/{sert_id}/{asesi_id}/assessmen', [AsesmenAsesiController::class, 'update_asesmen_asesi'])->name('assessmen.update'); // asesi.assessmen.update
@@ -163,6 +176,7 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
         Route::patch('/{sert_id}/{asesi_id}/applied/update', [KelolaSertifikasiAsesiController::class, 'update_applied_sertifikasi'])->name('applied.update'); // asesi.sertifikasi.applied.update
     });
     Route::get('/{sert_id}/{asesi_id}/pengumuman/index', [PengumumanAsesiController::class, 'index_pengumuman_asesi'])->name('pengumuman.index'); // asesi.pengumuman.index
+    Route::post('/{sert_id}/{asesi_id}/pengumuman/{news_id}/read', [PengumumanAsesiController::class, 'mark_as_read'])->name('pengumuman.mark-read');
 
 });
 

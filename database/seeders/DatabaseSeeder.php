@@ -35,10 +35,10 @@ class DatabaseSeeder extends Seeder
         Skema::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // 1. Panggil RoleSeeder
+
         $this->call(RoleSeeder::class);
 
-        // 2. Buat Skema Sertifikasi
+
         $namaSkemas = [
             'Skema Pendamping UMKM',
             'Skema Ahli K3 Umum',
@@ -50,34 +50,51 @@ class DatabaseSeeder extends Seeder
             'Skema Programmer',
         ];
 
-        $skemas = collect(); // Buat koleksi kosong untuk menampung skema
+        $skemas = collect();
         foreach ($namaSkemas as $nama) {
             $skemas->push(Skema::factory()->create([
                 'nama_skema' => $nama,
             ]));
         }
 
-        // 3. Buat User Admin Utama
+        
+        /** @var \App\Models\User|null $admin */
+        // /** @var \Illuminate\Database\Eloquent\Collection $asesiUsers */
+        $admin = null;
+        $asesiUsers = collect();
         User::withoutEvents(function () use (&$admin, &$asesiUsers, $skemas) {
             echo "Membuat user (tanpa event)...\n";
-            // Buat User Admin Utama
             $admin = User::create([
                 'email' => 'admin@g.c',
                 'name' => 'Afif Admin',
-                'password' => Hash::make('1234'), 
+                'password' => Hash::make('1234'),
                 'email_verified_at' => now(),
             ]);
             $admin->assignRole('admin', 'asesor');
             Asesor::create(['user_id' => $admin->id]);
 
-            // Buat 24 Asesor
+            $asesor = User::create([
+                'email' => 'bomo@asesor.c',
+                'name' => 'Bomo Wibowo',
+                'password' => Hash::make('1234'),
+                'email_verified_at' => now(),
+            ]);
+            $asesor->assignRole('admin', 'asesor');
+            Asesor::create(['user_id' => $asesor->id]);
             User::factory(24)->create()->each(function ($user) use ($skemas) {
                 $user->assignRole('asesor');
                 $asesor = Asesor::create(['user_id' => $user->id]);
                 $asesor->skemas()->attach($skemas->random(rand(1, 3))->pluck('id'));
             });
 
-            // Buat 300 User Asesi sebagai pool
+            $student = User::create([
+                'email' => 'mahasiswa1@student.c',
+                'name' => 'Haningsih',
+                'password' => Hash::make('1234'),
+                'email_verified_at' => now(),
+            ]);
+            $student->assignRole('asesi');
+            Student::create(['user_id' => $student->id]);
             $asesiUsers = User::factory(300)->create()->each(function ($user) {
                 $user->assignRole('asesi');
                 Student::create(['user_id' => $user->id]);
@@ -95,21 +112,19 @@ class DatabaseSeeder extends Seeder
                 'status' => 'selesai',
                 'tgl_apply_dibuka' => $tglSelesai->copy()->subWeeks(2),
                 'tgl_apply_ditutup' => $tglSelesai->copy()->subWeek(),
-            ]);
-
-            // Tambahkan payment instruction
-            $paymentInstruction = $sertification->paymentInstruction()->create([
                 'biaya' => rand(500, 2000) * 1000,
-                'deadline' => $tglSelesai->copy()->subDays(3),
-                'user_id' => $admin->id,
-                'content' => 'Pembayaran untuk sertifikasi yang telah selesai.',
-                'published_at' => now(),
+                'deadline_bayar' => $tglSelesai->copy()->subDays(3),
             ]);
 
-            // Assign 1-2 asesor ke sertifikasi ini
+            $sertification->paymentInstruction()->create([
+                'user_id' => $admin->id,
+                'content' => 'Silakan lakukan pembayaran sesuai nominal yang tertera ke rekening berikut:\n\nBank: Bank Mandiri\nNomor Rekening: 1510012345678\nAtas Nama: LSP Universitas Tanjungpura\n\nMohon unggah bukti transfer setelah pembayaran berhasil.',
+                'published_at' => now(),
+                'content_created_at' => now(),
+            ]);
+
             $sertification->asesors()->attach($allAsesors->random(rand(1, 2))->pluck('id'));
 
-            // Daftarkan 20-30 asesi ke sertifikasi ini
             $pendaftar = $asesiUsers->random(rand(20, 30));
             foreach ($pendaftar as $user) {
                 $asesi = Asesi::factory()->create([
@@ -127,7 +142,7 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // 7. Buat 4 Sertifikasi yang BERLANGSUNG
+
         echo "Membuat 4 sertifikasi yang sedang berlangsung...\n";
         for ($i = 0; $i < 4; $i++) {
             $tglBuka = now()->subDays(rand(5, 10));
@@ -136,21 +151,12 @@ class DatabaseSeeder extends Seeder
                 'status' => 'berlangsung',
                 'tgl_apply_dibuka' => $tglBuka,
                 'tgl_apply_ditutup' => $tglBuka->copy()->addWeeks(2),
-            ]);
-
-            // Tambahkan payment instruction
-            $sertification->paymentInstruction()->create([
                 'biaya' => rand(500, 2000) * 1000,
-                'deadline' => $tglBuka->copy()->addWeeks(3),
-                'user_id' => $admin->id,
-                'content' => 'Silakan lakukan pembayaran sesuai nominal yang tertera.',
-                'published_at' => now(),
+                'deadline_bayar' => $tglSelesai->copy()->subDays(3),
             ]);
 
-            // Assign 1-2 asesor ke sertifikasi ini
             $sertification->asesors()->attach($allAsesors->random(rand(1, 2))->pluck('id'));
 
-            // Daftarkan 20-30 asesi ke sertifikasi ini
             $pendaftar = $asesiUsers->random(rand(20, 30));
             foreach ($pendaftar as $user) {
                 $randomStatus = [
@@ -161,8 +167,8 @@ class DatabaseSeeder extends Seeder
                 $asesi = Asesi::factory()->create([
                     'student_id' => $user->student->id,
                     'sertification_id' => $sertification->id,
-                    // Status acak untuk sertifikasi yang berlangsung
-                    'status' => $randomStatus[array_rand($randomStatus)], // Gunakan Enum
+
+                    'status' => $randomStatus[array_rand($randomStatus)],
                 ]);
                 $randomTransactionStatus = [
                     TransactionStatus::PENDING,
@@ -171,19 +177,19 @@ class DatabaseSeeder extends Seeder
                 Transaction::factory()->create([
                     'asesi_id' => $asesi->id,
                     'sertification_id' => $sertification->id,
-                    'status' => $randomTransactionStatus[array_rand($randomTransactionStatus)], // Gunakan Enum
+                    'status' => $randomTransactionStatus[array_rand($randomTransactionStatus)],
                     'tipe' => 'manual',
                     'bukti_bayar' => 'seed/bukti_bayar.jpg',
                 ]);
             }
         }
 
-        // 8. Pastikan beberapa asesi mendaftar lebih dari 1 sertifikasi
+
         echo "Memastikan beberapa asesi mendaftar lebih dari satu sertifikasi...\n";
         $sertifications = Sertification::all();
-        $asesiMultiDaftar = $asesiUsers->random(25); // Ambil 25 asesi untuk daftar lagi
+        $asesiMultiDaftar = $asesiUsers->random(25);
         foreach ($asesiMultiDaftar as $user) {
-            // Cari sertifikasi yang belum pernah dia ikuti
+
             $sertifikasiSudahDiikuti = Asesi::where('student_id', $user->student->id)->pluck('sertification_id');
             $sertifikasiTersedia = $sertifications->whereNotIn('id', $sertifikasiSudahDiikuti);
 
@@ -196,6 +202,5 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
-        
     }
 }

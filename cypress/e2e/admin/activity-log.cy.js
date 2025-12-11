@@ -16,11 +16,12 @@ describe('Catatan Aktivitas Sistem', () => {
   it('Harus bisa memfilter log berdasarkan jenis aksi "created"', () => {
     cy.get('[data-cy="filter-trigger-button"]').click();
     cy.contains('label', 'Jenis Aksi').parent().find('select').select('created');
-    cy.contains('button', 'Apply Filter').click();    
+    cy.contains('button', 'Apply Filter').click(); 
     cy.url().should('include', 'event=created');
     cy.get('tbody tr').each(($row) => {
       cy.wrap($row).should('contain.text', 'created');
     });
+    cy.get('[data-cy="filter-trigger-button"]').click();
     cy.contains('button', 'Reset').click();
     cy.url().should('not.include', 'event=created');
   });

@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('skema_id')->constrained();
             $table->string('tuk')->nullable();
+            $table->dateTime('deadline_bayar');
+            $table->integer('biaya')->nullable();
             $table->date('tgl_apply_dibuka');
             $table->date('tgl_apply_ditutup');
             $table->string('status')->nullable();

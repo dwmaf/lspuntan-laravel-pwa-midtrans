@@ -22,10 +22,12 @@ class KelolaSertifikasiController extends Controller
 
         return Inertia::render('Admin/KelolaSertifikasiAdmin', [
             'sertifications_berlangsung' => Sertification::with('skema', 'asesors.user', 'paymentInstruction')
+                ->withCount('asesis')
                 ->where('status', 'berlangsung')
                 ->orderBy('tgl_apply_dibuka', 'desc')
                 ->get(),
             'sertifications_selesai' => Sertification::with('skema', 'asesors.user', 'paymentInstruction')
+                ->withCount('asesis')
                 ->when($request->input('date_from'), function ($query, $dateFrom) {
                     $query->whereDate('tgl_apply_dibuka', '>=', $dateFrom);
                 })
@@ -62,7 +64,7 @@ class KelolaSertifikasiController extends Controller
             'asesor_ids.*' => 'exists:asesors,id',
             'tgl_apply_dibuka' => 'required|date',
             'tgl_apply_ditutup' => 'required|date|after_or_equal:tgl_apply_dibuka',
-            'deadline' => 'required|date',
+            'deadline_bayar' => 'required|date',
             'biaya' => 'required|numeric|min:0',
             'tuk' => 'required',
         ]);
@@ -71,18 +73,14 @@ class KelolaSertifikasiController extends Controller
                 'skema_id' => $validatedData['skema_id'],
                 'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
                 'tgl_apply_ditutup' => $validatedData['tgl_apply_ditutup'],
+                'deadline_bayar' => $validatedData['deadline_bayar'],
+                'biaya' => $validatedData['biaya'],
                 'tuk' => $validatedData['tuk'],
                 'status' => 'berlangsung',
             ]);
             if (!empty($validatedData['asesor_ids'])) {
                 $sertification->asesors()->attach($validatedData['asesor_ids']);
             }
-            $sertification->paymentInstruction()->create([
-                'biaya' => $validatedData['biaya'],
-                'deadline' => $validatedData['deadline'],
-                'user_id' => $request->user()->id,
-                'content' => 'Silakan lakukan pembayaran sesuai nominal yang tertera.',
-            ]);
         });
         if ($sertification) {
             $recipients = User::role('asesi')->get();
@@ -115,7 +113,7 @@ class KelolaSertifikasiController extends Controller
             'asesor_ids.*' => 'exists:asesors,id',
             'tgl_apply_dibuka' => 'required|date',
             'tgl_apply_ditutup' => 'required|date|after_or_equal:tgl_apply_dibuka',
-            'deadline' => 'required|date',
+            'deadline_bayar' => 'required|date',
             'biaya' => 'required|numeric|min:0',
             'tuk' => 'required',
             'status' => 'required|in:berlangsung,selesai',
@@ -126,6 +124,8 @@ class KelolaSertifikasiController extends Controller
                 'skema_id' => $validatedData['skema_id'],
                 'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
                 'tgl_apply_ditutup' => $validatedData['tgl_apply_ditutup'],
+                'deadline_bayar' => $validatedData['deadline_bayar'],
+                'biaya' => $validatedData['biaya'],
                 'tuk' => $validatedData['tuk'],
                 'status' => $validatedData['status'],
             ]);
@@ -134,14 +134,6 @@ class KelolaSertifikasiController extends Controller
             } else {
                 $sertification->asesors()->sync([]);
             }
-            $sertification->paymentInstruction()->updateOrCreate(
-                ['sertification_id' => $sertification->id],
-                [
-                    'biaya' => $validatedData['biaya'],
-                    'deadline' => $validatedData['deadline'],
-                    'user_id' => $request->user()->id,
-                ]
-            );
         });
         $sertification->update($validatedData);
 
@@ -161,8 +153,6 @@ class KelolaSertifikasiController extends Controller
             'sertification' => Sertification::with('asesors.user', 'skema', 'asesis.student.user')->findOrFail($sert_id)
         ]);
     }
-
-    // App/Http/Controllers/Admin/Sertifikasi/KelolaSertifikasiController.php
 
     public function print_laporan($sert_id)
     {
