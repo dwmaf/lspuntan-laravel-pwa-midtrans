@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('asesmens', function (Blueprint $table) {
+        Schema::create('file_pond_tests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sertification_id')->constrained()->onDelete('cascade');
-            $table->text('content')->nullable();
-            $table->dateTime('deadline')->nullable();
-            $table->foreignId('user_id')->constrained();
+            $table->string('title');
+            $table->text('file_path')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('asesmens');
+        Schema::dropIfExists('file_pond_tests');
     }
 };

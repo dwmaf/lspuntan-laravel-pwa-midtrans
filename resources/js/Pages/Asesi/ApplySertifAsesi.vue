@@ -1,13 +1,13 @@
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
-import InputError from "@/Components/InputError.vue";
+import InputError from "@/Components/Input/InputError.vue";
 import Header from "@/Components/CustomHeader.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
+import InputLabel from "@/Components/Input/InputLabel.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryLinkButton from "@/Components/SecondaryLinkButton.vue";
-import TextInput from "@/Components/TextInput.vue";
-import SingleFileInput from "../../Components/SingleFileInput.vue";
-import MultiFileInput from "../../Components/MultiFileInput.vue";
+import TextInput from "@/Components/Input/TextInput.vue";
+import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
+import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
 import { useForm, Link } from "@inertiajs/vue3";
 import { ref } from "vue";
 
@@ -73,8 +73,8 @@ const submit = () => {
 
 <template>
     <AsesiLayout>
-        
-        <Header judul="Pendaftaran Sertifikasi"/>
+
+        <Header judul="Pendaftaran Sertifikasi" />
 
         <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">
@@ -244,8 +244,7 @@ const submit = () => {
                     :error="form.errors.pas_foto" v-model:deleteList="form.delete_files" delete-identifier="pas_foto"
                     :required="!student?.pas_foto || form.delete_files.includes('pas_foto')" />
                 <SingleFileInput v-model="form.foto_ktm" label="Scan KTM (ukuran file maksimal 1 MB)" is-label-required
-                    accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.foto_ktm" delete-identifier="foto_ktm"
-                    required />
+                    accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.foto_ktm" delete-identifier="foto_ktm" required />
                 <MultiFileInput v-model="form.kartu_hasil_studi" label="Scan Kartu Hasil Studi (Semester I - V)"
                     accept=".pdf" :error="form.errors.kartu_hasil_studi"
                     :error-list="form.errors['kartu_hasil_studi.0']" required />

@@ -12,7 +12,7 @@ class Transaction extends Model
     /** @use HasFactory<\Database\Factories\TransactionFactory> */
     protected $guarded = [    
     ];
-    protected $cats = [
+    protected $casts = [
         'status' => TransactionStatus::class,
     ];
 

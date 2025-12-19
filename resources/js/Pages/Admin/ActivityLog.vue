@@ -1,17 +1,17 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import SecondaryButton from '@/Components/Button/SecondaryButton.vue';
 import Modal from '@/Components/Modal.vue';
 import Pagination from '@/Components/Pagination.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, reactive, computed, watch } from 'vue';
-import { MoveRight, FunnelIcon,X } from 'lucide-vue-next';
-import TextInput from '@/Components/TextInput.vue';
+import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
+import TextInput from '@/Components/Input/TextInput.vue';
 import CustomHeader from '@/Components/CustomHeader.vue';
-import SelectInput from '@/Components/SelectInput.vue';
+import SelectInput from '@/Components/Input/SelectInput.vue';
 import Dropdown from '@/Components/Dropdown.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import InputLabel from '@/Components/Input/InputLabel.vue';
+import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
 const props = defineProps({
     logs: Object,
     filters: Object,
@@ -26,7 +26,7 @@ const filtersForm = reactive({
     event: props.filters.event || '',
 });
 const hasActiveFilters = computed(() => {
-    const {search, ...advancedFilters} = filtersForm;
+    const { search, ...advancedFilters } = filtersForm;
     return Object.values(advancedFilters).some(value => value !== '' && value !== null);
 });
 const showFilterModal = ref(false);
@@ -102,7 +102,7 @@ const formatFieldName = (fieldName) => {
 
 <template>
     <AdminLayout>
-        <CustomHeader judul="Catatan Aktivitas Sistem"/>
+        <CustomHeader judul="Catatan Aktivitas Sistem" />
 
         <div v-if="viewMode === 'list'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div class="flex justify-end items-center gap-2 mb-4">
@@ -112,7 +112,8 @@ const formatFieldName = (fieldName) => {
                 <button data-cy="filter-trigger-button" @click="openFilterModal"
                     class="relative mt-1 inline-flex items-center px-3 py-3 border border-gray-300 dark:border-gray-500 text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
                     <FunnelIcon class="w-4 h-4" />
-                    <span v-if="hasActiveFilters" class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
+                    <span v-if="hasActiveFilters"
+                        class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
                 </button>
             </div>
             <div class="overflow-x-auto custom-scrollbar">
@@ -189,7 +190,7 @@ const formatFieldName = (fieldName) => {
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Dilakukan Oleh</dt>
                     <dd class="mt-1 text-base text-gray-900 dark:text-gray-200">{{ selectedLog.causer?.name ?? 'Sistem'
-                        }}</dd>
+                    }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Waktu</dt>
@@ -261,7 +262,7 @@ const formatFieldName = (fieldName) => {
             </button>
         </div>
         <div class="p-6 flex flex-col gap-4">
-            
+
             <div>
                 <InputLabel value="Rentang Waktu" />
                 <div class="flex flex-col">

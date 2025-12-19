@@ -2,18 +2,17 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
-import InputError from "@/Components/InputError.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import EditButton from "@/Components/EditButton.vue";
-import AddButton from "@/Components/AddButton.vue";
-import SecondaryButton from "@/Components/SecondaryButton.vue";
-import MultiFileInput from "@/Components/MultiFileInput.vue";
-import ToggleSwitch from "@/Components/ToggleSwitch.vue";
-import DateInput from "@/Components/DateInput.vue";
+import InputError from "@/Components/Input/InputError.vue";
+import InputLabel from "@/Components/Input/InputLabel.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import EditButton from "@/Components/Button/EditButton.vue";
+import AddButton from "@/Components/Button/AddButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
+import DateInput from "@/Components/Input/DateInput.vue";
 import Modal from "@/Components/Modal.vue";
-import Checkbox from "@/Components/Checkbox.vue";
-import DangerButton from "@/Components/DangerButton.vue";
+import Checkbox from "@/Components/Input/Checkbox.vue";
+import DangerButton from "@/Components/Button/DangerButton.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { ref, computed, onMounted } from 'vue';
 
@@ -46,7 +45,6 @@ const form = useForm({
     content: '',
     deadline: '',
     newFiles: [],
-    is_published: false,
     delete_files_collection: [],
     send_notification: true,
 });
@@ -55,7 +53,6 @@ const form = useForm({
 const enterEditMode = () => {
     form.content = props.sertification.asesmen?.content || 'Isi rincian tugas asesmen di sini...';
     form.deadline = props.sertification.asesmen?.deadline || '';
-    form.is_published = !!(props.sertification.asesmen?.published_at);
     form.send_notification = !props.sertification.asesmen;
     isEditing.value = true;
 };
@@ -66,12 +63,11 @@ const cancelEdit = () => {
     form.clearErrors();
 };
 
-
 onMounted(() => {
     if (props.initialAsesiId) {
         const asesiToOpen = props.filteredAsesi.find(a => a.id == props.initialAsesiId);
         if (asesiToOpen) {
-            console.log('asesi ditemukan, ');
+            // console.log('asesi ditemukan, ');
             showDetailView(asesiToOpen);
         }
     }
@@ -144,13 +140,16 @@ const formatDateTime = (dateString) => {
         <CustomHeader judul="Asesmen" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
         <!-- Mode Tampilan -->
-        <div v-if="!isEditing" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
-            <div v-if="!props.sertification.asesmen" class="flex items-center justify-between">
-                <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                    Asesor belum memberikan rincian tugas asesmen, buat tugas asesmen agar asesi bisa mengumpulkan tugas
-                    asesmen
-                </p>
-                <AddButton @click="enterEditMode">Buat Asesmen</AddButton>
+        <div id="view-asesmen" v-if="!isEditing">
+            <div v-if="!props.sertification.asesmen" class="flex flex-col gap-2">
+                <AddButton class="self-end" @click="enterEditMode">Buat Asesmen</AddButton>
+                <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
+                    <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                        Asesor belum memberikan rincian tugas asesmen, buat tugas asesmen agar asesi bisa mengumpulkan
+                        tugas
+                        asesmen
+                    </p>
+                </div>
             </div>
             <div v-else>
                 <div class="flex justify-between items-center mb-2">
@@ -169,21 +168,15 @@ const formatDateTime = (dateString) => {
                             </h5>
 
                             <div v-if="props.sertification.asesmen" class="text-xs text-gray-400">
-                                {{ formatDate(sertification.asesmen.content_created_at) }}
-                                <span v-if="sertification.asesmen.revised_at">(diedit)</span>
+                                {{ formatDate(sertification.asesmen.created_at) }}
+                                <span
+                                    v-if="sertification.asesmen.created_at !== sertification.asesmen.updated_at">(Diedit
+                                    pada {{ formatDate(sertification.asesmen.updated_at) }})</span>
                             </div>
                         </div>
                     </div>
                     <div>
                         <div class="flex items-center gap-3">
-                            <span v-if="props.sertification.asesmen?.published_at"
-                                class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300">
-                                Dipublikasikan
-                            </span>
-                            <span v-else
-                                class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-300">
-                                Draft
-                            </span>
                             <EditButton @click="enterEditMode">Edit</EditButton>
                         </div>
                     </div>
@@ -235,21 +228,9 @@ const formatDateTime = (dateString) => {
 
                 <MultiFileInput v-model="form.newFiles" v-model:deleteList="form.delete_files_collection"
                     :existing-files="props.sertification.asesmen?.asesmenfiles ?? []" label="Lampiran" :max-files="5"
-                    accept=".jpg,.png,.jpeg,.pdf,.docx" :error="form.errors.newFiles"
+                    accept=".jpg,.png,.jpeg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" :error="form.errors.newFiles"
                     :error-list="form.errors['newFiles.0']" />
-                <div>
-                    <div class="flex items-center justify-between">
-                        <InputLabel for="is_published" value="Publikasikan Instruksi?" />
-                        <div class="flex items-center gap-2">
-                            <span v-if="props.sertification.asesmen?.published_at" class="text-xs text-gray-500 italic">
-                                (Terkunci: Sudah dipublikasikan)
-                            </span>
-                            <ToggleSwitch id="is_published" v-model="form.is_published"
-                                :disabled="!!sertification.asesmen?.published_at" />
-                        </div>
-                    </div>
-                    <InputError :message="form.errors.is_published" />
-                </div>
+
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
@@ -316,8 +297,7 @@ const formatDateTime = (dateString) => {
             </div>
         </Modal>
 
-        <div v-if="viewMode === 'list'"
-            class="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2">
+        <div v-if="viewMode === 'list'" class="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
@@ -341,8 +321,7 @@ const formatDateTime = (dateString) => {
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-
-                        <tr v-for="(asesi, index) in props.filteredAsesi" :key="asesi.id"
+                        <tr v-for="(asesi, index) in filteredAsesi" :key="asesi.id"
                             class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ index + 1 }}
@@ -359,14 +338,11 @@ const formatDateTime = (dateString) => {
                                     ada tugas dikumpulkan</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-
                                 <button v-if="asesi.asesiasesmenfiles.length > 0" @click="showDetailView(asesi)"
                                     class="cursor-pointer px-2 py-1 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-700">
                                     Lihat
                                 </button>
-
                                 <span v-else class="text-xs text-gray-500">Belum ada tugas dikumpulkan</span>
-
                             </td>
                         </tr>
 

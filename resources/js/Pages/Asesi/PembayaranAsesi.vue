@@ -2,8 +2,8 @@
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
 import Header from "@/Components/CustomHeader.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import SingleFileInput from "@/Components/SingleFileInput.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import { computed } from 'vue';
 
@@ -38,7 +38,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleString('id-ID', 
 
 <template>
     <AsesiLayout>
-        <Header judul="Instruksi Pembayaran"/>
+        <Header judul="Instruksi Pembayaran" />
         <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 
@@ -117,7 +117,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleString('id-ID', 
                             </dt>
                             <dd class="text-sm text-gray-900 dark:text-gray-100">{{
                                 formatCurrency(sertification.payment_instruction.biaya)
-                                }}</dd>
+                            }}</dd>
                         </div>
 
 

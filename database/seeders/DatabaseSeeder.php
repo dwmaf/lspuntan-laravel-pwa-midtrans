@@ -71,16 +71,17 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]);
             $admin->assignRole('admin', 'asesor');
-            Asesor::create(['user_id' => $admin->id]);
-
-            $asesor = User::create([
+            $adminasesor = Asesor::create(['user_id' => $admin->id]);
+            $adminasesor->skemas()->attach([1]);
+            $direktur = User::create([
                 'email' => 'bomo@asesor.c',
                 'name' => 'Bomo Wibowo',
                 'password' => Hash::make('1234'),
                 'email_verified_at' => now(),
             ]);
-            $asesor->assignRole('admin', 'asesor');
-            Asesor::create(['user_id' => $asesor->id]);
+            $direktur->assignRole('admin', 'asesor');
+            $direkturasesor = Asesor::create(['user_id' => $direktur->id]);
+            $direkturasesor->skemas()->attach([5]);
             User::factory(24)->create()->each(function ($user) use ($skemas) {
                 $user->assignRole('asesor');
                 $asesor = Asesor::create(['user_id' => $user->id]);
@@ -118,9 +119,7 @@ class DatabaseSeeder extends Seeder
 
             $sertification->paymentInstruction()->create([
                 'user_id' => $admin->id,
-                'content' => 'Silakan lakukan pembayaran sesuai nominal yang tertera ke rekening berikut:\n\nBank: Bank Mandiri\nNomor Rekening: 1510012345678\nAtas Nama: LSP Universitas Tanjungpura\n\nMohon unggah bukti transfer setelah pembayaran berhasil.',
-                'published_at' => now(),
-                'content_created_at' => now(),
+                'content' => 'Silakan lakukan pembayaran sesuai nominal yang tertera ke rekening berikut: Bank: Bank Mandiri Nomor Rekening: 1510012345678 Atas Nama: LSP Universitas Tanjungpura Mohon unggah bukti transfer setelah pembayaran berhasil.',
             ]);
 
             $sertification->asesors()->attach($allAsesors->random(rand(1, 2))->pluck('id'));

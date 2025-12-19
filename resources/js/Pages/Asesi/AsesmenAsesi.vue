@@ -2,9 +2,9 @@
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
 import CustomHeader from "@/Components/CustomHeader.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import SecondaryButton from "@/Components/SecondaryButton.vue";
-import MultiFileInput from "../../Components/MultiFileInput.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { computed, ref } from 'vue';
 
@@ -110,7 +110,8 @@ const showViewMode = () => {
                                 {{ isDeadlinePassed ? 'Batas waktu pengumpulan telah berakhir.' : 'Batas waktu: ' + new
                                     Date(props.sertification.asesmen.deadline).toLocaleString('id-ID', {
                                         dateStyle: 'long',
-                                timeStyle: 'short' }) + ' WIB' }}
+                                        timeStyle: 'short'
+                                    }) + ' WIB' }}
                             </span>
                         </div>
                     </div>

@@ -68,7 +68,7 @@ class DevelopmentController extends Controller
     public function listAsesis($sert_id)
     {
         return Inertia::render('Dev/ListAsesi', [
-            'sertification' => Sertification::with('skema', 'asesors.user', 'asesis.student.user')->findOrFail($sert_id),
+            'sertification' => Sertification::with('skema', 'asesors.user', 'asesis.student.user', 'asesis.transaction')->findOrFail($sert_id),
         ]);
     }
 

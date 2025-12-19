@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from 'vue';
-import FileInput from './FileInput.vue';
-import FileIcon from './FileIcon.vue';
-import InputLabel from './InputLabel.vue';
-import InputError from './InputError.vue';
+import FileInput from '@/Components/Input/FileInput.vue';
+import FileIcon from '@/Components/FileIcon.vue';
+import InputLabel from '@/Components/Input/InputLabel.vue';
+import InputError from '@/Components/Input/InputError.vue';
 import { X } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -34,8 +34,8 @@ const showInput = computed(() => {
     return !props.existingFileUrl || props.isMarkedForDeletion;
 });
 
-function handleRemove() { 
-    if(props.modelValue){
+function handleRemove() {
+    if (props.modelValue) {
         emit('update:modelValue', null);
     } else if (props.existingFileUrl && !props.isMarkedForDeletion) {
         if (props.deleteIdentifier && props.deleteList) {
@@ -66,7 +66,7 @@ function handleRemove() {
             </div>
             <button @click="handleRemove" type="button"
                 class="cursor-pointer rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200">
-                <X class="w-4 mx-1"/>
+                <X class="w-4 mx-1" />
             </button>
         </div>
 
@@ -80,9 +80,9 @@ function handleRemove() {
             </div>
             <button @click="handleRemove" type="button"
                 class="cursor-pointer rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200">
-                <X class="w-4 mx-1"/>
+                <X class="w-4 mx-1" />
             </button>
-            
+
         </div>
 
         <!-- Input File -->

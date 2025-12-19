@@ -28,7 +28,7 @@ class PembayaranController extends Controller
             'content' => 'required|string',
             'deadline_bayar' => 'required|date',
             'biaya' => 'required|numeric|min:0',
-            'is_published' => 'required|boolean'
+            'send_notification' => 'required|boolean'
         ]);
 
         $sertification = Sertification::with('skema')->findOrFail($sert_id);
@@ -41,26 +41,10 @@ class PembayaranController extends Controller
             'content' => $validatedData['content'],
             'user_id' => $request->user()->id,
         ]);
-        $isFirstTimePublish = is_null($instruction->published_at) && $request->boolean('is_published') && is_null($instruction->content_created_at);
-        $hasMeaningfulChanges = $instruction->isDirty('content') || $sertification->isDirty('deadline_bayar') || $sertification->isDirty('biaya');
-        $shouldSendNotification = $request->boolean('is_published') && ($isFirstTimePublish || $hasMeaningfulChanges);
-        if ($isFirstTimePublish) {
-            $instruction->content_created_at = now();
-        }
-        if ($instruction->content_created_at && is_null($instruction->revised_at) && $request->boolean('is_published')) {
-            if ($hasMeaningfulChanges) {
-                $instruction->revised_at = now();
-            }
-        }
-        if (is_null($instruction->published_at) && $request->boolean('is_published')) {
-            $instruction->published_at = now();
-        } else if (!$request->boolean('is_published')) {
-            $instruction->published_at = null;
-        }
         
         $instruction->save();
         $sertification->save();
-        if ($shouldSendNotification) {
+        if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
                 ->where('sertification_id', $sert_id)
                 ->where('status', 'dilanjutkan_asesmen')

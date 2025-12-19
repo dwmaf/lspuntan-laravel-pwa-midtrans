@@ -1,7 +1,7 @@
 <script setup>
 import DevLayout from "@/Pages/Dev/DevLayout.vue";
-import DeleteButton from "@/Components/DeleteButton.vue";
-import AddButton from "@/Components/AddButton.vue";
+import DeleteButton from "@/Components/Button/DeleteButton.vue";
+import AddButton from "@/Components/Button/AddButton.vue";
 import { ref, computed } from "vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 const props = defineProps({
@@ -68,7 +68,7 @@ const destroyNews = () => {
                     Detail Sertifikasi
                 </h3>
             </div>
-    
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6">
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Id Sertifikasi</dt>
@@ -125,7 +125,7 @@ const destroyNews = () => {
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
                     <dd class="mt-1 text-sm">
-    
+
                         <span v-if="props.sertification.status === 'berlangsung'"
                             class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
                             Sedang Berlangsung
@@ -142,7 +142,7 @@ const destroyNews = () => {
                     <span class="font-semibold">
                         Status Asesmen:
                     </span>
-                    {{ sertification.asesmen ? 'Ada':'Belum Dibuat' }}
+                    {{ sertification.asesmen ? 'Ada' : 'Belum Dibuat' }}
                 </p>
                 <div v-if="sertification.asesmen">
                     <DeleteButton @click="destroyAsesmen">Hapus Asesmen</DeleteButton>
@@ -160,7 +160,7 @@ const destroyNews = () => {
                 </div>
                 <AddButton @click="storeDummyNews">Buat 30 Pengumuman</AddButton>
             </div>
-            
+
         </div>
     </DevLayout>
 </template>

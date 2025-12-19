@@ -11,6 +11,8 @@ use App\Models\Asesmenfile;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
+use App\Enums\AsesiStatus;
+use App\Enums\TransactionStatus;
 
 class AsesmenController extends Controller
 {
@@ -27,10 +29,10 @@ class AsesmenController extends Controller
 
         $filteredAsesi = $sertification->asesis->filter(function ($asesi) {
             $latestTransaction = $asesi->transaction->sortByDesc('created_at')->first();
-            return $asesi->status === 'dilanjutkan_asesmen'
+            return $asesi->status === AsesiStatus::DILANJUTKAN_ASESMEN
                 && $latestTransaction
-                && $latestTransaction->status === 'bukti_pembayaran_terverifikasi';
-        });
+                && $latestTransaction->status === TransactionStatus::BUKTI_PEMBAYARAN_TERVERIFIKASI;
+        })->values();
 
         return Inertia::render('Admin/AsesmenAdmin', [
             'sertification' => $sertification,
@@ -44,10 +46,9 @@ class AsesmenController extends Controller
         // dd($request);
         $validatedData = $request->validate([
             'content' => 'required|string',
-            'is_published' => 'required|boolean',
             'deadline' => 'nullable|date',
             'newFiles' => 'nullable|array|max:5',
-            'newFiles.*' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,pdf,docx,pptx,xls,xlsx',
+            'newFiles.*' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,pdf,doc,docx,ppt,pptx,xls,xlsx',
             'delete_files_collection' => 'nullable|array',
             'delete_files_collection.*' => 'integer|exists:asesmenfiles,id',
             'send_notification' => 'boolean',
@@ -59,27 +60,11 @@ class AsesmenController extends Controller
             'deadline' => $validatedData['deadline'],
             'user_id' => $request->user()->id,
         ]);
-        $isFirstTimePublish = is_null($asesmen->published_at) && $request->boolean('is_published') && is_null($asesmen->content_created_at);
-        $hasMeaningfulChanges = $asesmen->isDirty('content') || $sertification->isDirty('deadline');
-        $shouldSendNotification = $request->boolean('is_published') && $request->boolean('send_notification');
         
-        if ($isFirstTimePublish) {
-            $asesmen->content_created_at = now();
-        }
-        if ($asesmen->content_created_at && is_null($asesmen->revised_at) && $request->boolean('is_published')) {
-            if ($hasMeaningfulChanges) {
-                $asesmen->revised_at = now();
-            }
-        }
-        if (is_null($asesmen->published_at) && $request->boolean('is_published')) {
-            $asesmen->published_at = now();
-        } else if (!$request->boolean('is_published')) {
-            $asesmen->published_at = null;
-        }
         $asesmen->save();
         FileHelper::handleCollectionFileDeletes(Asesmenfile::class, $request->input('delete_files_collection', []));
         FileHelper::handleCollectionFileUploads(Asesmenfile::class, 'asesmen_id', $asesmen->id, $request, ['newFiles'], 'sert_files');
-        if ($shouldSendNotification) {
+        if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
                 ->where('sertification_id', $sert_id)
                 ->where('status', 'dilanjutkan_asesmen')

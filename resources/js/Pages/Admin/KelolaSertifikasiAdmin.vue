@@ -1,22 +1,22 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
-import InputError from "@/Components/InputError.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
+import InputError from "@/Components/Input/InputError.vue";
+import InputLabel from "@/Components/Input/InputLabel.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import Pagination from "@/Components/Pagination.vue";
-import SecondaryButton from "@/Components/SecondaryButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import PrimaryLinkButton from "@/Components/PrimaryLinkButton.vue";
-import TextInput from "@/Components/TextInput.vue";
-import SelectInput from "@/Components/SelectInput.vue";
+import TextInput from "@/Components/Input/TextInput.vue";
+import SelectInput from "@/Components/Input/SelectInput.vue";
 import Modal from "@/Components/Modal.vue";
-import NumberInput from "@/Components/NumberInput.vue";
-import DateInput from "@/Components/DateInput.vue";
+import NumberInput from "@/Components/Input/NumberInput.vue";
+import DateInput from "@/Components/Input/DateInput.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { ref, computed, watch, reactive } from "vue";
 import { MapPin, DollarSign, CalendarRange, BookOpen, FunnelIcon, X, Users } from "lucide-vue-next";
 import { IconChalkboardTeacher, IconPointFilled } from "@tabler/icons-vue";
-import Multiselect from "@/Components/MultiSelect.vue";
+import Multiselect from "@/Components/Input/MultiSelect.vue";
 
 const props = defineProps({
     sertifications_berlangsung: Array,
@@ -277,7 +277,7 @@ const submit = () => {
                             <DollarSign class="w-4 h-4 text-gray-700 dark:text-gray-200" />
                             <p class=" text-gray-600 text-sm dark:text-gray-200">
                                 Biaya: Rp
-                                {{new Intl.NumberFormat("id-ID").format(sert.biaya)}}
+                                {{ new Intl.NumberFormat("id-ID").format(sert.biaya) }}
                             </p>
                         </div>
                         <div class="flex items-center mt-4">

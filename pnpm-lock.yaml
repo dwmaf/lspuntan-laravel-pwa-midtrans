@@ -23,6 +23,15 @@ dependencies:
   axios:
     specifier: 1.7.4
     version: 1.7.4
+  filepond:
+    specifier: ^4.32.10
+    version: 4.32.10
+  filepond-plugin-file-validate-type:
+    specifier: ^1.2.9
+    version: 1.2.9(filepond@4.32.10)
+  filepond-plugin-image-preview:
+    specifier: ^4.6.12
+    version: 4.6.12(filepond@4.32.10)
   firebase:
     specifier: ^12.2.1
     version: 12.4.0
@@ -35,6 +44,9 @@ dependencies:
   vue:
     specifier: ^3.5.22
     version: 3.5.22
+  vue-filepond:
+    specifier: ^7.0.4
+    version: 7.0.4(filepond@4.32.10)(vue@3.5.22)
   vue-multiselect:
     specifier: ^3.4.0
     version: 3.4.0
@@ -2569,6 +2581,26 @@ packages:
       flat-cache: 4.0.1
     dev: true
 
+  /filepond-plugin-file-validate-type@1.2.9(filepond@4.32.10):
+    resolution: {integrity: sha512-Tzv07aNdZvjUXDRA3XL16QMEvh6llDrXlcZ6W0eTHQ+taHaVg/JKJTFs/AViO+6ZcpPCcQStbhYEL2HoS+vldw==}
+    peerDependencies:
+      filepond: '>=1.x <5.x'
+    dependencies:
+      filepond: 4.32.10
+    dev: false
+
+  /filepond-plugin-image-preview@4.6.12(filepond@4.32.10):
+    resolution: {integrity: sha512-Y8ETX5QVV0mbPB0586UH8AUmG9tZg8PuN5bdEAIlZVJFTct5ebViJ7+Am94/VhTPjLqZjBf1zmDq5JU6XRsZKw==}
+    peerDependencies:
+      filepond: '>=4.x <5.x'
+    dependencies:
+      filepond: 4.32.10
+    dev: false
+
+  /filepond@4.32.10:
+    resolution: {integrity: sha512-uflpIL+rfAgsYk7HgXugh7ELlHNHLTPtIHfvuq0gv3x2qNfVxdGA6T7RPxMh9Vji8ysXstXkDHVXQ4hY38MPTQ==}
+    dev: false
+
   /find-up@5.0.0:
     resolution: {integrity: sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==}
     engines: {node: '>=10'}
@@ -3994,6 +4026,16 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /vue-filepond@7.0.4(filepond@4.32.10)(vue@3.5.22):
+    resolution: {integrity: sha512-HvWlCG8qjvyykrpPTDjJ+JqsHTXt5/0zWMX9vu7kU3JXCUODPUkGi9prZcauOnIZ4MqyeSZ9M0sDVwdMATyt1g==}
+    peerDependencies:
+      filepond: '>=4.7.4 < 5.x'
+      vue: '>=3 < 4'
+    dependencies:
+      filepond: 4.32.10
+      vue: 3.5.22
+    dev: false
 
   /vue-multiselect@3.4.0:
     resolution: {integrity: sha512-NtaL1/VOsGsvM+H0EZswy1E+RcA5yeCpCxrhT28CBwKu9D1WbMSXBfIDNDw0v+T4enVRfOD5X7u2gyIJWCFX9w==}

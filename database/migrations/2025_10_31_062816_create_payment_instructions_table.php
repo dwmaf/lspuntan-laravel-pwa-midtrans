@@ -16,9 +16,6 @@ return new class extends Migration
             $table->foreignId('sertification_id')->constrained()->onDelete('cascade');
             $table->text('content')->nullable();            
             $table->foreignId('user_id')->constrained();
-            $table->timestamp('content_created_at')->nullable();
-            $table->timestamp('revised_at')->nullable();
-            $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });
     }

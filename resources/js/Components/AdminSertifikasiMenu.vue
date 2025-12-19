@@ -1,4 +1,3 @@
-<!-- filepath: d:\Laravel-App\lsp-untan-laravel-pwa\resources\js\Components\AdminSertifikasiMenu.vue -->
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';

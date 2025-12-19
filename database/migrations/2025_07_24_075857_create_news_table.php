@@ -13,9 +13,6 @@ return new class extends Migration
             $table->foreignId('sertification_id')->constrained();
             $table->text('content');
             $table->foreignId('user_id')->nullable()->constrained();
-            $table->timestamp('content_created_at')->nullable();
-            $table->timestamp('revised_at')->nullable();
-            $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });
     }

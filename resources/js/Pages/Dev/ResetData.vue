@@ -5,7 +5,7 @@ import PrimaryLinkButton from "@/Components/PrimaryLinkButton.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { MapPin, DollarSign, CalendarRange, BookOpen, HatGlasses, Users } from "lucide-vue-next";
 import { IconChalkboardTeacher, IconPointFilled } from "@tabler/icons-vue";
-import Multiselect from "@/Components/MultiSelect.vue";
+import Multiselect from "@/Components/Input/MultiSelect.vue";
 
 const props = defineProps({
     sertifications: Array,
@@ -71,11 +71,11 @@ const formatDate = (dateString) => {
                     </p>
                 </div>
                 <div class="flex items-center mt-4">
-                    <Link :href="route('dev.sertification.list.asesis',sert.id)"
+                    <Link :href="route('dev.sertification.list.asesis', sert.id)"
                         class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
                         <Users class="w-3.5 h-3.5" />
                         <span class="text-xs font-semibold">{{ sert.asesis_count }} Asesi Terdaftar</span>
-                    </Link> 
+                    </Link>
                 </div>
                 <div class="mt-4">
                     <PrimaryLinkButton :href="route(

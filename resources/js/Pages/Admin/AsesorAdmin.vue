@@ -1,18 +1,18 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import InputError from "@/Components/InputError.vue";
+import InputError from "@/Components/Input/InputError.vue";
 import Modal from "@/Components/Modal.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import SecondaryButton from "@/Components/SecondaryButton.vue";
-import TextInput from "@/Components/TextInput.vue";
-import DateInput from "@/Components/DateInput.vue";
-import AddButton from "@/Components/AddButton.vue";
-import EditButton from "@/Components/EditButton.vue";
-import DeleteButton from "@/Components/DeleteButton.vue";
+import InputLabel from "@/Components/Input/InputLabel.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import TextInput from "@/Components/Input/TextInput.vue";
+import DateInput from "@/Components/Input/DateInput.vue";
+import AddButton from "@/Components/Button/AddButton.vue";
+import EditButton from "@/Components/Button/EditButton.vue";
+import DeleteButton from "@/Components/Button/DeleteButton.vue";
 import CustomHeader from "@/Components/CustomHeader.vue";
 import Pagination from "@/Components/Pagination.vue";
-import SelectInput from "@/Components/SelectInput.vue";
+import SelectInput from "@/Components/Input/SelectInput.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed, onMounted, onUnmounted, reactive, watch } from "vue";
 import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';

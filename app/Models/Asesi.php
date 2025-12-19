@@ -44,7 +44,18 @@ class Asesi extends Model
     {
         return $this->hasOne(Sertifikat::class);
     }
-
+    protected static function booted(): void
+    {
+        static::deleting(function (Asesi $asesi) {
+            foreach ($asesi->asesifiles as $asesifile){
+                $asesifile->delete();
+            }
+            foreach ($asesi->asesiasesmenfiles as $asesiasesmenfile){
+                $asesiasesmenfile->delete();
+            }
+            
+        });
+    }
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

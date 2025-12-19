@@ -2,19 +2,19 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
-import MultiFileInput from "@/Components/MultiFileInput.vue";
-import InputError from "@/Components/InputError.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import SecondaryButton from "@/Components/SecondaryButton.vue";
+import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
+import InputError from "@/Components/Input/InputError.vue";
+import InputLabel from "@/Components/Input/InputLabel.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import { useForm, Link, router, InfiniteScroll } from "@inertiajs/vue3";
 import { ref, computed } from 'vue';
-import AddButton from "@/Components/AddButton.vue";
-import EditButton from "@/Components/EditButton.vue";
-import DeleteButton from "@/Components/DeleteButton.vue";
+import AddButton from "@/Components/Button/AddButton.vue";
+import EditButton from "@/Components/Button/EditButton.vue";
+import DeleteButton from "@/Components/Button/DeleteButton.vue";
 import Modal from "@/Components/Modal.vue";
 import ToggleSwitch from "@/Components/ToggleSwitch.vue";
-import Checkbox from "@/Components/Checkbox.vue";
+import Checkbox from "@/Components/Input/Checkbox.vue";
 
 const props = defineProps({
     sertification: Object,
@@ -33,14 +33,12 @@ const form = useForm({
     content: '',
     newFiles: [],
     delete_files: [],
-    is_published: false,
     send_notification: true,
     _method: 'POST',
 });
 
 const showCreateForm = () => {
     form.reset();
-    form.is_published = false;
     form.send_notification = true;
     form._method = 'POST';
     formMode.value = 'create';
@@ -51,8 +49,7 @@ const showEditForm = (pengumuman) => {
     form.content = pengumuman.content;
     form.newFiles = [];
     form.delete_files = [];
-    form.is_published = !!pengumuman.published_at;
-    form.send_notification = !pengumuman.published_at; // Default to true if not yet published, else false to avoid spam
+    form.send_notification = !pengumuman.published_at;
     form._method = 'PATCH';
     editingPengumumanId.value = pengumuman.id;
     formMode.value = 'edit';
@@ -199,27 +196,12 @@ const fetchReaders = (newsId) => {
                     <InputError :message="form.errors.content" />
                 </div>
                 <div>
-                    <MultiFileInput inputId="edit-lampiran" v-model="form.newFiles"
-                        v-model:deleteList="form.delete_files" label="Lampiran"
+                    <MultiFileInput v-model="form.newFiles" v-model:delete-list="form.delete_files" label="Lampiran"
                         accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
                         :existing-files="pengumumans.data.find(p => p.id === editingPengumumanId)?.newsfiles || []"
                         :error="form.errors.newFiles" :error-list="form.errors['newFiles.0']" />
                 </div>
-                <div>
-                    <div class="flex items-center justify-between">
-                        <InputLabel for="is_published_edit" value="Publikasikan Pengumuman?" />
-                        <div class="flex items-center gap-2">
-                            <span v-if="pengumumans.data.find(p => p.id === editingPengumumanId)?.published_at"
-                                class="text-xs text-gray-500 italic">
-                                (Sudah dipublikasikan)
-                            </span>
-                            <ToggleSwitch id="is_published_edit" v-model="form.is_published"
-                                :disabled="!!pengumumans.data.find(p => p.id === editingPengumumanId)?.published_at" />
-                        </div>
-                    </div>
-                    <InputError :message="form.errors.is_published" />
-                </div>
-                <div class="mt-2" v-if="form.is_published">
+                <div class="mt-2">
                     <label class="flex items-center">
                         <Checkbox v-model:checked="form.send_notification" />
                         <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">Kirim Notifikasi ke
@@ -245,18 +227,11 @@ const fetchReaders = (newsId) => {
                     <InputError :message="form.errors.content" />
                 </div>
                 <div>
-                    <MultiFileInput inputId="create-lampiran" v-model="form.newFiles" label="Lampiran"
+                    <MultiFileInput v-model="form.newFiles" label="Lampiran"
                         accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx" :error="form.errors.newFiles"
                         :error-list="form.errors['newFiles.0']" />
                 </div>
-                <div>
-                    <div class="flex items-center justify-between">
-                        <InputLabel for="is_published_create" value="Publikasikan Pengumuman?" />
-                        <ToggleSwitch id="is_published_create" v-model="form.is_published" />
-                    </div>
-                    <InputError :message="form.errors.is_published" />
-                </div>
-                <div class="mt-2" v-if="form.is_published">
+                <div class="mt-2">
                     <label class="flex items-center">
                         <Checkbox v-model:checked="form.send_notification" />
                         <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">Kirim Notifikasi ke
@@ -298,28 +273,21 @@ const fetchReaders = (newsId) => {
                                     {{ pengumuman.user?.asesor ? pengumuman.user?.name : 'Admin' }}
                                 </h5>
                                 <div class="text-xs text-gray-400">
-                                    {{ formatDate(pengumuman.content_created_at) }}
-                                    <span v-if="pengumuman.revised_at" class="text-gray-500">(diedit)</span>
+                                    {{ formatDate(pengumuman.created_at) }}
+                                    <span v-if="pengumuman.created_at !== pengumuman.updated_at"
+                                        class="text-gray-500">(diedit)</span>
                                 </div>
                             </div>
                         </div>
-                        <!-- Status Label -->
+
                         <div class="mt-1 flex flex-wrap gap-2 md:justify-end w-full md:w-auto">
-                            <span v-if="pengumuman.published_at"
-                                class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300 whitespace-nowrap">
-                                Dipublikasikan
-                            </span>
-                            <span v-else
-                                class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-300 whitespace-nowrap">
-                                Draft
-                            </span>
                             <EditButton @click="showEditForm(pengumuman)">Edit</EditButton>
                             <DeleteButton @click="deletePengumuman(pengumuman.id)">Hapus</DeleteButton>
                         </div>
                     </div>
 
-                    <h6 class="font-medium text-sm text-gray-800 dark:text-gray-100">
-                        {{ pengumuman.content }}
+                    <h6 v-html="pengumuman.content.replace(/\n/g, '<br>')"
+                        class="font-medium text-sm text-gray-800 dark:text-gray-100">
                     </h6>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
@@ -332,9 +300,7 @@ const fetchReaders = (newsId) => {
                         </div>
                     </div>
 
-                    <!-- Jumlah asesi yang baca pengumuman ini -->
-                    <div v-if="pengumuman.published_at"
-                        class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-end">
+                    <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-end">
                         <button type="button" @click="fetchReaders(pengumuman.id)"
                             class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline transition-colors"
                             title="Klik untuk melihat daftar pembaca">
@@ -404,7 +370,6 @@ const fetchReaders = (newsId) => {
             </div>
         </Modal>
 
-        <!-- Modal Daftar Pembaca -->
         <Modal :show="showReadersModal" @close="showReadersModal = false">
             <div class="p-6 bg-white dark:bg-gray-800">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Status Literasi Asesi</h2>

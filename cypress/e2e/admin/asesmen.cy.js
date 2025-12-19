@@ -5,76 +5,119 @@ describe("Manajemen Tugas Asesmen", () => {
     beforeEach(() => {
         cy.loginAsAdmin();
         cy.visit(`/admin/sertifikasi/${sertificationId}/assessment/edit`);
-        // cy.get(
-        //     'h3:contains("Edit Rincian"), p:contains("Asesor belum memberikan"), [data-cy="edit-button"]',
-        //     { timeout: 10000 }
-        // ).should("be.visible");
     });
+    const createInstruction = (content, deadline) => {
+        cy.contains('button', 'Buat Asesmen').click();
+        cy.contains('h3', 'Buat Rincian Tugas Asesmen').should('be.visible');
+        cy.contains('button', 'Batal').click();
+        cy.contains('h3', 'Buat Rincian Tugas Asesmen').should('not.exist');
+        cy.contains('button', 'Buat Asesmen').should('be.visible').click();
+        cy.contains('h3', 'Buat Rincian Tugas Asesmen').should('be.visible');
+        cy.get('textarea').clear().type(content);
+        cy.get('div').contains('label', 'Batas Pengumpulan').parent().find('input').clear().type(deadline);
+        cy.get('input[type="file"]').selectFile("cypress/fixtures/dummy-jpg.jpg");
+        cy.get('input[type="file"]').selectFile("cypress/fixtures/dummy-png.png");
+        cy.get('input[type="file"]').selectFile("cypress/fixtures/dummy-jpeg.jpeg");
+        cy.get('input[type="file"]').selectFile("cypress/fixtures/dummy-docx.docx");
+        cy.get('input[type="file"]').selectFile("cypress/fixtures/dummy-doc.doc");
+        cy.contains('button', 'Preview').click();
+        cy.contains('h2', 'Preview Tugas Asesmen').should('be.visible');
+        cy.contains('div', content).should('be.visible');
+        cy.contains('button', 'Tutup Preview').click();
+        cy.contains('button', 'Simpan').click();
+        cy.contains('h3', 'Buat Rincian Tugas Asesmen').should('not.exist');
+        cy.contains('div', content).should('be.visible');
+        cy.contains('a', 'dummy-jpg').should('be.visible');
+        cy.contains('a', 'dummy-jpeg').should('be.visible');
+        cy.contains('a', 'dummy-png').should('be.visible');
+        cy.contains('a', 'dummy-docx').should('be.visible');
+        cy.contains('a', 'dummy-doc').should('be.visible');
+    };
 
-    it("Harus bisa membuat/mengedit, mempublikasikan, dan melampirkan file pada tugas asesmen", () => {
-        const taskContent = `Ini adalah rincian tugas asesmen yang dibuat oleh Cypress pada ${new Date().toLocaleString()}.`;
-        cy.get("body").then(($body) => {
-            if ($body.find('[data-cy="edit-button"]').length > 0) {
-                cy.log(
-                    'Tombol "edit-button" ditemukan, menjalankan proses edit'
-                );
+    const editInstruction = (content, deadline) => {
+        cy.contains('button', 'Edit').click();
+        cy.contains('h3', 'Edit Rincian Tugas Asesmen').should('be.visible');
+        cy.contains('button', 'Batal').click();
+        cy.contains('h3', 'Edit Rincian Tugas Asesmen').should('not.exist');
+        cy.contains('button', 'Edit').should('be.visible').click();
+        cy.contains('h3', 'Edit Rincian Tugas Asesmen').should('be.visible');
+        cy.get('textarea').clear().type(content);
+        cy.get('div').contains('label', 'Batas Pengumpulan').parent().find('input').clear().type(deadline);
+        cy.contains('dummy-jpg').parent('div.flex').within(() => {
+            cy.get('button').click();
+        });
+        cy.contains('dummy-png').parent('div.flex').within(() => {
+            cy.get('button').click();
+        });
+        cy.contains('dummy-jpeg').parent('div.flex').within(() => {
+            cy.get('button').click();
+        });
+        cy.contains('dummy-docx').parent('div.flex').within(() => {
+            cy.get('button').click();
+        });
+        cy.contains('dummy-doc').parent('div.flex').within(() => {
+            cy.get('button').click();
+        });
+        cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-pdf.pdf');
+        cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-xls.xls');
+        cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-xlsx.xlsx');
+        cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-ppt.ppt');
+        cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-pptx.pptx');
+        cy.contains('button', 'Preview').click();
+        cy.contains('h2', 'Preview Tugas Asesmen').should('be.visible');
+        cy.contains('div', content).should('be.visible');
+        cy.contains('button', 'Tutup Preview').click();
+        cy.contains('button', 'Simpan').click();
+        cy.contains('h3', 'Edit Rincian Tugas Asesmen').should('not.exist');
+        cy.contains('div', content).should('be.visible');
+        cy.contains('span', 'Diedit').should('be.visible');
+        cy.contains('a', 'dummy-jpg').should('not.exist');
+        cy.contains('a', 'dummy-jpeg').should('not.exist');
+        cy.contains('a', 'dummy-png').should('not.exist');
+        cy.contains('a', 'dummy-docx').should('not.exist');
+        cy.contains('a', 'dummy-doc').should('not.exist');
+        cy.contains('a', 'dummy-pdf').should('be.visible');
+        cy.contains('a', 'dummy-xls').should('be.visible');
+        cy.contains('a', 'dummy-xlsx').should('be.visible');
+        cy.contains('a', 'dummy-ppt').should('be.visible');
+        cy.contains('a', 'dummy-pptx').should('be.visible');
+    };
 
-                cy.get('[data-cy="edit-button"]').click();
-                cy.contains("h3", "Edit Rincian Tugas Asesmen").should(
-                    "be.visible"
-                );
-                cy.get("textarea").clear().type(taskContent);
+    const deleteInstruction = () => {
+        cy.contains('button', 'Edit').click();
+        cy.contains('h3', 'Edit Rincian Tugas Asesmen').should('be.visible');
+        cy.contains('button', 'Hapus Asesmen').click();
+        cy.on('window:confirm', () => true);
+        cy.contains('Asesor belum memberikan rincian tugas asesmen').should('be.visible');
+        cy.contains('button', 'Buat Asesmen').should('be.visible');
+    };
 
-                cy.get('input[type="datetime-local"]').type("2028-12-31T23:59");
-                cy.get('input[type="file"]').selectFile(
-                    "cypress/fixtures/dummy.pdf"
-                );
-                cy.get("#is_published").click();
-                cy.contains("button", "Simpan").click();
-                cy.contains("h3", "Edit Rincian Tugas Asesmen").should(
-                    "not.exist"
-                );
-                cy.contains(taskContent.split(".")[0]).should("be.visible");
-                cy.contains("Batas Akhir Pengumpulan :")
-                    .parent()
-                    .should("contain.text", "2028-12-31");
-                cy.contains("a", "dummy").should("be.visible");
-            } else {
-                cy.get('[data-cy="edit-button"]').click();
-                cy.log(
-                    'Tombol "edit-button" tidak ditemukan, berarti langsung mode edit'
-                );
-                cy.contains("h3", "Edit Rincian Tugas Asesmen").should(
-                    "be.visible"
-                );
-                cy.get("textarea").clear().type(taskContent);
-
-                cy.get('input[type="datetime-local"]').type("2028-12-31T23:59");
-                cy.get('input[type="file"]').selectFile(
-                    "cypress/fixtures/dummy.pdf"
-                );
-                cy.get("#is_published").parent().click();
-                cy.contains("button", "Simpan").click();
-                cy.contains("h3", "Edit Rincian Tugas Asesmen").should(
-                    "not.exist"
-                );
-                cy.contains(taskContent.split(".")[0]).should("be.visible");
-                cy.contains("Batas Akhir Pengumpulan :")
-                    .parent()
-                    .should("contain.text", "2028-12-31");
-                cy.contains("a", "dummy").should("be.visible");
+    const ensureNoInstruction = () => {
+        cy.wait(500);
+        cy.get('#view-asesmen', { timeout: 5000 }).then(($viewAsesmen) => {
+            if ($viewAsesmen.find('button:contains("Edit")').length > 0) {
+                deleteInstruction();
             }
         });
+    };
 
-        
-        cy.log(
-            "Pengecekan edit selesai, melanjutkan ke langkah tes berikutnya."
-        );
+    it("Harus bisa membuat/mengedit, mempublikasikan, dan melampirkan file pada tugas asesmen", () => {
+        ensureNoInstruction();
+        const timestamp = new Date().toLocaleString();
+        const taskContent = `Ini adalah rincian tugas asesmen yang dibuat oleh Cypress pada ${timestamp}.`;
+        const createDeadline = '2029-12-15T23:59';
+        createInstruction(taskContent, createDeadline);
+        cy.contains('dd', '15 Desember 2029 , 23:59 WIB').should('be.visible');
+        const editContent = `Tugas Asesmen DIPERBARUI oleh Cypress pada ${timestamp}.`;
+        const editDeadline = '2029-12-18T18:00';
+        editInstruction(editContent, editDeadline);
+        cy.contains('dd', '18 Desember 2029 , 18:00 WIB').should('be.visible');
+        deleteInstruction();
+
     });
 
     it("Harus bisa melihat tugas yang dikumpulkan oleh asesi dan kembali ke daftar", () => {
         cy.get("table").should("be.visible");
-
         cy.get("body").then(($body) => {
             if ($body.find('button:contains("Lihat")').length > 0) {
                 cy.get("tbody tr").contains("button", "Lihat").first().click();

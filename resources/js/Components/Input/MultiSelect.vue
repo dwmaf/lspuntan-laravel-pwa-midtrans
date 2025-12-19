@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import InputLabel from './InputLabel.vue';
-import InputError from './InputError.vue';
+import InputLabel from './Input/InputLabel.vue';
+import InputError from './Input/InputError.vue';
 import { X, Search } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -9,7 +9,7 @@ const props = defineProps({
         type: Array,
         required: true,
     },
-    options: { 
+    options: {
         type: Array,
         required: true,
     },
@@ -22,7 +22,7 @@ const props = defineProps({
         default: false,
     },
     required: Boolean,
-    labelProp: { 
+    labelProp: {
         type: String,
         default: 'text'
     },
@@ -75,20 +75,21 @@ onMounted(() => document.addEventListener('mousedown', handleClickOutside));
 onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside));
 </script>
 
-<template >
+<template>
     <div ref="dropdownRef" class="p-0 bg-transparent border-0">
         <div @click="!disabled && (isOpen = !isOpen)"
-            :class="[' flex flex-wrap gap-2 items-center p-2 min-h-[42px] border rounded-md shadow-sm', disabled ? 'border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed opacity-70' : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 cursor-pointer' ]">
+            :class="[' flex flex-wrap gap-2 items-center p-2 min-h-[42px] border rounded-md shadow-sm', disabled ? 'border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 cursor-not-allowed opacity-70' : 'border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 cursor-pointer']">
             <span v-if="selectedOptions.length === 0" class="text-gray-400">{{ placeholder }}</span>
             <span v-for="selected in selectedOptions" :key="selected[valueProp]"
                 class="flex items-center gap-1 px-2 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300">
                 {{ selected[labelProp] }}
-                <button v-if="!disabled" @click.stop="toggleOption(selected[valueProp])" type="button" class="hover:text-red-500">
+                <button v-if="!disabled" @click.stop="toggleOption(selected[valueProp])" type="button"
+                    class="hover:text-red-500">
                     <X class="w-3 h-3" />
                 </button>
             </span>
         </div>
-    
+
         <div v-show="isOpen"
             class="absolute mt-1 w-full rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-20"
             style="display: none;">
@@ -101,8 +102,8 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
                         class="w-full pl-9 pr-3 py-2 text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md">
                 </div>
             </div>
-    
-            
+
+
             <ul class="max-h-60 overflow-y-auto p-1">
                 <li v-for="option in filteredOptions" :key="option[valueProp]" @click="toggleOption(option[valueProp])"
                     class="flex items-center p-2 text-sm text-gray-900 dark:text-gray-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
@@ -116,5 +117,5 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
             </ul>
         </div>
     </div>
-    
+
 </template>

@@ -1,21 +1,21 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CustomHeader from '@/Components/CustomHeader.vue';
-import EditButton from '@/Components/EditButton.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import DeleteButton from '@/Components/DeleteButton.vue';
+import EditButton from '@/Components/Button/EditButton.vue';
+import InputLabel from '@/Components/Input/InputLabel.vue';
+import DeleteButton from '@/Components/Button/DeleteButton.vue';
 import Modal from '@/Components/Modal.vue';
 import ToggleSwitch from '@/Components/ToggleSwitch.vue';
-import TextInput from '@/Components/TextInput.vue';
-import InputError from '@/Components/InputError.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import MultiSelect from '@/Components/MultiSelect.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
+import TextInput from '@/Components/Input/TextInput.vue';
+import InputError from '@/Components/Input/InputError.vue';
+import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
+import MultiSelect from '@/Components/Input/MultiSelect.vue';
+import SecondaryButton from '@/Components/Button/SecondaryButton.vue';
 import { Head, useForm, usePage, router } from '@inertiajs/vue3';
 import { ref, computed, watch, reactive } from 'vue';
-import SuccessButton from '@/Components/SuccessButton.vue';
+import SuccessButton from '@/Components/Button/SuccessButton.vue';
 import Pagination from '@/Components/Pagination.vue';
-import SelectInput from '@/Components/SelectInput.vue';
+import SelectInput from '@/Components/Input/SelectInput.vue';
 import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
 
 const authUser = usePage().props.auth.user;
@@ -32,7 +32,7 @@ const filtersForm = reactive({
     verified: props.filters.verified || '',
 });
 const hasActiveFilters = computed(() => {
-    const {search, ...advancedFilters} = filtersForm;
+    const { search, ...advancedFilters } = filtersForm;
     return Object.values(advancedFilters).some(value => value !== '' && value !== null);
 });
 const showFilterModal = ref(false);
@@ -162,7 +162,7 @@ const save = () => {
 
 <template>
 
-    
+
 
     <AdminLayout>
         <CustomHeader judul="Manajemen Akun" />
@@ -174,7 +174,8 @@ const save = () => {
                 <button @click="openFilterModal"
                     class="relative mt-1 inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-500 text-sm font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
                     <FunnelIcon class="w-4" />
-                    <span v-if="hasActiveFilters" class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
+                    <span v-if="hasActiveFilters"
+                        class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
                 </button>
             </div>
             <div class="overflow-x-auto custom-scrollbar">
@@ -338,7 +339,9 @@ const save = () => {
     </Modal>
     <Modal :show="showFilterModal" @close="showFilterModal = false">
         <div class="flex justify-end p-2">
-            <button @click="closeFilterModal"><X class="w-4 dark:text-white" /></button>
+            <button @click="closeFilterModal">
+                <X class="w-4 dark:text-white" />
+            </button>
         </div>
         <div class="p-6">
             <div class="flex flex-col gap-4">

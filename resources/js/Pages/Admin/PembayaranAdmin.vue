@@ -2,18 +2,17 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
-import InputError from "@/Components/InputError.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import AddButton from "@/Components/AddButton.vue";
-import EditButton from "@/Components/EditButton.vue";
-import SecondaryButton from "@/Components/SecondaryButton.vue";
-import ToggleSwitch from "@/Components/ToggleSwitch.vue";
-import DateInput from "@/Components/DateInput.vue";
+import InputError from "@/Components/Input/InputError.vue";
+import InputLabel from "@/Components/Input/InputLabel.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import AddButton from "@/Components/Button/AddButton.vue";
+import EditButton from "@/Components/Button/EditButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import DateInput from "@/Components/Input/DateInput.vue";
 import Modal from "@/Components/Modal.vue";
-import Checkbox from "@/Components/Checkbox.vue";
-import NumberInput from "@/Components/NumberInput.vue";
-import DangerButton from "@/Components/DangerButton.vue";
+import Checkbox from "@/Components/Input/Checkbox.vue";
+import NumberInput from "@/Components/Input/NumberInput.vue";
+import DangerButton from "@/Components/Button/DangerButton.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed, onMounted } from "vue";
 const props = defineProps({
@@ -25,14 +24,12 @@ const form = useForm({
     content: "",
     biaya: "",
     deadline_bayar: "",
-    is_published: false,
     send_notification: true,
 });
 const edit = () => {
     form.content = props.sertification.payment_instruction?.content || 'Isi instruksi pembayaran di sini';
     form.biaya = props.sertification.biaya;
     form.deadline_bayar = props.sertification.deadline_bayar;
-    form.is_published = props.sertification.payment_instruction?.published_at ? true : false;
     form.send_notification = !props.sertification.payment_instruction;
     isEditing.value = true;
 };
@@ -129,7 +126,8 @@ const formatDateTime = (dateString) => {
                 <AddButton class="self-end" @click="edit">Buat Instruksi</AddButton>
                 <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                        Asesor belum memberikan instruksi pembayaran, buat instruksi pembayaran agar asesi bisa mengumpulkan
+                        Asesor belum memberikan instruksi pembayaran, buat instruksi pembayaran agar asesi bisa
+                        mengumpulkan
                         bukti pembayarannya
                     </p>
                 </div>
@@ -152,24 +150,14 @@ const formatDateTime = (dateString) => {
                                 }}
                             </h5>
                             <div class="text-xs text-gray-400">
-                                {{ formatDate(sertification.payment_instruction.content_created_at) }}
-                                <span v-if="sertification.payment_instruction.revised_at">(Diedit)</span>
+                                {{ formatDate(sertification.payment_instruction.created_at) }}
+                                <span
+                                    v-if="sertification.payment_instruction.created_at !== sertification.payment_instruction.updated_at">(Diedit)</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
-                        <span v-if="sertification.payment_instruction?.published_at"
-                            class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300">
-                            Dipublikasikan
-                        </span>
-                        <span v-else
-                            class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-300">
-                            Draft
-                        </span>
-                        <EditButton @click="edit">Edit</EditButton>
-
-                    </div>
+                    <EditButton @click="edit">Edit</EditButton>
                 </div>
 
                 <div class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-2 whitespace-pre-wrap">
@@ -223,19 +211,6 @@ const formatDateTime = (dateString) => {
                     <DateInput v-model="form.deadline_bayar" required />
                     <InputError :message="form.errors.deadline_bayar" />
                 </div>
-                <div>
-                    <div class="flex items-center justify-between">
-                        <InputLabel for="is_published" value="Publikasikan Instruksi?" />
-                        <div class="flex items-center gap-2">
-                            <span v-if="props.sertification.asesmen?.published_at" class="text-xs text-gray-500 italic">
-                                (Terkunci: Sudah dipublikasikan)
-                            </span>
-                            <ToggleSwitch id="is_published" v-model="form.is_published"
-                                :disabled="!!sertification.payment_instruction?.published_at" />
-                        </div>
-                    </div>
-                    <InputError :message="form.errors.is_published" />
-                </div>
                 <div class="flex items-center justify-between">
                     <div class="flex gap-2 items-center">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
@@ -257,7 +232,7 @@ const formatDateTime = (dateString) => {
                 </div>
             </form>
         </div>
-        <!-- Preview Modal -->
+
         <Modal :show="isPreviewing" @close="isPreviewing = false">
             <div class="p-6 bg-white dark:bg-gray-800">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Preview Instruksi Pembayaran</h2>

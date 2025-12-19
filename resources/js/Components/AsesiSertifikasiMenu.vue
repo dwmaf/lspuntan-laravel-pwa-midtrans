@@ -16,8 +16,8 @@ const props = defineProps({
 });
 
 const isDetailEnabled = !!props.asesi;
-const isPembayaranEnabled = props.asesi && (props.asesi.status === 'dilanjutkan_asesmen' || props.asesi.status === 'lulus_sertifikasi');
-const isPengumumanEnabled = props.asesi && (props.asesi.status === 'dilanjutkan_asesmen' || props.asesi.status === 'lulus_sertifikasi');
+const isPembayaranEnabled = !!props.asesi;
+const isPengumumanEnabled = !!props.asesi;
 const isAsesmenEnabled = props.asesi &&
     props.latestTransaction &&
     props.latestTransaction.status === 'bukti_pembayaran_terverifikasi' &&

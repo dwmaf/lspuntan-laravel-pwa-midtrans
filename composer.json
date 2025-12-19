@@ -57,7 +57,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "set FORCE_COLOR=1 && npx concurrently -c \"cyan,yellow\" \"php artisan serve --ansi\" \"pnpm run dev\" --names=server,vite"
+            "set FORCE_COLOR=1 && npx concurrently -c \"cyan,yellow\" \"php artisan serve --ansi\" \"pnpm run dev\" --names=server,vite --success first"
         ]
     },
     "extra": {

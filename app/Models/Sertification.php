@@ -46,17 +46,17 @@ class Sertification extends Model
     protected static function booted(): void
     {
         static::deleting(function (Sertification $sertification) {
-            if($sertification->asesmen){
-                foreach ($sertification->asesmen->asesmenfiles as $file) {
-                    if ($file->path_file) {
-                        Storage::disk('public')->delete($file->path_file);
-                    }
-                    $file->delete();
-                }
+            if($sertification->asesmen){ 
+                $sertification->asesmen->delete();
             }
-
+            if($sertification->paymentInstruction){
+                $sertification->paymentInstruction->delete();
+            }
             foreach ($sertification->news as $pengumuman) {
                 $pengumuman->delete();
+            }
+            foreach ($sertification->asesis as $asesi) {
+                $asesi->delete();
             }
         });
     }

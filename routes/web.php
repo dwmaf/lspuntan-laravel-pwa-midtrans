@@ -22,6 +22,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OfflineController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CertificateVerificationController;
+use App\Http\Controllers\FilePondTestController;
 use App\Models\Sertification;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\RoleMiddleware;
@@ -183,4 +184,10 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
 // Route untuk menerima notifikasi (webhook) dari Midtrans.
 // Route ini harus di luar middleware 'auth' karena diakses oleh server Midtrans.
 // Route::post('/midtrans/webhook', [PaymentController::class, 'handleWebhook'])->name('midtrans.webhook');
+
+Route::resource('filepond-test', FilePondTestController::class);
+Route::post('/filepond/process', [FilePondTestController::class, 'processFile'])->name('filepond.process');
+Route::get('/filepond/load', [FilePondTestController::class, 'loadFile'])->name('filepond.load');
+Route::delete('/filepond/revert', [FilePondTestController::class, 'revertFile'])->name('filepond.revert');
+
 require __DIR__ . '/auth.php';

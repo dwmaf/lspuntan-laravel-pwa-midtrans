@@ -1,12 +1,12 @@
 <script setup>
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import SecondaryButton from "@/Components/SecondaryButton.vue";
-import TextInput from '@/Components/TextInput.vue';
-import EditButton from "@/Components/EditButton.vue";
+import InputError from '@/Components/Input/InputError.vue';
+import InputLabel from '@/Components/Input/InputLabel.vue';
+import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import TextInput from '@/Components/Input/TextInput.vue';
+import EditButton from "@/Components/Button/EditButton.vue";
 import SingleFileInput from '@/Components/SingleFileInput.vue';
-import DateInput from '@/Components/DateInput.vue';
+import DateInput from '@/Components/Input/DateInput.vue';
 import FileIcon from '@/Components/FileIcon.vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -154,7 +154,7 @@ const submit = () => {
                 <div>
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Nama Lengkap</dt>
                     <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ user?.name || 'Belum diisi'
-                    }}</dd>
+                        }}</dd>
                 </div>
                 <div>
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">No. KTP</dt>

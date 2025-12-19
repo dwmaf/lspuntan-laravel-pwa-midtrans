@@ -2,15 +2,15 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
-import InputError from "@/Components/InputError.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import SecondaryButton from "@/Components/SecondaryButton.vue";
-import EditButton from "@/Components/EditButton.vue";
-import DeleteButton from "@/Components/DeleteButton.vue";
-import TextInput from "@/Components/TextInput.vue";
-import NumberInput from "@/Components/NumberInput.vue";
-import DateInput from "@/Components/DateInput.vue";
+import InputError from "@/Components/Input/InputError.vue";
+import InputLabel from "@/Components/Input/InputLabel.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import EditButton from "@/Components/Button/EditButton.vue";
+import DeleteButton from "@/Components/Button/DeleteButton.vue";
+import TextInput from "@/Components/Input/TextInput.vue";
+import NumberInput from "@/Components/Input/NumberInput.vue";
+import DateInput from "@/Components/Input/DateInput.vue";
 import Multiselect from 'vue-multiselect';
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed, watch, nextTick } from "vue";
@@ -107,7 +107,7 @@ const submit = () => {
     );
 };
 const destroy = () => {
-    if (confirm('Apakah Anda yakin ingin menghapus data sertifikasi ini? Ini tidak akan menghapus skema atau asesor terkait, hanya jadwal sertifikasi ini.')) {
+    if (confirm('Apakah Anda yakin ingin menghapus data sertifikasi ini?Ini akan menghapus semua data asesi yang mendaftar ke jadwal sertifikasi ini. Ini tidak akan menghapus skema atau asesor terkait')) {
         router.delete(route('admin.kelolasertifikasi.destroy', props.sertification.id));
     }
 };
@@ -125,7 +125,7 @@ const formattedHarga = computed(() => {
 </script>
 <template>
     <AdminLayout>
-        <CustomHeader judul="Detail Sertifikasi"/>
+        <CustomHeader judul="Detail Sertifikasi" />
 
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
         <div class="max-w-7xl mx-auto">

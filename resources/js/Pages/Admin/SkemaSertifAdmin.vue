@@ -1,15 +1,15 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
-import InputError from "@/Components/InputError.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import SecondaryButton from "@/Components/SecondaryButton.vue";
-import TextInput from "@/Components/TextInput.vue";
-import SingleFileInput from "../../Components/SingleFileInput.vue";
-import AddButton from "@/Components/AddButton.vue";
-import EditButton from "@/Components/EditButton.vue";
-import DeleteButton from "@/Components/DeleteButton.vue";
+import InputError from "@/Components/Input/InputError.vue";
+import InputLabel from "@/Components/Input/InputLabel.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import TextInput from "@/Components/Input/TextInput.vue";
+import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
+import AddButton from "@/Components/Button/AddButton.vue";
+import EditButton from "@/Components/Button/EditButton.vue";
+import DeleteButton from "@/Components/Button/DeleteButton.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
 
@@ -58,7 +58,7 @@ const save = () => {
     const options = {
         // Setelah sukses, muat ulang props dari server (termasuk 'skemas')
         // tapi pertahankan state lokal komponen (seperti 'formMode').
-        preserveState: true, 
+        preserveState: true,
         onSuccess: () => backToList(),
     };
     if (formMode.value === 'create') {
@@ -86,8 +86,8 @@ const destroy = (id) => {
 
 <template>
     <AdminLayout>
-        
-        <CustomHeader judul="Manajemen Skema Sertifikasi"/>
+
+        <CustomHeader judul="Manajemen Skema Sertifikasi" />
 
         <!-- Form Tambah -->
         <div v-if="formMode === 'create'" class="p-4 sm:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -101,13 +101,11 @@ const destroy = (id) => {
                     <InputError :message="form.errors.nama_skema" />
                 </div>
                 <SingleFileInput v-model="form.format_apl_1" v-model:deleteList="form.delete_files"
-                    delete-identifier="format_apl_1" label="Format APL.01"
-                     accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
+                    delete-identifier="format_apl_1" label="Format APL.01" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
                     :error="form.errors.format_apl_1" />
                 <SingleFileInput v-model="form.format_apl_2" v-model:deleteList="form.delete_files"
-                    delete-identifier="format_apl_2" label="Format APL.02"
-                     accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
-                    :error="form.errors.format_apl_2"/>
+                    delete-identifier="format_apl_2" label="Format APL.02" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
+                    :error="form.errors.format_apl_2" />
                 <div class="flex items-center gap-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                     </PrimaryButton>
@@ -125,11 +123,13 @@ const destroy = (id) => {
                     <TextInput v-model="form.nama_skema" type="text" required />
                     <InputError :message="form.errors.nama_skema" />
                 </div>
-                <SingleFileInput v-model="form.format_apl_1" label="Format APL.01" v-model:deleteList="form.delete_files" delete-identifier="format_apl_1"
+                <SingleFileInput v-model="form.format_apl_1" label="Format APL.01"
+                    v-model:deleteList="form.delete_files" delete-identifier="format_apl_1"
                     :existing-file-url="props.skemas.find(s => s.id === form.id)?.format_apl_1 ? `/storage/${props.skemas.find(s => s.id === form.id)?.format_apl_1}` : null"
                     :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".pdf,.doc,.docx"
                     :error="form.errors.format_apl_1" />
-                <SingleFileInput v-model="form.format_apl_2" label="Format APL.02" v-model:deleteList="form.delete_files" delete-identifier="format_apl_2"
+                <SingleFileInput v-model="form.format_apl_2" label="Format APL.02"
+                    v-model:deleteList="form.delete_files" delete-identifier="format_apl_2"
                     :existing-file-url="props.skemas.find(s => s.id === form.id)?.format_apl_2 ? `/storage/${props.skemas.find(s => s.id === form.id)?.format_apl_2}` : null"
                     :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".pdf,.doc,.docx"
                     :error="form.errors.format_apl_2" />

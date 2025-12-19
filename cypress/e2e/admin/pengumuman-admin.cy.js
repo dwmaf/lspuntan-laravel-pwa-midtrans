@@ -7,7 +7,7 @@ describe('Manajemen Pengumuman Sertifikasi', () => {
     cy.visit(`/admin/sertifikasi/${sertificationId}/announcement/index`);
   });
 
-  
+
   it('Harus bisa menguggah semua jenis file yg diizinkan', () => {
     const initialContent = `Pengumuman dibuat oleh Cypress pada ${new Date().toLocaleString()}.`;
     const updatedContent = `Pengumuman ini telah di-update oleh Cypress pada ${new Date().toLocaleString()}.`;
@@ -20,7 +20,10 @@ describe('Manajemen Pengumuman Sertifikasi', () => {
     cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-doc.doc');
     cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-pptx.pptx');
     cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-ppt.ppt');
-    
+    cy.contains('button', 'Preview').click();
+    cy.contains('h2', 'Preview Pengumuman').should('be.visible');
+    cy.contains('div', initialContent).should('be.visible');
+    cy.contains('button', 'Tutup Preview').click();
     cy.contains('button', 'Simpan').click();
     cy.contains('h6', initialContent).should('be.visible');
     cy.contains('a', 'dummy-pdf').should('be.visible');
@@ -53,6 +56,10 @@ describe('Manajemen Pengumuman Sertifikasi', () => {
     cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-xlsx.xlsx');
     cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-jpg.jpg');
     cy.get('input[type="file"]').selectFile('cypress/fixtures/dummy-png.png');
+    cy.contains('button', 'Preview').click();
+    cy.contains('h2', 'Preview Pengumuman').should('be.visible');
+    cy.contains('div', updatedContent).should('be.visible');
+    cy.contains('button', 'Tutup Preview').click();
     cy.contains('button', 'Update').click();
     cy.contains('h6', initialContent).should('not.exist');
     cy.contains('div.py-3', updatedContent).should('be.visible').within(() => {
@@ -76,5 +83,5 @@ describe('Manajemen Pengumuman Sertifikasi', () => {
     cy.contains('Berhasil menghapus pengumuman').should('be.visible');
   });
 
-  
+
 });

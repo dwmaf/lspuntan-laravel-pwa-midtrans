@@ -91,7 +91,7 @@ class KelolaSertifikasiController extends Controller
                 $this->sendMulticastNotification($messaging, $recipients, $title, $body, $url, 'SertifikasiBaru');
             }
         }
-        return redirect()->back()->with('message', 'Sertifikasi berhasil dimulai!');
+        return redirect(route('admin.kelolasertifikasi.show', $sertification->id))->with('message', 'Sertifikasi berhasil dimulai!');
     }
 
     public function show($sert_id)
@@ -143,7 +143,7 @@ class KelolaSertifikasiController extends Controller
     public function destroy($sert_id)
     {
         Sertification::destroy($sert_id);
-        return to_route('admin.kelolasertifikasi.index')->with('message', 'Sertifikasi berhasil dihapus');
+        return redirect(route('admin.kelolasertifikasi.index'))->with('message', 'Sertifikasi berhasil dihapus');
     }
 
 
