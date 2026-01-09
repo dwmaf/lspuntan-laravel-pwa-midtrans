@@ -2,7 +2,7 @@
 <script setup>
 import AsesiLayout from '@/Layouts/AsesiLayout.vue';
 import FCMPermission from '@/Components/FCMPermission.vue';
-import Header from '@/Components/CustomHeader.vue';
+import CustomHeader from '@/Components/CustomHeader.vue';
 import UpdatePassword from './Partials/UpdatePassword.vue';
 import UpdateProfileAsesi from './Partials/UpdateProfileAsesi.vue';
 import { usePage } from '@inertiajs/vue3';
@@ -22,7 +22,7 @@ const props = defineProps({
 
 <template>
     <AsesiLayout>
-        <Header judul="Profil"/>
+        <CustomHeader judul="Profil"/>
         <div class="flex flex-col gap-4">
             <div class="bg-white p-4 rounded-lg dark:bg-gray-800">
                 <UpdateProfileAsesi

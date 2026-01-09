@@ -24,12 +24,12 @@ const menuItems = computed(() => [
         active: route().current('admin.kelolasertifikasi.show'),
         icon: IconInfoCircle,
     },
-    {
-        label: 'Pembayaran',
-        href: route('admin.sertifikasi.payment-desc.index', props.sertificationId),
-        active: route().current('admin.sertifikasi.payment-desc.index'),
-        icon: IconReceipt,
-    },
+    // {
+    //     label: 'Pembayaran',
+    //     href: route('admin.sertifikasi.payment-desc.index', props.sertificationId),
+    //     active: route().current('admin.sertifikasi.payment-desc.index'),
+    //     icon: IconReceipt,
+    // },
     {
         label: 'Pengumuman',
         href: route('admin.sertifikasi.assessment-announcement.index', props.sertificationId),

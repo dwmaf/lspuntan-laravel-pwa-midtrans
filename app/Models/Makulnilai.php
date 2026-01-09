@@ -12,6 +12,6 @@ class Makulnilai extends Model
     
     public function asesi()
     {
-        return $this->belongsTo(Student::class);
+        return $this->belongsTo(Asesi::class);
     }
 }

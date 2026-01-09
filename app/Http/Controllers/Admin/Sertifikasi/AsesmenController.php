@@ -17,22 +17,17 @@ use App\Enums\TransactionStatus;
 class AsesmenController extends Controller
 {
     use SendsPushNotifications;
-    public function edit($id, Request $request)
+    public function edit(Sertification $sertification, Request $request)
     {
         // dd($id);
-        $sertification = Sertification::with([
-            'asesis.transaction',
+        $sertification->load([
             'asesis.student.user',
             'asesis.asesiasesmenfiles',
             'asesmen.asesmenfiles'
-        ])->findOrFail($id);
+        ]);
 
-        $filteredAsesi = $sertification->asesis->filter(function ($asesi) {
-            $latestTransaction = $asesi->transaction->sortByDesc('created_at')->first();
-            return $asesi->status === AsesiStatus::DILANJUTKAN_ASESMEN
-                && $latestTransaction
-                && $latestTransaction->status === TransactionStatus::BUKTI_PEMBAYARAN_TERVERIFIKASI;
-        })->values();
+        $filteredAsesi = $sertification->asesis->where('status_akses_asesmen','diberikan')->values();
+        // dd($filteredAsesi);
 
         return Inertia::render('Admin/AsesmenAdmin', [
             'sertification' => $sertification,
@@ -41,7 +36,7 @@ class AsesmenController extends Controller
         ]);
     }
 
-    public function update_tugas_asesmen($sert_id, Request $request, Messaging $messaging)
+    public function update_tugas_asesmen(Sertification $sertification, Request $request, Messaging $messaging)
     {
         // dd($request);
         $validatedData = $request->validate([
@@ -53,7 +48,8 @@ class AsesmenController extends Controller
             'delete_files_collection.*' => 'integer|exists:asesmenfiles,id',
             'send_notification' => 'boolean',
         ]);
-        $sertification = Sertification::with('skema')->findOrFail($sert_id);
+        
+        $sertification->load('skema');
         $asesmen = $sertification->asesmen()->firstOrNew([]);
         $asesmen->fill([
             'content' => $validatedData['content'],
@@ -66,15 +62,15 @@ class AsesmenController extends Controller
         FileHelper::handleCollectionFileUploads(Asesmenfile::class, 'asesmen_id', $asesmen->id, $request, ['newFiles'], 'sert_files');
         if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
-                ->where('sertification_id', $sert_id)
-                ->where('status', 'dilanjutkan_asesmen')
+                ->where('sertification_id', $sertification->id)
+                ->where('status_akses_asesmen', 'diberikan')
                 ->get();
             if ($asesis->isNotEmpty()) {
                 $title = 'Update Tugas Asesmen';
                 $body = 'Instruksi Tugas asesmen diperbaharui untuk sertifikasi ' . $sertification->skema->nama_skema;
                 foreach ($asesis as $asesi) {
                     $user = $asesi->student->user ?? null;
-                    $url = route('asesi.assessmen.index', ['sert_id' => $sertification->id, 'asesi_id' => $asesi->id]);
+                    $url = route('asesi.assessmen.index', [$sertification, $asesi]);
                     $this->sendPushNotification($messaging, $user, $title, $body, $url, 'TugasAsesmenBaru');
                 }
             }
@@ -83,9 +79,8 @@ class AsesmenController extends Controller
         return redirect()->back()->with('message', 'Data berhasil disimpan!');
     }
 
-    public function destroy($sert_id)
+    public function destroy(Sertification $sertification)
     {
-        $sertification = Sertification::findOrFail($sert_id);
         if ($sertification->asesmen) {
             $sertification->asesmen->delete();
         }

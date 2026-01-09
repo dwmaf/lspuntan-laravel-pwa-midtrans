@@ -8,7 +8,7 @@ import { route } from 'ziggy-js';
 const props = defineProps({
     sertifikasiBerlangsung: Array,
     sertifikasiSelesai: Array,
-    pendingPayments: Array,
+    
     user: Object,
     student: Object
 });
@@ -40,15 +40,15 @@ const props = defineProps({
                 <Activity class="w-8 h-8 text-green-600" />
             </div>
 
-            <!-- Pending Payments -->
-            <div
+            
+            <!-- <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
                 <div>
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pembayaran Pending</h3>
-                    <p class="mt-1 text-3xl font-semibold text-yellow-600">{{ pendingPayments.length }}</p>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">something else</h3>
+                    <p class="mt-1 text-3xl font-semibold text-yellow-600"></p>
                 </div>
                 <Wallet class="w-8 h-8 text-yellow-600" />
-            </div>
+            </div> -->
         </div>
 
         <!-- Content Grid -->
@@ -101,7 +101,6 @@ const props = defineProps({
                     <ul class="list-disc list-inside text-sm text-blue-700 dark:text-blue-400 space-y-1">
                         <li>Pastikan profil Anda sudah lengkap.</li>
                         <li>Cek notifikasi secara berkala untuk update terbaru.</li>
-                        <li>Segera selesaikan pembayaran jika ada tagihan pending.</li>
                     </ul>
                 </div>
             </div>

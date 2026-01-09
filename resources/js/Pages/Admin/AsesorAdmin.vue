@@ -1,8 +1,6 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import InputError from "@/Components/Input/InputError.vue";
 import Modal from "@/Components/Modal.vue";
-import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
@@ -13,6 +11,7 @@ import DeleteButton from "@/Components/Button/DeleteButton.vue";
 import CustomHeader from "@/Components/CustomHeader.vue";
 import Pagination from "@/Components/Pagination.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
+import Multiselect from "@/Components/Input/MultiSelect.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed, onMounted, onUnmounted, reactive, watch } from "vue";
 import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
@@ -24,6 +23,8 @@ const props = defineProps({
 });
 const filtersForm = reactive({
     skema: props.filters.skema || '',
+    trashed: props.filters.trashed || '',
+    search: props.filters.search || '',
 });
 const hasActiveFilters = computed(() => {
     const { search, ...advancedFilters } = filtersForm;
@@ -52,6 +53,16 @@ const skemaOptions = computed(() =>
     [{ value: '', text: 'Semua' }, ...props.skemas.map(skema => ({ value: skema.id, text: skema.nama_skema }))]
 );
 
+const skemaMultiselectOptions = computed(() =>
+    props.skemas.map(skema => ({ id: skema.id, name: skema.nama_skema }))
+);
+
+const trashedOptions = [
+    { value: '', text: 'Hanya Aktif' },
+    { value: 'with', text: 'Semua (Termasuk Sampah)' },
+    { value: 'only', text: 'Hanya Sampah' },
+];
+
 const applyFilters = () => {
     router.get(route('admin.asesor.index'), filtersForm, {
         preserveState: true,
@@ -61,6 +72,8 @@ const applyFilters = () => {
 };
 const resetFilters = () => {
     filtersForm.skema = '';
+    filtersForm.trashed = '';
+    filtersForm.search = '';
     applyFilters();
 };
 const formMode = ref('list');
@@ -127,6 +140,12 @@ const destroy = (id) => {
     }
 };
 
+const restore = (id) => {
+    if (confirm('Apakah Anda yakin ingin memulihkan asesor ini?')) {
+        router.patch(route('admin.asesor.restore', id));
+    }
+};
+
 </script>
 
 <template>
@@ -138,65 +157,22 @@ const destroy = (id) => {
                 {{ formMode === 'create' ? 'Tambah Asesor' : 'Edit Asesor' }}
             </h2>
             <form @submit.prevent="save" class="mt-4 flex flex-col gap-4">
-                <div>
-                    <InputLabel value="Pilih Skema" required />
-                    <div class="relative" ref="skemaDropdownRef">
-                        <button type="button" @click="isSkemaDropdownOpen = !isSkemaDropdownOpen"
-                            class="p-2 text-sm font-medium rounded-md w-full text-left flex justify-between items-center mt-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
-                            <span>
-                                Pilih Skema
-                                <span v-if="form.selectedSkemas.length > 0" class="ml-1 text-xs text-gray-400">
-                                    ({{ form.selectedSkemas.length }} terpilih)
-                                </span>
-                            </span>
-                            <svg class="w-4 h-4 transform transition-transform"
-                                :class="{ 'rotate-180': isSkemaDropdownOpen }" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                        <div v-show="isSkemaDropdownOpen"
-                            class="absolute left-0 w-full rounded-b-md z-20 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 dark:text-white"
-                            style="display: none;">
-                            <div class="p-2 max-h-60 overflow-y-auto">
-                                <label v-for="skema in skemas" :key="skema.id"
-                                    class="flex items-center p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded cursor-pointer">
-                                    <input type="checkbox" :value="skema.id" v-model="form.selectedSkemas"
-                                        class="mr-2 rounded text-indigo-600 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">
-                                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ skema.nama_skema }}</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <InputError :message="form.errors.selectedSkemas" />
-                </div>
+                <Multiselect id="skema_ids" label="Pilih Skema" v-model="form.selectedSkemas"
+                    :options="skemaMultiselectOptions" :multiple="true" placeholder="Cari atau pilih skema"
+                    label-prop="name" value-prop="id" :error="form.errors.selectedSkemas" required />
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <InputLabel value="Nama Lengkap" required />
-                        <TextInput v-model="form.name" type="text" required />
-                        <InputError :message="form.errors.name" />
-                    </div>
-                    <div>
-                        <InputLabel value="Email" required />
-                        <TextInput v-model="form.email" type="email" required />
-                        <InputError :message="form.errors.email" />
-                    </div>
-                    <div>
-                        <InputLabel value="Masa Berlaku Sertifikat Teknis" required />
-                        <DateInput v-model="form.masa_berlaku_sertif_teknis" type="date" required />
-                        <InputError :message="form.errors.masa_berlaku_sertif_teknis" />
-                    </div>
-                    <div>
-                        <InputLabel value="Masa Berlaku Sertifikat Asesor" required />
-                        <DateInput v-model="form.masa_berlaku_sertif_asesor" type="date" required />
-                        <InputError :message="form.errors.masa_berlaku_sertif_asesor" />
-                    </div>
-                    <div>
-                        <InputLabel value="No. HP" />
-                        <TextInput v-model="form.no_tlp_hp" type="text" required />
-                        <InputError :message="form.errors.no_tlp_hp" />
-                    </div>
+                    <TextInput id="name" label="Nama Lengkap" v-model="form.name" type="text" required
+                        :error="form.errors.name" />
+                    <TextInput id="email" label="Email" v-model="form.email" type="email" required
+                        :error="form.errors.email" />
+                    <DateInput id="masa_berlaku_sertif_teknis" label="Masa Berlaku Sertifikat Teknis"
+                        v-model="form.masa_berlaku_sertif_teknis" type="date" required
+                        :error="form.errors.masa_berlaku_sertif_teknis" />
+                    <DateInput id="masa_berlaku_sertif_asesor" label="Masa Berlaku Sertifikat Asesor"
+                        v-model="form.masa_berlaku_sertif_asesor" type="date" required
+                        :error="form.errors.masa_berlaku_sertif_asesor" />
+                    <TextInput id="no_tlp_hp" label="No. HP/WA" v-model="form.no_tlp_hp" type="text" required
+                        :error="form.errors.no_tlp_hp" />
                 </div>
                 <div class="flex items-center gap-4">
                     <PrimaryButton :disabled="form.processing">Simpan</PrimaryButton>
@@ -244,9 +220,10 @@ const destroy = (id) => {
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr v-for="(asesor, index) in asesors.data" :key="asesor.id">
-                                <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">{{ index + asesors.from
-                                    }}
+                            <tr v-for="(asesor, index) in asesors.data" :key="asesor.id"
+                                :class="{ 'bg-red-50 dark:bg-red-900/20': asesor.deleted_at }">
+                                <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                                    {{ index + asesors.from }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
                                     <div class="font-medium">{{ asesor.user.name }}</div>
@@ -263,7 +240,13 @@ const destroy = (id) => {
                                     <div class="font-medium">{{ asesor.sertifications_count }} kali</div>
                                 </td>
                                 <td class="px-4 py-2 text-center">
-                                    <div class="flex items-center justify-center space-x-2">
+                                    <div v-if="asesor.deleted_at" class="flex items-center justify-center space-x-2">
+                                        <SecondaryButton @click="restore(asesor.id)"
+                                            class="!bg-green-100 !text-green-800 border-green-300 hover:!bg-green-200">
+                                            Restore
+                                        </SecondaryButton>
+                                    </div>
+                                    <div v-else class="flex items-center justify-center space-x-2">
                                         <EditButton @click="showEditForm(asesor)">Edit</EditButton>
                                         <DeleteButton @click="destroy(asesor.id)">Hapus</DeleteButton>
                                     </div>
@@ -293,10 +276,9 @@ const destroy = (id) => {
             </button>
         </div>
         <div class="p-6 flex flex-col gap-4">
-            <div>
-                <InputLabel value="Skema" />
-                <SelectInput v-model="filtersForm.skema" :options="skemaOptions" />
-            </div>
+            <SelectInput id="skema-filter" label="Skema" v-model="filtersForm.skema" :options="skemaOptions" />
+            <SelectInput id="trashed-filter" label="Status Data" v-model="filtersForm.trashed"
+                :options="trashedOptions" />
             <div class="my-4 border-t border-gray-200 dark:border-gray-600"></div>
             <div class=" flex gap-3">
                 <SecondaryButton @click="resetFilters"> Reset </SecondaryButton>

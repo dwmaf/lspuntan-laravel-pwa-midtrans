@@ -19,7 +19,7 @@ class StudentFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'nik' => fake()->unique()->numerify('################'), // 16 digit NIK
+            'nik' => fake()->unique()->numerify('################'),
             'nim' => fake()->unique()->numerify('H10512####'),
             'tmpt_lhr' => fake()->city(),
             'tgl_lhr' => fake()->dateTimeBetween('-30 years', '-18 years')->format('Y-m-d'),

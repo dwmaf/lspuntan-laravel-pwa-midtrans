@@ -10,6 +10,7 @@ import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import AddButton from "@/Components/Button/AddButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
 import DeleteButton from "@/Components/Button/DeleteButton.vue";
+import Checkbox from "@/Components/Input/Checkbox.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed } from "vue";
 
@@ -20,12 +21,12 @@ const props = defineProps({
 
 const formMode = ref('list');
 const page = usePage();
-const notification = computed(() => page.props.flash?.message);
 
 
 const form = useForm({
     id: null,
     nama_skema: '',
+    is_active: true,
     format_apl_1: null,
     format_apl_2: null,
     delete_files: [],
@@ -35,6 +36,7 @@ const form = useForm({
 
 const showCreateForm = () => {
     form.reset();
+    form.is_active = true;
     form._method = 'POST';
     formMode.value = 'create';
 };
@@ -42,6 +44,7 @@ const showCreateForm = () => {
 const showEditForm = (skema) => {
     form.id = skema.id;
     form.nama_skema = skema.nama_skema;
+    form.is_active = Boolean(skema.is_active);
     form.format_apl_1 = null;
     form.format_apl_2 = null;
     formMode.value = 'edit';
@@ -74,14 +77,6 @@ const destroy = (id) => {
     }
 };
 
-// const removeFile = (fieldName) => {
-//     if (form[fieldName]) {
-//         form[fieldName] = null;
-//     }
-//     else if (props.skemas.find(s => s.id === form.id)[fieldName] && !form.delete_files.includes(fieldName)) {
-//         form.delete_files.push(fieldName);
-//     }
-// };
 </script>
 
 <template>
@@ -95,17 +90,18 @@ const destroy = (id) => {
                 Tambah Skema Sertifikasi
             </h2>
             <form @submit.prevent="save" class="mt-4 flex flex-col gap-4">
-                <div>
-                    <InputLabel value="Nama Skema" />
-                    <TextInput v-model="form.nama_skema" type="text" required />
-                    <InputError :message="form.errors.nama_skema" />
-                </div>
+                <TextInput id="nama_skema" label="Nama Skema" v-model="form.nama_skema" type="text" required
+                    :error="form.errors.nama_skema" />
                 <SingleFileInput v-model="form.format_apl_1" v-model:deleteList="form.delete_files"
                     delete-identifier="format_apl_1" label="Format APL.01" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
                     :error="form.errors.format_apl_1" />
                 <SingleFileInput v-model="form.format_apl_2" v-model:deleteList="form.delete_files"
                     delete-identifier="format_apl_2" label="Format APL.02" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
                     :error="form.errors.format_apl_2" />
+                <div class="flex items-center gap-2">
+                    <Checkbox id="is_active" v-model:checked="form.is_active" />
+                    <InputLabel for="is_active" value="Skema Aktif (Muncul saat pendaftaran sertifikasi baru)" />
+                </div>
                 <div class="flex items-center gap-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                     </PrimaryButton>
@@ -118,11 +114,8 @@ const destroy = (id) => {
                 Edit Skema Sertifikasi
             </h2>
             <form @submit.prevent="save" class="mt-4 flex flex-col gap-4">
-                <div>
-                    <InputLabel value="Nama Skema" />
-                    <TextInput v-model="form.nama_skema" type="text" required />
-                    <InputError :message="form.errors.nama_skema" />
-                </div>
+                <TextInput id="nama_skema" label="Nama Skema" v-model="form.nama_skema" type="text" required
+                    :error="form.errors.nama_skema" />
                 <SingleFileInput v-model="form.format_apl_1" label="Format APL.01"
                     v-model:deleteList="form.delete_files" delete-identifier="format_apl_1"
                     :existing-file-url="props.skemas.find(s => s.id === form.id)?.format_apl_1 ? `/storage/${props.skemas.find(s => s.id === form.id)?.format_apl_1}` : null"
@@ -133,6 +126,10 @@ const destroy = (id) => {
                     :existing-file-url="props.skemas.find(s => s.id === form.id)?.format_apl_2 ? `/storage/${props.skemas.find(s => s.id === form.id)?.format_apl_2}` : null"
                     :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".pdf,.doc,.docx"
                     :error="form.errors.format_apl_2" />
+                <div class="flex items-center gap-2">
+                    <Checkbox id="is_active" v-model:checked="form.is_active" />
+                    <InputLabel for="is_active" value="Skema Aktif (Muncul saat pendaftaran sertifikasi baru)" />
+                </div>
                 <div class="flex items-center gap-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                     </PrimaryButton>
@@ -161,6 +158,9 @@ const destroy = (id) => {
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Format File APL</th>
                             <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Status</th>
+                            <th
                                 class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Aksi</th>
                         </tr>
@@ -169,20 +169,26 @@ const destroy = (id) => {
                         <tr v-for="(skema, index) in skemas" :key="skema.id">
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {{
-                                    index + 1 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">{{
-                                skema.nama_skema
-                            }}</td>
+                                {{ index + 1 }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
+                                {{ skema.nama_skema }}
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
                                 <div class="flex flex-col">
                                     <a v-if="skema.format_apl_1" :href="`/storage/${skema.format_apl_1}`"
                                         target="_blank" class="text-blue-500 hover:text-blue-700">APL.01</a>
-                                    <p v-else class="text-gray-400">APL.01 belum ada</p>
+                                    <p v-else class="text-gray-400">Format APL.01 belum ada</p>
                                     <a v-if="skema.format_apl_2" :href="`/storage/${skema.format_apl_2}`"
                                         target="_blank" class="text-blue-500 hover:text-blue-700">APL.02</a>
-                                    <p v-else class="text-gray-400">APL.02 belum ada</p>
+                                    <p v-else class="text-gray-400">Format APL.02 belum ada</p>
                                 </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
+                                <span v-if="skema.is_active"
+                                    class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">Aktif</span>
+                                <span v-else
+                                    class="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-500 rounded-full">Non-Aktif</span>
                             </td>
                             <td class="px-4 py-2 text-center">
                                 <div class="flex items-center justify-center space-x-2">
@@ -192,9 +198,9 @@ const destroy = (id) => {
                             </td>
                         </tr>
                         <tr v-if="skemas.length === 0">
-                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">Belum
-                                ada
-                                skema sertifikasi.</td>
+                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                Belum ada skema sertifikasi.
+                            </td>
                         </tr>
                     </tbody>
                 </table>

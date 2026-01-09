@@ -14,14 +14,14 @@ use Kreait\Firebase\Contract\Messaging;
 class PembayaranController extends Controller
 {
     use SendsPushNotifications;
-    public function index_rincian_pembayaran($sert_id, Request $request)
+    public function index_rincian_pembayaran(Sertification $sertification, Request $request)
     {
         return Inertia::render('Admin/PembayaranAdmin', [
-            'sertification' => Sertification::with('paymentInstruction')->find($sert_id)
+            'sertification' => $sertification->load('paymentInstruction')
         ]);
     }
 
-    public function update_rincian_pembayaran($sert_id, Request $request, Messaging $messaging)
+    public function update_rincian_pembayaran(Sertification $sertification, Request $request, Messaging $messaging)
     {
         // dd($request);
         $validatedData = $request->validate([
@@ -31,7 +31,7 @@ class PembayaranController extends Controller
             'send_notification' => 'required|boolean'
         ]);
 
-        $sertification = Sertification::with('skema')->findOrFail($sert_id);
+        $sertification->load('skema');
         $instruction = $sertification->paymentInstruction()->firstOrNew([]);
         $sertification->fill([
             'deadline_bayar' => $validatedData['deadline_bayar'],
@@ -46,7 +46,7 @@ class PembayaranController extends Controller
         $sertification->save();
         if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
-                ->where('sertification_id', $sert_id)
+                ->where('sertification_id', $sertification->id)
                 ->where('status', 'dilanjutkan_asesmen')
                 ->get();
     
@@ -55,7 +55,7 @@ class PembayaranController extends Controller
                 $body = 'Rincian pembayaran diupdate untuk sertifikasi ' . $sertification->skema->nama_skema;
                 foreach ($asesis as $asesi) {
                     $user = $asesi->student->user ?? null;
-                    $url = route('asesi.payment.create', ['sert_id' => $sertification->id, 'asesi_id' => $asesi->id]);
+                    $url = route('asesi.payment.create', [$sertification, $asesi]);
                     $this->sendPushNotification($messaging, $user, $title, $body, $url, 'RincianPembayaranUpdated');
                 }
             }
@@ -63,9 +63,8 @@ class PembayaranController extends Controller
         return redirect()->back()->with('message', 'Rincian pembayaran berhasil disimpan!');
     }
 
-    public function destroy($sert_id)
+    public function destroy(Sertification $sertification)
     {
-        $sertification = Sertification::findOrFail($sert_id);
         if ($sertification->paymentInstruction) {
             $sertification->paymentInstruction->delete();
         }

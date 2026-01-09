@@ -24,41 +24,35 @@ use Kreait\Firebase\Exception\Messaging\NotFound;
 class AsesmenAsesiController extends Controller
 {
     use SendsPushNotifications;
-    public function index_asesmen_asesi($sert_id, $asesi_id, Request $request)
+    public function index(Sertification $sertification, Asesi $asesi, Request $request)
     {
         // dd($id);
         NotificationController::markAsRead($request);
-        $asesi = Asesi::with(['asesiasesmenfiles', 'transaction' => fn($q) => $q->latest()])->findOrFail($asesi_id);
-        $asesi->latest_transaction = $asesi->transaction->first();
+        $asesi->load(['asesiasesmenfiles']);
         return Inertia::render('Asesi/AsesmenAsesi', [
-            'sertification' => Sertification::with('asesmen.asesmenfiles')->findOrFail($sert_id), // Loaded asesmen instead of pembuatrinciantugasasesmen
+            'sertification' => $sertification->load('asesmen.asesmenfiles'), 
             'asesi' => $asesi
         ]);
     }
 
-    public function update_asesmen_asesi($sert_id, $asesi_id, Request $request, Messaging $messaging)
+    public function update(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
         // dd($request);
         $request->validate([
-            'newFiles' => 'nullable|array|max:5',
+            'newFiles' => 'nullable|array|max:10',
             'newFiles.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
             'delete_files' => 'nullable|array',
             'delete_files.*' => 'integer|exists:asesiasesmenfiles,id',
         ]);
         FileHelper::handleCollectionFileDeletes(Asesiasesmenfile::class, $request->input('delete_files', []));
-        FileHelper::handleCollectionFileUploads(Asesiasesmenfile::class, 'asesi_id', $asesi_id, $request, ['newFiles'], 'asesi_files');
-        $remainingFilesCount = Asesiasesmenfile::where('asesi_id', $asesi_id)->count();
+        FileHelper::handleCollectionFileUploads(Asesiasesmenfile::class, 'asesi_id', $asesi->id, $request, ['newFiles'], 'asesi_files');
+        $remainingFilesCount = Asesiasesmenfile::where('asesi_id', $asesi->id)->count();
         if ($remainingFilesCount === 0) {
             return redirect()->back()->withErrors(['newFiles' => 'Anda harus mengumpulkan setidaknya satu file.']);
         }
-        $asesi = Asesi::with('student.user')->findOrFail($asesi_id);
-        $sertification = Sertification::with(['asesors.user', 'skema', 'asesmen'])
-            ->findOrFail($sert_id);
-
-        // Validation: Check if Assessment is Published
-        if (!$sertification->asesmen || !$sertification->asesmen->published_at) {
-             return redirect()->back()->withErrors(['newFiles' => 'Tugas asesmen belum dipublikasikan atau ditarik kembali.']);
-        }
+        
+        $asesi->load('student.user');
+        $sertification->load(['asesors.user', 'skema', 'asesmen']);
 
         // Validation: Check Deadline
         if ($sertification->asesmen->deadline && now()->greaterThan($sertification->asesmen->deadline)) {
@@ -67,7 +61,7 @@ class AsesmenAsesiController extends Controller
         if ($sertification->asesors->isNotEmpty()) {
             $title = 'Tugas Asesmen Dikumpulkan';
             $body = $asesi->student->user->name . ' mengunggah tugas asesmen untuk sertifikasi ' . $sertification->skema->nama_skema;
-            $url = route('admin.sertifikasi.assessment.edit', [$sertification->id, 'asesi_id' => $asesi_id]);
+            $url = route('admin.sertifikasi.assessment.edit', [$sertification->id, 'asesi_id' => $asesi->id]);
             foreach ($sertification->asesors as $asesor) {
                 $this->sendPushNotification(
                     $messaging, $asesor->user, $title, $body, $url, 'TugasAsesmenDikumpulkan'

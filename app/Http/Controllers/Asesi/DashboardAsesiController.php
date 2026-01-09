@@ -19,12 +19,11 @@ class DashboardAsesiController extends Controller
              return Inertia::render('Asesi/DashboardAsesi', [
                 'sertifikasiBerlangsung' => [],
                 'sertifikasiSelesai' => [],
-                'pendingRegistrants' => [], // Reusing prop name from admin for consistency or clarity
-                'pendingPayments' => [],
+                'pendingRegistrants' => [],
             ]);
         }
 
-        $asesis = Asesi::with(['sertification.skema', 'sertification.asesors.user', 'transaction'])
+        $asesis = Asesi::with(['sertification.skema', 'sertification.asesors.user'])
             ->where('student_id', $student->id)
             ->get();
 
@@ -36,18 +35,12 @@ class DashboardAsesiController extends Controller
             return in_array($asesi->status, ['lulus', 'gagal']);
         })->values();
         
-        // Pending payments: Transactions where status is pending
-        // We can check the latest transaction for each asesi
-        $pendingPayments = $asesis->filter(function ($asesi) {
-             $latestTransaction = $asesi->transaction->sortByDesc('created_at')->first();
-             return $latestTransaction && $latestTransaction->status === 'pending';
-        })->values();
+        
 
 
         return Inertia::render('Asesi/DashboardAsesi', [
             'sertifikasiBerlangsung' => $sertifikasiBerlangsung,
             'sertifikasiSelesai' => $sertifikasiSelesai,
-            'pendingPayments' => $pendingPayments,
             'user' => $user,
             'student' => $student
         ]);

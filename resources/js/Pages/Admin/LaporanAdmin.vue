@@ -98,7 +98,7 @@ const props = defineProps({
                                         {{ asesi.student.nim || '-' }}
                                     </td>
                                     <td class="border border-gray-400 px-4 py-2 text-center font-bold">
-                                        {{ asesi.status === 'lulus_sertifikasi' ? 'Kompeten (K)' : 'Belum Kompeten (BK)' }}
+                                        {{ asesi.status_final === 'kompeten' ? 'Kompeten (K)' : 'Belum Kompeten (BK)' }}
                                     </td>
                                 </tr>
                                 <tr v-if="!props.sertification.asesis || props.sertification.asesis.length === 0">

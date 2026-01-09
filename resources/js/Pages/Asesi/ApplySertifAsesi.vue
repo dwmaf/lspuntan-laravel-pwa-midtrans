@@ -6,6 +6,7 @@ import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryLinkButton from "@/Components/SecondaryLinkButton.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
+import SelectInput from "@/Components/Input/SelectInput.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
 import { useForm, Link } from "@inertiajs/vue3";
@@ -17,6 +18,15 @@ const props = defineProps({
     user: Object,
 });
 
+const genderOptions = [
+    { value: 'Laki-laki', text: 'Laki-Laki' },
+    { value: 'Perempuan', text: 'Perempuan' },
+];
+
+const tujuanOptions = [
+    { value: 'Sertifikasi', text: 'Sertifikasi' },
+    { value: 'Lainnya', text: 'Lainnya' },
+];
 
 const form = useForm({
     sertification_id: props.sertification.id,
@@ -26,17 +36,18 @@ const form = useForm({
     tmpt_lhr: props.student?.tmpt_lhr,
     tgl_lhr: props.student?.tgl_lhr,
     kelamin: props.student?.kelamin || '',
-    kebangsaan: props.student?.kebangsaan,
+    kebangsaan: props.student?.kebangsaan || 'Indonesia',
     no_tlp_hp: props.user?.no_tlp_hp,
     no_tlp_rmh: props.student?.no_tlp_rmh,
     no_tlp_kntr: props.student?.no_tlp_kntr,
-    kualifikasi_pendidikan: props.student?.kualifikasi_pendidikan || 'Mahasiswa S1',
+    kualifikasi_pendidikan: props.student?.kualifikasi_pendidikan || 'SMA',
     nama_institusi: props.student?.nama_institusi,
     jabatan: props.student?.jabatan,
     alamat_kantor: props.student?.alamat_kantor,
     no_tlp_email_fax: props.student?.no_tlp_email_fax,
     tujuan_sert: '',
     makulNilais: [{ nama_makul: '', nilai_makul: '' }],
+    bukti_bayar: null,
     apl_1: null,
     apl_2: null,
     foto_ktp: null,
@@ -56,19 +67,21 @@ const addMakul = () => {
 const removeMakul = (index) => {
     form.makulNilais.splice(index, 1);
 };
-// const removeFile = (fieldName) => {
-//     if (form[fieldName]) {
-//         form[fieldName] = null;
-//     }
-//     else if (props.student[fieldName] && !form.delete_files.includes(fieldName)) {
-//         form.delete_files.push(fieldName);
-//     }
-// };
-
 const submit = () => {
-    form.post(route('asesi.sertifikasi.apply.store', { student_id: props.student.id }));
+    form.post(route('asesi.sertifikasi.apply.store', { student: props.student }));
 };
-
+const formatDateTime = (dateString) => {
+    if (!dateString) return "N/A";
+    const formatted = new Date(dateString).toLocaleString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    }).replace('pukul', ',').replace('.', ':');
+    return `${formatted} WIB`;
+};
 </script>
 
 <template>
@@ -85,99 +98,46 @@ const submit = () => {
                 <!-- Data Pribadi -->
                 <h3 class="dark:text-gray-300 font-semibold">A. Data Pribadi</h3>
                 <div class="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <InputLabel value="Nama Lengkap" required />
-                        <TextInput v-model="form.name" type="text" required />
-                        <InputError :message="form.errors.name" />
-                    </div>
-                    <div>
-                        <InputLabel value="No. KTP" required />
-                        <TextInput v-model="form.nik" type="text" required />
-                        <InputError :message="form.errors.nik" />
-                    </div>
-                    <div>
-                        <InputLabel value="Tempat Lahir" required />
-                        <TextInput v-model="form.tmpt_lhr" type="text" required />
-                        <InputError :message="form.errors.tmpt_lhr" />
-                    </div>
-                    <div>
-                        <InputLabel value="Tanggal Lahir" required />
-                        <TextInput v-model="form.tgl_lhr" type="date" required />
-                        <InputError :message="form.errors.tgl_lhr" />
-                    </div>
-                    <div>
-                        <InputLabel for="kelamin" value="Jenis Kelamin" required />
-                        <select id="kelamin" v-model="form.kelamin" required
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option value="" disabled>--Pilih Kelamin--</option>
-                            <option value="Laki-laki">Laki-Laki</option>
-                            <option value="Perempuan">Perempuan</option>
-                        </select>
-                        <InputError :message="form.errors.kelamin" />
-                    </div>
-                    <div>
-                        <InputLabel value="Kebangsaan" required />
-                        <TextInput v-model="form.kebangsaan" type="text" required />
-                        <InputError :message="form.errors.kebangsaan" />
-                    </div>
-                    <div>
-                        <InputLabel value="No. Tlp HP(WA)" required />
-                        <TextInput v-model="form.no_tlp_hp" type="text" required />
-                        <InputError :message="form.errors.no_tlp_hp" />
-                    </div>
-                    <div>
-                        <InputLabel value="No. Tlp Rumah" />
-                        <TextInput v-model="form.no_tlp_rmh" type="text" />
-                        <InputError :message="form.errors.no_tlp_rmh" />
-                    </div>
-                    <div>
-                        <InputLabel value="No. Tlp Kantor" />
-                        <TextInput v-model="form.no_tlp_kntr" type="text" />
-                        <InputError :message="form.errors.no_tlp_kntr" />
-                    </div>
-                    <div>
-                        <InputLabel value="Kualifikasi Pendidikan (tulis: Mahasiswa S1)" required />
-                        <TextInput v-model="form.kualifikasi_pendidikan" type="text" required />
-                        <InputError :message="form.errors.kualifikasi_pendidikan" />
-                    </div>
+                    <TextInput id="name" label="Nama Lengkap" v-model="form.name" type="text" required
+                        :error="form.errors.name" />
+                    <TextInput id="nik" label="No. KTP" v-model="form.nik" type="text" required
+                        :error="form.errors.nik" />
+                    <TextInput id="tmpt_lhr" label="Tempat Lahir" v-model="form.tmpt_lhr" type="text" required
+                        :error="form.errors.tmpt_lhr" />
+                    <TextInput id="tgl_lhr" label="Tanggal Lahir" v-model="form.tgl_lhr" type="date" required
+                        :error="form.errors.tgl_lhr" />
+                    <SelectInput id="kelamin" label="Jenis Kelamin" v-model="form.kelamin" :options="genderOptions"
+                        placeholder="--Pilih Kelamin--" :error="form.errors.kelamin" required />
+                    <TextInput id="kebangsaan" label="Kebangsaan" v-model="form.kebangsaan" type="text" required
+                        :error="form.errors.kebangsaan" />
+                    <TextInput id="no_tlp_hp" label="No. Tlp HP(WA)" v-model="form.no_tlp_hp" type="text" required
+                        :error="form.errors.no_tlp_hp" />
+                    <TextInput id="no_tlp_rmh" label="No. Tlp Rumah" v-model="form.no_tlp_rmh" type="text"
+                        :error="form.errors.no_tlp_rmh" />
+                    <TextInput id="no_tlp_kntr" label="No. Tlp Kantor" v-model="form.no_tlp_kntr" type="text"
+                        :error="form.errors.no_tlp_kntr" />
+                    <TextInput id="kualifikasi_pendidikan" label="Kualifikasi Pendidikan Terakhir"
+                        v-model="form.kualifikasi_pendidikan" type="text" required
+                        :error="form.errors.kualifikasi_pendidikan" />
                 </div>
 
                 <h3 class="dark:text-gray-300 font-semibold pt-4">B. Data Pekerjaan Sekarang</h3>
                 <div class="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <InputLabel value="Nama Institusi/Perusahaan" />
-                        <TextInput v-model="form.nama_institusi" type="text" />
-                        <InputError :message="form.errors.nama_institusi" />
-                    </div>
-                    <div>
-                        <InputLabel value="Jabatan" />
-                        <TextInput v-model="form.jabatan" type="text" />
-                        <InputError :message="form.errors.jabatan" />
-                    </div>
-                    <div>
-                        <InputLabel value="Alamat Kantor" />
-                        <TextInput v-model="form.alamat_kantor" type="text" />
-                        <InputError :message="form.errors.alamat_kantor" />
-                    </div>
-                    <div>
-                        <InputLabel value="No. Tlp/Email/Fax" />
-                        <TextInput v-model="form.no_tlp_email_fax" type="text" />
-                        <InputError :message="form.errors.no_tlp_email_fax" />
-                    </div>
+                    <TextInput id="nama_institusi" label="Nama Institusi/Perusahaan" v-model="form.nama_institusi"
+                        type="text" :error="form.errors.nama_institusi" />
+                    <TextInput id="jabatan" label="Jabatan" v-model="form.jabatan" type="text"
+                        :error="form.errors.jabatan" />
+                    <TextInput id="alamat_kantor" label="Alamat Kantor" v-model="form.alamat_kantor" type="text"
+                        :error="form.errors.alamat_kantor" />
+                    <TextInput id="no_tlp_email_fax" label="No. Tlp/Email/Fax" v-model="form.no_tlp_email_fax"
+                        type="text" :error="form.errors.no_tlp_email_fax" />
                 </div>
 
                 <!-- Data Sertifikasi -->
                 <h3 class="dark:text-gray-300 font-semibold pt-4">C. Data Sertifikasi</h3>
-                <div>
-                    <InputLabel value="Tujuan Sertifikasi" required />
-                    <select v-model="form.tujuan_sert" required
-                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:border-indigo-600 focus:ring-indigo-600 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                        <option value="" disabled>--Pilih tujuan sertifikasi--</option>
-                        <option value="Sertifikasi">Sertifikasi</option>
-                        <option value="Lainnya">Lainnya</option>
-                    </select>
-                    <InputError :message="form.errors.tujuan_sert" />
-                </div>
+                <SelectInput id="tujuan_sert" label="Tujuan Sertifikasi" v-model="form.tujuan_sert"
+                    :options="tujuanOptions" placeholder="--Pilih tujuan sertifikasi--"
+                    :error="form.errors.tujuan_sert" required />
 
                 <div>
                     <InputLabel value="Mata Kuliah terkait Skema Sertifikasi dan Nilai" required />
@@ -226,6 +186,38 @@ const submit = () => {
 
                 <!-- Bukti Kelengkapan -->
                 <h3 class="dark:text-gray-300 font-semibold pt-4">D. Bukti Kelengkapan</h3>
+                <p class="text-sm text-gray-800 dark:text-gray-100">
+                    Silahkan lakukan pembayaran sebesar
+                    <span class="font-medium">
+                        Rp {{ new Intl.NumberFormat('id-ID').format(sertification.biaya) }}
+                    </span>
+                    ke nomor rekening
+                    <span class="font-medium">
+                        {{ sertification.no_rek }}
+                        {{ sertification.bank }}
+                    </span>
+                    an.
+                    <span class="font-medium">
+                        {{ sertification.atas_nama_rek }}.
+                    </span>
+                    Submit bukti pembayaran paling lambat
+                    <span class="font-medium">
+                        {{ formatDateTime(sertification.tgl_apply_ditutup) }}
+                    </span>
+                </p>
+                <div v-if="sertification.tgl_apply_ditutup">
+                    <div v-if="new Date() < new Date(sertification.tgl_apply_ditutup)">
+                        <SingleFileInput id="bukti_bayar" v-model="form.bukti_bayar" label="Bukti Pembayaran"
+                            is-label-required accept=".pdf,.doc,.docx" :error="form.errors.bukti_bayar"
+                            delete-identifier="bukti_bayar" required />
+                    </div>
+                    <div v-else
+                        class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 font-medium"
+                        role="alert">
+                        Batas waktu pendaftaran dan pembayaran telah habis. Silahkan hubungi admin untuk informasi lebih
+                        lanjut.
+                    </div>
+                </div>
                 <SingleFileInput v-model="form.apl_1" label="Form APL.01" is-label-required
                     :template-url="`/storage/${sertification.skema.format_apl_1}`" accept=".pdf,.doc,.docx"
                     :error="form.errors.apl_1" delete-identifier="apl_1" required />

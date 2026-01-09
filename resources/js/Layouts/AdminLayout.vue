@@ -1,6 +1,6 @@
 <script setup>
-import Navigation from "../Components/Navigation.vue";
-import NotificationBell from "../Components/NotificationBell.vue";
+import Navigation from "@/Components/Navigation.vue";
+import NotificationBell from "@/Components/NotificationBell.vue";
 import { ref, computed, watch, onMounted } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import { UserCircle } from 'lucide-vue-next';
@@ -9,7 +9,7 @@ import {
 } from '@tabler/icons-vue';
 
 const page = usePage();
-const user = computed(() => page.props.auth.user);
+const user = computed(() => page.props?.auth?.user);
 const userInitials = computed(() => {
     if (user.value && user.value.name) {
         const parts = user.value.name.split(' ');
@@ -21,21 +21,34 @@ const userInitials = computed(() => {
     return null;
 });
 
-const notification = computed(() => page.props.flash?.message);
+const flashMessage = computed(() => page.props?.flash?.message);
+const flashError = computed(() => page.props?.flash?.error);
+
 const isNotificationVisible = ref(false);
+const notificationContent = ref('');
+const notificationType = ref('success'); // 'success','error'
 let notificationTimer = null;
 
-watch(notification, (newValue) => {
-    console.log('Flash message received:', newValue); 
-    console.log('Full flash props:', page.props.flash);
-    if (newValue) {
-        isNotificationVisible.value = true;
-        clearTimeout(notificationTimer);
-        notificationTimer = setTimeout(() => {
-            isNotificationVisible.value = false;
-        }, 3000);
-    }
-}, { immediate: true }); 
+const showNotification = (content, type) => {
+    if (!content) return;
+
+    notificationContent.value = content;
+    notificationType.value = type;
+    isNotificationVisible.value = true;
+
+    clearTimeout(notificationTimer);
+    notificationTimer = setTimeout(() => {
+        isNotificationVisible.value = false;
+    }, 4000);
+};
+
+watch(flashMessage, (newValue) => {
+    if (newValue) showNotification(newValue, 'success');
+}, { immediate: true });
+
+watch(flashError, (newValue) => {
+    if (newValue) showNotification(newValue, 'error');
+}, { immediate: true });
 const isSidebarOpen = ref(true);
 
 const toggleSidebar = () => {
@@ -55,9 +68,13 @@ onMounted(() => {
             enter-from-class="transform opacity-0 translate-x-full" enter-to-class="transform opacity-100 translate-x-0"
             leave-active-class="transition ease-in duration-300" leave-from-class="transform opacity-100 translate-x-0"
             leave-to-class="transform opacity-0 translate-x-full">
-            <div v-if="isNotificationVisible"
-                class="fixed top-20 right-4 text-sm px-4 py-2 rounded-lg shadow-lg bg-green-600 text-white z-50">
-                {{ notification }}
+            <div v-if="isNotificationVisible" :class="[
+                'fixed top-20 right-4 text-sm px-4 py-2 rounded-lg shadow-lg z-50 text-white font-medium flex items-center gap-2',
+                notificationType === 'success' ? 'bg-green-600' : 'bg-red-600'
+            ]">
+                <span v-if="notificationType === 'success'">✓</span>
+                <span v-else>✕</span>
+                {{ notificationContent }}
             </div>
         </Transition>
         <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 z-20 bg-black/50 md:hidden">

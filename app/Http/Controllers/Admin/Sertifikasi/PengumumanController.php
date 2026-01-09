@@ -23,16 +23,14 @@ class PengumumanController extends Controller
 {
     use SendsPushNotifications;
 
-    public function index_pengumuman_asesmen($sert_id, Request $request)
+    public function index_pengumuman_asesmen(Sertification $sertification, Request $request)
     {
-        $sertification = Sertification::findOrFail($sert_id);
-        $totalAsesis = Asesi::where('sertification_id', $sert_id)
-            ->where('status', 'dilanjutkan_asesmen')
+        $totalAsesis = Asesi::where('sertification_id', $sertification->id)
             ->count();
 
         return Inertia::render('Admin/PengumumanAdmin', [
             'pengumumans' => Inertia::scroll(
-                News::where('sertification_id', $sert_id)
+                News::where('sertification_id', $sertification->id)
                     ->with('user.asesor', 'newsfiles')
                     ->withCount('reads')
                     ->latest()
@@ -43,7 +41,7 @@ class PengumumanController extends Controller
         ]);
     }
 
-    public function store_pengumuman_asesmen($sert_id, Request $request, Messaging $messaging)
+    public function store_pengumuman_asesmen(Sertification $sertification, Request $request, Messaging $messaging)
     {
         // dd($request);
         $validatedData = $request->validate([
@@ -55,7 +53,7 @@ class PengumumanController extends Controller
         
         $newsParams = [
             'user_id' => $request->user()->id,
-            'sertification_id' => $sert_id,
+            'sertification_id' => $sertification->id,
             'content' => $validatedData['content'],
         ];
 
@@ -65,25 +63,24 @@ class PengumumanController extends Controller
         
         if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
-                ->where('sertification_id', $sert_id)
-                ->where('status', 'dilanjutkan_asesmen')
+                ->where('sertification_id', $sertification->id)
                 ->get();
             if ($asesis->isNotEmpty()) {
                 $title = 'Pengumuman Baru';
                 $body = 'Pengumuman baru: ' . Str::limit($news->content, 100);
                 foreach ($asesis as $asesi) {
                     $user = $asesi->student->user ?? null;
-                    $url = route('asesi.pengumuman.index', [$sert_id, $asesi->id, 'news_id' => $news->id]);
+                    $url = route('asesi.pengumuman.index', [$sertification, $asesi, 'news_id' => $news->id]);
                     $this->sendPushNotification($messaging, $user, $title, $body, $url, 'PengumumanBaru');
                 }
             }
         }
 
-        return redirect(route('admin.sertifikasi.assessment-announcement.index', $sert_id))->with('message', 'Berhasil membuat pengumuman');
+        return redirect(route('admin.sertifikasi.assessment-announcement.index', $sertification))->with('message', 'Berhasil membuat pengumuman');
     }
 
 
-    public function update_pengumuman_asesmen($sert_id, $peng_id, Request $request, Messaging $messaging)
+    public function update_pengumuman_asesmen(Sertification $sertification, News $news, Request $request, Messaging $messaging)
     {
         // dd($request);
         $request->validate([
@@ -96,7 +93,6 @@ class PengumumanController extends Controller
 
         ]);
 
-        $news = News::findOrFail($peng_id);
         $news->content = $request->content;
 
         $news->save();
@@ -105,7 +101,7 @@ class PengumumanController extends Controller
 
         if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
-                ->where('sertification_id', $sert_id)
+                ->where('sertification_id', $sertification->id)
                 ->where('status', 'dilanjutkan_asesmen')
                 ->get();
     
@@ -114,30 +110,29 @@ class PengumumanController extends Controller
                 $body = 'Pengumuman diperbarui: ' . Str::limit($news->content, 100);
                 foreach ($asesis as $asesi) {
                     $user = $asesi->student->user ?? null;
-                    $url = route('asesi.pengumuman.index', [$sert_id, $asesi->id, 'news_id' => $news->id]);
+                    $url = route('asesi.pengumuman.index', [$sertification, $asesi, 'news_id' => $news->id]);
                     $this->sendPushNotification($messaging, $user, $title, $body, $url, 'PengumumanUpdated');
                 }
             }
         }
 
-        return redirect(route('admin.sertifikasi.assessment-announcement.index', $sert_id))->with('message', 'Pengumuman berhasil diupdate');
+        return redirect(route('admin.sertifikasi.assessment-announcement.index', $sertification))->with('message', 'Pengumuman berhasil diupdate');
     }
 
-    public function destroy_pengumuman_asesmen($id, $peng_id, Request $request)
+    public function destroy_pengumuman_asesmen(Sertification $sertification, News $news, Request $request)
     {
-        $pengumuman = News::with('newsfiles')->findOrFail($peng_id);
-        $pengumuman->delete();
-        return redirect(route('admin.sertifikasi.assessment-announcement.index', $id))->with('message', 'Berhasil menghapus pengumuman');
+        $news->delete();
+        return redirect(route('admin.sertifikasi.assessment-announcement.index', $sertification))->with('message', 'Berhasil menghapus pengumuman');
     }
 
-    public function getReaders($sert_id, $news_id, Request $request)
+    public function getReaders(Sertification $sertification, News $news, Request $request)
     {
         $allAsesis = Asesi::with(['student.user'])
-            ->where('sertification_id', $sert_id)
+            ->where('sertification_id', $sertification->id)
             ->where('status', 'dilanjutkan_asesmen')
             ->get();
 
-        $newsReaders = NewsRead::where('news_id', $news_id)
+        $newsReaders = NewsRead::where('news_id', $news->id)
             ->pluck('read_at', 'user_id');
 
         $readersStatus = $allAsesis->map(function ($asesi) use ($newsReaders) {

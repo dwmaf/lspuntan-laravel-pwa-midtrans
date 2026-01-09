@@ -1,7 +1,7 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
-import InputError from "@/Components/Input/InputError.vue";
+import SertifikasiTable from '@/Components/SertifikasiTable.vue';
 import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import Pagination from "@/Components/Pagination.vue";
@@ -14,8 +14,7 @@ import NumberInput from "@/Components/Input/NumberInput.vue";
 import DateInput from "@/Components/Input/DateInput.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { ref, computed, watch, reactive } from "vue";
-import { MapPin, DollarSign, CalendarRange, BookOpen, FunnelIcon, X, Users } from "lucide-vue-next";
-import { IconChalkboardTeacher, IconPointFilled } from "@tabler/icons-vue";
+import { FunnelIcon, X } from "lucide-vue-next";
 import Multiselect from "@/Components/Input/MultiSelect.vue";
 
 const props = defineProps({
@@ -23,6 +22,7 @@ const props = defineProps({
     sertifications_selesai: Object,
     asesors: Array,
     skemas: Array,
+    activeSkemas: Array,
     filters: Object,
     errors: Object,
 });
@@ -50,6 +50,9 @@ const asesorOptions = computed(() =>
 const skemaOptions = computed(() =>
     props.skemas.map(skema => ({ value: skema.id, text: skema.nama_skema }))
 );
+const activeSkemaOptions = computed(() =>
+    props.activeSkemas.map(skema => ({ value: skema.id, text: skema.nama_skema }))
+);
 const tab = ref(props.filters.tab || "berlangsung");
 
 watch(tab, (value) => {
@@ -75,15 +78,20 @@ const form = useForm({
     asesor_ids: [],
     tgl_apply_dibuka: "",
     tgl_apply_ditutup: "",
-    deadline_bayar: "",
     tuk: "",
     biaya: "",
+    no_rek: "",
+    bank: "",
+    atas_nama_rek: "",
+    tgl_asesmen_mulai: "",
+    tgl_asesmen_selesai: "",
 });
 form.transform((data) => {
     return {
         ...data,
     };
 });
+
 const availableAsesors = computed(() => {
     if (!form.skema_id) {
         return [];
@@ -110,12 +118,7 @@ const formattedHarga = computed(() => {
         minimumFractionDigits: 0,
     }).format(number);
 });
-const formatDate = (dateString) => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    return new Intl.DateTimeFormat('id-ID', options).format(date);
-};
+
 const submit = () => {
     form.post(route("admin.kelolasertifikasi.store"), {
         onSuccess: () => form.reset(),
@@ -163,215 +166,85 @@ const submit = () => {
                     class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
             </div>
         </nav>
-        <hr class="border-gray-200 dark:border-gray-700 mb-2" />
+        <hr class="border-gray-200 dark:border-gray-700 mb-4" />
 
 
         <div>
             <div v-show="tab === 'berlangsung'">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div v-if="props.sertifications_berlangsung.length > 0"
-                        v-for="sert in props.sertifications_berlangsung" :key="sert.id"
-                        class="bg-white p-6 rounded-lg dark:bg-gray-800">
-                        <div class="flex items-center gap-2">
-                            <BookOpen class="shrink-0 text-gray-700 dark:text-gray-200" />
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">
-                                {{ sert.skema.nama_skema }}
-                            </h3>
-                        </div>
-                        <div v-for="(asesor, index) in sert.asesors" :key="asesor.id"
-                            class="flex items-center mt-4 gap-2">
-                            <IconChalkboardTeacher class="w-4 h-4 text-gray-700 dark:text-gray-200" />
-                            <p class=" text-gray-600 text-sm dark:text-gray-200">
-                                <span class="font-semibold">Asesor {{ index + 1 }} : {{ asesor.user.name }}</span>
-                            </p>
-                        </div>
-
-                        <div class="flex items-center mt-4 gap-2">
-                            <CalendarRange class="shrink-0 w-4 h-4 text-gray-700 dark:text-gray-200" />
-                            <p class=" text-gray-600 text-sm dark:text-gray-200">
-                                <span class="font-semibold">
-                                    Pendaftaran:
-                                </span>
-                                {{ formatDate(sert.tgl_apply_dibuka) }}
-                                &ndash;
-                                {{ formatDate(sert.tgl_apply_ditutup) }}
-                            </p>
-                        </div>
-                        <div class="flex items-center mt-4">
-                            <DollarSign class="w-4 h-4 text-gray-700 dark:text-gray-200" />
-                            <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">
-                                <span class="font-semibold">
-                                    Biaya: Rp
-                                </span>
-                                {{ new Intl.NumberFormat("id-ID").format(sert.biaya) }}
-                            </p>
-                        </div>
-                        <div class="flex items-center mt-4">
-                            <MapPin class="w-4 h-4 text-gray-700 dark:text-gray-200" />
-                            <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">
-                                <span class="font-semibold">
-                                    TUK:
-                                </span>
-                                {{ sert.tuk }}
-                            </p>
-                        </div>
-
-                        <div class="flex items-center mt-4">
-                            <div
-                                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
-                                <Users class="w-3.5 h-3.5" />
-                                <span class="text-xs font-semibold">{{ sert.asesis_count }} Asesi Terdaftar</span>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <PrimaryLinkButton :href="route(
-                                'admin.kelolasertifikasi.show',
-                                sert.id
-                            )
-                                ">Detail
-                            </PrimaryLinkButton>
-                        </div>
-                    </div>
-                    <p v-else class="text-gray-500 dark:text-gray-400 col-span-2">
-                        Tidak ada sertifikasi yang sedang berlangsung.
-                    </p>
-                </div>
+                <SertifikasiTable :sertifications="sertifications_berlangsung"
+                    empty-message="Tidak ada sertifikasi yang sedang berlangsung." />
             </div>
 
             <div v-show="tab === 'selesai'">
-                <div class="flex justify-end items-center gap-2 mb-4">
 
-                    <button data-cy="filter-trigger-button" @click="openFilterModal"
-                        class="relative mt-1 inline-flex items-center px-3 py-3 border border-gray-300 dark:border-gray-500 text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                        <FunnelIcon class="w-4 h-4" />
-                        <span v-if="hasActiveFilters"
-                            class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div v-for="sert in sertifications_selesai.data" :key="sert.id"
-                        class="bg-white p-6 rounded-lg dark:bg-gray-800">
-                        <div class="flex items-center gap-2">
-                            <BookOpen class="shrink-0 text-gray-700 dark:text-gray-200" />
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-200">
-                                {{ sert.skema.nama_skema }}
-                            </h3>
+                <SertifikasiTable :sertifications="sertifications_selesai.data"
+                    empty-message="Tidak ada riwayat sertifikasi untuk filter yang dipilih.">
+                    <template #filter>
+                        <div class="flex justify-end items-center gap-2 mb-4">
+                            <button data-cy="filter-trigger-button" @click="openFilterModal"
+                                class="relative mt-1 inline-flex items-center px-3 py-3 border border-gray-300 dark:border-gray-500 text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                                <FunnelIcon class="w-4 h-4" />
+                                <span v-if="hasActiveFilters"
+                                    class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
+                            </button>
                         </div>
-                        <div v-for="(asesor, index) in sert.asesors" :key="asesor.id"
-                            class="flex items-center mt-4 gap-2">
-                            <IconChalkboardTeacher class="w-4 h-4 text-gray-700 dark:text-gray-200" />
-                            <p class=" text-gray-600 text-sm dark:text-gray-200">
-                                <span class="font-semibold">Asesor {{ index + 1 }} : {{ asesor.user.name }}</span>
-                            </p>
+                    </template>
+                    <template #pagination>
+                        <div class="mt-4 flex justify-between items-center">
+                            <span v-if="sertifications_selesai.total > 0"
+                                class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
+                                Menampilkan {{ sertifications_selesai.from }} sampai {{ sertifications_selesai.to }}
+                                dari {{
+                                    sertifications_selesai.total }} hasil
+                            </span>
+                            <span v-else></span>
+                            <Pagination :links="sertifications_selesai.links" />
                         </div>
-                        <div class="flex items-center mt-4 gap-2">
-                            <CalendarRange class="shrink-0 w-4 h-4 text-gray-700 dark:text-gray-200" />
-                            <p class=" text-gray-600 text-sm dark:text-gray-200">
-                                Pendaftaran:
-                                {{ formatDate(sert.tgl_apply_dibuka) }} &ndash;
-                                {{ formatDate(sert.tgl_apply_ditutup) }}
-                            </p>
-                        </div>
-                        <div class="flex items-center mt-4 gap-2">
-                            <DollarSign class="w-4 h-4 text-gray-700 dark:text-gray-200" />
-                            <p class=" text-gray-600 text-sm dark:text-gray-200">
-                                Biaya: Rp
-                                {{ new Intl.NumberFormat("id-ID").format(sert.biaya) }}
-                            </p>
-                        </div>
-                        <div class="flex items-center mt-4">
-                            <MapPin class="w-4 h-4 text-gray-700 dark:text-gray-200" />
-                            <p class="ml-2 text-gray-600 text-sm dark:text-gray-200">
-                                <span class="font-semibold">TUK:</span>
-                                {{ sert.tuk }}
-                            </p>
-                        </div>
-                        <div class="flex items-center mt-4">
-                            <div
-                                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
-                                <Users class="w-3.5 h-3.5" />
-                                <span class="text-xs font-semibold">{{ sert.asesis_count }} Asesi Terdaftar</span>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <PrimaryLinkButton :href="route('admin.kelolasertifikasi.show', sert.id)">
-                                Detail
-                            </PrimaryLinkButton>
-                        </div>
-                    </div>
-
-                    <p v-if="sertifications_selesai.data.length === 0"
-                        class="text-gray-500 dark:text-gray-400 col-span-2">
-                        Tidak ada riwayat sertifikasi untuk filter yang
-                        dipilih.
-                    </p>
-                </div>
-                <div class="mt-4 flex justify-between items-center">
-                    <span v-if="sertifications_selesai.total > 0"
-                        class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
-                        Menampilkan {{ sertifications_selesai.from }} sampai {{ sertifications_selesai.to }} dari {{
-                            sertifications_selesai.total }} hasil
-                    </span>
-                    <span v-else></span>
-                    <Pagination :links="sertifications_selesai.links" />
-                </div>
+                    </template>
+                </SertifikasiTable>
             </div>
-
 
             <div v-show="tab === 'mulai'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
                     Mulai Sertifikasi
                 </h2>
                 <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
-                    <div>
-                        <InputLabel value="Pilih Skema Sertifikasi:" required />
-                        <select v-model="form.skema_id" required
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option value="" disabled>-- Silahkan pilih skema --</option>
-                            <option v-for="skema in props.skemas" :key="skema.id" :value="skema.id">
-                                {{ skema.nama_skema }}
-                            </option>
-                        </select>
-                        <InputError :message="form.errors.skema_id" />
-                    </div>
-                    <div v-if="form.skema_id" class="relative">
-                        <InputLabel value="Pilih Asesor (bisa lebih dari 1)" required />
-                        <Multiselect v-model="form.asesor_ids" :options="availableAsesors" :multiple="true"
-                            placeholder="Cari atau pilih asesor" label-prop="name" value-prop="id"
-                            :class="{ 'border-red-500': form.errors.asesor_ids }">
-                        </Multiselect>
-                        <InputError :message="form.errors.asesor_ids" />
+
+                    <SelectInput id="skema_id" label="Pilih Skema Sertifikasi:" v-model="form.skema_id"
+                        :options="activeSkemaOptions" :error="form.errors.skema_id" required
+                        placeholder="-- Pilih Skema Sertifikasi --" />
+                    <Multiselect v-if="form.skema_id" id="asesor_ids" label="Pilih Asesor (bisa lebih dari 1)"
+                        v-model="form.asesor_ids" :options="availableAsesors" :multiple="true"
+                        placeholder="Cari atau pilih asesor" label-prop="name" value-prop="id"
+                        :error="form.errors.asesor_ids" :class="{ 'border-red-500': form.errors.asesor_ids }"
+                        required />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <DateInput id="tgl_apply_dibuka" label="Tanggal Daftar Dibuka" v-model="form.tgl_apply_dibuka"
+                            type="date" :error="form.errors.tgl_apply_dibuka" required />
+                        <DateInput id="tgl_apply_ditutup" label="Tanggal Daftar Ditutup"
+                            v-model="form.tgl_apply_ditutup" type="datetime-local"
+                            :error="form.errors.tgl_apply_ditutup" required />
+                        <DateInput id="tgl_asesmen_mulai" label="Tanggal Asesmen Dimulai"
+                            v-model="form.tgl_asesmen_mulai" type="date" :error="form.errors.tgl_asesmen_mulai" />
+                        <DateInput v-if="form.tgl_asesmen_mulai" id="tgl_asesmen_selesai"
+                            label="Tanggal Asesmen Selesai" v-model="form.tgl_asesmen_selesai" type="date"
+                            :error="form.errors.tgl_asesmen_selesai" />
+                        <TextInput id="tuk" label="Tempat Uji Sertifikasi" v-model="form.tuk" type="text"
+                            placeholder="Contoh: Gedung A Ruangan 12" :error="form.errors.tuk" required />
                     </div>
 
-                    <div>
-                        <InputLabel value="Tanggal Daftar Dibuka" required />
-                        <TextInput type="date" v-model="form.tgl_apply_dibuka" required />
-                        <InputError :message="form.errors.tgl_apply_dibuka" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <NumberInput id="biaya" label="Biaya Sertifikasi" v-model="form.biaya" min="0"
+                            placeholder="Contoh: 100000" :formatted-value="formattedHarga" :error="form.errors.biaya"
+                            required />
+                        <TextInput id="bank" label="Nama Bank / E-Wallet" v-model="form.bank"
+                            placeholder="Contoh: Bank BSI, GoPay" :error="form.errors.bank" required />
+                        <TextInput id="no_rek" label="Nomor Rekening / Virtual Account" v-model="form.no_rek"
+                            placeholder="Contoh: 1234567890" :error="form.errors.no_rek" required />
+                        <TextInput id="atas_nama_rek" label="Atas Nama Rekening" v-model="form.atas_nama_rek"
+                            placeholder="Contoh: LSP Untan" :error="form.errors.atas_nama_rek" required />
                     </div>
-                    <div id="tanggal_apply_ditutup">
-                        <InputLabel value="Tanggal Daftar Ditutup" required />
-                        <TextInput type="date" v-model="form.tgl_apply_ditutup" required />
-                        <InputError :message="form.errors.tgl_apply_ditutup" />
-                    </div>
-                    <div id="tanggal_bayar_ditutup">
-                        <InputLabel value="Tanggal Bayar Ditutup" required />
-                        <DateInput v-model="form.deadline_bayar" required />
-                        <InputError :message="form.errors.deadline_bayar" />
-                    </div>
-                    <div id="biaya_sertifikasi">
-                        <InputLabel value="Biaya Sertifikasi" required />
-                        <p v-if="formattedHarga" class="text-sm font-medium text-gray-800 dark:text-gray-400">
-                            {{ formattedHarga }}
-                        </p>
-                        <NumberInput min="0" v-model="form.biaya" required />
-                        <InputError :message="form.errors.biaya" />
-                    </div>
-                    <div id="tuk">
-                        <InputLabel value="Tempat Uji Sertifikasi" required />
-                        <TextInput type="text" v-model="form.tuk" required />
-                        <InputError :message="form.errors.tuk" />
-                    </div>
+
                     <div class="flex">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                             Mulai
@@ -389,25 +262,15 @@ const submit = () => {
             </button>
         </div>
         <div class="p-6 flex flex-col gap-4">
-
             <div>
                 <InputLabel value="Rentang Waktu" />
                 <div class="flex flex-col">
-                    <InputLabel value="Dari" />
-                    <TextInput v-model="filtersForm.date_from" type="date" class="w-full" />
-                    <InputLabel value="Ke" />
-                    <TextInput v-model="filtersForm.date_to" type="date" class="w-full" />
+                    <TextInput id="date_from" label="Dari" v-model="filtersForm.date_from" type="date" class="w-full" />
+                    <TextInput id="date_to" label="Ke" v-model="filtersForm.date_to" type="date" class="w-full" />
                 </div>
             </div>
-            <div>
-                <InputLabel value="Skema" />
-                <SelectInput v-model="filtersForm.skema" :options="skemaOptions" />
-            </div>
-
-            <div>
-                <InputLabel value="Asesor" />
-                <SelectInput v-model="filtersForm.asesor" :options="asesorOptions" />
-            </div>
+            <SelectInput id="skema-filter" label="Skema" v-model="filtersForm.skema" :options="skemaOptions" />
+            <SelectInput id="asesor-filter" label="Asesor" v-model="filtersForm.asesor" :options="asesorOptions" />
             <div class="my-4 border-t border-gray-200 dark:border-gray-600"></div>
             <div class="flex gap-3">
                 <SecondaryButton @click="resetFilters"> Reset </SecondaryButton>

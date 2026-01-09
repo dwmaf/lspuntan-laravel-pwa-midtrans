@@ -35,24 +35,10 @@ const form = useForm({
         </header>
 
         <form @submit.prevent="form.patch(route('profile.update'))" class="mt-6 space-y-6">
-            <div>
-                <InputLabel for="name" value="Name" />
-
-                <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name" required autofocus
-                    autocomplete="name" />
-
-                <InputError class="mt-2" :message="form.errors.name" />
-            </div>
-
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput id="email" type="email" class="mt-1 block w-full" v-model="form.email" required
-                    autocomplete="username" />
-
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
+            <TextInput id="name" label="Nama" type="text" v-model="form.name" required autofocus autocomplete="name"
+                :error="form.errors.name" />
+            <TextInput id="email" label="Email" type="email" v-model="form.email" required
+                autocomplete="username" :error="form.errors.email" />
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
                 <p class="mt-2 text-sm text-gray-800 dark:text-gray-200">
                     Your email address is unverified.

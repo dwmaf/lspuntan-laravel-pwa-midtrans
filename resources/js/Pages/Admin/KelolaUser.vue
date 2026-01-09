@@ -269,29 +269,16 @@ const save = () => {
         <div v-if="viewMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2">
             <form @submit.prevent="save" class="flex flex-col gap-4">
                 <div class="relative">
-                    <InputLabel value="Role" required />
-                    <MultiSelect v-model="form.selectedRoles" placeholder="Pilih role user" :options="roleOptions"
-                        :disabled="isRoleEditingDisabled" />
-                    <InputError :message="form.errors.selectedRoles" />
+                    <MultiSelect id="selectedRoles" label="Role/Peran" v-model="form.selectedRoles"
+                        placeholder="Pilih role user" :options="roleOptions" :disabled="isRoleEditingDisabled" required
+                        value-prop="id" :error="form.errors.selectedRoles" />
                     <p v-if="isRoleEditingDisabled" class="text-xs text-gray-500 dark:text-gray-400 ">
                         Peran untuk Asesi tidak dapat diubah.
                     </p>
                 </div>
-                <div>
-                    <InputLabel value="Nama" required />
-                    <TextInput v-model="form.name" required />
-                    <InputError :message="form.errors.name" />
-                </div>
-                <div>
-                    <InputLabel value="Email" required />
-                    <TextInput v-model="form.email" required disabled />
-                    <InputError :message="form.errors.email" />
-                </div>
-                <div>
-                    <InputLabel value="No WA" />
-                    <TextInput v-model="form.no_tlp_hp" />
-                    <InputError :message="form.errors.no_tlp_hp" />
-                </div>
+                <TextInput id="name" label="Nama" v-model="form.name" required :error="form.errors.name" />
+                <TextInput id="email" label="Email" v-model="form.email" required disabled :error="form.errors.email" />
+                <TextInput id="no_tlp_hp" label="No WA" v-model="form.no_tlp_hp" :error="form.errors.no_tlp_hp" />
 
                 <div v-if="!selectedUser.email_verified_at" class="border-t border-gray-200 dark:border-gray-700 pt-4">
                     <div class="flex items-center justify-between">
@@ -345,21 +332,12 @@ const save = () => {
         </div>
         <div class="p-6">
             <div class="flex flex-col gap-4">
-                <div>
-                    <InputLabel value="Role" />
-                    <SelectInput v-model="filtersForm.role"
-                        :options="[{ value: '', text: 'Semua' }, ...roles.map(r => ({ value: r, text: r }))]" />
-                </div>
-                <div>
-                    <InputLabel value="Status Akun" />
-                    <SelectInput v-model="filtersForm.status"
-                        :options="[{ value: '', text: 'Semua' }, { value: 'active', text: 'Aktif' }, { value: 'banned', text: 'Ditangguhkan' },]" />
-                </div>
-                <div>
-                    <InputLabel value="Verifikasi Email" />
-                    <SelectInput v-model="filtersForm.verified"
-                        :options="[{ value: '', text: 'Semua' }, { value: 'true', text: 'Terverifikasi' }, { value: 'false', text: 'Belum Terverifikasi' },]" />
-                </div>
+                <SelectInput label="Role" v-model="filtersForm.role"
+                    :options="[{ value: '', text: 'Semua' }, ...roles.map(r => ({ value: r, text: r }))]" />
+                <SelectInput label="Status Akun" v-model="filtersForm.status"
+                    :options="[{ value: '', text: 'Semua' }, { value: 'active', text: 'Aktif' }, { value: 'banned', text: 'Ditangguhkan' },]" />
+                <SelectInput label="Verifikasi Email" v-model="filtersForm.verified"
+                    :options="[{ value: '', text: 'Semua' }, { value: 'true', text: 'Terverifikasi' }, { value: 'false', text: 'Belum Terverifikasi' },]" />
             </div>
             <div class="my-4 border-t border-gray-200 dark:border-gray-600"></div>
             <div class=" flex gap-3">

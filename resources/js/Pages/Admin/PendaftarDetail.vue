@@ -11,8 +11,10 @@ import SeeButton from "@/Components/Button/SeeButton.vue";
 import LoadingSpinner from "@/Components/LoadingSpinner.vue";
 import InputLabel from "@/Components/Input/InputLabel.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
+import SelectInput from "@/Components/Input/SelectInput.vue";
+import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import FileIcon from "@/Components/FileIcon.vue";
-import SingleFileInput from "@/Components/SingleFileInput.vue";
+import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import InputError from "@/Components/Input/InputError.vue";
 import { useForm, usePage, Link } from "@inertiajs/vue3";
 import { ref, computed } from 'vue';
@@ -20,44 +22,22 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     asesi: Object,
     sertification: Object,
-    asesiStatusOptions: Array,
-    paymentStatusOptions: Array,
+    statusAksesMenuAsesmenOptions: Array,
+    statusBerkasAdministrasiOptions: Array,
+    StatusFinalAsesiOptions: Array,
 });
 
 const showStatusModal = ref(false);
-const showPaymentModal = ref(false);
+const modalType = ref(''); // 'berkas', 'akses', 'final'
 const isEditingCertificate = ref(false);
 
 const statusForm = useForm({
-    status: props.asesi.status,
+    status_berkas: props.asesi.status_berkas,
     catatan_perbaikan: props.asesi.catatan_perbaikan || '',
+    status_akses_asesmen: props.asesi.status_akses_asesmen,
+    status_final: props.asesi.status_final,
 });
 
-const submitStatus = () => {
-    statusForm.patch(route('admin.sertifikasi.pendaftar.update-status', { sert_id: props.sertification.id, asesi_id: props.asesi.id }), {
-        onSuccess: () => showStatusModal.value = false,
-
-    });
-};
-const cancelShowStatus = () => {
-    statusForm.reset();
-    showStatusModal.value = false;
-};
-const paymentForm = useForm({
-    status: props.asesi.latest_transaction?.status || '',
-    catatan: props.asesi.latest_transaction?.catatan || '',
-});
-
-const submitPaymentStatus = () => {
-    paymentForm.patch(route('admin.sertifikasi.pendaftar.update-payment-status', { sert_id: props.sertification.id, transaction_id: props.asesi.latest_transaction.id }), {
-        onSuccess: () => showPaymentModal.value = false,
-
-    });
-};
-const cancelShowPayment = () => {
-    paymentForm.reset();
-    showPaymentModal.value = false;
-};
 const certificateForm = useForm({
     _method: 'PATCH',
     nomor_seri: props.asesi.sertifikat?.nomor_seri || '',
@@ -69,47 +49,105 @@ const certificateForm = useForm({
     delete_files: [],
 });
 
-const submitCertificate = () => {
-    certificateForm.post(route('admin.sertifikasi.pendaftar.upload-certificate.update', { sert_id: props.sertification.id, asesi_id: props.asesi.id }), {
-        onSuccess: () => isEditingCertificate.value = false,
-    });
+const openModal = (type) => {
+    modalType.value = type;
+    statusForm.reset();
+    // Re-sync values from props to ensure form is clean and accurate
+    statusForm.status_berkas = props.asesi.status_berkas;
+    statusForm.catatan_perbaikan = props.asesi.catatan_perbaikan || '';
+    statusForm.status_akses_asesmen = props.asesi.status_akses_asesmen;
+    statusForm.status_final = props.asesi.status_final;
+    showStatusModal.value = true;
 };
+
+const closeModal = () => {
+    statusForm.reset();
+    showStatusModal.value = false;
+};
+
 const cancelEditCertificate = () => {
     certificateForm.reset();
     isEditingCertificate.value = false;
 };
 
+const submitStatusUpdate = () => {
+    let routeName = '';
+    if (modalType.value === 'berkas') routeName = 'admin.sertifikasi.pendaftar.update-status-berkas';
+    if (modalType.value === 'akses') routeName = 'admin.sertifikasi.pendaftar.update-akses-asesmen';
+    if (modalType.value === 'final') routeName = 'admin.sertifikasi.pendaftar.update-status-final';
 
-const getAsesiStatusClass = (status) => {
-    const classes = {
-        'menunggu_verifikasi_berkas': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
-        'perlu_perbaikan_berkas': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
-        'ditolak': 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100',
-        'dilanjutkan_asesmen': 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
-        'lulus_sertifikasi': 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
-    };
-    return classes[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200';
+    statusForm.patch(route(routeName, { sertification: props.sertification.id, asesi: props.asesi.id }), {
+        onSuccess: () => closeModal(),
+    });
 };
-const getPaymentStatusInfo = (transaction) => {
-    if (!transaction) {
-        return { text: 'Belum Submit Bukti Pembayaran', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' };
-    }
-    if (transaction.status === 'belum bayar') {
-        return { text: 'Belum Bayar', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' };
-    }
-    if (transaction.tipe === 'manual' && transaction.bukti_bayar && transaction.status === 'pending') {
-        return { text: 'Menunggu Verifikasi', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100' };
-    }
-    if (transaction.tipe === 'manual' && transaction.status === 'bukti_pembayaran_terverifikasi') {
-        return { text: 'Pembayaran Terverifikasi', class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100' };
-    }
-    if (transaction.tipe === 'manual' && transaction.status === 'bukti_pembayaran_ditolak') {
-        return { text: 'Bukti Pembayaran Ditolak', class: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100' };
-    }
-    if (transaction.tipe === 'manual' && transaction.status === 'perlu_perbaikan_bukti_bayar') {
-        return { text: 'Perlu Perbaikan', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100' };
-    }
-    return { text: 'N/A', class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200' };
+const submitCertificate = () => {
+    certificateForm.post(route('admin.sertifikasi.pendaftar.update-certificate', { sertification: props.sertification.id, asesi: props.asesi.id }), {
+        onSuccess: () => isEditingCertificate.value = false,
+    });
+};
+
+
+const getStatusBerkasAdministrasi = (status) => {
+    const data = {
+        'menunggu_verifikasi_admin': {
+            class: 'bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-100',
+            text: 'Menunggu Verifikasi Admin'
+        },
+        'perlu_perbaikan_berkas': {
+            class: 'bg-amber-100 text-amber-800 dark:bg-amber-700 dark:text-amber-100',
+            text: 'Perlu Perbaikan Berkas'
+        },
+        'sudah_lengkap': {
+            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            text: 'Sudah Lengkap'
+        },
+    };
+    return data[status] || {
+        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        text: status
+    };
+};
+
+const getStatusAksesMenuAsesmen = (status) => {
+    const data = {
+        'belum_diberikan': {
+            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            text: 'Belum Diberikan'
+        },
+        'diberikan': {
+            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            text: 'Diberikan'
+        },
+    };
+    return data[status] || {
+        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        text: status
+    };
+};
+
+const getStatusFinalAsesi = (status) => {
+    const data = {
+        'belum_ditetapkan': {
+            class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+            text: 'Belum Ditetapkan'
+        },
+        'belum_kompeten': {
+            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            text: 'Belum Kompeten'
+        },
+        'kompeten': {
+            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            text: 'Kompeten'
+        },
+        'diskualifikasi': {
+            class: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100',
+            text: 'Diskualifikasi'
+        },
+    };
+    return data[status] || {
+        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        text: status
+    };
 };
 
 </script>
@@ -134,31 +172,34 @@ const getPaymentStatusInfo = (transaction) => {
             <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">E. Status</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <div>
-                    <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Asesi</dt>
+                    <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Berkas Administrasi
+                        Asesi</dt>
                     <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
                         <span
-                            :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getAsesiStatusClass(asesi.status)]">
-                            {{ asesi.status.replace(/_/g, ' ') }}
+                            :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusBerkasAdministrasi(asesi.status_berkas).class]">
+                            {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
                         </span>
-                        <EditButton @click="showStatusModal = true">Ubah Status</EditButton>
+                        <EditButton @click="openModal('berkas')">Ubah Status</EditButton>
                     </dd>
                 </div>
                 <div>
-                    <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Pembayaran</dt>
+                    <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Hak Akses Menu Asesmen</dt>
                     <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
                         <span
-                            :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getPaymentStatusInfo(asesi.latest_transaction).class]">
-                            {{ getPaymentStatusInfo(asesi.latest_transaction).text }}
+                            :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).class]">
+                            {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
                         </span>
-                        <EditButton v-if="props.asesi.latest_transaction" @click="showPaymentModal = true">Ubah Status
-                        </EditButton>
-                        <a v-if="props.asesi.latest_transaction"
-                            :href="`/storage/${props.asesi.latest_transaction.bukti_bayar}`"
-                            class="flex items-center gap-2 group min-w-0">
-                            <FileIcon :path="props.asesi.latest_transaction.bukti_bayar" />
-                            <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">
-                                {{ props.asesi.latest_transaction.bukti_bayar.split('/').pop() }}</span>
-                        </a>
+                        <EditButton @click="openModal('akses')">Ubah Status</EditButton>
+                    </dd>
+                </div>
+                <div>
+                    <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Akhir Asesi</dt>
+                    <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
+                        <span
+                            :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusFinalAsesi(asesi.status_final).class]">
+                            {{ getStatusFinalAsesi(asesi.status_final).text }}
+                        </span>
+                        <EditButton @click="openModal('final')">Ubah Status</EditButton>
                     </dd>
                 </div>
             </div>
@@ -169,13 +210,14 @@ const getPaymentStatusInfo = (transaction) => {
             <div class="mt-2">
                 <dt v-if="!asesi.sertifikat" class="block text-sm font-medium text-gray-600 dark:text-gray-400">
                     Sertifikat bisa
-                    diupload jika status asesi adalah 'lulus sertifikasi'</dt>
+                    diupload jika status akhir asesi adalah Kompeten</dt>
                 <EditButton v-if="props.asesi.sertifikat" @click="isEditingCertificate = true">Ubah Data Sertifikat
                 </EditButton>
-                <SeeButton v-else-if="props.asesi.status === 'lulus_sertifikasi'" @click="isEditingCertificate = true">
+                <SeeButton class="mt-1" v-else-if="props.asesi.status_final === 'kompeten'"
+                    @click="isEditingCertificate = true">
                     Upload Sertifikat</SeeButton>
                 <a v-if="props.asesi.sertifikat" :href="`/storage/${props.asesi.sertifikat.file_path}`" target="_blank"
-                    class="text-sm text-blue-500 hover:text-blue-700">
+                    class="text-sm text-blue-500 hover:text-blue-700 mt-1">
                     Lihat Sertifikat
                 </a>
             </div>
@@ -189,37 +231,21 @@ const getPaymentStatusInfo = (transaction) => {
             <p class="my-1 text-sm text-gray-600 dark:text-gray-400">Untuk: <span class="font-semibold">{{
                 props.asesi.student.user.name }}</span></p>
             <form @submit.prevent="submitCertificate" class="flex flex-col gap-4 mt-4">
-                <div>
-                    <InputLabel value="Nomor Seri" />
-                    <TextInput v-model="certificateForm.nomor_seri" type="text" required />
-                    <InputError :message="certificateForm.errors.nomor_seri" />
-                </div>
-                <div>
-                    <InputLabel value="Nomor Sertifikat" />
-                    <TextInput v-model="certificateForm.nomor_sertifikat" type="text" required />
-                    <InputError :message="certificateForm.errors.nomor_sertifikat" />
-                </div>
-                <div>
-                    <InputLabel value="Nomor Registrasi" />
-                    <TextInput v-model="certificateForm.nomor_sertifikat" type="text" required />
-                    <InputError :message="certificateForm.errors.nomor_sertifikat" />
-                </div>
-                <div>
-                    <InputLabel value="Tanggal Terbit" />
-                    <TextInput v-model="certificateForm.tanggal_terbit" type="date" required />
-                    <InputError :message="certificateForm.errors.tanggal_terbit" />
-                </div>
-                <div>
-                    <InputLabel value="Berlaku Hingga" />
-                    <TextInput v-model="certificateForm.berlaku_hingga" type="date" required />
-                    <InputError :message="certificateForm.errors.berlaku_hingga" />
-                </div>
+                <TextInput id="nomor_seri" label="Nomor Seri" v-model="certificateForm.nomor_seri" type="text" required
+                    :error="certificateForm.errors.nomor_seri" />
+                <TextInput id="nomor_sertifikat" label="Nomor Sertifikat" v-model="certificateForm.nomor_sertifikat"
+                    type="text" required :error="certificateForm.errors.nomor_sertifikat" />
+                <TextInput id="nomor_registrasi" label="Nomor Registrasi" v-model="certificateForm.nomor_registrasi"
+                    type="text" required :error="certificateForm.errors.nomor_registrasi" />
+                <TextInput id="tanggal_terbit" label="Tanggal Terbit" v-model="certificateForm.tanggal_terbit"
+                    type="date" required :error="certificateForm.errors.tanggal_terbit" />
+                <TextInput id="berlaku_hingga" label="Berlaku Hingga" v-model="certificateForm.berlaku_hingga"
+                    type="date" required :error="certificateForm.errors.berlaku_hingga" />
                 <SingleFileInput v-model="certificateForm.file_path" v-model:deleteList="certificateForm.delete_files"
                     delete-identifier="file_path" label="File Sertifikat" is-label-required
                     :existing-file-url="asesi?.sertifikat?.file_path ? `/storage/${asesi.sertifikat.file_path}` : null"
                     :is-marked-for-deletion="certificateForm.delete_files.includes('file_path')"
                     accept=".pdf,.jpg,.jpeg,.png" :error="certificateForm.errors.file_path"
-                    @remove="removeFileSertifikat('file_path')"
                     :required="!asesi?.sertifikat?.file_path || certificateForm.delete_files.includes('file_path')" />
                 <div class="flex gap-2 items-center">
                     <PrimaryButton :disabled="certificateForm.processing">Simpan</PrimaryButton>
@@ -228,69 +254,40 @@ const getPaymentStatusInfo = (transaction) => {
             </form>
         </div>
 
-        <!-- Modal Ubah Status Asesi -->
-        <Modal :show="showStatusModal" @close="showStatusModal = false">
+        <!-- Modal Ubah Status (Unified) -->
+        <Modal :show="showStatusModal" @close="closeModal">
             <div class="p-4">
-                <h3 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-6">Konfirmasi Ubah Status Asesi
+                <h3 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-6">
+                    {{ modalType === 'berkas' ? 'Konfirmasi Ubah Status Berkas' :
+                        modalType === 'akses' ? 'Konfirmasi Ubah Akses Menu Asesmen' :
+                            'Konfirmasi Ubah Status Akhir Asesi' }}
                 </h3>
-                <form @submit.prevent="submitStatus" class="flex flex-col gap-4 mt-1">
-                    <div>
-                        <InputLabel value="Status Asesi" required />
-                        <select v-model="statusForm.status"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option v-for="option in asesiStatusOptions" :key="option.value" :value="option.value"
-                                class="capitalize">
-                                {{ option.label }}
-                            </option>
-                        </select>
-                        <InputError :message="statusForm.errors.status" />
-                    </div>
-                    <div v-if="statusForm.status === 'perlu_perbaikan_berkas'">
-                        <InputLabel value="Catatan Perbaikan" />
-                        <textarea v-model="statusForm.catatan_perbaikan"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                            rows="3" required></textarea>
-                        <InputError :message="statusForm.errors.catatan_perbaikan" />
-                    </div>
-                    <div class="flex items-center gap-3 justify-end">
-                        <SecondaryButton @click="cancelShowStatus">Batal</SecondaryButton>
+
+                <form @submit.prevent="submitStatusUpdate" class="flex flex-col gap-4 mt-1">
+                    <template v-if="modalType === 'berkas'">
+                        <SelectInput id="status_berkas" label="Status Berkas Asesi" v-model="statusForm.status_berkas"
+                            :options="statusBerkasAdministrasiOptions" :error="statusForm.errors.status_berkas"
+                            required />
+                        <TextareaInput v-if="statusForm.status_berkas === 'perlu_perbaikan_berkas'"
+                            id="catatan_perbaikan" label="Catatan Perbaikan" v-model="statusForm.catatan_perbaikan"
+                            required :error="statusForm.errors.catatan_perbaikan" rows="3" />
+                    </template>
+
+                    <template v-else-if="modalType === 'akses'">
+                        <SelectInput id="status_akses_asesmen" label="Hak Akses Asesi ke Menu Asesmen"
+                            v-model="statusForm.status_akses_asesmen" :options="statusAksesMenuAsesmenOptions"
+                            :error="statusForm.errors.status_akses_asesmen" required />
+                    </template>
+
+                    <template v-else-if="modalType === 'final'">
+                        <SelectInput id="status_final" label="Status Akhir Asesi" v-model="statusForm.status_final"
+                            :options="StatusFinalAsesiOptions" :error="statusForm.errors.status_final" required />
+                    </template>
+
+                    <div class="flex items-center gap-3 justify-end mt-4">
+                        <SecondaryButton type="button" @click="closeModal">Batal</SecondaryButton>
                         <PrimaryButton :disabled="statusForm.processing">Simpan</PrimaryButton>
                         <LoadingSpinner v-if="statusForm.processing" />
-                    </div>
-                </form>
-            </div>
-        </Modal>
-
-        <!-- Modal Ubah Status Pembayaran -->
-        <Modal :show="showPaymentModal" @close="showPaymentModal = false">
-            <div class="p-4">
-                <h3 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-6">Konfirmasi Ubah Status Pembayaran
-                    Asesi
-                </h3>
-                <form @submit.prevent="submitPaymentStatus" class="flex flex-col gap-4 mt-1">
-                    <div>
-                        <InputLabel value="Status Pembayaran Asesi" />
-                        <select v-model="paymentForm.status"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option v-for="option in paymentStatusOptions" :key="option.value" :value="option.value"
-                                class="capitalize">
-                                {{ option.label }}
-                            </option>
-                        </select>
-                        <InputError :message="paymentForm.errors.status" />
-                    </div>
-                    <div
-                        v-if="paymentForm.status === 'perlu_perbaikan_bukti_bayar' || paymentForm.status === 'bukti_pembayaran_ditolak'">
-                        <InputLabel value="Catatan Perbaikan/Penolakan" />
-                        <textarea v-model="paymentForm.catatan"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                            rows="3" required></textarea>
-                        <InputError :message="paymentForm.errors.catatan" />
-                    </div>
-                    <div class="flex gap-3 items-center justify-end">
-                        <SecondaryButton @click="cancelShowPayment">Batal</SecondaryButton>
-                        <PrimaryButton :disabled="paymentForm.processing">Simpan</PrimaryButton>
-                        <LoadingSpinner v-if="paymentForm.processing" />
                     </div>
                 </form>
             </div>

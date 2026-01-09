@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nama_skema');
             $table->string('format_apl_1')->nullable();
             $table->string('format_apl_2')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

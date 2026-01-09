@@ -1,7 +1,7 @@
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
-import Header from "@/Components/CustomHeader.vue";
+import CustomHeader from "@/Components/CustomHeader.vue";
 import { ref, onMounted } from "vue";
 
 const props = defineProps({
@@ -70,8 +70,8 @@ onMounted(() => {
 
 <template>
     <AsesiLayout>
-        <Header judul="Pengumuman" />
-        <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
+        <CustomHeader :judul="`Pengumuman: ${sertification.skema?.nama_skema ?? ''}`" />
+        <AsesiSertifikasiMenu :sertification="props.sertification" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 
         <div class="max-w-7xl mx-auto" v-if="showMode === 'list'">

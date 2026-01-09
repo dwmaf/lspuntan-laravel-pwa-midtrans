@@ -17,10 +17,9 @@ class AsesiFactory extends Factory
         return [
             'student_id' => Student::factory(),
             'sertification_id' => Sertification::factory(),
-            'status' => AsesiStatus::MENUNGGU_VERIFIKASI_BERKAS,
             'tujuan_sert' => 'Sertifikasi',
-            'apl_1' => 'seed/ktp.jpg',
-            'apl_2' => 'seed/ktp.jpg',
+            'apl_1' => 'seed/apl_1.docx',
+            'apl_2' => 'seed/apl_2.docx',
         ];
     }
 }

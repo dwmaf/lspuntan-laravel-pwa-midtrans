@@ -9,10 +9,11 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sertification extends Model
 {
-    use LogsActivity, HasFactory;
+    use LogsActivity, HasFactory, SoftDeletes;
     /** @use HasFactory<\Database\Factories\SertificationFactory> */
     protected $guarded = [
         
@@ -33,10 +34,10 @@ class Sertification extends Model
     {
         return $this->hasMany(News::class);
     }
-    public function paymentInstruction()
-    {
-        return $this->hasOne(PaymentInstruction::class);
-    }
+    // public function paymentInstruction()
+    // {
+    //     return $this->hasOne(PaymentInstruction::class);
+    // }
 
     public function asesmen()
     {

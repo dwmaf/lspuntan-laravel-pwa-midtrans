@@ -266,21 +266,12 @@ const formatFieldName = (fieldName) => {
             <div>
                 <InputLabel value="Rentang Waktu" />
                 <div class="flex flex-col">
-                    <InputLabel value="Dari" />
-                    <TextInput v-model="filtersForm.date_from" type="date" class="w-full" />
-                    <InputLabel value="Ke" />
-                    <TextInput v-model="filtersForm.date_to" type="date" class="w-full" />
+                    <TextInput id="date_from" label="Dari" v-model="filtersForm.date_from" type="date" class="w-full" />
+                    <TextInput id="date_to" label="Ke" v-model="filtersForm.date_to" type="date" class="w-full" />
                 </div>
             </div>
-            <div>
-                <InputLabel value="Target Data" />
-                <SelectInput v-model="filtersForm.subject_type" :options="subjectOptions" />
-            </div>
-
-            <div>
-                <InputLabel value="Jenis Aksi" />
-                <SelectInput v-model="filtersForm.event" :options="eventOptions" />
-            </div>
+            <SelectInput id="subject_type" label="Target Data" v-model="filtersForm.subject_type" :options="subjectOptions" />
+            <SelectInput id="event" label="Jenis Aksi" v-model="filtersForm.event" :options="eventOptions" />
             <div class="my-4 border-t border-gray-200 dark:border-gray-600"></div>
             <div class="flex gap-3">
                 <SecondaryButton @click="resetFilters"> Reset </SecondaryButton>

@@ -2,14 +2,14 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
-import InputError from "@/Components/Input/InputError.vue";
-import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
 import AddButton from "@/Components/Button/AddButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
 import DateInput from "@/Components/Input/DateInput.vue";
+import TextareaInput from "@/Components/Input/TextareaInput.vue";
+import CreatorInfo from "@/Components/CreatorInfo.vue";
 import Modal from "@/Components/Modal.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
@@ -22,7 +22,7 @@ const props = defineProps({
     filteredAsesi: Array,
     initialAsesiId: [String, Number],
 });
-
+console.log(props.filteredAsesi);
 
 const isEditing = ref(false);
 const isPreviewing = ref(false);
@@ -51,16 +51,18 @@ const form = useForm({
 
 
 const enterEditMode = () => {
-    form.content = props.sertification.asesmen?.content || 'Isi rincian tugas asesmen di sini...';
+    form.content = props.sertification.asesmen?.content || '';
     form.deadline = props.sertification.asesmen?.deadline || '';
     form.send_notification = !props.sertification.asesmen;
     isEditing.value = true;
+    viewMode.value = 'edit';
 };
 
 const cancelEdit = () => {
     isEditing.value = false;
     form.reset();
     form.clearErrors();
+    viewMode.value = 'list';
 };
 
 onMounted(() => {
@@ -82,7 +84,7 @@ const submit = () => {
 };
 
 const deleteAsesmen = () => {
-    if (confirm('Apakah Anda yakin ingin menghapus tugas asesmen ini? Instruksi dan lampiran soal akan dihapus, namun tugas yang sudah dikumpulkan asesi akan TETAP TERSIMPAN.')) {
+    if (confirm('Apakah Anda yakin ingin menghapus tugas asesmen ini? Instruksi dan lampiran soal akan dihapus, namun tugas/dokumen yang sudah dikumpulkan asesi akan TETAP TERSIMPAN.')) {
         router.delete(route('admin.sertifikasi.assessment.destroy', props.sertification.id), {
             onSuccess: () => {
                 cancelEdit();
@@ -146,35 +148,16 @@ const formatDateTime = (dateString) => {
                 <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">
                         Asesor belum memberikan rincian tugas asesmen, buat tugas asesmen agar asesi bisa mengumpulkan
-                        tugas
-                        asesmen
+                        tugas/dokumen asesmen atau dokumen lain seperti FR.AK, FR.IA, etc.
                     </p>
                 </div>
             </div>
-            <div v-else>
+            <div v-else class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="shrink-0">
-                            <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
-                                fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h5 v-if="props.sertification.asesmen"
-                                class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                {{ props.sertification.asesmen.name || 'Admin' }}
-                            </h5>
-
-                            <div v-if="props.sertification.asesmen" class="text-xs text-gray-400">
-                                {{ formatDate(sertification.asesmen.created_at) }}
-                                <span
-                                    v-if="sertification.asesmen.created_at !== sertification.asesmen.updated_at">(Diedit
-                                    pada {{ formatDate(sertification.asesmen.updated_at) }})</span>
-                            </div>
-                        </div>
-                    </div>
+                    <CreatorInfo :name="props.sertification.asesmen?.name"
+                        :created-at="props.sertification.asesmen?.created_at"
+                        :updated-at="props.sertification.asesmen?.updated_at" v-if="props.sertification.asesmen"
+                        class="mb-4" />
                     <div>
                         <div class="flex items-center gap-3">
                             <EditButton @click="enterEditMode">Edit</EditButton>
@@ -213,19 +196,10 @@ const formatDateTime = (dateString) => {
                 </h3>
             </div>
             <form @submit.prevent="submit" class="flex flex-col gap-4">
-                <div>
-                    <InputLabel value="Rincian" required />
-                    <textarea v-model="form.content" rows="8"
-                        class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
-                    <InputError :message="form.errors.content" />
-                </div>
-                <div>
-                    <InputLabel value="Batas Pengumpulan" />
-                    <DateInput v-model="form.deadline" />
-                    <InputError :message="form.errors.deadline" />
-                </div>
-
-
+                <TextareaInput id="content" label="Rincian" v-model="form.content" :error="form.errors.content" rows="8"
+                    required />
+                <DateInput id="deadline" label="Batas Pengumpulan" v-model="form.deadline"
+                    :error="form.errors.deadline" />
                 <MultiFileInput v-model="form.newFiles" v-model:deleteList="form.delete_files_collection"
                     :existing-files="props.sertification.asesmen?.asesmenfiles ?? []" label="Lampiran" :max-files="5"
                     accept=".jpg,.png,.jpeg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" :error="form.errors.newFiles"
@@ -257,23 +231,7 @@ const formatDateTime = (dateString) => {
                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Preview Tugas Asesmen</h2>
                 <div class="border-t border-gray-200 dark:border-gray-700 py-4">
                     <div class="flex justify-between items-center mb-2">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="shrink-0">
-                                <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
-                                    fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ props.sertification.asesmen?.name || 'Admin' }}
-                                </h5>
-                                <div class="text-xs text-gray-400">
-                                    {{ formatDate(new Date()) }}
-                                </div>
-                            </div>
-                        </div>
+                        <CreatorInfo :name="props.sertification.asesmen?.name" :created-at="new Date()" />
                     </div>
 
                     <div v-html="form.content.replace(/\n/g, '<br>')"

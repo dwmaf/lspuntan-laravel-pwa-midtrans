@@ -9,11 +9,7 @@ class NewsRead extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'news_id',
-        'user_id',
-        'read_at',
-    ];
+    protected $guarded = [];
 
     protected $casts = [
         'read_at' => 'datetime',

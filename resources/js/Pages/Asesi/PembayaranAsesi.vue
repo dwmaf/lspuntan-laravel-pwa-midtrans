@@ -39,7 +39,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleString('id-ID', 
 <template>
     <AsesiLayout>
         <Header judul="Instruksi Pembayaran" />
-        <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
+        <AsesiSertifikasiMenu :sertification="props.sertification" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 
         <div class="max-w-7xl mx-auto">

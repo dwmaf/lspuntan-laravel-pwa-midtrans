@@ -4,19 +4,79 @@ import CustomHeader from '@/Components/CustomHeader.vue';
 import { Link } from "@inertiajs/vue3";
 import { Award, Activity, Users, Wallet, GraduationCap, User2 } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
+import VueApexCharts from "vue3-apexcharts";
+import { computed } from 'vue';
+
 const props = defineProps({
-    pendingRegistrants: Array,
     sertificationBerlangsung: Array,
     sertificationSelesai: Array,
     totalAsesi: Array,
     asesiLulus: Array,
     asesiBaruDaftar: Array,
+    charts: Object
 });
+
+// Chart 1: Trend Pendaftaran (Line/Area)
+const trendOptions = computed(() => ({
+    chart: { type: 'area', toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 2 },
+    xaxis: {
+        categories: props.charts?.monthlyStats.map(s => s.date) || [],
+        labels: { style: { colors: '#64748b' } },
+        axisBorder: { show: false },
+        axisTicks: { show: false }
+    },
+    yaxis: { labels: { style: { colors: '#64748b' } } },
+    grid: { borderColor: '#e2e8f0', strokeDashArray: 4 },
+    tooltip: { x: { format: 'MM/yy' } },
+    colors: ['#3b82f6'],
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } }
+}));
+
+const trendSeries = computed(() => [{
+    name: 'Pendaftar Baru',
+    data: props.charts?.monthlyStats.map(s => s.count) || []
+}]);
+
+// Chart 2: Top Skema (Bar Horizontal)
+const schemeOptions = computed(() => ({
+    chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
+    plotOptions: {
+        bar: {
+            borderRadius: 4,
+            horizontal: true,
+            barHeight: '70%',
+            distributed: true
+        }
+    },
+    dataLabels: { enabled: true, textAnchor: 'start', style: { colors: ['#fff'] }, offsetX: 0 },
+    xaxis: { categories: props.charts?.topSchemes.map(s => s.nama_skema) || [], labels: { show: true } },
+    colors: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+    legend: { show: false },
+    grid: { show: false }
+}));
+
+const schemeSeries = computed(() => [{
+    name: 'Jumlah Pendaftar',
+    data: props.charts?.topSchemes.map(s => s.total_pendaftar) || []
+}]);
+
+// Chart 3: Status Kompetensi (Donut)
+const competencyOptions = computed(() => ({
+    chart: { type: 'donut', fontFamily: 'Inter, sans-serif' },
+    labels: props.charts?.competencyStats.map(s => s.status_final === 'kompeten' ? 'Kompeten' : 'Belum Kompeten') || [],
+    colors: ['#10b981', '#ef4444', '#f59e0b'],
+    legend: { position: 'bottom' },
+    plotOptions: { pie: { donut: { size: '65%' } } }
+}));
+
+const competencySeries = computed(() => props.charts?.competencyStats.map(s => s.count) || []);
 </script>
 
 <template>
     <AdminLayout>
-        <CustomHeader judul="Dashboard Admin"/>
+        <CustomHeader judul="Dashboard Admin" />
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <Link :href="route('admin.kelolasertifikasi.index')"
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
@@ -43,14 +103,14 @@ const props = defineProps({
                 </div>
                 <User2 class="w-8 h-8 text-cyan-600" />
             </div>
-            <div
+            <!-- <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
                 <div>
                     <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Bukti Pembayaran Pending</h3>
                     <p class="mt-1 text-3xl font-semibold text-yellow-600">{{ pendingRegistrants.length }}</p>
                 </div>
                 <Wallet class="w-8 h-8 text-yellow-600 shrink-0" />
-            </div>
+            </div> -->
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
                 <div>
@@ -67,13 +127,44 @@ const props = defineProps({
                 </div>
                 <GraduationCap class="w-8 h-8 text-fuchsia-600" />
             </div>
-            
+
         </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4" v-if="props.charts">
+            <!-- Trend Chart - Full Width on Mobile, 2/3 on Desktop -->
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm lg:col-span-2">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Trend Pendaftaran (12 Bulan
+                    Terakhir)</h3>
+                <VueApexCharts type="area" height="320" :options="trendOptions" :series="trendSeries" />
+            </div>
+
+            <!-- Competency Chart - 1/3 on Desktop -->
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Rasio Kelulusan</h3>
+                <div class="flex items-center justify-center h-[300px]">
+                    <VueApexCharts type="donut" width="100%" :options="competencyOptions" :series="competencySeries" />
+                </div>
+            </div>
+
+            <!-- Top Schemes Chart - Full Width -->
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm lg:col-span-3">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Top 5 Skema Sertifikasi Paling
+                    Diminati</h3>
+                <VueApexCharts type="bar" height="300" :options="schemeOptions" :series="schemeSeries" />
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex flex-col gap-2">
+            <div
+                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex flex-col gap-2">
                 <h3 class="text-xl font-medium text-gray-900 dark:text-gray-100 truncate">Manajemen Sertifikasi</h3>
                 <p class="text-sm font-normal text-gray-600 dark:text-gray-500">Kelola sertifikasi yang berlangsung</p>
-                <Link :href="route('admin.kelolasertifikasi.show',sert.id)" class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg justify-between" v-for="sert in sertificationBerlangsung">
+                <Link :href="route('admin.kelolasertifikasi.show', sert.id)"
+                    class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg justify-between"
+                    v-for="sert in sertificationBerlangsung">
                     <div class="">
                         <h3 class="font-medium text-gray-900 dark:text-gray-300">{{ sert.skema.nama_skema }}</h3>
                         <p class="text-sm text-gray-600 dark:text-gray-500">{{ sert.asesis_count }} asesi terdaftar</p>
@@ -83,36 +174,37 @@ const props = defineProps({
                     </div>
                 </Link>
             </div>
-            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex flex-col gap-2">
+            <div
+                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex flex-col gap-2">
                 <h3 class="text-xl font-medium text-gray-800 dark:text-gray-100 truncate">Aktivitas Terbaru</h3>
                 <p class="text-sm font-normal text-gray-500">Ringkasan aktivitas sistem</p>
                 <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="text-sm dark:text-gray-400 font-medium">Penilaian baru dimulai</p>
-                  <p className="text-xs text-gray-500">Ahmad Rizki - Web Developer</p>
-                  <p className="text-xs text-gray-400">2 jam yang lalu</p>
+                    <div className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                        <div>
+                            <p className="text-sm dark:text-gray-400 font-medium">Penilaian baru dimulai</p>
+                            <p className="text-xs text-gray-500">Ahmad Rizki - Web Developer</p>
+                            <p className="text-xs text-gray-400">2 jam yang lalu</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                        <div>
+                            <p className="text-sm font-medium">Sertifikat diterbitkan</p>
+                            <p className="text-xs text-gray-500">Budi Santoso - Web Developer</p>
+                            <p className="text-xs text-gray-400">5 jam yang lalu</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                        <div>
+                            <p className="text-sm font-medium">Asesi baru mendaftar</p>
+                            <p className="text-xs text-gray-500">Data Analyst Program</p>
+                            <p className="text-xs text-gray-400">1 hari yang lalu</p>
+                        </div>
+                    </div>
+
                 </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="text-sm font-medium">Sertifikat diterbitkan</p>
-                  <p className="text-xs text-gray-500">Budi Santoso - Web Developer</p>
-                  <p className="text-xs text-gray-400">5 jam yang lalu</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="text-sm font-medium">Asesi baru mendaftar</p>
-                  <p className="text-xs text-gray-500">Data Analyst Program</p>
-                  <p className="text-xs text-gray-400">1 hari yang lalu</p>
-                </div>
-              </div>
-              
-            </div>
             </div>
         </div>
     </AdminLayout>

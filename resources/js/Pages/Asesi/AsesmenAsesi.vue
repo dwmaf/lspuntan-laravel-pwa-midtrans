@@ -50,12 +50,12 @@ const showViewMode = () => {
     <AsesiLayout>
 
         <CustomHeader judul="Instruksi Asesmen" />
-        <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
+        <AsesiSertifikasiMenu :sertification="props.sertification" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 
         <div class="max-w-7xl mx-auto">
             <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
-                <div v-if="props.sertification.asesmen?.published_at">
+                <div v-if="props.sertification.asesmen">
                     <!-- Info Pembuat Tugas -->
                     <div class="flex items-center gap-3 mb-4">
                         <div class="shrink-0">
@@ -157,7 +157,7 @@ const showViewMode = () => {
                         class="border border-gray-300 dark:border-gray-600 rounded-md p-4 mt-10">
                         <MultiFileInput v-model="form.newFiles" v-model:deleteList="form.delete_files"
                             :existing-files="asesi.asesiasesmenfiles"
-                            label="Kumpulkan Tugas Anda (maks 5 file, total ukuran maks 5 MB)"
+                            label="Kumpulkan Tugas Anda (maks 5 file, total ukuran maks 5 MB)" :max-files="10"
                             accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlx,.ppt,.pptx"
                             :error="form.errors.newFiles || form.errors.delete_files"
                             :error-list="form.errors['newFiles.0']"

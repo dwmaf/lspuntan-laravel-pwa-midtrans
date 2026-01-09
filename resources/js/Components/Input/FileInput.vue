@@ -105,5 +105,6 @@ defineExpose({
 
 <template>
     <input type="file" :id="id" ref="input" :accept="accept" @change="onFileChange" :multiple="multiple"
-        :required="required" class="hidden" />
+        :required="required"
+        class="absolute w-px h-px p-0 -m-1px overflow-hidden clip-[rect(0,0,0,0)] whitespace-nowrap border-0" />
 </template>

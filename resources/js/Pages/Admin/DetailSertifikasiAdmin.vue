@@ -9,15 +9,17 @@ import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
 import DeleteButton from "@/Components/Button/DeleteButton.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
+import SelectInput from "@/Components/Input/SelectInput.vue";
 import NumberInput from "@/Components/Input/NumberInput.vue";
 import DateInput from "@/Components/Input/DateInput.vue";
-import Multiselect from 'vue-multiselect';
+import Multiselect from '@/Components/Input/MultiSelect.vue';
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed, watch, nextTick } from "vue";
 const props = defineProps({
     sertification: Object,
     asesors: Array,
     skemas: Array,
+    activeSkemas: Array,
 });
 const isEditing = ref(false);
 const form = useForm({
@@ -25,15 +27,19 @@ const form = useForm({
     skema_id: "",
     tgl_apply_dibuka: "",
     tgl_apply_ditutup: "",
-    deadline_bayar: "",
-    tuk: "",
     biaya: 0,
+    tuk: "",
     status: "",
+    no_rek: "",
+    bank: "",
+    atas_nama_rek: "",
+    tgl_asesmen_mulai: "",
+    tgl_asesmen_selesai: "",
 });
-form.transform((data) => ({
-    ...data,
-    asesor_ids: data.asesor_ids.map(asesor => asesor.id)
-}));
+// form.transform((data) => ({
+//     ...data,
+//     asesor_ids: data.asesor_ids.map(asesor => asesor.id)
+// }));
 const availableAsesors = computed(() => {
     if (!form.skema_id) {
         return [];
@@ -41,7 +47,6 @@ const availableAsesors = computed(() => {
     const filtered = props.asesors.filter(asesor =>
         asesor.skemas.some(skema => skema.id == form.skema_id)
     );
-    // Format untuk vue-multiselect
     return filtered.map(asesor => ({
         id: asesor.id,
         name: asesor.user.name
@@ -52,6 +57,21 @@ watch(() => form.skema_id, (newSkemaId) => {
         form.asesor_ids = [];
     }
 });
+const skemaOptions = computed(() => {
+    // Start with active skemas
+    let options = props.activeSkemas.map(skema => ({ value: skema.id, text: skema.nama_skema }));
+
+    // Check if current skema is in the active list, if not add it so it's visible while editing
+    const currentSkemaId = props.sertification.skema_id;
+    if (!options.find(o => o.value === currentSkemaId)) {
+        const currentSkema = props.skemas.find(s => s.id === currentSkemaId);
+        if (currentSkema) {
+            options.push({ value: currentSkema.id, text: `${currentSkema.nama_skema} (Non-Aktif)` });
+        }
+    }
+    return options;
+});
+
 const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -83,6 +103,11 @@ const edit = () => {
     form.status = props.sertification.status;
     form.biaya = props.sertification.biaya;
     form.deadline_bayar = props.sertification.deadline_bayar;
+    form.no_rek = props.sertification.no_rek;
+    form.bank = props.sertification.bank;
+    form.atas_nama_rek = props.sertification.atas_nama_rek;
+    form.tgl_asesmen_mulai = props.sertification.tgl_asesmen_mulai;
+    form.tgl_asesmen_selesai = props.sertification.tgl_asesmen_selesai;
     nextTick(() => {
         // 'props.sertification.asesors' adalah array objek dari relasi
         // Kita perlu mengekstrak ID-nya
@@ -90,9 +115,10 @@ const edit = () => {
 
         // 'form.asesor_ids' (v-model) harus diisi dengan OBJEK LENGKAP
         // dari 'availableAsesors' yang ID-nya cocok
-        form.asesor_ids = availableAsesors.value.filter(
-            option => selectedAsesorIds.includes(option.id)
-        );
+        // form.asesor_ids = availableAsesors.value.filter(
+        //     option => selectedAsesorIds.includes(option.id)
+        // );
+        form.asesor_ids = selectedAsesorIds;
     });
     isEditing.value = true;
 };
@@ -109,6 +135,12 @@ const submit = () => {
 const destroy = () => {
     if (confirm('Apakah Anda yakin ingin menghapus data sertifikasi ini?Ini akan menghapus semua data asesi yang mendaftar ke jadwal sertifikasi ini. Ini tidak akan menghapus skema atau asesor terkait')) {
         router.delete(route('admin.kelolasertifikasi.destroy', props.sertification.id));
+    }
+};
+
+const cancel = () => {
+    if (confirm('Apakah Anda yakin ingin MEMBATALKAN sertifikasi ini? Status akan berubah menjadi Dibatalkan.')) {
+        router.patch(route('admin.kelolasertifikasi.cancel', props.sertification.id));
     }
 };
 
@@ -132,53 +164,36 @@ const formattedHarga = computed(() => {
             <div v-if="isEditing" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <form @submit.prevent="submit" class="space-y-6">
                     <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit Sertifikasi</h2>
-                    <div>
-                        <InputLabel value="Pilih Skema Sertifikasi:" required />
-                        <select v-model="form.skema_id" required
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option value="" disabled>-- Silahkan pilih skema --</option>
-                            <option v-for="skema in props.skemas" :key="skema.id" :value="skema.id">
-                                {{ skema.nama_skema }}
-                            </option>
-                        </select>
-                        <InputError :message="form.errors.skema_id" />
+                    <SelectInput id="skema_id" label="Pilih Skema Sertifikasi:" v-model="form.skema_id"
+                        :options="skemaOptions" :error="form.errors.skema_id" required />
+                    <Multiselect v-if="form.skema_id" id="asesor_ids" label="Pilih Asesor (bisa lebih dari satu):"
+                        v-model="form.asesor_ids" :options="availableAsesors" :multiple="true"
+                        placeholder="Cari atau pilih asesor" label-prop="name" value-prop="id"
+                        :error="form.errors.asesor_ids" :class="{ 'border-red-500': form.errors.asesor_ids }"
+                        required />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <DateInput id="tgl_apply_dibuka" label="Tanggal Daftar Dibuka" v-model="form.tgl_apply_dibuka"
+                            type="date" :error="form.errors.tgl_apply_dibuka" required />
+                        <DateInput id="tgl_apply_ditutup" label="Tanggal Daftar Ditutup"
+                            v-model="form.tgl_apply_ditutup" type="datetime-local"
+                            :error="form.errors.tgl_apply_ditutup" required />
+                        <DateInput id="tgl_asesmen_mulai" label="Tanggal Asesmen Dimulai"
+                            v-model="form.tgl_asesmen_mulai" type="date" :error="form.errors.tgl_asesmen_mulai" />
+                        <DateInput v-if="form.tgl_asesmen_mulai" id="tgl_asesmen_selesai"
+                            label="Tanggal Asesmen Selesai" v-model="form.tgl_asesmen_selesai" type="date"
+                            :error="form.errors.tgl_asesmen_selesai" />
+                        <TextInput id="tuk" label="Tempat Uji Sertifikasi" v-model="form.tuk" type="text"
+                            :error="form.errors.tuk" required />
                     </div>
-                    <div v-if="form.skema_id">
-                        <InputLabel value="Pilih Asesor (bisa lebih dari satu):" required />
-                        <Multiselect v-model="form.asesor_ids" :options="availableAsesors" :multiple="true"
-                            :close-on-select="false" placeholder="Cari atau pilih asesor" label="name" track-by="id"
-                            :class="{ 'border-red-500': form.errors.asesor_ids }">
-                            <template #noOptions>Tidak ada asesor tersedia untuk skema ini.</template>
-                        </Multiselect>
-                        <InputError :message="form.errors.asesor_ids" class="mt-2" />
-                    </div>
-                    <div>
-                        <InputLabel value="Tanggal Daftar Dibuka" />
-                        <DateInput type="date" v-model="form.tgl_apply_dibuka" required />
-                        <InputError :message="form.errors.tgl_apply_dibuka" />
-                    </div>
-                    <div id="tanggal_apply_ditutup">
-                        <InputLabel value="Tanggal Daftar Ditutup" />
-                        <DateInput type="date" v-model="form.tgl_apply_ditutup" required />
-                        <InputError :message="form.errors.tgl_apply_ditutup" />
-                    </div>
-                    <div id="tanggal_bayar_ditutup">
-                        <InputLabel value="Tanggal Bayar Ditutup" />
-                        <DateInput v-model="form.deadline_bayar" required />
-                        <InputError :message="form.errors.deadline_bayar" />
-                    </div>
-                    <div id="biaya_sertifikasi">
-                        <InputLabel value="Biaya Sertifikasi" />
-                        <p v-if="formattedHarga" class="text-sm font-medium text-gray-800 dark:text-gray-400">
-                            {{ formattedHarga }}
-                        </p>
-                        <NumberInput min="0" type="number" v-model="form.biaya" required />
-                        <InputError :message="form.errors.biaya" />
-                    </div>
-                    <div id="tuk">
-                        <InputLabel value="Tempat Uji Sertifikasi" />
-                        <TextInput type="text" v-model="form.tuk" required />
-                        <InputError :message="form.errors.tuk" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <NumberInput id="biaya" label="Biaya Sertifikasi" v-model="form.biaya" min="0"
+                            :formatted-value="formattedHarga" :error="form.errors.biaya" required />
+                        <TextInput id="bank" label="Nama Bank / E-Wallet" v-model="form.bank"
+                            placeholder="Contoh: Bank BSI, GoPay" :error="form.errors.bank" required />
+                        <TextInput id="no_rek" label="Nomor Rekening / Virtual Account" v-model="form.no_rek"
+                            placeholder="Contoh: 1234567890" :error="form.errors.no_rek" required />
+                        <TextInput id="atas_nama_rek" label="Atas Nama Rekening" v-model="form.atas_nama_rek"
+                            placeholder="Contoh: LSP Untan" :error="form.errors.atas_nama_rek" required />
                     </div>
                     <div id="status" class="mb-2">
                         <InputLabel value="Status" />
@@ -216,8 +231,15 @@ const formattedHarga = computed(() => {
 
                     <div class="flex items-center space-x-3">
                         <EditButton @click="edit">Edit</EditButton>
-                        <DeleteButton v-if="props.sertification.status == 'berlangsung'" @click="destroy">Hapus
+                        <DeleteButton
+                            v-if="props.sertification.status == 'berlangsung' && props.sertification.asesis_count == 0"
+                            @click="destroy">Hapus
                         </DeleteButton>
+                        <SecondaryButton
+                            v-if="props.sertification.status == 'berlangsung' && props.sertification.asesis_count > 0"
+                            @click="cancel" class="!bg-red-100 !text-red-700 !border-red-200 hover:!bg-red-200">
+                            Batalkan
+                        </SecondaryButton>
                     </div>
                 </div>
 
@@ -235,28 +257,36 @@ const formattedHarga = computed(() => {
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Pendaftaran Dibuka</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jadwal Pendaftaran</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ formatDate(props.sertification.tgl_apply_dibuka) }}
+                            {{ formatDate(props.sertification.tgl_apply_dibuka) }} &ndash; {{
+                                formatDate(props.sertification.tgl_apply_ditutup) }}
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Pendaftaran Ditutup
-                        </dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jadwal Asesmen</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ formatDate(props.sertification.tgl_apply_ditutup) }}
+                            {{ formatDate(sertification.tgl_asesmen_mulai) }}
+                            {{ sertification.tgl_asesmen_selesai ? ' - '
+                                + formatDate(sertification.tgl_asesmen_selesai) : '' }}
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Batas Akhir Pembayaran</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">No. Rekening</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ formatDateTime(props.sertification.deadline_bayar) }}
+                            {{ sertification.no_rek }}
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Biaya Sertifikasi</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">Rp
-                            {{ new Intl.NumberFormat('id-ID').format(props.sertification.biaya) }}
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bank/E-wallet</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            {{ sertification.bank }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Atas Nama Rekening</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            {{ sertification.atas_nama_rek }}
                         </dd>
                     </div>
                     <div>
@@ -280,6 +310,10 @@ const formattedHarga = computed(() => {
                             <span v-if="props.sertification.status === 'selesai'"
                                 class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
                                 Selesai
+                            </span>
+                            <span v-if="props.sertification.status === 'dibatalkan'"
+                                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200">
+                                Dibatalkan
                             </span>
                         </dd>
                     </div>

@@ -29,25 +29,6 @@ use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Vite;
 use Inertia\Inertia;
 
-Route::get('/debug-firebase', function () { //will be commented on production
-    try {
-        $messaging = app('firebase.messaging');
-        dd('Koneksi ke Firebase Messaging BERHASIL! Driver seharusnya sudah terdaftar. Masalah ada di tempat lain.');
-    } catch (\Throwable $e) {
-        dd($e);
-    }
-});
-Route::prefix('dev')->name('dev.')->group(function () {
-    Route::get('/list/sertifications', [DevelopmentController::class, 'index'])->name('list.sertifications'); // dev.list.sertifications
-    Route::prefix('sertification')->name('sertification.')->group(function () {
-        Route::get('/{sert_id}/show', [DevelopmentController::class, 'detailSertification'])->name('show'); // dev.sertification.show
-        Route::delete('/{sert_id}/destroy/asesmen', [DevelopmentController::class, 'destroyAsesmen'])->name('destroy.asesmen'); // dev.sertification.destroy.asesmen
-        Route::post('/{sert_id}/store/news', [DevelopmentController::class, 'storeDummyNews'])->name('store.news'); // dev.sertification.store.news
-        Route::delete('/{sert_id}/destroy/news', [DevelopmentController::class, 'destroyNews'])->name('destroy.news'); // dev.sertification.destroy.news
-        Route::get('/{sert_id}/list/asesis', [DevelopmentController::class, 'listAsesis'])->name('list.asesis'); // dev.sertification.list.asesis
-    });
-});
-
 Route::get('/', function () {
     return Inertia::render('Auth/Login', [
         'canResetPassword' => Route::has('password.request'),
@@ -55,12 +36,7 @@ Route::get('/', function () {
     ]);
 })->middleware('guest');
 
-Route::get('/test', function () { //will be commented on production
-    return view('dumpbladefiles.testing-file', [
-        'sertification' => Sertification::find(1)
-    ]);
-});
-// Route::get('/offline', OfflineController::class)->name('laravelpwa.offline');
+
 Route::get('/serviceworker.js', function () {
     if (config('app.debug') === false) {
         $jsUrl = Vite::asset('resources/js/app.js');
@@ -89,15 +65,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile_asesi', [ProfileController::class, 'edit_asesi'])->name('profile_asesi.edit');
     Route::patch('/profile_asesi', [ProfileController::class, 'update_asesi'])->name('profile_asesi.update');
-    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy'); 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
     Route::post('/fcm/token', [FcmController::class, 'saveToken'])->name('fcm.token');
     Route::delete('/fcm/token', [FcmController::class, 'removeToken'])->name('fcm.token.remove');
     Route::get('/notifications/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 });
-
-
 
 
 //nanti harus dikasih middleware 'verified'
@@ -107,53 +80,61 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
     Route::prefix('skema')->name('skema.')->group(function () {
         Route::get('/', [SkemaController::class, 'create'])->name('create'); // admin.skema.create
         Route::post('/', [SkemaController::class, 'store'])->name('store'); // admin.skema.store
-        Route::patch('/{id}/update', [SkemaController::class, 'update'])->name('update'); // admin.skema.update
-        Route::delete('/{id}/destroy', [SkemaController::class, 'destroy'])->name('destroy'); // admin.skema.destroy
+        Route::patch('/{skema}/update', [SkemaController::class, 'update'])->name('update'); // admin.skema.update
+        Route::delete('/{skema}/destroy', [SkemaController::class, 'destroy'])->name('destroy'); // admin.skema.destroy
     });
     Route::prefix('asesor')->name('asesor.')->group(function () {
         Route::get('/index', [AsesorController::class, 'index'])->name('index'); // admin.asesor.index
         Route::post('/', [AsesorController::class, 'store'])->name('store'); // admin.asesor.store
-        Route::patch('/{id}/update', [AsesorController::class, 'update'])->name('update'); // admin.asesor.update
-        Route::delete('/{id}/destroy', [AsesorController::class, 'destroy'])->name('destroy'); // admin.asesor.destroy
+        Route::patch('/{asesor}/update', [AsesorController::class, 'update'])->name('update'); // admin.asesor.update
+        Route::delete('/{asesor}/destroy', [AsesorController::class, 'destroy'])->name('destroy'); // admin.asesor.destroy
+        Route::patch('/{id}/restore', [AsesorController::class, 'restore'])->name('restore'); // admin.asesor.restore
     });
     Route::prefix('kelolasertifikasi')->name('kelolasertifikasi.')->group(function () {
         Route::get('/index', [KelolaSertifikasiController::class, 'index'])->name('index'); // admin.kelolasertifikasi.index
         Route::post('/store', [KelolaSertifikasiController::class, 'store'])->name('store'); // admin.kelolasertifikasi.store
-        Route::get('/{sert_id}/show', [KelolaSertifikasiController::class, 'show'])->name('show'); // admin.kelolasertifikasi.show
-        Route::patch('/{sert_id}/update', [KelolaSertifikasiController::class, 'update'])->name('update'); // admin.kelolasertifikasi.update
-        Route::delete('/{sert_id}', [KelolaSertifikasiController::class, 'destroy'])->name('destroy'); // admin.kelolasertifikasi.destroy
-        Route::get('/{sert_id}/report', [KelolaSertifikasiController::class, 'rincian_laporan'])->name('report'); // admin.kelolasertifikasi.report
-        Route::get('/{sert_id}/report/print', [KelolaSertifikasiController::class, 'print_laporan'])->name('print_report');
+        Route::get('/{sertification}/show', [KelolaSertifikasiController::class, 'show'])->name('show'); // admin.kelolasertifikasi.show
+        Route::patch('/{sertification}/update', [KelolaSertifikasiController::class, 'update'])->name('update'); // admin.kelolasertifikasi.update
+        Route::patch('/{sertification}/cancel', [KelolaSertifikasiController::class, 'cancel'])->name('cancel'); // admin.kelolasertifikasi.cancel
+        Route::delete('/{sertification}', [KelolaSertifikasiController::class, 'destroy'])->name('destroy'); // admin.kelolasertifikasi.destroy
+        Route::get('/{sertification}/report', [KelolaSertifikasiController::class, 'rincian_laporan'])->name('report'); // admin.kelolasertifikasi.report
+        Route::get('/{sertification}/report/print', [KelolaSertifikasiController::class, 'print_laporan'])->name('print_report');
     });
-    Route::prefix('sertifikasi/{sert_id}')->name('sertifikasi.')->group(function () {
+    Route::prefix('sertifikasi/{sertification}')->name('sertifikasi.')->group(function () {
         // untuk munculin halaman edit asesmen dan updatenya
         Route::get('/assessment/edit', [AsesmenController::class, 'edit'])->name('assessment.edit'); // admin.sertifikasi.assessment.edit
         Route::patch('/assessment/update', [AsesmenController::class, 'update_tugas_asesmen'])->name('assessment.update'); // admin.sertifikasi.assessment.update
         Route::delete('/assessment/destroy', [AsesmenController::class, 'destroy'])->name('assessment.destroy'); // admin.sertifikasi.assessment.destroy
         // untuk mnunculin halaman edit rincian pembayaran dan updatenya
-        Route::get('/payment-desc/index', [PembayaranController::class, 'index_rincian_pembayaran'])->name('payment-desc.index'); // admin.sertifikasi.payment-desc.index
-        Route::patch('/payment-desc/update', [PembayaranController::class, 'update_rincian_pembayaran'])->name('payment-desc.update'); // admin.sertifikasi.payment-desc.update
-        Route::delete('/payment-desc/destroy', [PembayaranController::class, 'destroy'])->name('payment-desc.destroy'); // admin.sertifikasi.payment-desc.destroy
+        // Route::get('/payment-desc/index', [PembayaranController::class, 'index_rincian_pembayaran'])->name('payment-desc.index'); // admin.sertifikasi.payment-desc.index
+        // Route::patch('/payment-desc/update', [PembayaranController::class, 'update_rincian_pembayaran'])->name('payment-desc.update'); // admin.sertifikasi.payment-desc.update
+        // Route::delete('/payment-desc/destroy', [PembayaranController::class, 'destroy'])->name('payment-desc.destroy'); // admin.sertifikasi.payment-desc.destroy
         // Mengelola konten pengumuman
         Route::get('/announcement/index', [PengumumanController::class, 'index_pengumuman_asesmen'])->name('assessment-announcement.index'); // admin.sertifikasi.assessment-announcement.index
         Route::post('/announcement/store', [PengumumanController::class, 'store_pengumuman_asesmen'])->name('announcement.store'); // admin.sertifikasi.assessment-announcement.store
-        Route::patch('/announcement/update/{peng_id}', [PengumumanController::class, 'update_pengumuman_asesmen'])->name('assessment-announcement.update'); // admin.sertifikasi.assessment-announcement.update
-        Route::delete('/announcement/destroy/{peng_id}', [PengumumanController::class, 'destroy_pengumuman_asesmen'])->name('assessment-announcement.destroy'); // admin.sertifikasi.assessment-announcement.update
+        Route::patch('/announcement/update/{news}', [PengumumanController::class, 'update_pengumuman_asesmen'])->name('assessment-announcement.update'); // admin.sertifikasi.assessment-announcement.update
+        Route::delete('/announcement/destroy/{news}', [PengumumanController::class, 'destroy_pengumuman_asesmen'])->name('assessment-announcement.destroy'); // admin.sertifikasi.assessment-announcement.update
         Route::delete('/announcement/file/{id_file}', [PengumumanController::class, 'destroyPengumumanFile'])->name('assessment-announcement.file.destroy');
-        Route::get('/announcement/{news_id}/readers', [PengumumanController::class, 'getReaders'])->name('assessment-announcement.readers');
+        Route::get('/announcement/{news}/readers', [PengumumanController::class, 'getReaders'])->name('assessment-announcement.readers');
     });
 
-    Route::prefix('sertifikasi/{sert_id}')->name('sertifikasi.')->group(function () {
-        Route::get('/pendaftar/index', [PendaftarController::class, 'list_asesi'])->name('pendaftar.index'); // admin.sertifikasi.pendaftar.index
-        Route::get('/{asesi_id}/pendaftar/show', [PendaftarController::class, 'rincian_data_asesi'])->name('pendaftar.show'); // admin.sertifikasi.pendaftar.show
-        Route::patch('/{asesi_id}/pendaftar/update-status', [PendaftarController::class, 'update_status_asesi'])->name('pendaftar.update-status'); // admin.sertifikasi.pendaftar.update-status
-        Route::patch('/{transaction_id}/pendaftar/update-payment-status', [PendaftarController::class, 'update_status_pembayaran'])->name('pendaftar.update-payment-status'); // admin.sertifikasi.pendaftar.update-payment-status
-        Route::patch('/{asesi_id}/pendaftar/upload-certificate/patch', [PendaftarController::class, 'upload_certificate'])->name('pendaftar.upload-certificate.update'); // admin.sertifikasi.pendaftar.upload-certificate.update
+    Route::prefix('sertifikasi/{sertification}')->name('sertifikasi.')->group(function () {
+        Route::get('/pendaftar/index', [PendaftarController::class, 'listAsesi'])->name('pendaftar.index'); // admin.sertifikasi.pendaftar.index
+        Route::get('/pendaftar/{asesi}/show', [PendaftarController::class, 'rincianDataAsesi'])->name('pendaftar.show'); // admin.sertifikasi.pendaftar.show
+        Route::patch('/pendaftar/status-berkas/bulk', [PendaftarController::class, 'updateStatusBerkasBulk'])->name('pendaftar.update-status-berkas-bulk');
+        Route::patch('/pendaftar/update-akses-asesmen/bulk', [PendaftarController::class, 'updateAksesAsesmenBulk'])->name('pendaftar.update-akses-asesmen-bulk');
+        Route::patch('/pendaftar/update-status-final-asesi/bulk', [PendaftarController::class, 'updateStatusFinalBulk'])->name('pendaftar.update-status-final-bulk');
+        Route::patch('/pendaftar/{asesi}/status-berkas', [PendaftarController::class, 'updateStatusBerkas'])->name('pendaftar.update-status-berkas'); // admin.sertifikasi.pendaftar.update-status-berkas-asesi
+        Route::patch('/pendaftar/{asesi}/update-akses-asesmen', [PendaftarController::class, 'updateAksesAsesmen'])->name('pendaftar.update-akses-asesmen'); // admin.sertifikasi.pendaftar.update-akses-menu-asesmen
+        Route::patch('/pendaftar/{asesi}/update-status-final-asesi', [PendaftarController::class, 'updateStatusFinal'])->name('pendaftar.update-status-final'); // admin.sertifikasi.pendaftar.update-status-final-asesi
+        Route::patch('/pendaftar/{asesi}/update-certificate', [PendaftarController::class, 'updateCertificate'])->name('pendaftar.update-certificate'); // admin.sertifikasi.pendaftar.upload-certificate
     });
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::post('/users/{user}/ban', [UserController::class, 'ban'])->name('users.ban');
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::patch('/{user}', [UserController::class, 'update'])->name('update');
+        Route::post('/{user}/ban', [UserController::class, 'ban'])->name('ban');
+    });
 });
 
 
@@ -161,33 +142,53 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
 Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->group(function () {
     Route::get('/dashboard', [DashboardAsesiController::class, 'index'])->name('dashboard'); // asesi.dashboard
 
-    Route::get('/{sert_id}/{asesi_id}/assessmen/index', [AsesmenAsesiController::class, 'index_asesmen_asesi'])->name('assessmen.index'); // asesi.assessmen.index
-    Route::post('/{sert_id}/{asesi_id}/assessmen', [AsesmenAsesiController::class, 'update_asesmen_asesi'])->name('assessmen.update'); // asesi.assessmen.update
-    Route::prefix('payment/{sert_id}')->name('payment.')->group(function () {
-        Route::get('/{asesi_id}/create', [PembayaranAsesiController::class, 'index_rincian_pembayaran'])->name('create'); // asesi.payment.create
-        Route::post('/{asesi_id}/store', [PembayaranAsesiController::class, 'upload_bukti_pembayaran'])->name('store'); // asesi.payment.store
-        // Route::post('{asesi_id}/checkout', [PaymentController::class, 'checkout'])->name('checkout'); // asesi.payment.checkout
-        // Route::post('{asesi_id}/manual', [PaymentController::class, 'buktipembayaran'])->name('manual.store'); // asesi.payment.manual.store
+    // Grouping sertifikasi context for asesi
+    Route::prefix('sertifikasi/{sertification}/{asesi}')->group(function () {
+        Route::get('/assessmen/index', [AsesmenAsesiController::class, 'index'])->name('assessmen.index'); 
+        Route::post('/assessmen', [AsesmenAsesiController::class, 'update'])->name('assessmen.update');
+        Route::get('/pengumuman/index', [PengumumanAsesiController::class, 'index'])->name('pengumuman.index');
+        Route::post('/pengumuman/{news}/read', [PengumumanAsesiController::class, 'markAsRead'])->name('pengumuman.mark-read');
     });
-    Route::prefix('sertifikasi')->name('sertifikasi.')->group(function () {
-        Route::get('/index', [KelolaSertifikasiAsesiController::class, 'asesi_daftar_sertifikasi'])->name('index'); // asesi.sertifikasi.index
-        Route::get('/{sert_id}/apply/create', [KelolaSertifikasiAsesiController::class, 'form_daftar_sertifikasi'])->name('apply.create'); // asesi.sertifikasi.apply.create
-        Route::post('/{student_id}/apply/store', [KelolaSertifikasiAsesiController::class, 'submit_form_daftar_sertifikasi'])->name('apply.store'); // asesi.sertifikasi.apply.store
-        Route::get('/{sert_id}/{asesi_id}/applied/show', [KelolaSertifikasiAsesiController::class, 'detail_applied_sertifikasi'])->name('applied.show'); // asesi.sertifikasi.applied.show
-        Route::patch('/{sert_id}/{asesi_id}/applied/update', [KelolaSertifikasiAsesiController::class, 'update_applied_sertifikasi'])->name('applied.update'); // asesi.sertifikasi.applied.update
-    });
-    Route::get('/{sert_id}/{asesi_id}/pengumuman/index', [PengumumanAsesiController::class, 'index_pengumuman_asesi'])->name('pengumuman.index'); // asesi.pengumuman.index
-    Route::post('/{sert_id}/{asesi_id}/pengumuman/{news_id}/read', [PengumumanAsesiController::class, 'mark_as_read'])->name('pengumuman.mark-read');
 
+    Route::prefix('sertifikasi')->name('sertifikasi.')->group(function () {
+        Route::get('/index', [KelolaSertifikasiAsesiController::class, 'listSertifications'])->name('index'); 
+        Route::get('/{sertification}/apply/create', [KelolaSertifikasiAsesiController::class, 'applyForm'])->name('apply.create');
+        Route::post('/{student}/apply/store', [KelolaSertifikasiAsesiController::class, 'submitForm'])->name('apply.store');
+        Route::get('/{sertification}/{asesi}/applied/show', [KelolaSertifikasiAsesiController::class, 'showApplied'])->name('applied.show');
+        Route::patch('/{sertification}/{asesi}/applied/update', [KelolaSertifikasiAsesiController::class, 'updateApplied'])->name('applied.update');
+    });
 });
 
 // Route untuk menerima notifikasi (webhook) dari Midtrans.
 // Route ini harus di luar middleware 'auth' karena diakses oleh server Midtrans.
 // Route::post('/midtrans/webhook', [PaymentController::class, 'handleWebhook'])->name('midtrans.webhook');
 
+// Below will be commented on production
 Route::resource('filepond-test', FilePondTestController::class);
 Route::post('/filepond/process', [FilePondTestController::class, 'processFile'])->name('filepond.process');
 Route::get('/filepond/load', [FilePondTestController::class, 'loadFile'])->name('filepond.load');
 Route::delete('/filepond/revert', [FilePondTestController::class, 'revertFile'])->name('filepond.revert');
-
+Route::get('/test', function () { //will be commented on production
+    return view('dumpbladefiles.testing-file', [
+        'sertification' => Sertification::find(1)
+    ]);
+});
+Route::get('/debug-firebase', function () { //will be commented on production
+    try {
+        $messaging = app('firebase.messaging');
+        dd('Koneksi ke Firebase Messaging BERHASIL! Driver seharusnya sudah terdaftar. Masalah ada di tempat lain.');
+    } catch (\Throwable $e) {
+        dd($e);
+    }
+});
+Route::prefix('dev')->name('dev.')->group(function () { //will be commented on production
+    Route::get('/list/sertifications', [DevelopmentController::class, 'index'])->name('list.sertifications'); // dev.list.sertifications
+    Route::prefix('sertification')->name('sertification.')->group(function () {
+        Route::get('/{sert_id}/show', [DevelopmentController::class, 'detailSertification'])->name('show'); // dev.sertification.show
+        Route::delete('/{sert_id}/destroy/asesmen', [DevelopmentController::class, 'destroyAsesmen'])->name('destroy.asesmen'); // dev.sertification.destroy.asesmen
+        Route::post('/{sert_id}/store/news', [DevelopmentController::class, 'storeDummyNews'])->name('store.news'); // dev.sertification.store.news
+        Route::delete('/{sert_id}/destroy/news', [DevelopmentController::class, 'destroyNews'])->name('destroy.news'); // dev.sertification.destroy.news
+        Route::get('/{sert_id}/list/asesis', [DevelopmentController::class, 'listAsesis'])->name('list.asesis'); // dev.sertification.list.asesis
+    });
+});
 require __DIR__ . '/auth.php';

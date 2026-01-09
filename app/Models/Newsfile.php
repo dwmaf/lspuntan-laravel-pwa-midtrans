@@ -9,9 +9,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Newsfile extends Model
 {
     use LogsActivity;
-    protected $guarded = [
-        
-    ];
+    protected $guarded = [];
     public function announcement()
     {
         return $this->belongsTo(News::class);

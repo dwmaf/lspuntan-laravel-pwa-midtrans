@@ -2,19 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Enums\AsesiStatus;
-use App\Enums\TransactionStatus;
+use App\Enums\StatusFinalAsesi;
+use App\Enums\StatusBerkasAdministrasi;
 use App\Models\Asesi;
 use App\Models\Asesor;
+use App\Models\Makulnilai;
 use App\Models\Sertification;
 use App\Models\Skema;
 use App\Models\Student;
-use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Auth\Events\Registered;
 
 class DatabaseSeeder extends Seeder
 {
@@ -57,7 +56,18 @@ class DatabaseSeeder extends Seeder
             ]));
         }
 
-        
+        $skemaMakuls = [
+            'Skema Pendamping UMKM' => ['Manajemen UMKM', 'Analisis Kelayakan Bisnis', 'Pemasaran Strategis'],
+            'Skema Ahli K3 Umum' => ['Dasar-Dasar K3', 'Hukum Ketenagakerjaan', 'Audit Internal'],
+            'Skema Teknisi Penginderaan Jauh' => ['Sistem Informasi Geografis', 'Interpretasi Citra', 'Fotogrametri'],
+            'Penyuluh Kehutanan Fasilitator' => ['Ekologi Hutan', 'Komunikasi Massa', 'Pengembangan Masyarakat'],
+            'Skema Analis Sumber Daya Manusia (SDM)' => ['Manajemen SDM', 'Hubungan Industrial', 'Pelatihan dan Pengembangan'],
+            'Skema Pengoperasian PLC (Programmable Logic Controller)' => ['Elektronika Industri', 'Logika Pemrograman', 'Kontrol Otomasi'],
+            'Skema Penerapan K3-Laboratorium' => ['Keamanan Laboratorium', 'Kimia Analitik', 'Pengelolaan Limbah B3'],
+            'Skema Programmer' => ['Algoritma dan Pemrograman', 'Struktur Data', 'Pemrograman Web', 'Basis Data'],
+        ];
+
+
         /** @var \App\Models\User|null $admin */
         // /** @var \Illuminate\Database\Eloquent\Collection $asesiUsers */
         $admin = null;
@@ -66,8 +76,8 @@ class DatabaseSeeder extends Seeder
             echo "Membuat user (tanpa event)...\n";
             $admin = User::create([
                 'email' => 'admin@g.c',
-                'name' => 'Afif Admin',
-                'password' => Hash::make('1234'),
+                'name' => 'Afif',
+                'password' => Hash::make('12345678'),
                 'email_verified_at' => now(),
             ]);
             $admin->assignRole('admin', 'asesor');
@@ -76,7 +86,7 @@ class DatabaseSeeder extends Seeder
             $direktur = User::create([
                 'email' => 'bomo@asesor.c',
                 'name' => 'Bomo Wibowo',
-                'password' => Hash::make('1234'),
+                'password' => Hash::make('12345678'),
                 'email_verified_at' => now(),
             ]);
             $direktur->assignRole('admin', 'asesor');
@@ -91,14 +101,14 @@ class DatabaseSeeder extends Seeder
             $student = User::create([
                 'email' => 'mahasiswa1@student.c',
                 'name' => 'Haningsih',
-                'password' => Hash::make('1234'),
+                'password' => Hash::make('12345678'),
                 'email_verified_at' => now(),
             ]);
             $student->assignRole('asesi');
             Student::create(['user_id' => $student->id]);
             $asesiUsers = User::factory(300)->create()->each(function ($user) {
                 $user->assignRole('asesi');
-                Student::create(['user_id' => $user->id]);
+                Student::factory()->create(['user_id' => $user->id]);
             });
         });
 
@@ -107,79 +117,98 @@ class DatabaseSeeder extends Seeder
         // 6. Buat 9 Sertifikasi yang SUDAH SELESAI
         echo "Membuat 9 sertifikasi yang sudah selesai...\n";
         for ($i = 0; $i < 9; $i++) {
+            $selectedSkema = $skemas->random();
             $tglSelesai = now()->subMonths(rand(1, 12));
             $sertification = Sertification::factory()->create([
-                'skema_id' => $skemas->random()->id,
+                'skema_id' => $selectedSkema->id,
                 'status' => 'selesai',
                 'tgl_apply_dibuka' => $tglSelesai->copy()->subWeeks(2),
                 'tgl_apply_ditutup' => $tglSelesai->copy()->subWeek(),
-                'biaya' => rand(500, 2000) * 1000,
-                'deadline_bayar' => $tglSelesai->copy()->subDays(3),
+                'biaya' => rand(100, 400) * 1000,
+                'no_rek' => '7126357123',
+                'bank' => 'BSI',
+                'atas_nama_rek' => 'Empat Pilar Interactive',
             ]);
 
-            $sertification->paymentInstruction()->create([
-                'user_id' => $admin->id,
-                'content' => 'Silakan lakukan pembayaran sesuai nominal yang tertera ke rekening berikut: Bank: Bank Mandiri Nomor Rekening: 1510012345678 Atas Nama: LSP Universitas Tanjungpura Mohon unggah bukti transfer setelah pembayaran berhasil.',
-            ]);
+            $asesorTersedia = $selectedSkema->asesors;
 
-            $sertification->asesors()->attach($allAsesors->random(rand(1, 2))->pluck('id'));
+            if ($asesorTersedia->count() > 0) {
+                $jumlahAmbil = rand(1, min(3, $asesorTersedia->count()));
+                $sertification->asesors()->attach(
+                    $asesorTersedia->random($jumlahAmbil)->pluck('id')
+                );
+            }
 
             $pendaftar = $asesiUsers->random(rand(20, 30));
             foreach ($pendaftar as $user) {
                 $asesi = Asesi::factory()->create([
                     'student_id' => $user->student->id,
                     'sertification_id' => $sertification->id,
-                    'status' => AsesiStatus::LULUS_SERTIFIKASI,
-                ]);
-                Transaction::factory()->create([
-                    'asesi_id' => $asesi->id,
-                    'sertification_id' => $sertification->id,
-                    'status' => TransactionStatus::BUKTI_PEMBAYARAN_TERVERIFIKASI,
-                    'tipe' => 'manual',
+                    'status_final' => StatusFinalAsesi::KOMPETEN,
                     'bukti_bayar' => 'seed/bukti_bayar.jpg',
                 ]);
+
+                $makuls = $skemaMakuls[$selectedSkema->nama_skema] ?? [];
+                foreach ($makuls as $makulName) {
+                    Makulnilai::create([
+                        'asesi_id' => $asesi->id,
+                        'nama_makul' => $makulName,
+                        'nilai_makul' => collect(['A', 'A-', 'B+', 'B'])->random(),
+                    ]);
+                }
             }
         }
 
 
         echo "Membuat 4 sertifikasi yang sedang berlangsung...\n";
         for ($i = 0; $i < 4; $i++) {
+            $selectedSkema = $skemas->random();
             $tglBuka = now()->subDays(rand(5, 10));
             $sertification = Sertification::factory()->create([
-                'skema_id' => $skemas->random()->id,
+                'skema_id' => $selectedSkema->id,
                 'status' => 'berlangsung',
                 'tgl_apply_dibuka' => $tglBuka,
                 'tgl_apply_ditutup' => $tglBuka->copy()->addWeeks(2),
+                'tgl_asesmen_mulai' => $tglBuka->copy()->addWeeks(2),
                 'biaya' => rand(500, 2000) * 1000,
-                'deadline_bayar' => $tglSelesai->copy()->subDays(3),
+                'no_rek' => '7126354612',
+                'bank' => 'BSI',
+                'atas_nama_rek' => 'Empat Pilar Interactive',
             ]);
 
-            $sertification->asesors()->attach($allAsesors->random(rand(1, 2))->pluck('id'));
+            $asesorTersedia = $selectedSkema->asesors;
+
+            if ($asesorTersedia->count() > 0) {
+                $jumlahAmbil = rand(1, min(3, $asesorTersedia->count()));
+
+                $sertification->asesors()->attach(
+                    $asesorTersedia->random($jumlahAmbil)->pluck('id')
+                );
+            }
 
             $pendaftar = $asesiUsers->random(rand(20, 30));
             foreach ($pendaftar as $user) {
+                // Determine status logic if needed, but keeping simple
                 $randomStatus = [
-                    AsesiStatus::MENUNGGU_VERIFIKASI_BERKAS,
-                    AsesiStatus::PERLU_PERBAIKAN_BERKAS,
-                    AsesiStatus::DILANJUTKAN_ASESMEN,
+                    StatusBerkasAdministrasi::SUDAH_LENGKAP,
+                    StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN,
+                    StatusBerkasAdministrasi::PERLU_PERBAIKAN_BERKAS,
                 ];
                 $asesi = Asesi::factory()->create([
                     'student_id' => $user->student->id,
                     'sertification_id' => $sertification->id,
-
-                    'status' => $randomStatus[array_rand($randomStatus)],
-                ]);
-                $randomTransactionStatus = [
-                    TransactionStatus::PENDING,
-                    TransactionStatus::BUKTI_PEMBAYARAN_DITOLAK,
-                ];
-                Transaction::factory()->create([
-                    'asesi_id' => $asesi->id,
-                    'sertification_id' => $sertification->id,
-                    'status' => $randomTransactionStatus[array_rand($randomTransactionStatus)],
-                    'tipe' => 'manual',
+                    'status_berkas' => $randomStatus[array_rand($randomStatus)],
                     'bukti_bayar' => 'seed/bukti_bayar.jpg',
                 ]);
+
+                $makuls = $skemaMakuls[$selectedSkema->nama_skema] ?? [];
+                foreach ($makuls as $makulName) {
+                    Makulnilai::create([
+                        'asesi_id' => $asesi->id,
+                        'nama_makul' => $makulName,
+                        'nilai_makul' => collect(['A', 'A-', 'B+', 'B', 'C+', 'C'])->random(),
+                    ]);
+                }
             }
         }
 
@@ -188,17 +217,25 @@ class DatabaseSeeder extends Seeder
         $sertifications = Sertification::all();
         $asesiMultiDaftar = $asesiUsers->random(25);
         foreach ($asesiMultiDaftar as $user) {
-
             $sertifikasiSudahDiikuti = Asesi::where('student_id', $user->student->id)->pluck('sertification_id');
             $sertifikasiTersedia = $sertifications->whereNotIn('id', $sertifikasiSudahDiikuti);
 
             if ($sertifikasiTersedia->isNotEmpty()) {
                 $sertifikasiBaru = $sertifikasiTersedia->random();
-                Asesi::factory()->create([
+                $asesi = Asesi::factory()->create([
                     'student_id' => $user->student->id,
                     'sertification_id' => $sertifikasiBaru->id,
-                    // 'status' => $sertifikasiBaru->status === 'selesai' ? AsesiStatus::LULUS_SERTIFIKASI : AsesiStatus::MENUNGGU_VERIFIKASI_BERKAS, // Gunakan Enums
+                    'bukti_bayar' => 'seed/bukti_bayar.jpg',
                 ]);
+
+                $makuls = $skemaMakuls[$sertifikasiBaru->skema->nama_skema] ?? [];
+                foreach ($makuls as $makulName) {
+                    Makulnilai::create([
+                        'asesi_id' => $asesi->id,
+                        'nama_makul' => $makulName,
+                        'nilai_makul' => collect(['A', 'A-', 'B+', 'B', 'C+', 'C'])->random(),
+                    ]);
+                }
             }
         }
     }

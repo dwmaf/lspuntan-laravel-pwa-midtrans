@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Asesi\Sertifikasi;
 
-use App\Enums\AsesiStatus;
-use App\Enums\TransactionStatus;
+use App\Enums\StatusAksesMenuAsesmen;
+use App\Enums\StatusBerkasAdministrasi;
+use App\Enums\StatusFinalAsesi;
 use App\Http\Controllers\Controller;
 use App\Traits\SendsPushNotifications;
 use App\Http\Controllers\NotificationController;
@@ -25,44 +26,56 @@ use Illuminate\Validation\Rule;
 class KelolaSertifikasiAsesiController extends Controller
 {
     use SendsPushNotifications;
-    public function asesi_daftar_sertifikasi(Request $request)
+    public function listSertifications(Request $request)
     {
         NotificationController::markAsRead($request);
         $user = $request->user();
         $student = $user->student;
-        $asesi = Asesi::where('student_id', $student->id)
+        $asesis = Asesi::where('student_id', $student->id)
             ->get()
             ->keyBy('sertification_id');
-        $sertifications = Sertification::with('skema', 'paymentInstruction')
+
+        $sertifications_tersedia = Sertification::with('skema')
             ->where('status', 'berlangsung')
+            ->whereHas('skema', fn($q) => $q->where('is_active', true))
             ->orderBy('tgl_apply_dibuka', 'desc')
             ->get();
+
+        $sertifications_saya = Sertification::with('skema')
+            ->whereHas('asesis', fn($q) => $q->where('student_id', $student->id))
+            ->orderBy('tgl_apply_dibuka', 'desc')
+            ->get();
+
         return Inertia::render('Asesi/SertifikasiList', [
-            'sertifications' => $sertifications,
-            'asesi' => $asesi
+            'sertifications_tersedia' => $sertifications_tersedia,
+            'sertifications_saya' => $sertifications_saya,
+            'asesis' => $asesis
         ]);
     }
 
-    public function form_daftar_sertifikasi($sert_id, Request $request)
+    public function applyForm(Sertification $sertification, Request $request)
     {
         $user = $request->user();
         $student = $user->student;
         // dd($student);
-        $existingAsesi = Asesi::where('student_id', $student->id)->where('sertification_id', $sert_id)->first();
+        $existingAsesi = Asesi::where('student_id', $student->id)->where('sertification_id', $sertification->id)->first();
         if ($existingAsesi) {
-            return redirect()->route('asesi.sertifikasi.applied.show', [$sert_id, $existingAsesi->id])->with('message', 'Anda sudah terdaftar pada skema sertifikasi ini.');
+            return redirect()->route('asesi.sertifikasi.applied.show', [$sertification, $existingAsesi])->with('message', 'Anda sudah terdaftar pada skema sertifikasi ini.');
+        }
+
+        if (!$sertification->skema->is_active) {
+            return redirect()->route('asesi.sertifikasi.list')->with('error', 'Skema sertifikasi ini sudah tidak aktif dan tidak menerima pendaftaran baru.');
         }
         return Inertia::render('Asesi/ApplySertifAsesi', [
-            'sertification' => Sertification::with('skema')->findOrFail($sert_id),
+            'sertification' => $sertification->load('skema'),
             'student' => $student,
             'user' => $user,
         ]);
     }
 
-    public function submit_form_daftar_sertifikasi($student_id, Request $request, Messaging $messaging)
+    public function submitForm(Student $student, Request $request, Messaging $messaging)
     {
         // dd($request);
-        $student = Student::with('user')->findOrFail($student_id);
         $request->validate([
             'sertification_id' => 'required|string|max:255',
             'name' => 'required|string|max:255',
@@ -110,6 +123,11 @@ class KelolaSertifikasiAsesiController extends Controller
             'dok_pendukung_lain.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
             'delete_files' => 'nullable|array',
         ]);
+        $sertification = Sertification::findOrFail($request->sertification_id);
+        if (!$sertification->skema->is_active) {
+            return redirect()->route('asesi.sertifikasi.list')->with('error', 'Skema sertifikasi ini sudah tidak aktif dan tidak menerima pendaftaran baru.');
+        }
+
         $asesi = DB::transaction(function () use ($request, $student, $messaging) {
             $user = $student->user;
             $student->fill($request->only(['nik','tmpt_lhr','tgl_lhr','kelamin','kebangsaan','no_tlp_rmh','no_tlp_kntr','kualifikasi_pendidikan',]));
@@ -145,43 +163,42 @@ class KelolaSertifikasiAsesiController extends Controller
         if ($recipients->isNotEmpty()) {
             $title = 'Pendaftar Baru';
             $body = $user->name . ' telah mendaftar sertifikasi ' . $sertification->skema->nama_skema;
-            $url = route('admin.sertifikasi.pendaftar.show', [$sertification->id, $asesiForNotif->id]);
+            $url = route('admin.sertifikasi.pendaftar.show', [$sertification, $asesiForNotif]);
             foreach ($recipients as $recipient) {
                 $this->sendPushNotification($messaging, $recipient, $title, $body, $url, 'PendaftarBaru');
             }
         }
-        return redirect(route('asesi.sertifikasi.applied.show', [$asesi->sertification_id, $asesi->id]))->with('message', 'Berhasil daftar sertifikasi');
+        return redirect(route('asesi.sertifikasi.applied.show', [$asesi->sertification_id, $asesi]))->with('message', 'Berhasil daftar sertifikasi');
     }
 
-    public function detail_applied_sertifikasi($sert_id, $asesi_id, Request $request)
+    public function showApplied(Sertification $sertification, Asesi $asesi, Request $request)
     {
         NotificationController::markAsRead($request);
-        $asesi = Asesi::with([
+        $asesi->load([
             'student.user',
             'asesifiles',
             'makulnilais',
-            'transaction' => fn($q) => $q->latest(),
             'sertifikat'
-        ])->findOrFail($asesi_id);
-        $asesi->latest_transaction = $asesi->transaction->first();
+        ]);
         $student = $asesi->student;
         // dd($student);
         if ($asesi->student->user_id !== $request->user()->id) {
             abort(403);
         }
         return Inertia::render('Asesi/DetailSertifAsesi', [
-            'sertification' => Sertification::with('skema')->findOrFail($sert_id),
+            'sertification' => $sertification->load('skema'),
             'asesi' => $asesi,
             'student' => $student,
-            'asesiStatusEnum' => array_column(AsesiStatus::cases(), 'value', 'name'),
-            'transactionStatusEnum' => array_column(TransactionStatus::cases(), 'value', 'name'),
+            'statusAksesMenuAsesmenOptions' => StatusAksesMenuAsesmen::options(),
+            'statusBerkasAdministrasiOptions' => StatusBerkasAdministrasi::options(),
+            'StatusFinalAsesiOptions' => StatusFinalAsesi::options(),
         ]);
     }
 
-    public function update_applied_sertifikasi($sert_id, $asesi_id, Request $request, Messaging $messaging)
+    public function updateApplied(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
         // dd($request);
-        $asesi = Asesi::with('student.user', 'asesifiles')->findOrFail($asesi_id);
+        $asesi->load('student.user', 'asesifiles');
         $student = $asesi->student;
         $user = $student->user;
         $request->validate([
@@ -301,7 +318,7 @@ class KelolaSertifikasiAsesiController extends Controller
         });
 
         if ($shoulSendNotif) {
-            $asesi = Asesi::with('student.user', 'sertification.skema', 'sertification.asesors.user')->findOrFail($asesi_id);
+            $asesi->load('student.user', 'sertification.skema', 'sertification.asesors.user');
             $sertification = $asesi->sertification;
             $user = $asesi->student->user;
 
@@ -316,7 +333,7 @@ class KelolaSertifikasiAsesiController extends Controller
             if ($recipients->isNotEmpty()) {
                 $title = 'Berkas Diperbaiki';
                 $body = $user->name . ' telah memperbaiki dan mengirim ulang berkas untuk sertifikasi ' . $sertification->skema->nama_skema;
-                $url = route('admin.sertifikasi.pendaftar.show', [$sertification->id, $asesi->id]);
+                $url = route('admin.sertifikasi.pendaftar.show', [$sertification, $asesi]);
 
                 foreach ($recipients as $recipient) {
                     $this->sendPushNotification($messaging, $recipient, $title, $body, $url, 'BerkasDiperbaiki');

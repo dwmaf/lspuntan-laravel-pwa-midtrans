@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import CustomHeader from '@/Components/CustomHeader.vue';
 
 const props = defineProps({
     sertification: Object,
@@ -13,7 +13,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <Head title="Cetak Berita Acara" />
+    <CustomHeader judul="Cetak Berita Acara" />
 
     <div class="bg-white text-black min-h-screen p-8 font-sans">
         

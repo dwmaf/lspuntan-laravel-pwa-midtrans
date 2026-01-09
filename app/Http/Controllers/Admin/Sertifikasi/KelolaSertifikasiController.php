@@ -21,12 +21,12 @@ class KelolaSertifikasiController extends Controller
     {
 
         return Inertia::render('Admin/KelolaSertifikasiAdmin', [
-            'sertifications_berlangsung' => Sertification::with('skema', 'asesors.user', 'paymentInstruction')
+            'sertifications_berlangsung' => Sertification::with('skema', 'asesors.user')
                 ->withCount('asesis')
                 ->where('status', 'berlangsung')
                 ->orderBy('tgl_apply_dibuka', 'desc')
                 ->get(),
-            'sertifications_selesai' => Sertification::with('skema', 'asesors.user', 'paymentInstruction')
+            'sertifications_selesai' => Sertification::with('skema', 'asesors.user')
                 ->withCount('asesis')
                 ->when($request->input('date_from'), function ($query, $dateFrom) {
                     $query->whereDate('tgl_apply_dibuka', '>=', $dateFrom);
@@ -42,14 +42,15 @@ class KelolaSertifikasiController extends Controller
                 ->when($request->input('skema'), function ($query, $skema) {
                     $query->whereHas('skema', fn($q) => $q->where('id', $skema));
                 })
-                ->where('status', 'selesai')
+                ->whereIn('status', ['selesai', 'dibatalkan'])
                 ->orderBy('tgl_apply_ditutup', 'desc')
                 ->latest()
-                ->paginate(5)
+                ->paginate(10)
                 ->onEachSide(0)
                 ->withQueryString(),
             'asesors' => Asesor::with('skemas', 'user')->withCount('sertifications')->get(),
             'skemas' => Skema::all(),
+            'activeSkemas' => Skema::where('is_active', true)->get(),
             'filters' => $request->only(['date_from', 'date_to', 'asesor', 'skema', 'tab']),
 
         ]);
@@ -64,24 +65,37 @@ class KelolaSertifikasiController extends Controller
             'asesor_ids.*' => 'exists:asesors,id',
             'tgl_apply_dibuka' => 'required|date',
             'tgl_apply_ditutup' => 'required|date|after_or_equal:tgl_apply_dibuka',
-            'deadline_bayar' => 'required|date',
+            'tgl_asesmen_mulai' => 'nullable|date',
+            'tgl_asesmen_selesai' => 'nullable|date|after_or_equal:tgl_asesmen_mulai',
+            'tuk' => 'nullable|string|max:255',
             'biaya' => 'required|numeric|min:0',
-            'tuk' => 'required',
+            'no_rek' => 'required|string|max:255',
+            'bank' => 'required|string|max:255',
+            'atas_nama_rek' => 'required|string|max:255',
         ]);
+        
+        $sertification = null;
+
         DB::transaction(function () use ($validatedData, $request, &$sertification) {
             $sertification = Sertification::create([
                 'skema_id' => $validatedData['skema_id'],
                 'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
                 'tgl_apply_ditutup' => $validatedData['tgl_apply_ditutup'],
-                'deadline_bayar' => $validatedData['deadline_bayar'],
+                'tgl_asesmen_mulai' => $validatedData['tgl_asesmen_mulai'] ?? null,
+                'tgl_asesmen_selesai' => $validatedData['tgl_asesmen_selesai'] ?? null,
                 'biaya' => $validatedData['biaya'],
-                'tuk' => $validatedData['tuk'],
+                'no_rek' => $validatedData['no_rek'],
+                'bank' => $validatedData['bank'],
+                'atas_nama_rek' => $validatedData['atas_nama_rek'],
+                'tuk' => $validatedData['tuk'] ?? null,
                 'status' => 'berlangsung',
             ]);
+            
             if (!empty($validatedData['asesor_ids'])) {
                 $sertification->asesors()->attach($validatedData['asesor_ids']);
             }
         });
+
         if ($sertification) {
             $recipients = User::role('asesi')->get();
             if ($recipients->isNotEmpty()) {
@@ -91,20 +105,21 @@ class KelolaSertifikasiController extends Controller
                 $this->sendMulticastNotification($messaging, $recipients, $title, $body, $url, 'SertifikasiBaru');
             }
         }
-        return redirect(route('admin.kelolasertifikasi.show', $sertification->id))->with('message', 'Sertifikasi berhasil dimulai!');
+        return redirect(route('admin.kelolasertifikasi.show', $sertification))->with('message', 'Sertifikasi berhasil dimulai!');
     }
 
-    public function show($sert_id)
+    public function show(Sertification $sertification)
     {
-        $sertification = Sertification::with('skema', 'asesors.user', 'paymentInstruction')->withCount('asesis')->findOrFail($sert_id);
+        $sertification->load('skema', 'asesors.user')->loadCount('asesis');
         return Inertia::render('Admin/DetailSertifikasiAdmin', [
             'sertification' => $sertification,
             'asesors' => Asesor::with('skemas', 'user')->get(),
             'skemas' => Skema::all(),
+            'activeSkemas' => Skema::where('is_active', true)->get(),
         ]);
     }
 
-    public function update($sert_id, Request $request)
+    public function update(Sertification $sertification, Request $request)
     {
         // dd($request);
         $validatedData = $request->validate([
@@ -113,20 +128,28 @@ class KelolaSertifikasiController extends Controller
             'asesor_ids.*' => 'exists:asesors,id',
             'tgl_apply_dibuka' => 'required|date',
             'tgl_apply_ditutup' => 'required|date|after_or_equal:tgl_apply_dibuka',
-            'deadline_bayar' => 'required|date',
+            'tgl_asesmen_mulai' => 'nullable|date',
+            'tgl_asesmen_selesai' => 'nullable|date|after_or_equal:tgl_asesmen_mulai',
             'biaya' => 'required|numeric|min:0',
-            'tuk' => 'required',
-            'status' => 'required|in:berlangsung,selesai',
+            'tuk' => 'nullable|string|max:255',
+            'no_rek' => 'required|string|max:255',
+            'bank' => 'required|string|max:255',
+            'atas_nama_rek' => 'required|string|max:255',
+            'status' => 'required|in:berlangsung,selesai,dibatalkan',
         ]);
-        $sertification = Sertification::findOrFail($sert_id);
+        
         DB::transaction(function () use ($validatedData, $sertification, $request) {
             $sertification->update([
                 'skema_id' => $validatedData['skema_id'],
                 'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
                 'tgl_apply_ditutup' => $validatedData['tgl_apply_ditutup'],
-                'deadline_bayar' => $validatedData['deadline_bayar'],
+                'tgl_asesmen_mulai' => $validatedData['tgl_asesmen_mulai'] ?? null,
+                'tgl_asesmen_selesai' => $validatedData['tgl_asesmen_selesai'] ?? null,
                 'biaya' => $validatedData['biaya'],
-                'tuk' => $validatedData['tuk'],
+                'no_rek' => $validatedData['no_rek'],
+                'bank' => $validatedData['bank'],
+                'atas_nama_rek' => $validatedData['atas_nama_rek'],
+                'tuk' => $validatedData['tuk'] ?? null,
                 'status' => $validatedData['status'],
             ]);
             if (isset($validatedData['asesor_ids'])) {
@@ -135,33 +158,48 @@ class KelolaSertifikasiController extends Controller
                 $sertification->asesors()->sync([]);
             }
         });
-        $sertification->update($validatedData);
+        // $sertification->update($validatedData);
 
         return redirect()->back()->with('message', 'Data Sertifikasi berhasil diupdate');
     }
 
-    public function destroy($sert_id)
+    public function destroy(Sertification $sertification)
     {
-        Sertification::destroy($sert_id);
-        return redirect(route('admin.kelolasertifikasi.index'))->with('message', 'Sertifikasi berhasil dihapus');
+        // Guard: Cek apakah sudah ada asesi mendaftar
+        if ($sertification->asesis()->exists()) {
+            return redirect()->back()->with('error', 'GAGAL: Sertifikasi ini tidak bisa dihapus karena sudah ada pendaftar (Asesi). Harap batalkan pendaftaran peserta terlebih dahulu.');
+        }
+
+        $sertification->delete();
+        return redirect(route('admin.kelolasertifikasi.index'))->with('message', 'Sertifikasi berhasil dihapus (Arsip)');
+    }
+
+    public function cancel(Sertification $sertification)
+    {
+        if ($sertification->status === 'selesai') {
+            return back()->with('error', 'Gagal: Sertifikasi yang sudah selesai tidak dapat dibatalkan.');
+        }
+
+        $sertification->update(['status' => 'dibatalkan']);
+        return back()->with('message', 'Sertifikasi berhasil dibatalkan.');
     }
 
 
-    public function rincian_laporan($sert_id, Request $request)
+    public function rincian_laporan(Sertification $sertification, Request $request)
     {
+        $sertification->load('asesors.user', 'skema', 'asesis.student.user');
         return Inertia::render('Admin/LaporanAdmin', [
-            'sertification' => Sertification::with('asesors.user', 'skema', 'asesis.student.user')->findOrFail($sert_id)
+            'sertification' => $sertification
         ]);
     }
 
-    public function print_laporan($sert_id)
+    public function print_laporan(Sertification $sertification)
     {
-        $sertification = Sertification::with([
+        $sertification->load([
             'skema',
             'asesors.user',
             'asesis.student.user'
-        ])
-            ->findOrFail($sert_id);
+        ]);
         
         return Inertia::render('Admin/LaporanPrint', [
             'sertification' => $sertification,

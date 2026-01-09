@@ -1,7 +1,7 @@
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
-import Header from "@/Components/CustomHeader.vue";
+import CustomHeader from "@/Components/CustomHeader.vue";
 import PendaftarDetailDataStatis from "@/Pages/Admin/PendaftarDetailDataStatis.vue"; // Kita bisa pakai ulang komponen ini
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
@@ -10,20 +10,30 @@ import InputLabel from "@/Components/Input/InputLabel.vue";
 import FileIcon from "@/Components/FileIcon.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
+import SelectInput from "@/Components/Input/SelectInput.vue";
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
 import InputError from "@/Components/Input/InputError.vue";
+import Alert from "@/Components/Alert.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import { ref, computed, onMounted } from 'vue';
 import { X } from 'lucide-vue-next';
-
 const props = defineProps({
     sertification: Object,
     student: Object,
     asesi: Object,
-    asesiStatusEnum: Object,
-    transactionStatusEnum: Object,
+    statusAksesMenuAsesmenOptions: Array,
+    statusBerkasAdministrasiOptions: Array,
+    StatusFinalAsesiOptions: Array,
 });
-// console.log(props.asesi.status);
+const genderOptions = [
+    { value: 'Laki-laki', text: 'Laki-Laki' },
+    { value: 'Perempuan', text: 'Perempuan' },
+];
+
+const tujuanOptions = [
+    { value: 'Sertifikasi', text: 'Sertifikasi' },
+    { value: 'Lainnya', text: 'Lainnya' },
+];
 
 const showUrlNotification = ref(false);
 const urlNotificationMessage = ref('');
@@ -92,40 +102,67 @@ const update = () => {
 const addMakul = () => form.makulNilais.push({ nama_makul: '', nilai_makul: '' });
 const removeMakul = (index) => form.makulNilais.splice(index, 1);
 
-
-
-const getAsesiStatusClass = (status) => {
-    const classes = {
-        [props.asesiStatusEnum.MENUNGGU_VERIFIKASI_BERKAS]: 'bg-amber-100 text-amber-800 dark:bg-amber-700 dark:text-amber-100',
-        [props.asesiStatusEnum.PERLU_PERBAIKAN_BERKAS]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
-        [props.asesiStatusEnum.DITOLAK]: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100',
-        [props.asesiStatusEnum.DILANJUTKAN_ASESMEN]: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
-        [props.asesiStatusEnum.LULUS_SERTIFIKASI]: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+const getStatusBerkasAdministrasi = (status) => {
+    const data = {
+        'menunggu_verifikasi_admin': {
+            class: 'bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-100',
+            text: 'Menunggu Verifikasi Admin'
+        },
+        'perlu_perbaikan_berkas': {
+            class: 'bg-amber-100 text-amber-800 dark:bg-amber-700 dark:text-amber-100',
+            text: 'Perlu Perbaikan Berkas'
+        },
+        'sudah_lengkap': {
+            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            text: 'Sudah Lengkap'
+        },
     };
-    return classes[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200';
+    return data[status] || {
+        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        text: status
+    };
 };
-const getPaymentStatusInfo = (transaction) => {
 
-    if (!transaction) {
-        return { text: 'Belum Submit Bukti Pembayaran', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' };
-    }
-    if (transaction.status === 'belum_bayar') {
-        return { text: 'Belum Bayar', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100', secondclass: "border-gray-300 dark:border-gray-600" };
-    }
-    if (transaction.tipe === 'manual' && transaction.bukti_bayar && transaction.status === props.transactionStatusEnum.PENDING) {
-        return { text: 'Menunggu Verifikasi', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100', secondclass: "border-yellow-300 dark:border-yellow-700" };
-    }
-    if (transaction.tipe === 'manual' && transaction.status === props.transactionStatusEnum.BUKTI_PEMBAYARAN_TERVERIFIKASI) {
+const getStatusAksesMenuAsesmen = (status) => {
+    const data = {
+        'belum_diberikan': {
+            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            text: 'Belum Diberikan'
+        },
+        'diberikan': {
+            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            text: 'Diberikan'
+        },
+    };
+    return data[status] || {
+        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        text: status
+    };
+};
 
-        return { text: 'Pembayaran Terverifikasi', class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100', secondclass: "border-green-300 dark:border-green-700" };
-    }
-    if (transaction.tipe === 'manual' && transaction.status === props.transactionStatusEnum.BUKTI_PEMBAYARAN_DITOLAK) {
-        return { text: 'Bukti Pembayaran Ditolak', class: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100', secondclass: "border-red-300 dark:border-red-700" };
-    }
-    if (transaction.tipe === 'manual' && transaction.status === props.transactionStatusEnum.PERLU_PERBAIKAN_BUKTI_BAYAR) {
-        return { text: 'Perlu Perbaikan', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100', secondclass: "border-yellow-300 dark:border-yellow-700" };
-    }
-    return { text: 'N/A', class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200' };
+const getStatusFinalAsesi = (status) => {
+    const data = {
+        'belum_ditetapkan': {
+            class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+            text: 'Belum Ditetapkan'
+        },
+        'belum_kompeten': {
+            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            text: 'Belum Kompeten'
+        },
+        'kompeten': {
+            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            text: 'Kompeten'
+        },
+        'diskualifikasi': {
+            class: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100',
+            text: 'Diskualifikasi'
+        },
+    };
+    return data[status] || {
+        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        text: status
+    };
 };
 
 const getFiles = (collection, type) => {
@@ -143,109 +180,56 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
 <template>
     <AsesiLayout>
 
-        <Header :judul="`Detail Pengajuan: ${sertification.skema?.nama_skema ?? ''}`" />
+        <CustomHeader :judul="`Detail Pengajuan: ${sertification.skema?.nama_skema ?? ''}`" />
 
-        <AsesiSertifikasiMenu :sertification-id="props.sertification.id" :asesi="props.asesi"
-            :latest-transaction="props.asesi.latest_transaction" />
+        <AsesiSertifikasiMenu :sertification="props.sertification" :asesi="props.asesi" />
 
         <div class="max-w-7xl mx-auto">
             <div v-if="isEditing" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <form @submit.prevent="update" class="mt-6 space-y-6">
                     <h3 class="dark:text-gray-300 font-semibold">A. Data Pribadi</h3>
                     <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <InputLabel value="Nama Lengkap" required />
-                            <TextInput v-model="form.name" type="text" required />
-                            <InputError :message="form.errors.name" />
-                        </div>
-                        <div>
-                            <InputLabel value="No. KTP" required />
-                            <TextInput v-model="form.nik" type="text" required />
-                            <InputError :message="form.errors.nik" />
-                        </div>
-                        <div>
-                            <InputLabel value="Tempat Lahir" required />
-                            <TextInput v-model="form.tmpt_lhr" type="text" required />
-                            <InputError :message="form.errors.tmpt_lhr" />
-                        </div>
-                        <div>
-                            <InputLabel value="Tanggal Lahir" required />
-                            <TextInput v-model="form.tgl_lhr" type="date" required />
-                            <InputError :message="form.errors.tgl_lhr" />
-                        </div>
-                        <div>
-                            <InputLabel for="kelamin" value="Jenis Kelamin" required />
-                            <select id="kelamin" v-model="form.kelamin" required
-                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                <option value="Laki-laki">Laki-Laki</option>
-                                <option value="Perempuan">Perempuan</option>
-                            </select>
-                            <InputError :message="form.errors.kelamin" />
-                        </div>
-                        <div>
-                            <InputLabel value="Kebangsaan" required />
-                            <TextInput v-model="form.kebangsaan" type="text" required />
-                            <InputError :message="form.errors.kebangsaan" />
-                        </div>
-                        <div>
-                            <InputLabel value="No. Tlp HP(WA)" required />
-                            <TextInput v-model="form.no_tlp_hp" type="text" required />
-                            <InputError :message="form.errors.no_tlp_hp" />
-                        </div>
-                        <div>
-                            <InputLabel value="No. Tlp Rumah" />
-                            <TextInput v-model="form.no_tlp_rmh" type="text" />
-                            <InputError :message="form.errors.no_tlp_rmh" />
-                        </div>
-                        <div>
-                            <InputLabel value="No. Tlp Kantor" />
-                            <TextInput v-model="form.no_tlp_kntr" type="text" />
-                            <InputError :message="form.errors.no_tlp_kntr" />
-                        </div>
-                        <div>
-                            <InputLabel value="Kualifikasi Pendidikan (tulis: Mahasiswa S1)" />
-                            <TextInput v-model="form.kualifikasi_pendidikan" type="text" required />
-                            <InputError :message="form.errors.kualifikasi_pendidikan" />
-                        </div>
+                        <TextInput id="name" label="Nama Lengkap Sesuai KTP" v-model="form.name" type="text" required
+                            :error="form.errors.name" />
+                        <TextInput id="nik" label="No. KTP" v-model="form.nik" type="text" required
+                            :error="form.errors.nik" />
+                        <TextInput id="tmpt_lhr" label="Tempat Lahir" v-model="form.tmpt_lhr" type="text" required
+                            :error="form.errors.tmpt_lhr" />
+                        <TextInput id="tgl_lhr" label="Tanggal Lahir" v-model="form.tgl_lhr" type="date" required
+                            :error="form.errors.tgl_lhr" />
+                        <SelectInput id="kelamin" label="Jenis Kelamin" v-model="form.kelamin" :options="genderOptions"
+                            placeholder="--Pilih Kelamin--" :error="form.errors.kelamin" required />
+                        <TextInput id="kebangsaan" label="Kebangsaan" v-model="form.kebangsaan" type="text" required
+                            :error="form.errors.kebangsaan" />
+                        <TextInput id="no_tlp_hp" label="No. Tlp HP(WA)" v-model="form.no_tlp_hp" type="text" required
+                            :error="form.errors.no_tlp_hp" />
+                        <TextInput id="no_tlp_rmh" label="No. Tlp Rumah" v-model="form.no_tlp_rmh" type="text"
+                            :error="form.errors.no_tlp_rmh" />
+                        <TextInput id="no_tlp_kntr" label="No. Tlp Kantor" v-model="form.no_tlp_kntr" type="text"
+                            :error="form.errors.no_tlp_kntr" />
+                        <TextInput id="kualifikasi_pendidikan" label="Kualifikasi Pendidikan Terakhir"
+                            v-model="form.kualifikasi_pendidikan" type="text" required
+                            :error="form.errors.kualifikasi_pendidikan" />
                     </div>
 
                     <!-- Data Pekerjaan -->
                     <h3 class="dark:text-gray-300 font-semibold pt-4">B. Data Pekerjaan Sekarang</h3>
                     <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <InputLabel value="Nama Institusi/Perusahaan" />
-                            <TextInput v-model="form.nama_institusi" type="text" />
-                            <InputError :message="form.errors.nama_institusi" />
-                        </div>
-                        <div>
-                            <InputLabel value="Jabatan" />
-                            <TextInput v-model="form.jabatan" type="text" />
-                            <InputError :message="form.errors.jabatan" />
-                        </div>
-                        <div>
-                            <InputLabel value="Alamat Kantor" />
-                            <TextInput v-model="form.alamat_kantor" type="text" />
-                            <InputError :message="form.errors.alamat_kantor" />
-                        </div>
-                        <div>
-                            <InputLabel value="No. Tlp/Email/Fax" />
-                            <TextInput v-model="form.no_tlp_email_fax" type="text" />
-                            <InputError :message="form.errors.no_tlp_email_fax" />
-                        </div>
+                        <TextInput id="nama_institusi" label="Nama Institusi/Perusahaan" v-model="form.nama_institusi"
+                            type="text" :error="form.errors.nama_institusi" />
+                        <TextInput id="jabatan" label="Jabatan" v-model="form.jabatan" type="text"
+                            :error="form.errors.jabatan" />
+                        <TextInput id="alamat_kantor" label="Alamat Kantor" v-model="form.alamat_kantor" type="text"
+                            :error="form.errors.alamat_kantor" />
+                        <TextInput id="no_tlp_email_fax" label="No. Tlp/Email/Fax" v-model="form.no_tlp_email_fax"
+                            type="text" :error="form.errors.no_tlp_email_fax" />
                     </div>
 
                     <!-- Data Sertifikasi -->
                     <h3 class="dark:text-gray-300 font-semibold pt-4">C. Data Sertifikasi</h3>
-                    <div>
-                        <InputLabel value="Tujuan Sertifikasi" required />
-                        <select v-model="form.tujuan_sert" required
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:border-indigo-600 focus:ring-indigo-600 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option value="" disabled>--Pilih tujuan sertifikasi--</option>
-                            <option value="Sertifikasi">Sertifikasi</option>
-                            <option value="Lainnya">Lainnya</option>
-                        </select>
-                        <InputError :message="form.errors.tujuan_sert" />
-                    </div>
+                    <SelectInput id="tujuan_sert" label="Tujuan Sertifikasi" v-model="form.tujuan_sert"
+                        :options="tujuanOptions" placeholder="--Pilih tujuan sertifikasi--"
+                        :error="form.errors.tujuan_sert" required />
 
                     <!-- Mata Kuliah Dinamis -->
                     <div>
@@ -355,57 +339,54 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
                 <div class="flex justify-end mb-4">
                     <EditButton @click="enterEditMode">Edit Data</EditButton>
                 </div>
-                <div v-if="showUrlNotification"
-                    class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 border border-green-300 dark:border-green-800"
-                    role="alert">
-                    <span class="font-medium">!Notifikasi</span> {{ urlNotificationMessage }}
-                </div>
-                <div v-if="asesi.status === props.asesiStatusEnum.PERLU_PERBAIKAN_BERKAS"
-                    class="p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-800"
-                    role="alert">
-                    <span class="font-medium">Perhatian!</span> Admin meminta perbaikan berkas dengan catatan:
-                    <p v-if="asesi.catatan_perbaikan" class="mt-2 font-mono">{{ asesi.catatan_perbaikan }}</p>
-                    <p v-else class="mt-2 font-mono">Tanpa catatan</p>
-                </div>
+
+                <Alert v-if="showUrlNotification" type="success" title="Notifikasi">
+                    {{ urlNotificationMessage }}
+                </Alert>
+
+                <Alert v-if="asesi.status_berkas === 'perlu_perbaikan_berkas'" type="warning" title="Perhatian!">
+                    <span v-if="asesi.catatan_perbaikan">
+                        Admin meminta perbaikan berkas dengan catatan:
+                        <p class="mt-2 font-mono">{{ asesi.catatan_perbaikan }}</p>
+                    </span>
+                    <span v-else>
+                        Admin meminta perbaikan berkas
+                    </span>
+                </Alert>
+
                 <PendaftarDetailDataStatis :asesi="props.asesi" />
-
-                <div v-if="asesi.latest_transaction?.status === props.transactionStatusEnum.PERLU_PERBAIKAN_BUKTI_BAYAR"
-                    class="p-4 mt-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-800"
-                    role="alert">
-                    <span class="font-medium">Perhatian!</span> Admin meminta perbaikan bukti pembayaran:
-                    <p v-if="asesi.latest_transaction.catatan" class="mt-2 font-mono">{{
-                        asesi.latest_transaction.catatan }}</p>
-                    <p v-else class="mt-2 font-mono">Tanpa catatan</p>
-                </div>
-                <div v-if="asesi.latest_transaction?.status === props.transactionStatusEnum.BUKTI_PEMBAYARAN_DITOLAK"
-                    class="p-4 mt-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 border border-red-300 dark:border-red-800"
-                    role="alert">
-                    <span class="font-medium">Perhatian!</span> Bukti pembayaran ditolak:
-                    <p v-if="asesi.latest_transaction.catatan" class="mt-2 font-mono">{{
-                        asesi.latest_transaction.catatan }}</p>
-                    <p v-else class="mt-2 font-mono">Silahkan upload ulang bukti pembayaran yang benar.</p>
-                </div>
-
-
                 <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">E. Status
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     <div>
-                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Asesi</dt>
-                        <dd class="mt-1 text-sm mr-1">
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                            Status Berkas Administrasi Asesi</dt>
+                        <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
                             <span
-                                :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getAsesiStatusClass(asesi.status)]">
-                                {{ asesi.status.replace(/_/g, ' ') }}
+                                :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusBerkasAdministrasi(asesi.status_berkas).class]">
+                                {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
+                            </span>
+
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Hak Akses Menu Asesmen
+                        </dt>
+                        <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
+                            <span
+                                :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).class]">
+                                {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
                             </span>
                         </dd>
                     </div>
                     <div>
-                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Pembayaran</dt>
-                        <dd>
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Akhir Asesi</dt>
+                        <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
                             <span
-                                :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getPaymentStatusInfo(asesi.latest_transaction).class]">
-                                {{ getPaymentStatusInfo(asesi.latest_transaction).text }}
+                                :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusFinalAsesi(asesi.status_final).class]">
+                                {{ getStatusFinalAsesi(asesi.status_final).text }}
                             </span>
+
                         </dd>
                     </div>
                 </div>
@@ -420,7 +401,7 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
                             <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Sertifikat
                                 Asesi
                             </dt>
-                            <dd v-if="asesi.status === 'lulus_sertifikasi'" class="mt-1 text-sm space-y-2">
+                            <dd v-if="asesi.status_final === 'kompeten'" class="mt-1 text-sm space-y-2">
                                 <a :href="`/storage/${asesi.sertifikat.file_path}`" target="_blank"
                                     class="text-blue-500 hover:text-blue-700">
                                     Lihat Sertifikat

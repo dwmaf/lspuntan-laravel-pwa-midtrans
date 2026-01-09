@@ -2,19 +2,24 @@
 
 namespace App\Models;
 
-use App\Enums\AsesiStatus;
+use App\Enums\StatusBerkasAdministrasi;
+use App\Enums\StatusAksesMenuAsesmen;
+use App\Enums\StatusFinalAsesi;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Asesi extends Model
 {
-    use LogsActivity, HasFactory;
+    use LogsActivity, HasFactory, SoftDeletes;
     /** @use HasFactory<\Database\Factories\AsesiFactory> */
     protected $guarded = [];
     protected $casts = [
-        'status' => AsesiStatus::class,
+        'status_berkas' => StatusBerkasAdministrasi::class,
+        'status_akses_asesmen' => StatusAksesMenuAsesmen::class,
+        'status_final' => StatusFinalAsesi::class,
     ];
     public function student()
     {
@@ -32,10 +37,10 @@ class Asesi extends Model
     {
         return $this->hasMany(Asesifile::class);
     }
-    public function transaction()
-    {
-        return $this->hasMany(Transaction::class);
-    }
+    // public function transaction()
+    // {
+    //     return $this->hasMany(Transaction::class);
+    // }
     public function asesiasesmenfiles()
     {
         return $this->hasMany(Asesiasesmenfile::class);

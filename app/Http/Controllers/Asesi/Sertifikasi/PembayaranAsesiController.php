@@ -26,14 +26,14 @@ class PembayaranAsesiController extends Controller
 {
 use SendsPushNotifications;
     
-    public function index_rincian_pembayaran($sert_id, $asesi_id,  Request $request)
+    public function index_rincian_pembayaran(Sertification $sertification, Asesi $asesi,  Request $request)
     {
         // dd($request);
         NotificationController::markAsRead($request);
-        $asesi = Asesi::with([
+        $asesi->load([
             'student',
             'transaction' => fn($q) => $q->latest(), // Ambil semua transaksi, urutkan terbaru
-        ])->findOrFail($asesi_id);
+        ]);
         
         if ($asesi->student->user_id !== $request->user()->id) {
             abort(403);
@@ -41,21 +41,21 @@ use SendsPushNotifications;
 
         $asesi->latest_transaction = $asesi->transaction->first();
         return Inertia::render('Asesi/PembayaranAsesi', [
-            'sertification' => Sertification::with('skema', 'paymentInstruction')->findOrFail($sert_id),
+            'sertification' => $sertification->load('skema', 'paymentInstruction'),
             'asesi' => $asesi,
         ]);
     }
 
-    public function upload_bukti_pembayaran($sert_id, $asesi_id, Request $request, Messaging $messaging)
+    public function upload_bukti_pembayaran(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
         // dd($request);
         $request->validate([
             'bukti_bayar' => 'required|image|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
         // $sertification = Sertification::with('asesor', 'skema')->find($sert_id);
-        $asesi = Asesi::with('student.user')->find($asesi_id);
+        $asesi->load('student.user');
         $transaction = Transaction::firstOrNew(
-            ['asesi_id' => $asesi_id, 'sertification_id' => $sert_id],
+            ['asesi_id' => $asesi->id, 'sertification_id' => $sertification->id],
             ['status' => 'pending', 'tipe' => 'manual']
         );
         FileHelper::handleSingleFileDeletes($transaction, $request->input('delete_files', []));
@@ -64,11 +64,11 @@ use SendsPushNotifications;
         $transaction->save();
 
         $recipients = User::role('admin')->get();
-        $sertification = Sertification::with('skema')->findOrFail($sert_id);
+        $sertification->load('skema');
         if ($recipients->isNotEmpty()) {
             $title = 'Bukti Pembayaran Baru';
             $body = $asesi->student->user->name . ' mengunggah bukti pembayaran untuk sertifikasi ' . $sertification->skema->nama_skema;
-            $url = route('admin.sertifikasi.pendaftar.show', ['sert_id' => $sertification->id, 'asesi_id' => $asesi->id]);
+            $url = route('admin.sertifikasi.pendaftar.show', [$sertification, $asesi]);
             foreach ($recipients as $recipient) {
                 $this->sendPushNotification($messaging, $recipient, $title, $body, $url, 'AsesiUploadBuktiPembayaran');
             }

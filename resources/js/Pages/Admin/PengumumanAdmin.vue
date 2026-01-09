@@ -3,6 +3,7 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
+import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import InputError from "@/Components/Input/InputError.vue";
 import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
@@ -15,6 +16,7 @@ import DeleteButton from "@/Components/Button/DeleteButton.vue";
 import Modal from "@/Components/Modal.vue";
 import ToggleSwitch from "@/Components/ToggleSwitch.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
+import CreatorInfo from "@/Components/CreatorInfo.vue";
 
 const props = defineProps({
     sertification: Object,
@@ -74,7 +76,7 @@ const submit = () => {
         },
     };
     if (formMode.value === 'create') {
-        form.post(route('admin.sertifikasi.announcement.store', { sert_id: props.sertification.id }), options);
+        form.post(route('admin.sertifikasi.announcement.store', { sertification: props.sertification.id }), options);
     } else if (formMode.value === 'edit') {
         form.post(route('admin.sertifikasi.assessment-announcement.update', { sert_id: props.sertification.id, peng_id: editingPengumumanId.value }), options);
     }
@@ -189,18 +191,11 @@ const fetchReaders = (newsId) => {
         <div v-if="formMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit Pengumuman</h2>
             <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
-                <div>
-                    <InputLabel value="Rincian" />
-                    <textarea v-model="form.content" rows="8"
-                        class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
-                    <InputError :message="form.errors.content" />
-                </div>
-                <div>
-                    <MultiFileInput v-model="form.newFiles" v-model:delete-list="form.delete_files" label="Lampiran"
-                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
-                        :existing-files="pengumumans.data.find(p => p.id === editingPengumumanId)?.newsfiles || []"
-                        :error="form.errors.newFiles" :error-list="form.errors['newFiles.0']" />
-                </div>
+                <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
+                <MultiFileInput v-model="form.newFiles" v-model:delete-list="form.delete_files" label="Lampiran"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+                    :existing-files="pengumumans.data.find(p => p.id === editingPengumumanId)?.newsfiles || []"
+                    :error="form.errors.newFiles" :error-list="form.errors['newFiles.0']" />
                 <div class="mt-2">
                     <label class="flex items-center">
                         <Checkbox v-model:checked="form.send_notification" />
@@ -220,17 +215,10 @@ const fetchReaders = (newsId) => {
         <div v-if="formMode === 'create'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Buat Pengumuman</h2>
             <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
-                <div>
-                    <InputLabel value="Rincian" />
-                    <textarea v-model="form.content" rows="8"
-                        class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
-                    <InputError :message="form.errors.content" />
-                </div>
-                <div>
-                    <MultiFileInput v-model="form.newFiles" label="Lampiran"
-                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx" :error="form.errors.newFiles"
-                        :error-list="form.errors['newFiles.0']" />
-                </div>
+                <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
+                <MultiFileInput v-model="form.newFiles" label="Lampiran"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx" :error="form.errors.newFiles"
+                    :error-list="form.errors['newFiles.0']" />
                 <div class="mt-2">
                     <label class="flex items-center">
                         <Checkbox v-model:checked="form.send_notification" />
@@ -250,7 +238,7 @@ const fetchReaders = (newsId) => {
         <div v-if="formMode === 'list'">
             <div class="flex flex-col gap-2">
                 <AddButton class="self-end" @click="showCreateForm">Tambah Pengumuman</AddButton>
-                <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
+                <div v-if="!pengumumans" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                     <p class="text-gray-500 dark:text-gray-400 font-semibold text-sm">Buat pengumuman baru untuk
                         para asesi.</p>
                 </div>
@@ -260,25 +248,8 @@ const fetchReaders = (newsId) => {
                 <div v-if="pengumumans.data.length > 0" v-for="pengumuman in pengumumans.data" :key="pengumuman.id"
                     class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-2 gap-2">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="shrink-0">
-                                <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
-                                    fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                            </div>
-                            <div class="min-w-0">
-                                <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
-                                    {{ pengumuman.user?.asesor ? pengumuman.user?.name : 'Admin' }}
-                                </h5>
-                                <div class="text-xs text-gray-400">
-                                    {{ formatDate(pengumuman.created_at) }}
-                                    <span v-if="pengumuman.created_at !== pengumuman.updated_at"
-                                        class="text-gray-500">(diedit)</span>
-                                </div>
-                            </div>
-                        </div>
+                        <CreatorInfo :name="pengumuman.user?.asesor ? pengumuman.user?.name : 'Admin'"
+                            :created-at="pengumuman.created_at" :updated-at="pengumuman.updated_at" class="min-w-0" />
 
                         <div class="mt-1 flex flex-wrap gap-2 md:justify-end w-full md:w-auto">
                             <EditButton @click="showEditForm(pengumuman)">Edit</EditButton>
@@ -327,23 +298,7 @@ const fetchReaders = (newsId) => {
                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Preview Pengumuman</h2>
                 <div class="border-t border-gray-200 dark:border-gray-700 py-4">
                     <div class="flex justify-between items-center mb-2">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="shrink-0">
-                                <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
-                                    fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ $page.props.auth.user?.name || 'Admin' }}
-                                </h5>
-                                <div class="text-xs text-gray-400">
-                                    {{ formatDate(new Date()) }}
-                                </div>
-                            </div>
-                        </div>
+                        <CreatorInfo :name="$page.props.auth.user?.name || 'Admin'" :created-at="new Date()" />
                     </div>
 
                     <div v-html="form.content.replace(/\n/g, '<br>')"

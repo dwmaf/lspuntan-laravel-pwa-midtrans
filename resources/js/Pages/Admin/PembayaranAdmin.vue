@@ -4,12 +4,15 @@ import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
 import InputError from "@/Components/Input/InputError.vue";
 import InputLabel from "@/Components/Input/InputLabel.vue";
+import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import AddButton from "@/Components/Button/AddButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import DateInput from "@/Components/Input/DateInput.vue";
 import Modal from "@/Components/Modal.vue";
+// import Link from '@/Components/Link.vue';
+import CreatorInfo from '@/Components/CreatorInfo.vue';
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import NumberInput from "@/Components/Input/NumberInput.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
@@ -134,28 +137,10 @@ const formatDateTime = (dateString) => {
             </div>
             <div v-else class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="shrink-0">
-                            <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
-                                fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h5 v-if="sertification.payment_instruction"
-                                class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                {{
-                                    sertification.payment_instruction.name ?? 'Admin'
-                                }}
-                            </h5>
-                            <div class="text-xs text-gray-400">
-                                {{ formatDate(sertification.payment_instruction.created_at) }}
-                                <span
-                                    v-if="sertification.payment_instruction.created_at !== sertification.payment_instruction.updated_at">(Diedit)</span>
-                            </div>
-                        </div>
-                    </div>
+                    <CreatorInfo :name="sertification.payment_instruction?.name"
+                        :created-at="sertification.payment_instruction?.created_at"
+                        :updated-at="sertification.payment_instruction?.updated_at"
+                        v-if="sertification.payment_instruction" class="mb-4" />
 
                     <EditButton @click="edit">Edit</EditButton>
                 </div>
@@ -192,25 +177,12 @@ const formatDateTime = (dateString) => {
 
             </div>
             <form @submit.prevent="submit" class="flex flex-col gap-4">
-                <div>
-                    <InputLabel value="Rincian Pembayaran" />
-                    <textarea v-model="form.content" rows="8"
-                        class="mt-1 w-full text-sm p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-900 dark:text-gray-100"></textarea>
-                    <InputError :message="form.errors.content" />
-                </div>
-                <div>
-                    <InputLabel value="Biaya Sertifikasi" />
-                    <p v-if="formattedHarga" class="text-sm font-medium text-gray-800 dark:text-gray-400">{{
-                        formattedHarga }}
-                    </p>
-                    <NumberInput min="0" v-model="form.biaya" required />
-                    <InputError :message="form.errors.biaya" />
-                </div>
-                <div>
-                    <InputLabel value="Tanggal Bayar Ditutup" />
-                    <DateInput v-model="form.deadline_bayar" required />
-                    <InputError :message="form.errors.deadline_bayar" />
-                </div>
+                <TextareaInput id="content" label="Rincian Pembayaran" v-model="form.content" rows="8" required
+                    :error="form.errors.content" />
+                <NumberInput id="biaya" label="Biaya Sertifikasi" v-model="form.biaya" :formatted-value="formattedHarga"
+                    min="0" required :error="form.errors.biaya" />
+                <DateInput id="deadline_bayar" label="Tanggal Bayar Ditutup" v-model="form.deadline_bayar" required
+                    :error="form.errors.deadline_bayar" />
                 <div class="flex items-center justify-between">
                     <div class="flex gap-2 items-center">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
@@ -238,23 +210,7 @@ const formatDateTime = (dateString) => {
                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Preview Instruksi Pembayaran</h2>
                 <div class="border-t border-gray-200 dark:border-gray-700 py-4">
                     <div class="flex justify-between items-center mb-2">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="shrink-0">
-                                <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
-                                    fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ props.sertification.payment_isntruction?.name || 'Admin' }}
-                                </h5>
-                                <div class="text-xs text-gray-400">
-                                    {{ formatDate(new Date()) }}
-                                </div>
-                            </div>
-                        </div>
+                        <CreatorInfo :name="props.sertification.payment_instruction?.name" :created-at="new Date()" />
                     </div>
 
                     <div v-html="form.content.replace(/\n/g, '<br>')"

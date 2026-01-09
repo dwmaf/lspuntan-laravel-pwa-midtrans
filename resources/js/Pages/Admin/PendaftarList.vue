@@ -11,67 +11,102 @@ import SecondaryButton from '@/Components/Button/SecondaryButton.vue';
 import SelectInput from '@/Components/Input/SelectInput.vue';
 import InputLabel from '@/Components/Input/InputLabel.vue';
 import Modal from '@/Components/Modal.vue';
+import Checkbox from '@/Components/Input/Checkbox.vue';
+import { useForm } from '@inertiajs/vue3';
+
 const props = defineProps({
     sertification: Object,
 });
-const getAsesiStatusClass = (status) => {
-    const classes = {
-        'daftar': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
-        'perlu_perbaikan_berkas': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
-        'ditolak': 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100',
-        'dilanjutkan_asesmen': 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
-        'lulus_sertifikasi': 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+
+const selectedAsesis = ref([]);
+
+const getStatusBerkasAdministrasi = (status) => {
+    const data = {
+        'menunggu_verifikasi_admin': {
+            class: 'bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-100',
+            text: 'Menunggu Verifikasi Admin'
+        },
+        'perlu_perbaikan_berkas': {
+            class: 'bg-amber-100 text-amber-800 dark:bg-amber-700 dark:text-amber-100',
+            text: 'Perlu Perbaikan Berkas'
+        },
+        'sudah_lengkap': {
+            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            text: 'Sudah Lengkap'
+        },
     };
-    return classes[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200';
+    return data[status] || {
+        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        text: status
+    };
 };
 
-// Helper untuk status pembayaran
-const getPaymentStatusInfo = (transaction) => {
-    if (!transaction) {
-        return { text: 'Belum Submit Bukti Pembayaran', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' };
-    }
-    if (transaction.status === 'belum bayar') {
-        return { text: 'Belum Bayar', class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100' };
-    }
-    if (transaction.tipe === 'manual' && transaction.bukti_bayar && transaction.status === 'pending') {
-        return { text: 'Menunggu Verifikasi', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100' };
-    }
-    if (transaction.tipe === 'manual' && transaction.status === 'bukti_pembayaran_terverifikasi') {
-        return { text: 'Pembayaran Terverifikasi', class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100' };
-    }
-    if (transaction.tipe === 'manual' && transaction.status === 'bukti_pembayaran_ditolak') {
-        return { text: 'Bukti Pembayaran Ditolak', class: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100' };
-    }
-    return { text: 'N/A', class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200' };
+const getStatusAksesMenuAsesmen = (status) => {
+    const data = {
+        'belum_diberikan': {
+            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            text: 'Belum Diberikan'
+        },
+        'diberikan': {
+            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            text: 'Diberikan'
+        },
+    };
+    return data[status] || {
+        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        text: status
+    };
+};
+
+const getStatusFinalAsesi = (status) => {
+    const data = {
+        'belum_ditetapkan': {
+            class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+            text: 'Belum Ditetapkan'
+        },
+        'belum_kompeten': {
+            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            text: 'Belum Kompeten'
+        },
+        'kompeten': {
+            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            text: 'Kompeten'
+        },
+    };
+    return data[status] || {
+        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        text: status
+    };
 };
 
 const searchQuery = ref('');
 const showFilterModal = ref(false);
 
-const asesiStatusOptions = [
-    { value: 'menunggu_verifikasi_berkas', text: 'Menunggu Verifikasi Berkas' },
+const statusBerkasAdministrasiOptions = [
+    { value: 'menunggu_verifikasi_admin', text: 'Menunggu Verifikasi Admin' },
     { value: 'perlu_perbaikan_berkas', text: 'Perlu Perbaikan Berkas' },
-    { value: 'ditolak', text: 'Ditolak' },
-    { value: 'dilanjutkan_asesmen', text: 'Dilanjutkan Asesmen' },
-    { value: 'lulus_sertifikasi', text: 'Lulus Sertifikasi' },
-    { value: 'tidak_lulus', text: 'Tidak Lulus' },
+    { value: 'sudah_lengkap', text: 'Sudah Lengkap' },
 ];
-
-const transactionStatusOptions = [
-    { value: 'pending', text: 'Pending (Menunggu Verifikasi)' },
-    { value: 'bukti_pembayaran_terverifikasi', text: 'Terverifikasi' },
-    { value: 'bukti_pembayaran_ditolak', text: 'Ditolak' },
-    { value: 'perlu_perbaikan_bukti_bayar', text: 'Perlu Perbaikan' },
+const statusAksesMenuAsesmenOptions = [
+    { value: 'belum_diberikan', text: 'Belum Diberikan' },
+    { value: 'diberikan', text: 'Diberikan' },
+];
+const statusFinalAsesiOptions = [
+    { value: 'belum_ditentukan', text: 'Belum Ditentukan' },
+    { value: 'belum_kompeten', text: 'Belum Kompeten' },
+    { value: 'kompeten', text: 'Kompeten' },
 ];
 
 const filtersForm = ref({
-    asesiStatus: '',
-    transactionStatus: '',
+    statusBerkasAdministrasi: '',
+    statusAksesMenuAsesmen: '',
+    statusFinalAsesi: '',
 });
 
 const activeFilters = ref({
-    asesiStatus: '',
-    transactionStatus: '',
+    statusBerkasAdministrasi: '',
+    statusAksesMenuAsesmen: '',
+    statusFinalAsesi: '',
 });
 
 const applyFilters = () => {
@@ -80,8 +115,8 @@ const applyFilters = () => {
 };
 
 const resetFilters = () => {
-    filtersForm.value = { asesiStatus: '', transactionStatus: '' };
-    activeFilters.value = { asesiStatus: '', transactionStatus: '' };
+    filtersForm.value = { statusBerkasAdministrasi: '', statusAksesMenuAsesmen: '', statusFinalAsesi: '' };
+    activeFilters.value = { statusBerkasAdministrasi: '', statusAksesMenuAsesmen: '', statusFinalAsesi: '' };
     // showFilterModal.value = false; // Optional: close on reset or keep open
 };
 
@@ -103,20 +138,61 @@ const filteredAsesis = computed(() => {
         );
     }
 
-    // Filter by Asesi Status
-    if (activeFilters.value.asesiStatus) {
-        result = result.filter(asesi => asesi.status === activeFilters.value.asesiStatus);
+    if (activeFilters.value.statusBerkasAdministrasi) {
+        result = result.filter(asesi => asesi.status_berkas === activeFilters.value.statusBerkasAdministrasi);
     }
-
-    // Filter by Transaction Status
-    if (activeFilters.value.transactionStatus) {
-        result = result.filter(asesi =>
-            asesi.latest_transaction?.status === activeFilters.value.transactionStatus
-        );
+    if (activeFilters.value.statusAksesMenuAsesmen) {
+        result = result.filter(asesi => asesi.status_akses_asesmen === activeFilters.value.statusAksesMenuAsesmen);
+    }
+    if (activeFilters.value.statusFinalAsesi) {
+        result = result.filter(asesi => asesi.status_final === activeFilters.value.statusFinalAsesi);
     }
 
     return result;
 });
+
+const isSelectAll = computed({
+    get: () => filteredAsesis.value.length > 0 && selectedAsesis.value.length === filteredAsesis.value.length,
+    set: (val) => {
+        if (val) {
+            selectedAsesis.value = filteredAsesis.value.map(a => a.id);
+        } else {
+            selectedAsesis.value = [];
+        }
+    }
+});
+
+const showBulkActionModal = ref(false);
+const bulkType = ref(''); // 'berkas', 'akses', 'final'
+const bulkForm = useForm({
+    asesi_ids: [],
+    status_berkas: '',
+    status_akses_asesmen: '',
+    status_final: '',
+    catatan_perbaikan: '',
+});
+
+const openBulkModal = (type) => {
+    bulkForm.reset('status_berkas', 'status_akses_asesmen', 'status_final', 'catatan_perbaikan');
+    bulkType.value = type;
+    bulkForm.asesi_ids = selectedAsesis.value;
+    showBulkActionModal.value = true;
+};
+
+const submitBulk = () => {
+    let routeName = '';
+    if (bulkType.value === 'berkas') routeName = 'admin.sertifikasi.pendaftar.update-status-berkas-bulk';
+    if (bulkType.value === 'akses') routeName = 'admin.sertifikasi.pendaftar.update-akses-asesmen-bulk';
+    if (bulkType.value === 'final') routeName = 'admin.sertifikasi.pendaftar.update-status-final-bulk';
+
+    bulkForm.patch(route(routeName, [props.sertification.id]), {
+        onSuccess: () => {
+            showBulkActionModal.value = false;
+            selectedAsesis.value = [];
+            bulkForm.reset();
+        },
+    });
+};
 
 
 </script>
@@ -126,21 +202,40 @@ const filteredAsesis = computed(() => {
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
         <div class="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
-            <div class="flex justify-end items-center gap-2 mb-4">
-                <div class="w-[243px]">
-                    <TextInput v-model="searchQuery" type="text" placeholder="Cari nama atau email..." />
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                <div v-if="selectedAsesis.length > 0" class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        {{ selectedAsesis.length }} dipilih:
+                    </span>
+                    <SecondaryButton @click="openBulkModal('berkas')" class="!py-1 !px-2 !text-[10px]">Update Berkas
+                    </SecondaryButton>
+                    <SecondaryButton @click="openBulkModal('akses')" class="!py-1 !px-2 !text-[10px]">Update Akses
+                    </SecondaryButton>
+                    <SecondaryButton @click="openBulkModal('final')" class="!py-1 !px-2 !text-[10px]">Status Final
+                    </SecondaryButton>
                 </div>
-                <button @click="showFilterModal = true"
-                    class="relative mt-1 inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-500 text-sm font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
-                    <FunnelIcon class="w-4" />
-                    <span v-if="activeFilters.asesiStatus || activeFilters.transactionStatus"
-                        class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
-                </button>
+                <div v-else></div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <div class="w-full sm:w-[243px]">
+                        <TextInput v-model="searchQuery" type="text" placeholder="Cari nama atau email..." />
+                    </div>
+                    <button @click="showFilterModal = true"
+                        class="relative mt-1 inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-500 text-sm font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
+                        <FunnelIcon class="w-4" />
+                        <span
+                            v-if="activeFilters.statusBerkasAdministrasi || activeFilters.statusAksesMenuAsesmen || activeFilters.statusFinalAsesi"
+                            class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
+                    </button>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full ">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
+                            <th scope="col" class="px-6 py-3 text-left">
+                                <Checkbox v-model:checked="isSelectAll" />
+                            </th>
                             <th scope="col"
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 No
@@ -151,11 +246,15 @@ const filteredAsesis = computed(() => {
                             </th>
                             <th scope="col"
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Status Asesi
+                                Status Berkas Administrasi
                             </th>
                             <th scope="col"
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Status Pembayaran
+                                Akses Menu Asesmen
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Status Final Asesi
                             </th>
                             <th scope="col"
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -166,8 +265,11 @@ const filteredAsesis = computed(() => {
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 ">
 
-                        <tr v-if="sertification.asesis.length > 0" v-for="(asesi, index) in filteredAsesis"
-                            :key="asesi.id" class="">
+                        <tr v-if="filteredAsesis.length > 0" v-for="(asesi, index) in filteredAsesis" :key="asesi.id"
+                            class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <Checkbox v-model:checked="selectedAsesis" :value="asesi.id" />
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ index + 1 }}
                             </td>
@@ -177,14 +279,20 @@ const filteredAsesis = computed(() => {
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <span
-                                    :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getAsesiStatusClass(asesi.status)]">
-                                    {{ asesi.status.replace(/_/g, ' ') }}
+                                    :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getStatusBerkasAdministrasi(asesi.status_berkas).class]">
+                                    {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <span
-                                    :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getPaymentStatusInfo(asesi.latest_transaction).class]">
-                                    {{ getPaymentStatusInfo(asesi.latest_transaction).text }}
+                                    :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).class]">
+                                    {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span
+                                    :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getStatusFinalAsesi(asesi.status_final).class]">
+                                    {{ getStatusFinalAsesi(asesi.status_final).text }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -211,22 +319,64 @@ const filteredAsesis = computed(() => {
             </div>
             <div class="p-6">
                 <div class="flex flex-col gap-4">
-                    <div>
-                        <InputLabel value="Status Asesi" />
-                        <SelectInput v-model="filtersForm.asesiStatus"
-                            :options="[{ value: '', text: 'Semua' }, ...asesiStatusOptions]" />
-                    </div>
-                    <div>
-                        <InputLabel value="Status Pembayaran Asesi" />
-                        <SelectInput v-model="filtersForm.transactionStatus"
-                            :options="[{ value: '', text: 'Semua' }, ...transactionStatusOptions]" />
-                    </div>
+                    <SelectInput id="statusBerkasAdministrasi" label="Status Berkas Asesi"
+                        v-model="filtersForm.statusBerkasAdministrasi"
+                        :options="[{ value: '', text: 'Semua' }, ...statusBerkasAdministrasiOptions]" />
+                    <SelectInput id="statusAksesMenuAsesmen" label="Status Akses Menu Asesmen"
+                        v-model="filtersForm.statusAksesMenuAsesmen"
+                        :options="[{ value: '', text: 'Semua' }, ...statusAksesMenuAsesmenOptions]" />
+                    <SelectInput id="statusFinalAsesi" label="Status Final Asesi" v-model="filtersForm.statusFinalAsesi"
+                        :options="[{ value: '', text: 'Semua' }, ...statusFinalAsesiOptions]" />
                 </div>
                 <div class="my-4 border-t border-gray-200 dark:border-gray-600"></div>
                 <div class=" flex gap-3">
                     <SecondaryButton @click="resetFilters"> Reset </SecondaryButton>
                     <PrimaryButton @click="applyFilters">Apply Filter</PrimaryButton>
                 </div>
+            </div>
+        </Modal>
+
+        <Modal :show="showBulkActionModal" @close="showBulkActionModal = false">
+            <div class="flex justify-end p-2">
+                <button @click="showBulkActionModal = false">
+                    <X class="w-4 dark:text-white" />
+                </button>
+            </div>
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+                    Update Bulk ({{ selectedAsesis.length }} asesi)
+                </h3>
+
+                <form @submit.prevent="submitBulk">
+                    <div class="flex flex-col gap-4">
+                        <template v-if="bulkType === 'berkas'">
+                            <SelectInput label="Status Berkas Administrasi" v-model="bulkForm.status_berkas"
+                                :options="statusBerkasAdministrasiOptions" />
+                            <div v-if="bulkForm.status_berkas === 'perlu_perbaikan_berkas'">
+                                <InputLabel for="catatan_perbaikan_bulk" value="Catatan Perbaikan" />
+                                <TextInput id="catatan_perbaikan_bulk" class="mt-1 block w-full"
+                                    v-model="bulkForm.catatan_perbaikan" />
+                            </div>
+                        </template>
+
+                        <template v-if="bulkType === 'akses'">
+                            <SelectInput label="Akses Menu Asesmen" v-model="bulkForm.status_akses_asesmen"
+                                :options="statusAksesMenuAsesmenOptions" />
+                        </template>
+
+                        <template v-if="bulkType === 'final'">
+                            <SelectInput label="Status Final Asesi" v-model="bulkForm.status_final"
+                                :options="statusFinalAsesiOptions" />
+                        </template>
+                    </div>
+
+                    <div class="mt-6 flex gap-3">
+                        <SecondaryButton @click="showBulkActionModal = false"> Batal </SecondaryButton>
+                        <PrimaryButton type="submit" :disabled="bulkForm.processing">
+                            Simpan Perubahan
+                        </PrimaryButton>
+                    </div>
+                </form>
             </div>
         </Modal>
     </AdminLayout>

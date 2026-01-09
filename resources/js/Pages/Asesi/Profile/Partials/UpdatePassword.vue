@@ -47,33 +47,13 @@ const updatePassword = () => {
         </header>
 
         <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
-            <div>
-                <InputLabel for="current_password" value="Current Password" />
-
-                <TextInput id="current_password" ref="currentPasswordInput" v-model="form.current_password"
-                    type="password" autocomplete="current-password" />
-
-                <InputError :message="form.errors.current_password" />
-            </div>
-
-            <div>
-                <InputLabel for="password" value="New Password" />
-
-                <TextInput id="password" ref="passwordInput" v-model="form.password" type="password"
-                    autocomplete="new-password" />
-
-                <InputError :message="form.errors.password" />
-            </div>
-
-            <div>
-                <InputLabel for="password_confirmation" value="Confirm Password" />
-
-                <TextInput id="password_confirmation" v-model="form.password_confirmation" type="password"
-                    autocomplete="new-password" />
-
-                <InputError :message="form.errors.password_confirmation" />
-            </div>
-
+            <TextInput id="current_password" label="Current Password" ref="currentPasswordInput"
+                v-model="form.current_password" type="password" autocomplete="current-password"
+                :error="form.errors.current_password" />
+            <TextInput id="password" label="New Password" ref="passwordInput" v-model="form.password" type="password"
+                autocomplete="new-password" :error="form.errors.password" />
+            <TextInput id="password_confirmation" label="Confirm Password" v-model="form.password_confirmation"
+                type="password" autocomplete="new-password" :message="form.errors.password_confirmation" />
             <div class="flex items-center gap-4">
                 <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
 

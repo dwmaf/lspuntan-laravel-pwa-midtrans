@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('asesor_sertification', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sertification_id')->constrained()->onDelete('cascade');
-            $table->foreignId('asesor_id')->constrained()->onDelete('cascade');
+            $table->foreignId('sertification_id')->constrained()->onDelete('restrict');
+            $table->foreignId('asesor_id')->constrained()->onDelete('restrict');
             $table->timestamps();
         });
     }
