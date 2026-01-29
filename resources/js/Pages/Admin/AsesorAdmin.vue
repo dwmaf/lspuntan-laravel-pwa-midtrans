@@ -12,6 +12,7 @@ import CustomHeader from "@/Components/CustomHeader.vue";
 import Pagination from "@/Components/Pagination.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import Multiselect from "@/Components/Input/MultiSelect.vue";
+import Alert from "@/Components/Alert.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed, onMounted, onUnmounted, reactive, watch } from "vue";
 import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
@@ -82,6 +83,7 @@ const form = useForm({
     id: null,
     name: '',
     email: '',
+    no_met: '',
     masa_berlaku_sertif_teknis: '',
     masa_berlaku_sertif_asesor: '',
     no_tlp_hp: '',
@@ -101,6 +103,7 @@ const showEditForm = (asesor) => {
     form.id = asesor.id;
     form.name = asesor.user.name;
     form.email = asesor.user.email;
+    form.no_met = asesor.no_reg_met;
     form.masa_berlaku_sertif_teknis = asesor.masa_berlaku_sertif_teknis;
     form.masa_berlaku_sertif_asesor = asesor.masa_berlaku_sertif_asesor;
     form.no_tlp_hp = asesor.user.no_tlp_hp;
@@ -165,6 +168,8 @@ const restore = (id) => {
                         :error="form.errors.name" />
                     <TextInput id="email" label="Email" v-model="form.email" type="email" required
                         :error="form.errors.email" />
+                    <TextInput id="no_met" label="No. MET" v-model="form.no_met" type="text" required
+                        :error="form.errors.no_met" />
                     <DateInput id="masa_berlaku_sertif_teknis" label="Masa Berlaku Sertifikat Teknis"
                         v-model="form.masa_berlaku_sertif_teknis" type="date" required
                         :error="form.errors.masa_berlaku_sertif_teknis" />
@@ -184,7 +189,13 @@ const restore = (id) => {
         <!-- Tampilan Daftar -->
         <div v-else class="flex flex-col">
             <CustomHeader judul="Manajemen Asesor">
-                <AddButton @click="showCreateForm">Tambah Asesor</AddButton>
+                <div class="flex gap-2">
+                    <a :href="route('admin.asesor.export')" target="_blank"
+                        class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150">
+                        Export Excel
+                    </a>
+                    <AddButton @click="showCreateForm">Tambah Asesor</AddButton>
+                </div>
             </CustomHeader>
             <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <div class="flex justify-end items-center mb-6 gap-3">
@@ -242,7 +253,7 @@ const restore = (id) => {
                                 <td class="px-4 py-2 text-center">
                                     <div v-if="asesor.deleted_at" class="flex items-center justify-center space-x-2">
                                         <SecondaryButton @click="restore(asesor.id)"
-                                            class="!bg-green-100 !text-green-800 border-green-300 hover:!bg-green-200">
+                                            class="bg-green-100! text-green-800! border-green-300 hover:bg-green-200!">
                                             Restore
                                         </SecondaryButton>
                                     </div>
@@ -268,6 +279,13 @@ const restore = (id) => {
                 </div>
             </div>
         </div>
+        <Alert type="info" title="Ketentuan Penghapusan Data Asesor" class="mt-6">
+            <ul class="list-disc list-inside space-y-1">
+                <li>Asesor hanya bisa dihapus jika belum pernah terlibat dalam sertifikasi</li>
+                <li>Asesor tidak bisa dihapus jika telah pernah terlibat dalam sertifikasi demi kebutuhan akuntabilitas
+                    data dan audit</li>
+            </ul>
+        </Alert>
     </AdminLayout>
     <Modal :show="showFilterModal" @close="showFilterModal = false">
         <div class="flex justify-end p-2">

@@ -1,8 +1,9 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import InputLabel from '@/Components/Input/InputLabel.vue';
 import TextInput from '@/Components/Input/TextInput.vue';
 import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
+import CustomHeader from '@/Components/CustomHeader.vue';
 import InputError from '@/Components/Input/InputError.vue';
 
 const props = defineProps({
@@ -36,7 +37,7 @@ const formatDate = (dateString) => {
 
 <template>
 
-    <Head title="Verifikasi Sertifikat" />
+    <CustomHeader judul="Verifikasi Sertifikat" />
     <div
         class="font-sans text-gray-900 dark:text-gray-100 antialiased min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center pt-6 sm:pt-10">
         <div>

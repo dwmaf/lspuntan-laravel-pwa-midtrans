@@ -5,7 +5,8 @@ import InputError from '@/Components/Input/InputError.vue';
 import InputLabel from '@/Components/Input/InputLabel.vue';
 import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
 import TextInput from '@/Components/Input/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import CustomHeader from '@/Components/CustomHeader.vue';
+import { Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
 
@@ -34,19 +35,15 @@ const submit = () => {
 <template>
     <GuestLayout>
 
-        <Head title="Log in" />
+        <CustomHeader judul="Log in" />
 
         <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
             {{ status }}
         </div>
 
         <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
-                <TextInput id="email" type="email" v-model="form.email" required autofocus autocomplete="username" />
-                <InputError :message="form.errors.email" />
-            </div>
-
+            <TextInput id="email" label="Email" type="email" v-model="form.email" required autofocus autocomplete="username" :error="form.errors.email"/>
+            
             <div class="mt-4">
                 <InputLabel for="password" value="Password" />
                 <!-- <TextInput id="password" type="password" v-model="form.password" required
@@ -75,6 +72,10 @@ const submit = () => {
                 <Link v-if="canResetPassword" :href="route('password.request')"
                     class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800">
                     Forgot your password?
+                </Link>
+                <Link :href="route('register')"
+                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800">
+                    Belum punya akun? daftar
                 </Link>
 
                 <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">

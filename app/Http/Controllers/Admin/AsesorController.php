@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Asesor;
 use App\Models\Skema;
 use App\Models\User;
+use App\Exports\AsesorExport;
 use App\Notifications\AsesorAccountCreated;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -14,6 +16,7 @@ use Illuminate\Support\Str;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class AsesorController extends Controller
 {
@@ -60,6 +63,7 @@ class AsesorController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'no_tlp_hp' => 'required|string|max:255',
+            'no_met' => 'required|string|max:255', // Validasi input dari UI
             'masa_berlaku_sertif_teknis' => 'required|date',
             'masa_berlaku_sertif_asesor' => 'required|date',
             'selectedSkemas' => ['required', 'array'],
@@ -75,6 +79,7 @@ class AsesorController extends Controller
             $user->assignRole('asesor');
             $asesor = Asesor::create([
                 'user_id' => $user->id,
+                'no_reg_met' => $request->no_met, // Map no_met UI ke no_reg_met DB
                 'masa_berlaku_sertif_teknis' => $request->masa_berlaku_sertif_teknis,
                 'masa_berlaku_sertif_asesor' => $request->masa_berlaku_sertif_asesor,
             ]);
@@ -94,6 +99,7 @@ class AsesorController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class . ',email,' . $user_asesor->id],
             'no_tlp_hp' => 'required|string|max:255',
+            'no_met' => 'required|string|max:255',
             'masa_berlaku_sertif_teknis' => 'required|date',
             'masa_berlaku_sertif_asesor' => 'required|date',
             'password' => ['nullable'],
@@ -134,6 +140,7 @@ class AsesorController extends Controller
 
             $user_asesor->update($userData);
             $asesor->update([
+                'no_reg_met' => $request->no_met, // Update no_reg_met
                 'masa_berlaku_sertif_teknis' => $request->masa_berlaku_sertif_teknis,
                 'masa_berlaku_sertif_asesor' => $request->masa_berlaku_sertif_asesor
             ]);
@@ -147,7 +154,7 @@ class AsesorController extends Controller
     {
         $user = $asesor->user;
         
-        if ($user && $user->id === auth()->id()) {
+        if ($user && $user->id === Auth::id()) {
             return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
         }
 
@@ -176,5 +183,10 @@ class AsesorController extends Controller
         }
         
         return redirect()->back()->with('message', 'Data Asesor berhasil dipulihkan.');
+    }
+
+    public function export()
+    {
+        return Excel::download(new AsesorExport, 'Laporan_Asesor_LSP_Untan.xlsx');
     }
 }

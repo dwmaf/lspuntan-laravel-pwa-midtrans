@@ -133,7 +133,7 @@ function getDownloadUrl(file) {
         <InputLabel :for="inputId" :value="`${label} (${displayedFiles.length}/${maxFiles})`" :required="required" />
 
         <!-- Main Container (DropZone + List) -->
-        <div class="w-full p-2 rounded-xl flex flex-col relative bg-zinc-200 dark:bg-gray-800 " :class="[
+        <div class="w-full p-2 rounded-xl flex flex-col relative bg-zinc-200 dark:bg-gray-700 " :class="[
             isDragActive ? 'bg-indigo-50 dark:bg-indigo-900/20 ring-2 ring-indigo-500' : '',
             remainingSlots > 0 ? 'cursor-pointer hover:bg-zinc-300 dark:hover:bg-gray-700' : 'cursor-default'
         ]" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop"

@@ -25,6 +25,7 @@ class PengumumanController extends Controller
 
     public function index_pengumuman_asesmen(Sertification $sertification, Request $request)
     {
+        $sertification->load('skema');
         $totalAsesis = Asesi::where('sertification_id', $sertification->id)
             ->count();
 

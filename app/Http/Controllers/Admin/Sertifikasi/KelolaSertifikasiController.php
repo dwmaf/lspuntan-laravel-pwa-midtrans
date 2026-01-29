@@ -4,15 +4,18 @@ namespace App\Http\Controllers\Admin\Sertifikasi;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asesi;
+use App\Exports\LaporanSertifikasiExport;
 use Illuminate\Support\Facades\DB;
 use App\Models\Sertification;
 use App\Models\Skema;
 use App\Models\Asesor;
 use App\Models\User;
-use App\Traits\SendsPushNotifications;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
+use App\Traits\SendsPushNotifications;
+use Maatwebsite\Excel\Facades\Excel;
 
 class KelolaSertifikasiController extends Controller
 {
@@ -163,17 +166,6 @@ class KelolaSertifikasiController extends Controller
         return redirect()->back()->with('message', 'Data Sertifikasi berhasil diupdate');
     }
 
-    public function destroy(Sertification $sertification)
-    {
-        // Guard: Cek apakah sudah ada asesi mendaftar
-        if ($sertification->asesis()->exists()) {
-            return redirect()->back()->with('error', 'GAGAL: Sertifikasi ini tidak bisa dihapus karena sudah ada pendaftar (Asesi). Harap batalkan pendaftaran peserta terlebih dahulu.');
-        }
-
-        $sertification->delete();
-        return redirect(route('admin.kelolasertifikasi.index'))->with('message', 'Sertifikasi berhasil dihapus (Arsip)');
-    }
-
     public function cancel(Sertification $sertification)
     {
         if ($sertification->status === 'selesai') {
@@ -183,26 +175,11 @@ class KelolaSertifikasiController extends Controller
         $sertification->update(['status' => 'dibatalkan']);
         return back()->with('message', 'Sertifikasi berhasil dibatalkan.');
     }
-
-
-    public function rincian_laporan(Sertification $sertification, Request $request)
+    
+    public function export_excel(Sertification $sertification)
     {
-        $sertification->load('asesors.user', 'skema', 'asesis.student.user');
-        return Inertia::render('Admin/LaporanAdmin', [
-            'sertification' => $sertification
-        ]);
-    }
-
-    public function print_laporan(Sertification $sertification)
-    {
-        $sertification->load([
-            'skema',
-            'asesors.user',
-            'asesis.student.user'
-        ]);
-        
-        return Inertia::render('Admin/LaporanPrint', [
-            'sertification' => $sertification,
-        ]);
+        $sertification->load('skema', 'asesis.student.user', 'asesors.user');
+        $fileName = 'Laporan_Sertifikasi_' . Str::slug($sertification->skema->nama_skema) . '.xlsx';
+        return Excel::download(new LaporanSertifikasiExport($sertification), $fileName);
     }
 }

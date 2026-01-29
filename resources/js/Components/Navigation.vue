@@ -88,8 +88,8 @@ const navLinks = computed(() => {
                 <NavLink :href="route('logout')" :icon="IconLogout" method="post" :is-open="props.isOpen" as="button">
                     Log Out
                 </NavLink>
-                <DevNavLink :href="route('dev.list.sertifications')" :icon="IconCode" :is-open="props.isOpen"
-                    label="Dev" badge-text="beta" />
+                <!-- <DevNavLink :href="route('dev.list.sertifications')" :icon="IconCode" :is-open="props.isOpen"
+                    label="Dev" badge-text="beta" /> -->
             </div>
         </aside>
     </div>

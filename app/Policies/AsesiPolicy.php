@@ -21,7 +21,19 @@ class AsesiPolicy
      */
     public function view(User $user, Asesi $asesi): bool
     {
-        return false;
+        // Asesi hanya bisa lihat datanya sendiri
+        if ($user->id === $asesi->student->user_id) {
+            return true;
+        }
+
+        // Admin bisa lihat semua
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        // Asesor hanya bisa lihat asesi di sertifikasi yang dia tangani
+        return $user->hasRole('asesor') && 
+               $asesi->sertification->asesors()->where('user_id', $user->id)->exists();
     }
 
     /**
@@ -29,7 +41,8 @@ class AsesiPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Hanya user dengan role asesi yang bisa mendaftar (membuat record asesi)
+        return $user->hasRole('asesi');
     }
 
     /**
@@ -37,7 +50,19 @@ class AsesiPolicy
      */
     public function update(User $user, Asesi $asesi): bool
     {
-        return false;
+        // Asesi bisa update datanya sendiri
+        if ($user->id === $asesi->student->user_id) {
+            return true;
+        }
+
+        // Admin bisa update data asesi
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        // Asesor hanya bisa update asesi di sertifikasi yang dia tangani
+        return $user->hasRole('asesor') && 
+               $asesi->sertification->asesors()->where('user_id', $user->id)->exists();
     }
 
     /**
@@ -45,7 +70,9 @@ class AsesiPolicy
      */
     public function delete(User $user, Asesi $asesi): bool
     {
-        return false;
+        // Hanya asesi pemilik data yang bisa membatalkan pendaftaran
+        // Atau admin untuk kebutuhan audit/pembersihan
+        return $user->id === $asesi->student->user_id || $user->hasRole('admin');
     }
 
     /**

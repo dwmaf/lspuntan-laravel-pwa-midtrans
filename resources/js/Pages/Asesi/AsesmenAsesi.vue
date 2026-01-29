@@ -4,7 +4,9 @@ import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
 import CustomHeader from "@/Components/CustomHeader.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
+import CreatorInfo from "@/Components/CreatorInfo.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { computed, ref } from 'vue';
 
@@ -18,20 +20,50 @@ const isDeadlinePassed = computed(() => {
     return new Date() > new Date(props.sertification.asesmen.deadline);
 });
 
-const submissionMode = ref(props.asesi.asesiasesmenfiles.length > 0 ? 'view' : 'submit');
+// List of potential assessment documents
+const assessmentFields = [
+    { id: 'ak_1', label: 'AK-01 (Persetujuan Asesmen & Kerahasiaan)', skemaKey: 'format_ak_1' },
+    { id: 'ak_2', label: 'AK-02 (Rekaman Asesmen Kompetensi)', skemaKey: 'format_ak_2' },
+    { id: 'ak_3', label: 'AK-03 (Umpan Balik & Catatan Asesmen)', skemaKey: 'format_ak_3' },
+    { id: 'ak_4', label: 'AK-04 (Laporan Asesmen)', skemaKey: 'format_ak_4' },
+    { id: 'ac_1', label: 'AC-01 (Keputusan & Umpan Balik Asesmen)', skemaKey: 'format_ac_1' },
+    { id: 'map_1', label: 'MAP-01 (Merencanakan Aktivitas & Proses Asesmen)', skemaKey: 'format_map_1' },
+    { id: 'ia_1', label: 'IA-01 (Ceklis Observasi Aktivitas di Tempat Kerja)', skemaKey: 'format_ia_1' },
+    { id: 'ia_2', label: 'IA-02 (Tugas Praktik Demonstrasi)', skemaKey: 'format_ia_2' },
+    { id: 'ia_5', label: 'IA-05 (Pertanyaan Tertulis Pilihan Ganda)', skemaKey: 'format_ia_5' },
+    { id: 'ia_6', label: 'IA-06 (Pertanyaan Tertulis Esai)', skemaKey: 'format_ia_6' },
+    { id: 'ia_7', label: 'IA-07 (Pertanyaan Lisan)', skemaKey: 'format_ia_7' },
+];
+
+const activeFields = computed(() => {
+    return assessmentFields.filter(field => props.sertification.skema[field.skemaKey]);
+});
+
+const submissionMode = ref(props.asesi.asesiasesmen ? 'view' : 'submit');
 
 const form = useForm({
-    delete_files: [],
-    newFiles: [],
+    ak_1: null,
+    ak_2: null,
+    ak_3: null,
+    ak_4: null,
+    ac_1: null,
+    map_1: null,
+    ia_1: null,
+    ia_2: null,
+    ia_5: null,
+    ia_6: null,
+    ia_7: null,
+    delete_files_asesi: [],
+    lampiran_lain: [],
+    delete_files_collection: [],
 });
 
 const submit = () => {
     form.post(route('asesi.assessmen.update', [props.sertification.id, props.asesi.id]), {
+        forceFormData: true,
         onSuccess: () => {
-            form.reset('newFiles');
             submissionMode.value = 'view';
         },
-
     });
 };
 
@@ -44,12 +76,25 @@ const showViewMode = () => {
     submissionMode.value = 'view';
 }
 
+const getExistingFileUrl = (fieldId) => {
+    if (!props.asesi.asesiasesmen) return '';
+    const path = props.asesi.asesiasesmen[fieldId];
+    return path ? `/storage/${path}` : '';
+};
+
+const getFiles = (collection, type) => {
+    if (!collection) return [];
+    return collection.filter(file => file.type === type);
+};
+
+const lampiranLainFiles = computed(() => getFiles(props.asesi.asesifiles, 'lampiran_lain'));
+
 </script>
 
 <template>
     <AsesiLayout>
 
-        <CustomHeader judul="Instruksi Asesmen" />
+        <CustomHeader :judul="`Instruksi Asesmen: ${sertification.skema?.nama_skema ?? ''}`" />
         <AsesiSertifikasiMenu :sertification="props.sertification" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 
@@ -58,38 +103,16 @@ const showViewMode = () => {
                 <div v-if="props.sertification.asesmen">
                     <!-- Info Pembuat Tugas -->
                     <div class="flex items-center gap-3 mb-4">
-                        <div class="shrink-0">
-                            <svg class="h-10 w-10 text-gray-400 dark:text-gray-600 rounded-full bg-gray-200 dark:bg-gray-700 p-1"
-                                fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                <div v-if="props.sertification.pembuatrinciantugasasesmen">
-                                    {{ props.sertification.pembuatrinciantugasasesmen.name }}
-                                </div>
-                                <div v-else>
-                                    Admin
-                                </div>
-                            </h5>
-                            <div v-if="props.sertification.tanggal_rincian_asesmen_dibuat_formatted"
-                                class="text-xs text-gray-400">
-                                {{ props.sertification.tanggal_rincian_asesmen_dibuat_formatted }}
-                            </div>
-                        </div>
+                        <CreatorInfo :name="sertification.asesmen?.name" :created-at="sertification.asesmen?.created_at"
+                            :updated-at="sertification.asesmen?.updated_at" v-if="sertification.asesmen" class="mb-4" />
                     </div>
 
                     <!-- Rincian Tugas -->
-                    <div class="mb-4">
-                        <dt class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Rincian Instruksi
-                        </dt>
-                        <div v-html="props.sertification.asesmen.content.replace(/\n/g, '<br>')"
-                            class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-100"></div>
-                    </div>
+                    <div v-html="props.sertification.asesmen.content.replace(/\n/g, '<br>')"
+                        class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-100"></div>
 
-                    <div v-if="props.sertification.asesmen.deadline" class="mb-4 p-3 rounded-md border"
+
+                    <div v-if="props.sertification.asesmen.deadline" class="mt-4 mb-4 p-3 rounded-md border"
                         :class="isDeadlinePassed ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'">
                         <div class="flex items-center gap-2">
                             <svg v-if="isDeadlinePassed" xmlns="http://www.w3.org/2000/svg"
@@ -130,50 +153,56 @@ const showViewMode = () => {
                         </div>
                     </div>
 
-                    <div v-if="submissionMode === 'view'">
-                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tugas Terkumpul:</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                            <div v-for="file in props.asesi.asesiasesmenfiles" :key="file.id"
-                                class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
-                                <a :href="`/storage/${file.path_file}`" target="_blank"
-                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
-                                    {{ file.path_file.split('/').pop() }}
-                                </a>
-                            </div>
-                        </div>
-                        <div class="mt-3">
-                            <SecondaryButton @click="showEditMode" v-if="!isDeadlinePassed">
-                                Batalkan Pengiriman
-                            </SecondaryButton>
-                        </div>
-                    </div>
                     <!-- Form Pengumpulan Tugas Asesi -->
-                    <div v-else-if="isDeadlinePassed"
+                    <div v-if="isDeadlinePassed"
                         class="mt-8 text-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
                         <p class="text-gray-500 dark:text-gray-400">Anda tidak dapat mengumpulkan tugas karena batas
                             waktu telah berakhir.</p>
                     </div>
-                    <form v-else @submit.prevent="submit"
-                        class="border border-gray-300 dark:border-gray-600 rounded-md p-4 mt-10">
-                        <MultiFileInput v-model="form.newFiles" v-model:deleteList="form.delete_files"
-                            :existing-files="asesi.asesiasesmenfiles"
-                            label="Kumpulkan Tugas Anda (maks 5 file, total ukuran maks 5 MB)" :max-files="10"
-                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlx,.ppt,.pptx"
-                            :error="form.errors.newFiles || form.errors.delete_files"
-                            :error-list="form.errors['newFiles.0']"
-                            :required="asesi.asesiasesmenfiles.length === 0 || form.newFiles.length === 0" />
-                        <div class="flex items-center gap-4 mt-4">
-                            <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                                Kumpulkan
-                            </PrimaryButton>
-                            <SecondaryButton v-if="props.asesi.asesiasesmenfiles.length > 0" @click="showViewMode">
-                                Batal
-                            </SecondaryButton>
+
+                    <div v-else class="mt-8 border-t dark:border-gray-700 pt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 tracking-wider">
+                                {{ submissionMode === 'view' ? 'Berkas Tugas Terkumpul' : 'Unggah Berkas Tugas' }}
+                            </h4>
+                            <div v-if="submissionMode === 'view' && !isDeadlinePassed">
+                                <SecondaryButton @click="showEditMode">
+                                    Edit Pengiriman
+                                </SecondaryButton>
+                            </div>
                         </div>
-                    </form>
+
+                        <form v-if="submissionMode === 'submit'" @submit.prevent="submit" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div v-for="field in activeFields" :key="field.id">
+                                    <SingleFileInput v-model="form[field.id]" :id="field.id"
+                                        v-model:deleteList="form.delete_files_asesi" :delete-identifier="field.id"
+                                        :label="field.label" :existing-file-url="getExistingFileUrl(field.id)"
+                                        :error="form.errors[field.id]" required
+                                        :template-url="props.sertification.skema[field.skemaKey] ? `/storage/${props.sertification.skema[field.skemaKey]}` : null"
+                                        :disabled="submissionMode === 'view'" accept=".docx," />
+                                </div>
+                                <MultiFileInput v-model="form.lampiran_lain"
+                                    v-model:deleteList="form.delete_files_collection"
+                                    label="Lampiran lainnya (maks 5, ukuran file maksimal 5 MB)"
+                                    :existing-files="lampiranLainFiles" :max-files="5"
+                                    accept=".jpg,.png,.jpeg,.pdf,.docx,.pptx,.xlsx,.txt" :error="form.errors.lampiran_lain"
+                                    :error-list="form.errors['lampiran_lain.0']" />
+                            </div>
+
+                            <div v-if="submissionMode === 'submit'" class="flex items-center gap-4 mt-6">
+                                <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                                    {{ props.asesi.asesiasesmen ? 'Simpan Perubahan' : 'Kumpulkan Sekarang' }}
+                                </PrimaryButton>
+                                <SecondaryButton v-if="props.asesi.asesiasesmen" @click="showViewMode">
+                                    Batal
+                                </SecondaryButton>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 <p v-else class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Asesor belum memberikan rincian tugas asesmen.
+                    Asesor belum memberikan instruksi asesmen.
                 </p>
             </div>
         </div>

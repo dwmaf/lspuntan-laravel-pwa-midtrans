@@ -22,7 +22,20 @@ const props = defineProps({
     filteredAsesi: Array,
     initialAsesiId: [String, Number],
 });
-console.log(props.filteredAsesi);
+
+const assessmentFields = [
+    { id: 'ak_1', label: 'AK-01' },
+    { id: 'ak_2', label: 'AK-02' },
+    { id: 'ak_3', label: 'AK-03' },
+    { id: 'ak_4', label: 'AK-04' },
+    { id: 'ac_1', label: 'AC-01' },
+    { id: 'map_1', label: 'MAP-01' },
+    { id: 'ia_1', label: 'IA-01' },
+    { id: 'ia_2', label: 'IA-02' },
+    { id: 'ia_5', label: 'IA-05' },
+    { id: 'ia_6', label: 'IA-06' },
+    { id: 'ia_7', label: 'IA-07' },
+];
 
 const isEditing = ref(false);
 const isPreviewing = ref(false);
@@ -139,24 +152,24 @@ const formatDateTime = (dateString) => {
 </script>
 <template>
     <AdminLayout>
-        <CustomHeader judul="Asesmen" />
+        <CustomHeader :judul="`${sertification.skema.nama_skema}: Asesmen`" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
         <!-- Mode Tampilan -->
         <div id="view-asesmen" v-if="!isEditing">
-            <div v-if="!props.sertification.asesmen" class="flex flex-col gap-2">
+            <div v-if="!sertification.asesmen" class="flex flex-col gap-2">
                 <AddButton class="self-end" @click="enterEditMode">Buat Asesmen</AddButton>
                 <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                        Asesor belum memberikan rincian tugas asesmen, buat tugas asesmen agar asesi bisa mengumpulkan
-                        tugas/dokumen asesmen atau dokumen lain seperti FR.AK, FR.IA, etc.
+                        Asesor belum memberikan instruksi asesmen, buat instruksi asesmen agar asesi bisa mengumpulkan
+                        dokumen asesmen seperti FR.AK, FR.IA, etc atau dokumen tambahan lainnya.
                     </p>
                 </div>
             </div>
             <div v-else class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <div class="flex justify-between items-center mb-2">
-                    <CreatorInfo :name="props.sertification.asesmen?.name"
-                        :created-at="props.sertification.asesmen?.created_at"
-                        :updated-at="props.sertification.asesmen?.updated_at" v-if="props.sertification.asesmen"
+                    <CreatorInfo :name="sertification.asesmen?.name"
+                        :created-at="sertification.asesmen?.created_at"
+                        :updated-at="sertification.asesmen?.updated_at" v-if="sertification.asesmen"
                         class="mb-4" />
                     <div>
                         <div class="flex items-center gap-3">
@@ -165,17 +178,17 @@ const formatDateTime = (dateString) => {
                     </div>
                 </div>
 
-                <div v-html="props.sertification.asesmen.content.replace(/\n/g, '<br>')"
+                <div v-html="sertification.asesmen.content.replace(/\n/g, '<br>')"
                     class="font-medium text-sm text-gray-800 dark:text-gray-100"></div>
                 <div class="flex">
                     <dt class="text-sm font-medium text-gray-800 dark:text-gray-400 mr-1">Batas Akhir Pengumpulan :
                     </dt>
-                    <dd v-if="props.sertification.asesmen" class="text-sm text-gray-900 dark:text-gray-100">
+                    <dd v-if="sertification.asesmen" class="text-sm text-gray-900 dark:text-gray-100">
                         {{ sertification.asesmen.deadline ? formatDateTime(sertification.asesmen.deadline) : "-" }}
                     </dd>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                    <div v-if="props.sertification.asesmen" v-for="file in props.sertification.asesmen.asesmenfiles"
+                    <div v-if="sertification.asesmen" v-for="file in sertification.asesmen.asesmenfiles"
                         :key="file.id"
                         class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
                         <a :href="`/storage/${file.path_file}`" target="_blank"
@@ -192,7 +205,7 @@ const formatDateTime = (dateString) => {
         <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-2">
             <div class="flex justify-between items-center mb-2">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
-                    {{ props.sertification.asesmen ? "Edit Rincian Tugas Asesmen" : "Buat Rincian Tugas Asesmen" }}
+                    {{ props.sertification.asesmen ? "Edit Instruksi Asesmen" : "Buat Instruksi Asesmen" }}
                 </h3>
             </div>
             <form @submit.prevent="submit" class="flex flex-col gap-4">
@@ -289,14 +302,14 @@ const formatDateTime = (dateString) => {
                                 {{ asesi.student?.user?.name || 'N/A' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <span v-if="asesi.asesiasesmenfiles.length"
-                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100">Diserahkan</span>
+                                <span v-if="asesi.asesiasesmen"
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-100">Diserahkan</span>
                                 <span v-else
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">Belum
                                     ada tugas dikumpulkan</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button v-if="asesi.asesiasesmenfiles.length > 0" @click="showDetailView(asesi)"
+                                <button v-if="asesi.asesiasesmen" @click="showDetailView(asesi)"
                                     class="cursor-pointer px-2 py-1 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-700">
                                     Lihat
                                 </button>
@@ -306,8 +319,7 @@ const formatDateTime = (dateString) => {
 
                         <tr v-if="!props.filteredAsesi.length">
                             <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                                Belum ada pendaftar yang memenuhi kriteria (Dilanjutkan Asesmen dan Pembayarannya
-                                Terverifikasi)
+                                Belum ada pendaftar yang diberikan hak akses ke menu asesmen
                             </td>
                         </tr>
 
@@ -325,14 +337,19 @@ const formatDateTime = (dateString) => {
                 </SecondaryButton>
             </div>
 
-            <div v-if="selectedAsesi?.asesiasesmenfiles?.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div v-for="file in selectedAsesi.asesiasesmenfiles" :key="file.id"
-                    class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
-                    <a :href="`/storage/${file.path_file}`" target="_blank"
-                        class="text-blue-600 dark:text-blue-400 hover:underline truncate flex-1">
-                        {{ file.path_file.split('/').pop() }}
-                    </a>
-                </div>
+            <div v-if="selectedAsesi?.asesiasesmen" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <template v-for="field in assessmentFields" :key="field.id">
+                    <div v-if="selectedAsesi.asesiasesmen[field.id]"
+                        class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
+                        <div class="flex-1 truncate">
+                            <span class="font-bold text-gray-700 dark:text-gray-300 mr-2">{{ field.label }}:</span>
+                            <a :href="`/storage/${selectedAsesi.asesiasesmen[field.id]}`" target="_blank"
+                                class="text-blue-600 dark:text-blue-400 hover:underline">
+                                {{ selectedAsesi.asesiasesmen[field.id].split('/').pop() }}
+                            </a>
+                        </div>
+                    </div>
+                </template>
             </div>
             <p v-else class="text-sm text-gray-500">Tidak ada file yang ditemukan untuk asesi ini.</p>
         </div>

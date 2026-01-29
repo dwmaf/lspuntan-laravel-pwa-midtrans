@@ -1,7 +1,6 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
-import InputError from "@/Components/Input/InputError.vue";
 import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
@@ -9,15 +8,31 @@ import TextInput from "@/Components/Input/TextInput.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import AddButton from "@/Components/Button/AddButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
+import Pagination from "@/Components/Pagination.vue";
 import DeleteButton from "@/Components/Button/DeleteButton.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
+import Alert from "@/Components/Alert.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
-import { ref, computed } from "vue";
+import { ref, computed, reactive, watch } from "vue";
 
 const props = defineProps({
-    skemas: Array,
+    skemas: Object,
+    filters: Object,
 });
 
+const filtersForm = reactive({
+    search: props.filters.search || '',
+});
+let searchTimeoutId = null;
+watch(() => filtersForm.search, (newValue) => {
+    clearTimeout(searchTimeoutId);
+    searchTimeoutId = setTimeout(() => {
+        router.get(route('admin.skema.create'), filtersForm, {
+            preserveState: true,
+            replace: true,
+        });
+    }, 500);
+});
 
 const formMode = ref('list');
 const page = usePage();
@@ -29,10 +44,37 @@ const form = useForm({
     is_active: true,
     format_apl_1: null,
     format_apl_2: null,
+    format_ak_1: null,
+    format_ak_2: null,
+    format_ak_3: null,
+    format_ak_4: null,
+    format_ac_1: null,
+    format_map_1: null,
+    format_ia_1: null,
+    format_ia_2: null,
+    format_ia_5: null,
+    format_ia_6: null,
+    format_ia_7: null,
     delete_files: [],
     _method: 'POST',
 });
 
+
+const docFields = [
+    { id: 'format_apl_1', label: 'FR. APL.01' },
+    { id: 'format_apl_2', label: 'FR. APL.02' },
+    { id: 'format_ak_1', label: 'FR. AK.01' },
+    { id: 'format_ak_2', label: 'FR. AK.02' },
+    { id: 'format_ak_3', label: 'FR. AK.03' },
+    { id: 'format_ak_4', label: 'FR. AK.04' },
+    { id: 'format_ac_1', label: 'FR. AC.01' },
+    { id: 'format_map_1', label: 'FR. MAP.01' },
+    { id: 'format_ia_1', label: 'FR. IA.01' },
+    { id: 'format_ia_2', label: 'FR. IA.02' },
+    { id: 'format_ia_5', label: 'FR. IA.05' },
+    { id: 'format_ia_6', label: 'FR. IA.06' },
+    { id: 'format_ia_7', label: 'FR. IA.07' },
+];
 
 const showCreateForm = () => {
     form.reset();
@@ -42,11 +84,10 @@ const showCreateForm = () => {
 };
 
 const showEditForm = (skema) => {
+    form.reset();
     form.id = skema.id;
     form.nama_skema = skema.nama_skema;
     form.is_active = Boolean(skema.is_active);
-    form.format_apl_1 = null;
-    form.format_apl_2 = null;
     formMode.value = 'edit';
     form._method = 'PATCH';
 };
@@ -59,8 +100,6 @@ const backToList = () => {
 
 const save = () => {
     const options = {
-        // Setelah sukses, muat ulang props dari server (termasuk 'skemas')
-        // tapi pertahankan state lokal komponen (seperti 'formMode').
         preserveState: true,
         onSuccess: () => backToList(),
     };
@@ -82,7 +121,11 @@ const destroy = (id) => {
 <template>
     <AdminLayout>
 
-        <CustomHeader judul="Manajemen Skema Sertifikasi" />
+        <CustomHeader judul="Manajemen Skema Sertifikasi">
+            <div class="flex" v-if="formMode === 'list'">
+                <AddButton @click="showCreateForm">Tambah Skema</AddButton>
+            </div>
+        </CustomHeader>
 
         <!-- Form Tambah -->
         <div v-if="formMode === 'create'" class="p-4 sm:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -92,12 +135,15 @@ const destroy = (id) => {
             <form @submit.prevent="save" class="mt-4 flex flex-col gap-4">
                 <TextInput id="nama_skema" label="Nama Skema" v-model="form.nama_skema" type="text" required
                     :error="form.errors.nama_skema" />
-                <SingleFileInput v-model="form.format_apl_1" v-model:deleteList="form.delete_files"
-                    delete-identifier="format_apl_1" label="Format APL.01" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
-                    :error="form.errors.format_apl_1" />
-                <SingleFileInput v-model="form.format_apl_2" v-model:deleteList="form.delete_files"
-                    delete-identifier="format_apl_2" label="Format APL.02" accept=".jpg,.png,.jpeg,.pdf,.doc,.docx"
-                    :error="form.errors.format_apl_2" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div v-for="field in docFields" :key="field.id">
+                        <SingleFileInput v-model="form[field.id]" v-model:deleteList="form.delete_files"
+                            :delete-identifier="field.id" :label="`Format ${field.label}`" accept=".docx"
+                            :error="form.errors[field.id]" />
+                    </div>
+                </div>
+
                 <div class="flex items-center gap-2">
                     <Checkbox id="is_active" v-model:checked="form.is_active" />
                     <InputLabel for="is_active" value="Skema Aktif (Muncul saat pendaftaran sertifikasi baru)" />
@@ -109,6 +155,7 @@ const destroy = (id) => {
                 </div>
             </form>
         </div>
+
         <div v-if="formMode === 'edit'" class="p-4 sm:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
                 Edit Skema Sertifikasi
@@ -116,16 +163,17 @@ const destroy = (id) => {
             <form @submit.prevent="save" class="mt-4 flex flex-col gap-4">
                 <TextInput id="nama_skema" label="Nama Skema" v-model="form.nama_skema" type="text" required
                     :error="form.errors.nama_skema" />
-                <SingleFileInput v-model="form.format_apl_1" label="Format APL.01"
-                    v-model:deleteList="form.delete_files" delete-identifier="format_apl_1"
-                    :existing-file-url="props.skemas.find(s => s.id === form.id)?.format_apl_1 ? `/storage/${props.skemas.find(s => s.id === form.id)?.format_apl_1}` : null"
-                    :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".pdf,.doc,.docx"
-                    :error="form.errors.format_apl_1" />
-                <SingleFileInput v-model="form.format_apl_2" label="Format APL.02"
-                    v-model:deleteList="form.delete_files" delete-identifier="format_apl_2"
-                    :existing-file-url="props.skemas.find(s => s.id === form.id)?.format_apl_2 ? `/storage/${props.skemas.find(s => s.id === form.id)?.format_apl_2}` : null"
-                    :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".pdf,.doc,.docx"
-                    :error="form.errors.format_apl_2" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div v-for="field in docFields" :key="field.id">
+                        <SingleFileInput v-model="form[field.id]" :label="`Format ${field.label}`"
+                            v-model:deleteList="form.delete_files" :delete-identifier="field.id"
+                            :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.[field.id] ? `/storage/${props.skemas.data.find(s => s.id === form.id)?.[field.id]}` : null"
+                            :is-marked-for-deletion="form.delete_files.includes(field.id)" accept=".pdf,.docx"
+                            :error="form.errors[field.id]" />
+                    </div>
+                </div>
+
                 <div class="flex items-center gap-2">
                     <Checkbox id="is_active" v-model:checked="form.is_active" />
                     <InputLabel for="is_active" value="Skema Aktif (Muncul saat pendaftaran sertifikasi baru)" />
@@ -140,10 +188,12 @@ const destroy = (id) => {
 
         <!-- Tampilan Daftar -->
         <div v-if="formMode === 'list'" class="p-4 sm:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Daftar Skema</h2>
-                <AddButton @click="showCreateForm">Tambah Skema</AddButton>
+            <div class="flex justify-end items-center mb-6 gap-3">
+                <div class="w-[243px]">
+                    <TextInput v-model="filtersForm.search" type="text" placeholder="Cari nama skema..." />
+                </div>
             </div>
+
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
@@ -155,8 +205,8 @@ const destroy = (id) => {
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Skema</th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Format File APL</th>
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider  min-w-[350px]">
+                                Format File</th>
                             <th
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Status</th>
@@ -166,7 +216,7 @@ const destroy = (id) => {
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        <tr v-for="(skema, index) in skemas" :key="skema.id">
+                        <tr v-for="(skema, index) in skemas.data" :key="skema.id">
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {{ index + 1 }}
@@ -174,14 +224,17 @@ const destroy = (id) => {
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
                                 {{ skema.nama_skema }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
-                                <div class="flex flex-col">
-                                    <a v-if="skema.format_apl_1" :href="`/storage/${skema.format_apl_1}`"
-                                        target="_blank" class="text-blue-500 hover:text-blue-700">APL.01</a>
-                                    <p v-else class="text-gray-400">Format APL.01 belum ada</p>
-                                    <a v-if="skema.format_apl_2" :href="`/storage/${skema.format_apl_2}`"
-                                        target="_blank" class="text-blue-500 hover:text-blue-700">APL.02</a>
-                                    <p v-else class="text-gray-400">Format APL.02 belum ada</p>
+                            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                                <div class="flex flex-wrap gap-1 ">
+                                    <template v-for="field in docFields" :key="field.id">
+                                        <a v-if="skema[field.id]" :href="`/storage/${skema[field.id]}`" target="_blank"
+                                            class="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded text-[10px] font-bold hover:bg-blue-100 transition-colors"
+                                            :title="field.label">
+                                            {{ field.label.replace('FR. ', '') }}
+                                        </a>
+                                    </template>
+                                    <p v-if="!docFields.some(f => skema[f.id])" class="text-gray-400 italic text-xs">
+                                        Belum ada format file</p>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
@@ -197,7 +250,7 @@ const destroy = (id) => {
                                 </div>
                             </td>
                         </tr>
-                        <tr v-if="skemas.length === 0">
+                        <tr v-if="skemas.data.length === 0">
                             <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                 Belum ada skema sertifikasi.
                             </td>
@@ -205,6 +258,25 @@ const destroy = (id) => {
                     </tbody>
                 </table>
             </div>
+            <div class="mt-4 flex justify-between items-center">
+                <span v-if="skemas.total > 0" class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
+                    Menampilkan {{ skemas.from }} sampai {{ skemas.to }} dari {{ skemas.total }} hasil
+                </span>
+                <span v-else></span>
+                <Pagination :links="skemas.links" />
+            </div>
+
         </div>
+        <Alert type="info" title="Ketentuan Penghapusan Skema" class="mt-6">
+            <ul class="list-disc list-inside space-y-1">
+                <li>Skema hanya bisa dihapus jika belum pernah terlibat dalam sertifikasi</li>
+                <li>Skema tidak bisa dihapus jika telah pernah terlibat dalam sertifikasi demi kebutuhan akuntabilitas
+                    data dan audit</li>
+                <li>Jika ingin agar skema sertifikasi tidak muncul dalam pilihan ketika memulai event sertifikasi, cukup
+                    ubah
+                    statusnya jadi "Non-aktif" Skema hanya bisa dihapus jika belum pernah terlibat dalam sertifikasi</li>
+                <li>Skema sertifikasi yang statusnya bisa diubah jadi "Non-Aktif" hanya jika tidak ada sertifikasi yang berlangsung</li>
+            </ul>
+        </Alert>
     </AdminLayout>
 </template>

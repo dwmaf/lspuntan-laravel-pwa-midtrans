@@ -29,7 +29,15 @@ const props = defineProps({
 
 const showStatusModal = ref(false);
 const modalType = ref(''); // 'berkas', 'akses', 'final'
+const isEditingAsesi = ref(false);
 const isEditingCertificate = ref(false);
+
+const asesiForm = useForm({
+    _method: 'PATCH',
+    apl_1: null,
+    apl_2: null,
+    delete_files_asesi: [],
+});
 
 const statusForm = useForm({
     status_berkas: props.asesi.status_berkas,
@@ -65,6 +73,11 @@ const closeModal = () => {
     showStatusModal.value = false;
 };
 
+const cancelEditAsesi = () => {
+    asesiForm.reset();
+    isEditingAsesi.value = false;
+};
+
 const cancelEditCertificate = () => {
     certificateForm.reset();
     isEditingCertificate.value = false;
@@ -80,6 +93,7 @@ const submitStatusUpdate = () => {
         onSuccess: () => closeModal(),
     });
 };
+
 const submitCertificate = () => {
     certificateForm.post(route('admin.sertifikasi.pendaftar.update-certificate', { sertification: props.sertification.id, asesi: props.asesi.id }), {
         onSuccess: () => isEditingCertificate.value = false,
@@ -154,11 +168,12 @@ const getStatusFinalAsesi = (status) => {
 
 <template>
     <AdminLayout>
-        <CustomHeader judul="Detail Peserta" />
+        <CustomHeader :judul="`${sertification.skema.nama_skema}: Detail Peserta`" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
         <!-- Tampilan Detail Utama -->
-        <div v-show="!isEditingCertificate" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div v-show="!isEditingCertificate && !isEditingAsesi"
+            class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Rincian Pendaftar</h3>
                 <Link :href="route('admin.sertifikasi.pendaftar.index', props.sertification.id)"
@@ -222,6 +237,7 @@ const getStatusFinalAsesi = (status) => {
                 </a>
             </div>
         </div>
+        
 
         <!-- Form Edit Sertifikat -->
         <div v-show="isEditingCertificate" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">

@@ -22,6 +22,7 @@ use App\Models\Asesifile;
 use Kreait\Firebase\Contract\Messaging;
 use Inertia\Inertia;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Gate;
 
 class KelolaSertifikasiAsesiController extends Controller
 {
@@ -181,10 +182,9 @@ class KelolaSertifikasiAsesiController extends Controller
             'sertifikat'
         ]);
         $student = $asesi->student;
-        // dd($student);
-        if ($asesi->student->user_id !== $request->user()->id) {
-            abort(403);
-        }
+        
+        Gate::authorize('view', $asesi);
+
         return Inertia::render('Asesi/DetailSertifAsesi', [
             'sertification' => $sertification->load('skema'),
             'asesi' => $asesi,
@@ -198,6 +198,7 @@ class KelolaSertifikasiAsesiController extends Controller
     public function updateApplied(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
         // dd($request);
+        Gate::authorize('update',$asesi);
         $asesi->load('student.user', 'asesifiles');
         $student = $asesi->student;
         $user = $student->user;
@@ -347,10 +348,8 @@ class KelolaSertifikasiAsesiController extends Controller
     {
         $asesi = Asesi::with(['makulnilais', 'asesifiles', 'transaction'])->findOrFail($asesi_id);
 
-        $student = $asesi->student;
-        if ($student->user_id !== Auth::id()) {
-            abort(403, 'Anda tidak diizinkan melakukan aksi ini.');
-        }
+        Gate::authorize('delete', $asesi);
+
         DB::transaction(function () use ($asesi) {
 
             foreach (['apl_1', 'apl_2', 'foto_ktm'] as $fileField) {
@@ -375,5 +374,4 @@ class KelolaSertifikasiAsesiController extends Controller
         return redirect(route('asesi.sertifikasi.list'))->with('message', 'Pendaftaran sertifikasi berhasil dibatalkan.');
     }
 
-    
 }

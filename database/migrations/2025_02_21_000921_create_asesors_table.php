@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('asesors', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
+            $table->string('no_reg_met')->nullable();
             $table->date('masa_berlaku_sertif_teknis')->nullable();
             $table->date('masa_berlaku_sertif_asesor')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

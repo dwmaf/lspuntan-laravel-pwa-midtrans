@@ -48,12 +48,6 @@ const menuItems = computed(() => [
         active: route().current('admin.sertifikasi.pendaftar.*'),
         icon: IconUsers,
     },
-    {
-        label: 'Laporan',
-        href: route('admin.kelolasertifikasi.report', props.sertificationId),
-        active: route().current('admin.kelolasertifikasi.report'),
-        icon: IconChartBar,
-    },
 ]);
 </script>
 

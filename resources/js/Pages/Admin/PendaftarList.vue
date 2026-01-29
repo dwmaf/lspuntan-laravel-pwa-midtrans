@@ -198,7 +198,7 @@ const submitBulk = () => {
 </script>
 <template>
     <AdminLayout>
-        <CustomHeader judul="Daftar Peserta" />
+        <CustomHeader :judul="`${sertification.skema.nama_skema}: Daftar Peserta`" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
         <div class="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
@@ -207,11 +207,11 @@ const submitBulk = () => {
                     <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                         {{ selectedAsesis.length }} dipilih:
                     </span>
-                    <SecondaryButton @click="openBulkModal('berkas')" class="!py-1 !px-2 !text-[10px]">Update Berkas
+                    <SecondaryButton @click="openBulkModal('berkas')" class="py-1! px-2! text-[10px]!">Update Berkas
                     </SecondaryButton>
-                    <SecondaryButton @click="openBulkModal('akses')" class="!py-1 !px-2 !text-[10px]">Update Akses
+                    <SecondaryButton @click="openBulkModal('akses')" class="py-1! px-2! text-[10px]!">Update Akses
                     </SecondaryButton>
-                    <SecondaryButton @click="openBulkModal('final')" class="!py-1 !px-2 !text-[10px]">Status Final
+                    <SecondaryButton @click="openBulkModal('final')" class="py-1! px-2! text-[10px]!">Status Final
                     </SecondaryButton>
                 </div>
                 <div v-else></div>

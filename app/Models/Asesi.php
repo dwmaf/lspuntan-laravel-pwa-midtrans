@@ -37,13 +37,9 @@ class Asesi extends Model
     {
         return $this->hasMany(Asesifile::class);
     }
-    // public function transaction()
-    // {
-    //     return $this->hasMany(Transaction::class);
-    // }
-    public function asesiasesmenfiles()
+    public function asesiasesmen()
     {
-        return $this->hasMany(Asesiasesmenfile::class);
+        return $this->hasOne(Asesiasesmen::class);
     }
     public function sertifikat()
     {
@@ -55,8 +51,8 @@ class Asesi extends Model
             foreach ($asesi->asesifiles as $asesifile){
                 $asesifile->delete();
             }
-            foreach ($asesi->asesiasesmenfiles as $asesiasesmenfile){
-                $asesiasesmenfile->delete();
+            if ($asesi->asesiasesmen) {
+                $asesi->asesiasesmen->delete();
             }
             
         });

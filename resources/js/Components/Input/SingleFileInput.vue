@@ -13,6 +13,7 @@ const props = defineProps({
     existingFileUrl: String,
     isMarkedForDeletion: Boolean,
     label: String,
+    id: String,
     isLabelRequired: { type: Boolean, default: false },
     accept: String,
     required: Boolean,
@@ -88,7 +89,7 @@ function handleValidationError(msg) {
 <template>
     <div class="w-full">
         <div class="flex justify-between items-center mb-1">
-            <InputLabel :value="label" :required="isLabelRequired" />
+            <InputLabel :for="id" :value="label" :required="required" />
             <a v-if="templateUrl" :href="templateUrl" class="text-blue-500 hover:text-blue-300 text-sm font-medium"
                 target="_blank">
                 Lihat Template
@@ -96,10 +97,10 @@ function handleValidationError(msg) {
         </div>
 
         <!-- Main Drop Zone / File Display Container -->
-        <div class="w-full p-2 rounded-xl min-h-[60px] flex flex-col justify-center transition-all duration-300 ease-in-out relative bg-zinc-200 dark:bg-gray-800"
+        <div class="w-full p-2 rounded-xl  flex flex-col justify-center transition-all duration-300 ease-in-out relative bg-zinc-200 dark:bg-gray-700"
             :class="[
                 isDragActive ? 'bg-indigo-50 dark:bg-indigo-900/20 ring-2 ring-indigo-500' : '',
-                !showDropZone ? 'cursor-default' : 'cursor-pointer hover:bg-zinc-300 dark:hover:bg-gray-700'
+                !showDropZone ? 'cursor-default' : 'cursor-pointer hover:bg-zinc-300 dark:hover:bg-gray-600'
             ]" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop"
             @click="showDropZone ? triggerBrowse() : null">
 
@@ -143,7 +144,7 @@ function handleValidationError(msg) {
             </div>
 
             <!-- Empty State / Drop Prompt -->
-            <div v-else class="pointer-events-none flex flex-col items-center gap-1 text-center py-4">
+            <div v-else class="pointer-events-none flex flex-col items-center gap-1 text-center py-3">
                 <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
                     Drop files here or<span class="underline"> Browse</span>
                 </p>

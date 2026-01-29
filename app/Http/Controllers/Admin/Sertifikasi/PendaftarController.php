@@ -11,21 +11,11 @@ use Illuminate\Http\Request;
 use App\Models\Sertification;
 use App\Models\Asesi;
 use App\Traits\SendsPushNotifications;
-use App\Models\Transaction;
-use App\Models\Sertifikat;
-use App\Notifications\StatusAsesiUpdated;
-use App\Notifications\SertifikatDiunggah;
-use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
-use App\Models\NotificationLog;
-use App\Notifications\StatusBayarAsesiUpdated;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
-use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
-use Illuminate\Support\Facades\Log;
-use Kreait\Firebase\Exception\Messaging\NotFound;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Gate;
 
 class PendaftarController extends Controller
 {
@@ -42,7 +32,9 @@ class PendaftarController extends Controller
 
     public function rincianDataAsesi(Sertification $sertification, Asesi $asesi, Request $request)
     {
+        Gate::authorize('view', $asesi);
         NotificationController::markAsRead($request);
+        $sertification->load('skema');
         $asesi->load(['student.user', 'asesifiles', 'makulnilais', 'sertifikat']);
         
         return Inertia::render('Admin/PendaftarDetail', [
@@ -56,7 +48,7 @@ class PendaftarController extends Controller
 
     public function updateStatusBerkas(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
-
+        Gate::authorize('update', $asesi);
         $messageNotif = '';
         if ($request->status_berkas === StatusBerkasAdministrasi::SUDAH_LENGKAP->value) {
             $messageNotif = 'Berkas Anda telah dinyatakan lengkap.';
@@ -76,6 +68,7 @@ class PendaftarController extends Controller
 
     public function updateAksesAsesmen(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
+        Gate::authorize('update', $asesi);
         // dd($request);
         if ($request->status_akses_asesmen === StatusAksesMenuAsesmen::BELUM_DIBERIKAN->value) {
             $messageNotif = 'Hak akses ke menu asesmen anda belum diberikan.';
@@ -259,5 +252,35 @@ class PendaftarController extends Controller
         }
 
         return back()->with('message', 'Sertifikat berhasil disimpan.');
+    }
+
+    public function updateApl(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
+    {
+        $validatedData = $request->validate([
+            'apl_1' => [
+                'nullable',
+                Rule::requiredIf(function () use ($request) {
+                    return is_array($request->input('delete_files_asesi', [])) && in_array('apl_1', $request->input('delete_files_asesi', []));
+                }),
+                'file',
+                'mimes:pdf,docx,doc',
+                'max:2048'
+            ],
+            'apl_2' => [
+                'nullable',
+                Rule::requiredIf(function () use ($request) {
+                    return is_array($request->input('delete_files_asesi', [])) && in_array('apl_2', $request->input('delete_files_asesi', []));
+                }),
+                'file',
+                'mimes:pdf,docx,doc',
+                'max:2048'
+            ],
+            'delete_files_asesi' => 'nullable|array'
+        ]);
+        FileHelper::handleSingleFileDeletes($asesi, $request->input('delete_files_asesi', []));
+        FileHelper::handleSingleFileUploads($asesi, ['apl_1','apl_2'], $request, 'asesi_files');
+        FileHelper::saveIfDirty([$asesi]);
+
+        return back()->with('message', 'Apl asesi berhasil diupdate.');
     }
 }

@@ -1,7 +1,7 @@
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import InputError from "@/Components/Input/InputError.vue";
-import Header from "@/Components/CustomHeader.vue";
+import CustomHeader from "@/Components/CustomHeader.vue";
 import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryLinkButton from "@/Components/SecondaryLinkButton.vue";
@@ -25,6 +25,8 @@ const genderOptions = [
 
 const tujuanOptions = [
     { value: 'Sertifikasi', text: 'Sertifikasi' },
+    { value: 'Pengakuan Kompetensi Terkini (PKT)', text: 'Pengakuan Kompetensi Terkini (PKT)' },
+    { value: 'Rekognisi Pembelajaran Lampau (RPL)', text: 'Rekognisi Pembelajaran Lampau (RPL)' },
     { value: 'Lainnya', text: 'Lainnya' },
 ];
 
@@ -86,8 +88,7 @@ const formatDateTime = (dateString) => {
 
 <template>
     <AsesiLayout>
-
-        <Header judul="Pendaftaran Sertifikasi" />
+        <CustomHeader judul="Pendaftaran Sertifikasi" />
 
         <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">
@@ -136,8 +137,8 @@ const formatDateTime = (dateString) => {
                 <!-- Data Sertifikasi -->
                 <h3 class="dark:text-gray-300 font-semibold pt-4">C. Data Sertifikasi</h3>
                 <SelectInput id="tujuan_sert" label="Tujuan Sertifikasi" v-model="form.tujuan_sert"
-                    :options="tujuanOptions" placeholder="--Pilih tujuan sertifikasi--"
-                    :error="form.errors.tujuan_sert" required />
+                    :options="tujuanOptions" placeholder="--Pilih tujuan sertifikasi--" :error="form.errors.tujuan_sert"
+                    required />
 
                 <div>
                     <InputLabel value="Mata Kuliah terkait Skema Sertifikasi dan Nilai" required />
@@ -205,24 +206,16 @@ const formatDateTime = (dateString) => {
                         {{ formatDateTime(sertification.tgl_apply_ditutup) }}
                     </span>
                 </p>
-                <div v-if="sertification.tgl_apply_ditutup">
-                    <div v-if="new Date() < new Date(sertification.tgl_apply_ditutup)">
-                        <SingleFileInput id="bukti_bayar" v-model="form.bukti_bayar" label="Bukti Pembayaran"
-                            is-label-required accept=".pdf,.doc,.docx" :error="form.errors.bukti_bayar"
-                            delete-identifier="bukti_bayar" required />
-                    </div>
-                    <div v-else
-                        class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 font-medium"
-                        role="alert">
-                        Batas waktu pendaftaran dan pembayaran telah habis. Silahkan hubungi admin untuk informasi lebih
-                        lanjut.
-                    </div>
+                <div v-if="new Date() < new Date(sertification.tgl_apply_ditutup)">
+                    <SingleFileInput id="bukti_bayar" v-model="form.bukti_bayar" label="Bukti Pembayaran"
+                        is-label-required accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.bukti_bayar"
+                        delete-identifier="bukti_bayar" required />
                 </div>
                 <SingleFileInput v-model="form.apl_1" label="Form APL.01" is-label-required
-                    :template-url="`/storage/${sertification.skema.format_apl_1}`" accept=".pdf,.doc,.docx"
+                    :template-url="`/storage/${sertification.skema.format_apl_1}`" accept=".pdf,.docx"
                     :error="form.errors.apl_1" delete-identifier="apl_1" required />
                 <SingleFileInput v-model="form.apl_2" label="Form APL.02" is-label-required
-                    :template-url="`/storage/${sertification.skema.format_apl_2}`" accept=".pdf,.doc,.docx"
+                    :template-url="`/storage/${sertification.skema.format_apl_2}`" accept=".pdf,.docx"
                     :error="form.errors.apl_2" delete-identifier="apl_2" required />
                 <SingleFileInput v-model="form.foto_ktp" label="Scan KTP" is-label-required
                     :existing-file-url="student?.foto_ktp ? `/storage/${student.foto_ktp}` : null"

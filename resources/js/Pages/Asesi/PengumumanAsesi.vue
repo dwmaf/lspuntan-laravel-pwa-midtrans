@@ -34,9 +34,9 @@ const truncateText = (html, length = 150) => {
 
 const markNewsAsRead = (newsId) => {
     window.axios.post(route('asesi.pengumuman.mark-read', {
-        sert_id: props.sertification.id,
-        asesi_id: props.asesi.id,
-        news_id: newsId
+        sertification: props.sertification,
+        asesi: props.asesi,
+        news: newsId
     })).catch(err => console.error(err));
 }
 
@@ -91,8 +91,9 @@ onMounted(() => {
                                 {{ pengumuman.user?.name || 'Admin' }}
                             </h5>
                             <div class="text-xs text-gray-400">
-                                {{ formatDate(pengumuman.content_created_at) }}
-                                <span v-if="pengumuman.revised_at" class="text-gray-500">(diedit)</span>
+                                {{ formatDate(pengumuman.created_at) }}
+                                
+                                <span v-if="pengumuman.created_at !== pengumuman.updated_at" class="text-gray-500">(diedit)</span>
                             </div>
                         </div>
 
@@ -146,8 +147,8 @@ onMounted(() => {
                             {{ selectedNews.user?.name || 'Admin' }}
                         </h5>
                         <div class="text-xs text-gray-400">
-                            {{ formatDate(selectedNews.content_created_at) }}
-                            <span v-if="selectedNews.revised_at" class="text-gray-500">(diedit)</span>
+                            {{ formatDate(selectedNews.created_at) }}
+                            <span v-if="selectedNews.created_at !== selectedNews.updated_at" class="text-gray-500">(diedit)</span>
                         </div>
                     </div>
                 </div>

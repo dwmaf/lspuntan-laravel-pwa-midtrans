@@ -22,8 +22,9 @@ class AsesmenController extends Controller
         // dd($id);
         $sertification->load([
             'asesis.student.user',
-            'asesis.asesiasesmenfiles',
-            'asesmen.asesmenfiles'
+            'asesis.asesiasesmen',
+            'asesmen.asesmenfiles',
+            'skema'
         ]);
 
         $filteredAsesi = $sertification->asesis->where('status_akses_asesmen','diberikan')->values();

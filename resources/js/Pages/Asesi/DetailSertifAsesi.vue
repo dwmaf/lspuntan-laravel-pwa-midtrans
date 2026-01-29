@@ -32,6 +32,8 @@ const genderOptions = [
 
 const tujuanOptions = [
     { value: 'Sertifikasi', text: 'Sertifikasi' },
+    { value: 'Pengakuan Kompetensi Terkini (PKT)', text: 'Pengakuan Kompetensi Terkini (PKT)' },
+    { value: 'Rekognisi Pembelajaran Lampau (RPL)', text: 'Rekognisi Pembelajaran Lampau (RPL)' },
     { value: 'Lainnya', text: 'Lainnya' },
 ];
 
@@ -279,14 +281,14 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
                         delete-identifier="apl_1" label="Form APL.01" is-label-required
                         :template-url="`/storage/${sertification.skema.format_apl_1}`"
                         :existing-file-url="asesi?.apl_1 ? `/storage/${asesi.apl_1}` : null"
-                        :is-marked-for-deletion="form.delete_files_asesi.includes('apl_1')" accept=".pdf,.doc,.docx"
+                        :is-marked-for-deletion="form.delete_files_asesi.includes('apl_1')" accept=".doc,.docx"
                         :error="form.errors.apl_1"
                         :required="!asesi?.apl_1 || form.delete_files_asesi.includes('apl_1')" />
                     <SingleFileInput v-model="form.apl_2" v-model:deleteList="form.delete_files_asesi"
                         delete-identifier="apl_2" label="Form APL.02" is-label-required
                         :template-url="`/storage/${sertification.skema.format_apl_2}`"
                         :existing-file-url="asesi?.apl_2 ? `/storage/${asesi.apl_2}` : null"
-                        :is-marked-for-deletion="form.delete_files_asesi.includes('apl_2')" accept=".pdf,.doc,.docx"
+                        :is-marked-for-deletion="form.delete_files_asesi.includes('apl_2')" accept=".doc,.docx"
                         :error="form.errors.apl_2"
                         :required="!asesi?.apl_2 || form.delete_files_asesi.includes('apl_2')" />
                     <SingleFileInput v-model="form.foto_ktp" v-model:deleteList="form.delete_files_student"

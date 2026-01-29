@@ -78,23 +78,24 @@ class DatabaseSeeder extends Seeder
                 'email' => 'admin@g.c',
                 'name' => 'Afif',
                 'password' => Hash::make('12345678'),
+                'no_tlp_hp' => '081234567890',
                 'email_verified_at' => now(),
             ]);
             $admin->assignRole('admin', 'asesor');
-            $adminasesor = Asesor::create(['user_id' => $admin->id]);
+            $adminasesor = Asesor::factory()->create(['user_id' => $admin->id]);
             $adminasesor->skemas()->attach([1]);
             $direktur = User::create([
                 'email' => 'bomo@asesor.c',
                 'name' => 'Bomo Wibowo',
                 'password' => Hash::make('12345678'),
+                'no_tlp_hp' => '081234567891',
                 'email_verified_at' => now(),
             ]);
             $direktur->assignRole('admin', 'asesor');
-            $direkturasesor = Asesor::create(['user_id' => $direktur->id]);
+            $direkturasesor = Asesor::factory()->create(['user_id' => $direktur->id]);
             $direkturasesor->skemas()->attach([5]);
-            User::factory(24)->create()->each(function ($user) use ($skemas) {
-                $user->assignRole('asesor');
-                $asesor = Asesor::create(['user_id' => $user->id]);
+            Asesor::factory(24)->create()->each(function ($asesor) use ($skemas) {
+                $asesor->user->assignRole('asesor');
                 $asesor->skemas()->attach($skemas->random(rand(1, 3))->pluck('id'));
             });
 

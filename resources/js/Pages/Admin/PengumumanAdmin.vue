@@ -26,7 +26,6 @@ const props = defineProps({
 
 const formMode = ref('list'); // 'list', 'create', 'edit'
 const editingPengumumanId = ref(null);
-const isPreviewing = ref(false);
 const showReadersModal = ref(false);
 const readersList = ref([]);
 const loadingReaders = ref(false);
@@ -183,10 +182,19 @@ const fetchReaders = (newsId) => {
             loadingReaders.value = false;
         });
 };
+
+const headerTitle = computed(() => {
+    let action = '';
+    if (formMode.value === 'edit') action = 'Edit ';
+    if (formMode.value === 'create') action = 'Tambah ';
+
+    return `${props.sertification.skema.nama_skema}: ${action}Pengumuman`;
+});
+
 </script>
 <template>
     <AdminLayout>
-        <CustomHeader judul="Pengumuman Sertifikasi" />
+        <CustomHeader :judul="headerTitle" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
         <div v-if="formMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit Pengumuman</h2>
@@ -207,13 +215,12 @@ const fetchReaders = (newsId) => {
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                         Update
                     </PrimaryButton>
-                    <SecondaryButton type="button" @click="isPreviewing = true">Preview</SecondaryButton>
+                    
                     <SecondaryButton type="button" @click="cancelForm">Batal</SecondaryButton>
                 </div>
             </form>
         </div>
         <div v-if="formMode === 'create'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Buat Pengumuman</h2>
             <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
                 <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
                 <MultiFileInput v-model="form.newFiles" label="Lampiran"
@@ -230,16 +237,16 @@ const fetchReaders = (newsId) => {
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                         Simpan
                     </PrimaryButton>
-                    <SecondaryButton type="button" @click="isPreviewing = true">Preview</SecondaryButton>
+                    
                     <SecondaryButton type="button" @click="cancelForm">Batal</SecondaryButton>
                 </div>
             </form>
         </div>
         <div v-if="formMode === 'list'">
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-2 mb-2">
                 <AddButton class="self-end" @click="showCreateForm">Tambah Pengumuman</AddButton>
                 <div v-if="!pengumumans" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
-                    <p class="text-gray-500 dark:text-gray-400 font-semibold text-sm">Buat pengumuman baru untuk
+                    <p class="text-gray-500 dark:text-gray-400 font-semibold text-sm">Belum ada pengumuman untuk
                         para asesi.</p>
                 </div>
             </div>
@@ -293,37 +300,6 @@ const fetchReaders = (newsId) => {
         <div v-else class="text-center text-gray-500 dark:text-gray-300 py-8">
             Belum ada pengumuman.
         </div>
-        <Modal :show="isPreviewing" @close="isPreviewing = false">
-            <div class="p-6 bg-white dark:bg-gray-800">
-                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Preview Pengumuman</h2>
-                <div class="border-t border-gray-200 dark:border-gray-700 py-4">
-                    <div class="flex justify-between items-center mb-2">
-                        <CreatorInfo :name="$page.props.auth.user?.name || 'Admin'" :created-at="new Date()" />
-                    </div>
-
-                    <div v-html="form.content.replace(/\n/g, '<br>')"
-                        class="font-medium text-sm text-gray-800 dark:text-gray-100 mb-4"></div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2" v-if="previewFiles.length > 0">
-                        <div v-for="(file, index) in previewFiles" :key="index"
-                            class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
-                            <a :href="file.url" target="_blank"
-                                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
-                                {{ file.name }}
-                            </a>
-                            <span v-if="file.isLocal" class="text-xs text-gray-400 italic">(Baru)</span>
-                        </div>
-                    </div>
-
-                    <div v-else class="text-xs text-gray-500 mb-2 italic">
-                        Tidak ada lampiran.
-                    </div>
-                </div>
-                <div class="flex justify-end mt-4">
-                    <SecondaryButton @click="isPreviewing = false">Tutup Preview</SecondaryButton>
-                </div>
-            </div>
-        </Modal>
 
         <Modal :show="showReadersModal" @close="showReadersModal = false">
             <div class="p-6 bg-white dark:bg-gray-800">

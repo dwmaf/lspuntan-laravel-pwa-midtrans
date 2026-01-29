@@ -1,6 +1,7 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
+import ExportLink from "@/Components/Link/ExportLink.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
 import InputError from "@/Components/Input/InputError.vue";
 import InputLabel from "@/Components/Input/InputLabel.vue";
@@ -157,13 +158,12 @@ const formattedHarga = computed(() => {
 </script>
 <template>
     <AdminLayout>
-        <CustomHeader judul="Detail Sertifikasi" />
+        <CustomHeader :judul="`${sertification.skema.nama_skema}: ${isEditing ? 'Edit' : 'Detail'} Sertifikasi`" />
 
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
         <div class="max-w-7xl mx-auto">
             <div v-if="isEditing" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <form @submit.prevent="submit" class="space-y-6">
-                    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit Sertifikasi</h2>
                     <SelectInput id="skema_id" label="Pilih Skema Sertifikasi:" v-model="form.skema_id"
                         :options="skemaOptions" :error="form.errors.skema_id" required />
                     <Multiselect v-if="form.skema_id" id="asesor_ids" label="Pilih Asesor (bisa lebih dari satu):"
@@ -225,21 +225,15 @@ const formattedHarga = computed(() => {
 
             <div v-if="!isEditing" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 sm:mb-0">
-                        Detail Sertifikasi
-                    </h3>
+                    
 
                     <div class="flex items-center space-x-3">
                         <EditButton @click="edit">Edit</EditButton>
+                        <ExportLink :href="route('admin.kelolasertifikasi.report.export_excel', props.sertification.id)" target="_blank">Export</ExportLink>
                         <DeleteButton
                             v-if="props.sertification.status == 'berlangsung' && props.sertification.asesis_count == 0"
                             @click="destroy">Hapus
                         </DeleteButton>
-                        <SecondaryButton
-                            v-if="props.sertification.status == 'berlangsung' && props.sertification.asesis_count > 0"
-                            @click="cancel" class="!bg-red-100 !text-red-700 !border-red-200 hover:!bg-red-200">
-                            Batalkan
-                        </SecondaryButton>
                     </div>
                 </div>
 

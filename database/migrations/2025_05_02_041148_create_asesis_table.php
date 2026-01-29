@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('foto_ktm')->nullable();
             $table->string('bukti_bayar')->nullable();
             $table->text('catatan_perbaikan')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
