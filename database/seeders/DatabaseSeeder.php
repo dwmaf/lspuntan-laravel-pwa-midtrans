@@ -148,15 +148,6 @@ class DatabaseSeeder extends Seeder
                     'status_final' => StatusFinalAsesi::KOMPETEN,
                     'bukti_bayar' => 'seed/bukti_bayar.jpg',
                 ]);
-
-                $makuls = $skemaMakuls[$selectedSkema->nama_skema] ?? [];
-                foreach ($makuls as $makulName) {
-                    Makulnilai::create([
-                        'asesi_id' => $asesi->id,
-                        'nama_makul' => $makulName,
-                        'nilai_makul' => collect(['A', 'A-', 'B+', 'B'])->random(),
-                    ]);
-                }
             }
         }
 
@@ -201,15 +192,6 @@ class DatabaseSeeder extends Seeder
                     'status_berkas' => $randomStatus[array_rand($randomStatus)],
                     'bukti_bayar' => 'seed/bukti_bayar.jpg',
                 ]);
-
-                $makuls = $skemaMakuls[$selectedSkema->nama_skema] ?? [];
-                foreach ($makuls as $makulName) {
-                    Makulnilai::create([
-                        'asesi_id' => $asesi->id,
-                        'nama_makul' => $makulName,
-                        'nilai_makul' => collect(['A', 'A-', 'B+', 'B', 'C+', 'C'])->random(),
-                    ]);
-                }
             }
         }
 
@@ -228,15 +210,6 @@ class DatabaseSeeder extends Seeder
                     'sertification_id' => $sertifikasiBaru->id,
                     'bukti_bayar' => 'seed/bukti_bayar.jpg',
                 ]);
-
-                $makuls = $skemaMakuls[$sertifikasiBaru->skema->nama_skema] ?? [];
-                foreach ($makuls as $makulName) {
-                    Makulnilai::create([
-                        'asesi_id' => $asesi->id,
-                        'nama_makul' => $makulName,
-                        'nilai_makul' => collect(['A', 'A-', 'B+', 'B', 'C+', 'C'])->random(),
-                    ]);
-                }
             }
         }
     }

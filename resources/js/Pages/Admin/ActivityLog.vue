@@ -94,9 +94,24 @@ const cleanSubjectType = (subject) => {
     const parts = subject.split('\\');
     return parts.pop();
 };
-const formatFieldName = (fieldName) => {
-    const result = fieldName.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1');
-    return result.charAt(0).toUpperCase() + result.slice(1);
+
+
+const formatProperties = (props) => {
+    if (!props) return {};
+    const cleanData = {};
+    if (props.old) {
+        cleanData['old'] = props.old;
+    }
+    
+    if (props.attributes) {
+        cleanData['new'] = props.attributes;
+    }
+
+    if (Object.keys(cleanData).length === 0) {
+        return props;
+    }
+
+    return cleanData;
 };
 </script>
 
@@ -209,47 +224,10 @@ const formatFieldName = (fieldName) => {
                     </dd>
                 </div>
 
-                <div>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID Target</dt>
-                    <dd class="mt-1 text-base text-gray-900 dark:text-gray-200">{{ selectedLog.subject_id }}</dd>
-                </div>
-
-                <div class="sm:col-span-3" v-if="selectedLog.properties && selectedLog.properties.attributes">
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Detail Perubahan</dt>
-                    <dd class="mt-2 text-sm">
-                        <div class="overflow-x-auto border rounded-md dark:border-gray-700">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-800/50">
-                                    <tr>
-                                        <th
-                                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase w-1/4">
-                                            Kolom</th>
-                                        <th
-                                            class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                            Perubahan</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <tr v-for="(newValue, field) in selectedLog.properties.attributes" :key="field">
-                                        <td class="px-4 py-3 font-semibold text-gray-800 dark:text-gray-200">
-                                            {{ field }}
-                                        </td>
-                                        <td class="px-4 py-3 text-gray-700 dark:text-gray-300 flex items-center gap-3">
-                                            <span v-if="selectedLog.properties.old && selectedLog.properties.old[field]"
-                                                class="">
-                                                {{ selectedLog.properties.old[field] }}
-                                            </span>
-                                            <MoveRight
-                                                v-if="selectedLog.properties.old && selectedLog.properties.old[field]"
-                                                stroke-width="1" />
-                                            <span>
-                                                {{ newValue }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <div class="sm:col-span-3">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Data Properti (Raw JSON)</dt>
+                    <dd class="mt-1">
+                        <pre class="p-4 bg-gray-900 text-green-400 rounded-lg text-xs font-mono overflow-auto max-h-96 whitespace-pre-wrap">{{ JSON.stringify(formatProperties(selectedLog.properties), null, 2) }}</pre>
                     </dd>
                 </div>
             </dl>

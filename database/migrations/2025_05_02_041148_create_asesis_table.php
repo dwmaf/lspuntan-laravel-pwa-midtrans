@@ -24,10 +24,12 @@ return new class extends Migration
             $table->string('tujuan_sert');
             $table->string('apl_1');
             $table->string('apl_2');
-            $table->string('foto_ktm')->nullable();
-            $table->string('bukti_bayar')->nullable();
+            $table->string('transkrip_nilai');
+            $table->string('foto_ktm');
+            $table->string('bukti_bayar');
             $table->text('catatan_perbaikan')->nullable();
-            $table->softDeletes();
+            $table->text('rekap_nilai');
+            $table->string('path_file_asesmen')->nullable();
             $table->timestamps();
         });
     }

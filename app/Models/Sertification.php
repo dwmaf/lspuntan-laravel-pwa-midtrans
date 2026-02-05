@@ -4,16 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute; // <-- Tambahkan ini
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sertification extends Model
 {
-    use LogsActivity, HasFactory, SoftDeletes;
+    use LogsActivity, HasFactory;
     /** @use HasFactory<\Database\Factories\SertificationFactory> */
     protected $guarded = [
         
@@ -34,46 +30,29 @@ class Sertification extends Model
     {
         return $this->hasMany(News::class);
     }
-    // public function paymentInstruction()
-    // {
-    //     return $this->hasOne(PaymentInstruction::class);
-    // }
 
     public function asesmen()
     {
         return $this->hasOne(Asesmen::class);
     }
 
-    protected static function booted(): void
-    {
-        static::deleting(function (Sertification $sertification) {
-            if($sertification->asesmen){ 
-                $sertification->asesmen->delete();
-            }
-            if($sertification->paymentInstruction){
-                $sertification->paymentInstruction->delete();
-            }
-            foreach ($sertification->news as $pengumuman) {
-                $pengumuman->delete();
-            }
-            foreach ($sertification->asesis as $asesi) {
-                $asesi->delete();
-            }
-        });
-    }
-
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('Sertification')
-            ->setDescriptionForEvent(fn(string $eventName) => "Sertification telah di-{$eventName}")
+            ->setDescriptionForEvent(fn(string $eventName) => "Jadwal Sertifikasi skema {$this->skema->nama_skema} telah di-{$eventName}")
             ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
             ->logOnly([
-                'skema_id',
-                'asesor_id',
                 'tuk',
+                'biaya',
+                'no_rek',
+                'bank',
+                'atas_nama_rek',
                 'tgl_apply_dibuka',
                 'tgl_apply_ditutup',
+                'tgl_asesmen_mulai',
+                'tgl_asesmen_selesai',
                 'status',
             ]);
     }

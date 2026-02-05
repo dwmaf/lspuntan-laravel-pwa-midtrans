@@ -6,6 +6,7 @@ import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryLinkButton from "@/Components/SecondaryLinkButton.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
+import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
@@ -48,13 +49,13 @@ const form = useForm({
     alamat_kantor: props.student?.alamat_kantor,
     no_tlp_email_fax: props.student?.no_tlp_email_fax,
     tujuan_sert: '',
-    makulNilais: [{ nama_makul: '', nilai_makul: '' }],
+    rekap_nilai: '',
     bukti_bayar: null,
     apl_1: null,
     apl_2: null,
     foto_ktp: null,
     foto_ktm: null,
-    kartu_hasil_studi: [],
+    transkrip_nilai: null,
     pas_foto: null,
     surat_ket_magang: [],
     sertif_pelatihan: [],
@@ -62,13 +63,6 @@ const form = useForm({
     delete_files: [],
 });
 
-
-const addMakul = () => {
-    form.makulNilais.push({ nama_makul: '', nilai_makul: '' });
-};
-const removeMakul = (index) => {
-    form.makulNilais.splice(index, 1);
-};
 const submit = () => {
     form.post(route('asesi.sertifikasi.apply.store', { student: props.student }));
 };
@@ -140,7 +134,7 @@ const formatDateTime = (dateString) => {
                     :options="tujuanOptions" placeholder="--Pilih tujuan sertifikasi--" :error="form.errors.tujuan_sert"
                     required />
 
-                <div>
+                <!-- <div>
                     <InputLabel value="Mata Kuliah terkait Skema Sertifikasi dan Nilai" required />
                     <div class="mt-1 space-y-3">
                         <div v-for="(makul, index) in form.makulNilais" :key="index"
@@ -183,7 +177,9 @@ const formatDateTime = (dateString) => {
                         <InputError :message="form.errors[`makulNilais.${index}.nilai_makul`]"
                             :key="`err-nilai-${index}`" class="mt-1" />
                     </div>
-                </div>
+                </div> -->
+                <TextareaInput id="rekap_nilai" label="Mata kuliah dan nilai" v-model="form.rekap_nilai" :error="form.errors.rekap_nilai" rows="4"
+                    required />
 
                 <!-- Bukti Kelengkapan -->
                 <h3 class="dark:text-gray-300 font-semibold pt-4">D. Bukti Kelengkapan</h3>
@@ -212,10 +208,10 @@ const formatDateTime = (dateString) => {
                         delete-identifier="bukti_bayar" required />
                 </div>
                 <SingleFileInput v-model="form.apl_1" label="Form APL.01" is-label-required
-                    :template-url="`/storage/${sertification.skema.format_apl_1}`" accept=".pdf,.docx"
+                    :template-url="`/storage/${sertification.skema.format_apl_1}`" accept=".docx"
                     :error="form.errors.apl_1" delete-identifier="apl_1" required />
                 <SingleFileInput v-model="form.apl_2" label="Form APL.02" is-label-required
-                    :template-url="`/storage/${sertification.skema.format_apl_2}`" accept=".pdf,.docx"
+                    :template-url="`/storage/${sertification.skema.format_apl_2}`" accept=".docx"
                     :error="form.errors.apl_2" delete-identifier="apl_2" required />
                 <SingleFileInput v-model="form.foto_ktp" label="Scan KTP" is-label-required
                     :existing-file-url="student?.foto_ktp ? `/storage/${student.foto_ktp}` : null"
@@ -230,18 +226,17 @@ const formatDateTime = (dateString) => {
                     :required="!student?.pas_foto || form.delete_files.includes('pas_foto')" />
                 <SingleFileInput v-model="form.foto_ktm" label="Scan KTM (ukuran file maksimal 1 MB)" is-label-required
                     accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.foto_ktm" delete-identifier="foto_ktm" required />
-                <MultiFileInput v-model="form.kartu_hasil_studi" label="Scan Kartu Hasil Studi (Semester I - V)"
-                    accept=".pdf" :error="form.errors.kartu_hasil_studi"
-                    :error-list="form.errors['kartu_hasil_studi.0']" required />
+                <SingleFileInput v-model="form.transkrip_nilai" label="Transkrip Nilai terbaru" is-label-required
+                    accept=".pdf" :error="form.errors.transkrip_nilai" delete-identifier="transkrip_nilai" required />
                 <MultiFileInput v-model="form.surat_ket_magang"
-                    label="Scan Surat Keterangan Magang/PKL/MBKM (ukuran file maksimal 3 MB)" accept="application/pdf"
+                    label="Scan Surat Keterangan Magang/PKL/MBKM (ukuran file maksimal 3 MB)" accept=".pdf"
                     :error="form.errors.surat_ket_magang" :error-list="form.errors['surat_ket_magang.0']" />
                 <MultiFileInput v-model="form.dok_pendukung_lain"
                     label="Dokumen pendukung lainnya: dapat berupa Laporan kegiatan PKL/Magang/MBKM/Publikasi Jurnal/dll (ukuran file maksimal 5 MB)"
-                    accept="application/pdf" :error="form.errors.dok_pendukung_lain"
+                    accept=".pdf" :error="form.errors.dok_pendukung_lain"
                     :error-list="form.errors['dok_pendukung_lain.0']" />
                 <MultiFileInput v-model="form.sertif_pelatihan"
-                    label="Scan Sertifikat Pelatihan (ukuran file maksimal 3 MB)" accept="application/pdf"
+                    label="Scan Sertifikat Pelatihan (ukuran file maksimal 3 MB)" accept=".pdf"
                     :error="form.errors.sertif_pelatihan" :error-list="form.errors['sertif_pelatihan.0']" />
                 <div class="flex items-center gap-4 pt-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">

@@ -5,6 +5,7 @@ import TextInput from '@/Components/Input/TextInput.vue';
 import EditButton from "@/Components/Button/EditButton.vue";
 import SingleFileInput from '@/Components/Input/SingleFileInput.vue';
 import SelectInput from '@/Components/Input/SelectInput.vue';
+
 import FileIcon from '@/Components/FileIcon.vue';
 import Alert from '@/Components/Alert.vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
@@ -128,7 +129,7 @@ const submit = () => {
             <Alert 
             v-if="isProfileIncomplete" 
             type="warning" title="Perhatian:">
-                Data profil Anda belum lengkap. Silakan lengkapi data Anda untuk dapat mendaftar sertifikasi.
+                Data profil Anda belum lengkap. Data berikut akan tersinkronisasi ketika anda mendaftar sertifikasi.
             </Alert>
 
             <div class="flex justify-between mb-4">
@@ -159,7 +160,7 @@ const submit = () => {
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Tempat, Tanggal Lahir</dt>
                     <dd class="mt-1 text-sm"
                         :class="student?.tmpt_lhr && student?.tgl_lhr ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
-                        {{ student?.tmpt_lhr || 'N/A' }}, {{ formatDate(student?.tgl_lhr) }}
+                        {{ student?.tmpt_lhr || 'Belum diisi' }}, {{ formatDate(student?.tgl_lhr) }}
                     </dd>
                 </div>
                 <div>
@@ -205,7 +206,7 @@ const submit = () => {
                             <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">{{
                                 file.path.split('/').pop() }}</span>
                         </a>
-                        <span v-else class="text-gray-400 dark:text-gray-500 italic">Tidak ada file.</span>
+                        <span v-else class="text-gray-400 dark:text-gray-500 italic">Belum ada file.</span>
                     </dd>
                 </div>
             </dl>

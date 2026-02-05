@@ -53,11 +53,7 @@ const availableAsesors = computed(() => {
         name: asesor.user.name
     }));
 });
-watch(() => form.skema_id, (newSkemaId) => {
-    if (isEditing.value) {
-        form.asesor_ids = [];
-    }
-});
+
 const skemaOptions = computed(() => {
     // Start with active skemas
     let options = props.activeSkemas.map(skema => ({ value: skema.id, text: skema.nama_skema }));
@@ -139,12 +135,6 @@ const destroy = () => {
     }
 };
 
-const cancel = () => {
-    if (confirm('Apakah Anda yakin ingin MEMBATALKAN sertifikasi ini? Status akan berubah menjadi Dibatalkan.')) {
-        router.patch(route('admin.kelolasertifikasi.cancel', props.sertification.id));
-    }
-};
-
 const formattedHarga = computed(() => {
     if (!form.harga) return "";
     const number = parseFloat(form.harga);
@@ -165,7 +155,12 @@ const formattedHarga = computed(() => {
             <div v-if="isEditing" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <form @submit.prevent="submit" class="space-y-6">
                     <SelectInput id="skema_id" label="Pilih Skema Sertifikasi:" v-model="form.skema_id"
-                        :options="skemaOptions" :error="form.errors.skema_id" required />
+                        :options="skemaOptions" :error="form.errors.skema_id" disabled
+                        class="bg-gray-100 cursor-not-allowed opacity-75" />
+                    <p class="mt-1 text-xs text-red-500 italic">
+                        *Skema sertifikasi tidak dapat diubah setelah jadwal dibuat untuk menjaga integritas data
+                        pendaftar.
+                    </p>
                     <Multiselect v-if="form.skema_id" id="asesor_ids" label="Pilih Asesor (bisa lebih dari satu):"
                         v-model="form.asesor_ids" :options="availableAsesors" :multiple="true"
                         placeholder="Cari atau pilih asesor" label-prop="name" value-prop="id"
@@ -225,11 +220,12 @@ const formattedHarga = computed(() => {
 
             <div v-if="!isEditing" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-                    
+
 
                     <div class="flex items-center space-x-3">
                         <EditButton @click="edit">Edit</EditButton>
-                        <ExportLink :href="route('admin.kelolasertifikasi.report.export_excel', props.sertification.id)" target="_blank">Export</ExportLink>
+                        <ExportLink :href="route('admin.kelolasertifikasi.report.export_excel', props.sertification.id)"
+                            target="_blank">Export</ExportLink>
                         <DeleteButton
                             v-if="props.sertification.status == 'berlangsung' && props.sertification.asesis_count == 0"
                             @click="destroy">Hapus

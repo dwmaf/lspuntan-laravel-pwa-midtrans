@@ -11,7 +11,6 @@ use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
 use App\Models\Student;
 use App\Models\User;
-use App\Models\Makulnilai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Sertification;
@@ -88,12 +87,11 @@ class KelolaSertifikasiAsesiController extends Controller
             'no_tlp_hp' => 'required|string|max:255',
             'kualifikasi_pendidikan' => 'required|string|max:255',
             'tujuan_sert' => 'required|string|max:255',
-
-            'makulNilais' => 'required|array|min:1',
-            'makulNilais.*.nama_makul' => 'required|string|max:255',
-            'makulNilais.*.nilai_makul' => 'required|string|max:10',
-            'apl_1' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
-            'apl_2' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
+            'rekap_nilai' => 'required|string|max:255',
+            'bukti_bayar' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'apl_1' => 'required|file|mimes:docx|max:2048',
+            'apl_2' => 'required|file|mimes:docx|max:2048',
+            'transkrip_nilai' => 'required|file|mimes:pdf|max:2048',
             'foto_ktm' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'foto_ktp' => [
                 'nullable',
@@ -113,15 +111,12 @@ class KelolaSertifikasiAsesiController extends Controller
                 'mimes:jpg,jpeg,png,pdf',
                 'max:2048'
             ],
-
-            'kartu_hasil_studi' => 'required|array|max:5',
-            'kartu_hasil_studi.*' => 'file|mimes:jpg,jpeg,png,pdf|max:3072',
             'surat_ket_magang' => 'nullable|array|max:5',
             'surat_ket_magang.*' => 'file|mimes:jpg,jpeg,png,pdf|max:3072',
             'sertif_pelatihan' => 'nullable|array|max:5',
             'sertif_pelatihan.*' => 'file|mimes:jpg,jpeg,png,pdf|max:3072',
             'dok_pendukung_lain' => 'nullable|array|max:5',
-            'dok_pendukung_lain.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
+            'dok_pendukung_lain.*' => 'file|mimes:jpg,jpeg,png,pdf,docx|max:5120',
             'delete_files' => 'nullable|array',
         ]);
         $sertification = Sertification::findOrFail($request->sertification_id);
@@ -137,14 +132,11 @@ class KelolaSertifikasiAsesiController extends Controller
             FileHelper::handleSingleFileUploads($student, ['foto_ktp', 'pas_foto'], $request, 'student_files');
             FileHelper::saveIfDirty([$student, $user]);
             
-            $asesi = new Asesi($request->only(['sertification_id', 'tujuan_sert']));
+            $asesi = new Asesi($request->only(['sertification_id', 'tujuan_sert', 'rekap_nilai']));
             $asesi->student_id = $student->id;
-            FileHelper::handleSingleFileUploads($asesi, ['apl_1', 'apl_2', 'foto_ktm'], $request, 'asesi_files');
+            FileHelper::handleSingleFileUploads($asesi, ['bukti_bayar','apl_1', 'apl_2', 'foto_ktm', 'transkrip_nilai'], $request, 'asesi_files');
             $asesi->save();
-            FileHelper::handleCollectionFileUploads(Asesifile::class,'asesi_id',$asesi->id, $request,['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain', 'kartu_hasil_studi'], 'asesi_files');
-            foreach ($request->makulNilais as $makul) {
-                MakulNilai::create(['asesi_id' => $asesi->id,'nama_makul' => $makul['nama_makul'],'nilai_makul' => $makul['nilai_makul'],]);
-            }
+            FileHelper::handleCollectionFileUploads(Asesifile::class,'asesi_id',$asesi->id, $request,['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain'], 'asesi_files');
 
             return $asesi;
         });
@@ -178,7 +170,6 @@ class KelolaSertifikasiAsesiController extends Controller
         $asesi->load([
             'student.user',
             'asesifiles',
-            'makulnilais',
             'sertifikat'
         ]);
         $student = $asesi->student;
@@ -212,16 +203,23 @@ class KelolaSertifikasiAsesiController extends Controller
             'no_tlp_hp' => 'required|string|max:255',
             'kualifikasi_pendidikan' => 'required|string|max:255',
             'tujuan_sert' => 'required|string|max:255',
-            'makulNilais' => 'required|array|min:1',
-            'makulNilais.*.nama_makul' => 'required|string|max:255',
-            'makulNilais.*.nilai_makul' => 'required|string|max:10',
+            'rekap_nilai' => 'required|string|max:255',
+            'bukti_bayar' => [
+                'nullable',
+                Rule::requiredIf(function () use ($request) {
+                    return is_array($request->input('delete_files_asesi', [])) && in_array('bukti_bayar', $request->input('delete_files_asesi', []));
+                }),
+                'file',
+                'mimes:png,jpg,jpeg,pdf',
+                'max:2048'
+            ],
             'apl_1' => [
                 'nullable',
                 Rule::requiredIf(function () use ($request) {
                     return is_array($request->input('delete_files_asesi', [])) && in_array('apl_1', $request->input('delete_files_asesi', []));
                 }),
                 'file',
-                'mimes:jpg,jpeg,png,pdf,doc,docx',
+                'mimes:docx',
                 'max:2048'
             ],
             'apl_2' => [
@@ -230,7 +228,16 @@ class KelolaSertifikasiAsesiController extends Controller
                     return is_array($request->input('delete_files_asesi', [])) && in_array('apl_2', $request->input('delete_files_asesi', []));
                 }),
                 'file',
-                'mimes:jpg,jpeg,png,pdf,doc,docx',
+                'mimes:docx',
+                'max:2048'
+            ],
+            'transkrip_nilai' => [
+                'nullable',
+                Rule::requiredIf(function () use ($request) {
+                    return is_array($request->input('delete_files_asesi', [])) && in_array('trnaskrip_nilai', $request->input('delete_files_asesi', []));
+                }),
+                'file',
+                'mimes:pdf',
                 'max:2048'
             ],
             'foto_ktp' => [
@@ -261,24 +268,22 @@ class KelolaSertifikasiAsesiController extends Controller
                 'max:2048'
             ],
 
-            'kartu_hasil_studi' => [
-                function ($attribute, $value, $fail) use ($request, $asesi) {
-                    $existingFilesCount = $asesi->asesifiles()->where('type', 'kartu_hasil_studi')->count();
-                    $deleteFilesCount = 0;
-                    if ($request->filled('delete_files_collection')) {
-                        $deleteFilesCount = $asesi->asesifiles()
-                            ->where('type', 'kartu_hasil_studi')->whereIn('id', $request->delete_files_collection)->count();
-                    }
-                    if (empty($value) && $existingFilesCount > 0 && $existingFilesCount === $deleteFilesCount) {
-                        $fail('Field kartu hasil studi wajib diisi.');
-                    }
-                },
-                'nullable',
-                'array',
-                'max:5'
-            ],
-            'kartu_hasil_studi.*' => 'file|mimes:jpg,jpeg,png,pdf|max:3072',
-            'surat_ket_magang' => 'nullable|array|max:5',
+            // 'kartu_hasil_studi' => [
+            //     function ($attribute, $value, $fail) use ($request, $asesi) {
+            //         $existingFilesCount = $asesi->asesifiles()->where('type', 'kartu_hasil_studi')->count();
+            //         $deleteFilesCount = 0;
+            //         if ($request->filled('delete_files_collection')) {
+            //             $deleteFilesCount = $asesi->asesifiles()
+            //                 ->where('type', 'kartu_hasil_studi')->whereIn('id', $request->delete_files_collection)->count();
+            //         }
+            //         if (empty($value) && $existingFilesCount > 0 && $existingFilesCount === $deleteFilesCount) {
+            //             $fail('Field kartu hasil studi wajib diisi.');
+            //         }
+            //     },
+            //     'nullable',
+            //     'array',
+            //     'max:5'
+            // ],
             'surat_ket_magang.*' => 'file|mimes:jpg,jpeg,png,pdf|max:3072',
             'sertif_pelatihan' => 'nullable|array|max:5',
             'sertif_pelatihan.*' => 'file|mimes:jpg,jpeg,png,pdf|max:3072',
@@ -294,21 +299,18 @@ class KelolaSertifikasiAsesiController extends Controller
             $initialStatus = $asesi->status;
             $student->fill($request->only(['nik', 'tmpt_lhr', 'tgl_lhr', 'kelamin', 'kebangsaan', 'no_tlp_rmh', 'no_tlp_kntr', 'no_tlp_hp', 'kualifikasi_pendidikan',]));
             $user->fill($request->only(['no_tlp_hp', 'name']));
-            $asesi->fill($request->only(['tujuan_sert',]));
+            $asesi->fill($request->only(['tujuan_sert','rekap_nilai']));
             FileHelper::handleSingleFileDeletes($student, $request->input('delete_files_student', []));
             FileHelper::handleSingleFileDeletes($asesi, $request->input('delete_files_asesi', []));
             FileHelper::handleCollectionFileDeletes(Asesifile::class, $request->input('delete_files_collection', []));
 
             FileHelper::handleSingleFileUploads($student, ['foto_ktp', 'pas_foto'], $request, 'student_files');
-            FileHelper::handleSingleFileUploads($asesi, ['apl_1', 'apl_2', 'foto_ktm'], $request, 'asesi_files');
-            FileHelper::handleCollectionFileUploads(Asesifile::class,'asesi_id',$asesi->id, $request,['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain', 'kartu_hasil_studi'], 'asesi_files');
+            FileHelper::handleSingleFileUploads($asesi, ['bukti_bayar','apl_1', 'apl_2', 'foto_ktm', 'transkrip_nilai'], $request, 'asesi_files');
+            FileHelper::handleCollectionFileUploads(Asesifile::class,'asesi_id',$asesi->id, $request,['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain'], 'asesi_files');
 
             FileHelper::saveIfDirty([$student, $user, $asesi]);
 
-            MakulNilai::where('asesi_id', $asesi->id)->delete();
-            foreach ($request->makulNilais as $makul) {
-                MakulNilai::create(['asesi_id' => $asesi->id,'nama_makul' => $makul['nama_makul'],'nilai_makul' => $makul['nilai_makul'],]);
-            }
+            
 
             if ($initialStatus === 'perlu_perbaikan_berkas') {
                 $asesi->status = 'daftar';
@@ -342,36 +344,6 @@ class KelolaSertifikasiAsesiController extends Controller
             }
         }
         return redirect()->back()->with('message', 'Berhasil update data sertifikasi');
-    }
-
-    public function batal_mendaftar($sert_id, $asesi_id)
-    {
-        $asesi = Asesi::with(['makulnilais', 'asesifiles', 'transaction'])->findOrFail($asesi_id);
-
-        Gate::authorize('delete', $asesi);
-
-        DB::transaction(function () use ($asesi) {
-
-            foreach (['apl_1', 'apl_2', 'foto_ktm'] as $fileField) {
-                if ($asesi->$fileField && Storage::disk('public')->exists($asesi->$fileField)) {
-                    Storage::disk('public')->delete($asesi->$fileField);
-                }
-            }
-            foreach ($asesi->asesifiles as $file) {
-                if (Storage::disk('public')->exists($file->path_file)) {
-                    Storage::disk('public')->delete($file->path_file);
-                }
-            }
-            $asesi->makulnilais()->delete();
-            $asesi->asesifiles()->delete();
-            if ($asesi->transaction) {
-                $asesi->transaction()->delete();
-            }
-
-            $asesi->delete();
-        });
-
-        return redirect(route('asesi.sertifikasi.list'))->with('message', 'Pendaftaran sertifikasi berhasil dibatalkan.');
     }
 
 }

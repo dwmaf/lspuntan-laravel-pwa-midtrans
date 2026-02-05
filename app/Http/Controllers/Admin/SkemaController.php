@@ -13,22 +13,6 @@ use Inertia\Inertia;
 
 class SkemaController extends Controller
 {
-    private $formatFields = [
-        'format_apl_1',
-        'format_apl_2',
-        'format_ak_1',
-        'format_ak_2',
-        'format_ak_3',
-        'format_ak_4',
-        'format_ac_1',
-        'format_map_1',
-        'format_ia_1',
-        'format_ia_2',
-        'format_ia_5',
-        'format_ia_6',
-        'format_ia_7'
-    ];
-
     public function create(Request $request)
     {
         $skemas = Skema::query()
@@ -48,20 +32,17 @@ class SkemaController extends Controller
 
     public function store(Request $request)
     {
-        $rules = [
+        $validatedData = $request->validate( [
             'nama_skema' => ['required', 'string', 'max:255'],
             'is_active' => ['nullable', 'boolean'],
-        ];
-
-        foreach ($this->formatFields as $field) {
-            $rules[$field] = 'nullable|file|mimes:doc,docx,pdf|max:2048';
-        }
-
-        $validatedData = $request->validate($rules);
+            'format_apl_1' => 'nullable|file|mimes:docx|max:2048',
+            'format_apl_2' => 'nullable|file|mimes:docx|max:2048',
+            'format_asesmen' => 'nullable|file|mimes:zip,rar|max:5120',
+        ]);
 
         $skema = new Skema($validatedData);
         $skema->is_active = $request->boolean('is_active', true);
-        FileHelper::handleSingleFileUploads($skema, $this->formatFields, $request, 'apl_files');
+        FileHelper::handleSingleFileUploads($skema, ['format_apl_1','format_apl_2','format_asesmen'], $request, 'apl_files');
         $skema->save();
 
         return redirect(route('admin.skema.create'))->with('message', 'Berhasil Simpan data skema');
@@ -69,23 +50,20 @@ class SkemaController extends Controller
 
     public function update(Request $request, Skema $skema)
     {
-        $rules = [
+        $request->validate([
             'nama_skema' => ['required', 'string', 'max:255'],
             'is_active' => ['nullable', 'boolean'],
             'delete_files' => 'nullable|array',
-        ];
-
-        foreach ($this->formatFields as $field) {
-            $rules[$field] = 'nullable|file|mimes:doc,docx,pdf|max:2048';
-        }
-
-        $request->validate($rules);
+            'format_apl_1' => 'nullable|file|mimes:doc,docx,pdf|max:2048',
+            'format_apl_2' => 'nullable|file|mimes:doc,docx,pdf|max:2048',
+            'format_asesmen' => 'nullable|file|mimes:zip,rar|max:5120',
+        ]);
 
         $skema->fill($request->only(['nama_skema']));
         $skema->is_active = $request->boolean('is_active');
 
         FileHelper::handleSingleFileDeletes($skema, $request->input('delete_files', []));
-        FileHelper::handleSingleFileUploads($skema, $this->formatFields, $request, 'apl_files');
+        FileHelper::handleSingleFileUploads($skema, ['format_apl_1','format_apl_2','format_asesmen'], $request, 'apl_files');
         FileHelper::saveIfDirty([$skema]);
 
         return redirect(route('admin.skema.create'))->with('message', 'Berhasil update data skema');
@@ -97,7 +75,7 @@ class SkemaController extends Controller
             return redirect(route('admin.skema.create'))->with('error', 'Skema tidak bisa dihapus karena sudah memiliki riwayat sertifikasi. Silakan non-aktifkan saja statusnya.');
         }
 
-        FileHelper::handleSingleFileDeletes($skema, $this->formatFields);
+        FileHelper::handleSingleFileDeletes($skema, ['format_apl_1','format_apl_2','format_asesmen']);
         $skema->delete();
         return redirect(route('admin.skema.create'))->with('message', 'Skema berhasil dihapus');
     }

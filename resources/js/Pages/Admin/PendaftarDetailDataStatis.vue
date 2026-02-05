@@ -19,7 +19,6 @@ const getFiles = (collection, type) => {
     return collection.filter(file => file.type === type);
 };
 
-const kartuHasilStudiFiles = computed(() => getFiles(props.asesi.asesifiles, 'kartu_hasil_studi'));
 const suratMagangFiles = computed(() => getFiles(props.asesi.asesifiles, 'surat_ket_magang'));
 const sertifPelatihanFiles = computed(() => getFiles(props.asesi.asesifiles, 'sertif_pelatihan'));
 const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_pendukung_lain'));
@@ -123,11 +122,7 @@ const getFileName = (path) => {
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Mata Kuliah terkait</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    <ul v-if="asesi.makulnilais?.length > 0">
-                        <li v-for="makul in asesi.makulnilais" :key="makul.id">{{ makul.nama_makul }}: {{
-                            makul.nilai_makul }}</li>
-                    </ul>
-                    <span v-else>Tidak diisi</span>
+                    {{ asesi.rekap_nilai || 'Tidak diisi' }}
                 </dd>
             </div>
         </dl>
@@ -137,6 +132,7 @@ const getFileName = (path) => {
             Kelengkapan</h3>
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
             <div v-for="file in [
+                { label: 'Bukti Pembayaran', path: asesi.bukti_bayar },
                 { label: 'Form APL.01', path: asesi.apl_1 },
                 { label: 'Form APL.02', path: asesi.apl_2 },
                 { label: 'Scan KTP', path: asesi.student?.foto_ktp },
@@ -155,7 +151,6 @@ const getFileName = (path) => {
             </div>
 
             <div v-for="fileGroup in [
-                { label: 'Scan Kartu Hasil Studi', files: kartuHasilStudiFiles },
                 { label: 'Scan Surat Keterangan Magang', files: suratMagangFiles },
                 { label: 'Scan Sertifikat Pelatihan', files: sertifPelatihanFiles },
                 { label: 'Dokumen Pendukung Lainnya', files: dokPendukungFiles },

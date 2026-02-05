@@ -25,7 +25,6 @@ return new class extends Migration
             $table->date('tgl_asesmen_mulai')->nullable();
             $table->date('tgl_asesmen_selesai')->nullable();
             $table->string('status')->default(StatusSertifikasi::BERLANGSUNG->value);
-            $table->softDeletes();
             $table->timestamps();
         });
     }

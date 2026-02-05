@@ -3,8 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Repositories\TransactionRepositoryInterface;
-use App\Repositories\TransactionRepository;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 use Kreait\Firebase\Contract\Messaging;
@@ -17,7 +15,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // $this->app->bind(TransactionRepositoryInterface::class, TransactionRepository::class);
         if ($this->app->environment() !== 'production') {
             $this->app->singleton(Messaging::class, function ($app) {
                 return new FakeMessagingService();

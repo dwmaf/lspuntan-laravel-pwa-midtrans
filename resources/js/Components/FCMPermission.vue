@@ -1,13 +1,31 @@
 <script setup>
+import Modal from '@/Components/Modal.vue';
+import DeleteButton from '@/Components/Button/DeleteButton.vue';
+import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
     isSubscribed: Boolean,
 });
+const showFCMModal = ref(false);
 
 const subscribed = ref(props.isSubscribed);
 const permission = ref('default');
+
+const closeModal = () => {
+    userToBan.value = null;
+    showBanModal.value = false;
+};
+
+function confirmAction() {
+    if (subscribed.value) {
+        unsubscribe();
+    } else {
+        subscribe();
+    }
+    closeModal();
+}
 
 function unsubscribe() {
     axios.delete(route('fcm.token.remove'))
@@ -88,11 +106,7 @@ onMounted(() => {
 });
 
 function handleToggleClick() {
-    if (subscribed.value) {
-        unsubscribe();
-    } else {
-        subscribe();
-    }
+    showFCMModal.value = true;
 }
 </script>
 
@@ -109,8 +123,6 @@ function handleToggleClick() {
 
         <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
             <div class="flex items-center justify-between">
-                
-                <!-- Label dan Deskripsi -->
                 <span class="flex flex-col">
                     <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Notifikasi Push</span>
                     <span v-if="permission === 'denied'" class="text-xs text-red-600 dark:text-red-400">
@@ -122,11 +134,10 @@ function handleToggleClick() {
                     </span>
                     <!-- Skenario: Belum berlangganan (izin default/granted) -->
                     <span v-else class="text-xs text-gray-500 dark:text-gray-400">
-                        Aktifkan untuk mendapatkan info penting.
+                        Aktifkan untuk mendapatkan notifikasi push (perubahan status berkas, status hak akses ke asesmen, etc).
                     </span>
                 </span>
 
-                <!-- Toggle Switch -->
                 <button 
                     type="button" 
                     @click="handleToggleClick"
@@ -143,4 +154,30 @@ function handleToggleClick() {
             </div>
         </div>
     </section>
+    <Modal :show="showFCMModal" @close="showFCMModal = false">
+        
+        <div class="p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                Konfirmasi Notifikasi Push
+            </h2>
+
+            <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                Apakah Anda yakin ingin <span class="font-bold underline">{{ subscribed ? 'menonaktifkan' : 'mengaktifkan' }}</span> 
+                notifikasi push aplikasi LSP UNTAN pada perangkat ini?
+            </p>
+            <p v-if="!subscribed" class="mt-2 text-xs text-gray-500 dark:text-gray-500 italic">
+                *Anda mungkin akan diminta memberikan izin akses notifikasi oleh browser.
+            </p>
+
+            <div class="mt-6 flex justify-end">
+                <SecondaryButton @click="closeModal"> Batal </SecondaryButton>
+                <DeleteButton v-if="subscribed" class="ml-3" @click="confirmAction">
+                    Ya, Nonaktifkan
+                </DeleteButton>
+                <PrimaryButton v-else @click="confirmAction" class="ml-3">
+                    Ya, Aktifkan
+                </PrimaryButton>
+            </div>
+        </div>
+    </Modal>
 </template>

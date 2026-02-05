@@ -70,13 +70,15 @@ const form = useForm({
     alamat_kantor: props.asesi.student?.alamat_kantor || '',
     no_tlp_email_fax: props.asesi.student?.no_tlp_email_fax || '',
     tujuan_sert: props.asesi.tujuan_sert,
-    makulNilais: props.asesi.makulnilais.length > 0 ? props.asesi.makulnilais.map(m => ({ nama_makul: m.nama_makul, nilai_makul: m.nilai_makul })) : [{ nama_makul: '', nilai_makul: '' }],
+    // makulNilais: props.asesi.makulnilais.length > 0 ? props.asesi.makulnilais.map(m => ({ nama_makul: m.nama_makul, nilai_makul: m.nilai_makul })) : [{ nama_makul: '', nilai_makul: '' }],
+    rekap_nilai: props.asesi.rekap_nilai,
+    bukti_bayar: null,
     apl_1: null,
     apl_2: null,
     foto_ktp: null,
     foto_ktm: null,
     pas_foto: null,
-    kartu_hasil_studi: [],
+    transkrip_nilai: null,
     surat_ket_magang: [],
     sertif_pelatihan: [],
     dok_pendukung_lain: [],
@@ -172,11 +174,21 @@ const getFiles = (collection, type) => {
     return collection.filter(file => file.type === type);
 };
 
-const kartuHasilStudiFiles = computed(() => getFiles(props.asesi.asesifiles, 'kartu_hasil_studi'));
 const suratMagangFiles = computed(() => getFiles(props.asesi.asesifiles, 'surat_ket_magang'));
 const sertifPelatihanFiles = computed(() => getFiles(props.asesi.asesifiles, 'sertif_pelatihan'));
 const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_pendukung_lain'));
-
+const formatDateTime = (dateString) => {
+    if (!dateString) return "N/A";
+    const formatted = new Date(dateString).toLocaleString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    }).replace('pukul', ',').replace('.', ':');
+    return `${formatted} WIB`;
+};
 </script>
 
 <template>
@@ -232,9 +244,35 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
                     <SelectInput id="tujuan_sert" label="Tujuan Sertifikasi" v-model="form.tujuan_sert"
                         :options="tujuanOptions" placeholder="--Pilih tujuan sertifikasi--"
                         :error="form.errors.tujuan_sert" required />
-
+                    <p class="text-sm text-gray-800 dark:text-gray-100">
+                        Silahkan lakukan pembayaran sebesar
+                        <span class="font-medium">
+                            Rp {{ new Intl.NumberFormat('id-ID').format(sertification.biaya) }}
+                        </span>
+                        ke nomor rekening
+                        <span class="font-medium">
+                            {{ sertification.no_rek }}
+                            {{ sertification.bank }}
+                        </span>
+                        an.
+                        <span class="font-medium">
+                            {{ sertification.atas_nama_rek }}.
+                        </span>
+                        Submit bukti pembayaran paling lambat
+                        <span class="font-medium">
+                            {{ formatDateTime(sertification.tgl_apply_ditutup) }}
+                        </span>
+                    </p>
+                    <div v-if="new Date() < new Date(sertification.tgl_apply_ditutup)">
+                        <SingleFileInput id="bukti_bayar" v-model="form.bukti_bayar" label="Bukti Pembayaran"
+                            v-model:deleteList="form.delete_files_asesi" is-label-required accept=".jpg,.png,.jpeg,.pdf"
+                            :error="form.errors.bukti_bayar"
+                            :existing-file-url="asesi?.bukti_bayar ? `/storage/${asesi.bukti_bayar}` : null"
+                            :is-marked-for-deletion="form.delete_files_asesi.includes('bukti_bayar')"
+                            delete-identifier="bukti_bayar" :required="!asesi?.bukti_bayar || form.delete_files_asesi.includes('bukti_bayar')" />
+                    </div>
                     <!-- Mata Kuliah Dinamis -->
-                    <div>
+                    <!-- <div>
                         <InputLabel value="Mata Kuliah terkait Skema Sertifikasi dan Nilai" required />
                         <div class="mt-1 space-y-3">
                             <div v-for="(makul, index) in form.makulNilais" :key="index"
@@ -273,11 +311,11 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
                             Tambah Mata Kuliah
                         </button>
 
-                    </div>
+                    </div> -->
 
                     <!-- Bukti Kelengkapan -->
                     <h3 class="dark:text-gray-300 font-semibold pt-4">D. Bukti Kelengkapan</h3>
-                    <SingleFileInput v-model="form.apl_1" v-model:deleteList="form.delete_files_asesi"
+                    <SingleFileInput id="apl_1" v-model="form.apl_1" v-model:deleteList="form.delete_files_asesi"
                         delete-identifier="apl_1" label="Form APL.01" is-label-required
                         :template-url="`/storage/${sertification.skema.format_apl_1}`"
                         :existing-file-url="asesi?.apl_1 ? `/storage/${asesi.apl_1}` : null"
@@ -310,11 +348,12 @@ const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_p
                         :is-marked-for-deletion="form.delete_files_asesi.includes('foto_ktm')"
                         accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.foto_ktm"
                         :required="!asesi?.foto_ktm || form.delete_files_asesi.includes('foto_ktm')" />
-                    <MultiFileInput v-model="form.kartu_hasil_studi" v-model:deleteList="form.delete_files_collection"
-                        label="Scan Kartu Hasil Studi (Bisa upload lebih dari satu)"
-                        :existing-files="kartuHasilStudiFiles" :max-files="5" accept=".jpg,.png,.jpeg,.pdf,.docx"
-                        :required="kartuHasilStudiFiles.length === 0 || form.kartu_hasil_studi.length === 0"
-                        :error="form.errors.kartu_hasil_studi" :error-list="form.errors['kartu_hasil_studi.0']" />
+                    <SingleFileInput v-model="form.transkrip_nilai" v-model:deleteList="form.delete_files_asesi"
+                        delete-identifier="transkrip_nilai" label="Transkrip Nilai Terbaru" is-label-required
+                        :existing-file-url="asesi?.transkrip_nilai ? `/storage/${asesi.transkrip_nilai}` : null"
+                        :is-marked-for-deletion="form.delete_files_asesi.includes('transkrip_nilai')" accept=".doc,.docx"
+                        :error="form.errors.transkrip_nilai"
+                        :required="!asesi?.transkrip_nilai || form.delete_files_asesi.includes('transkrip_nilai')" />
                     <MultiFileInput v-model="form.surat_ket_magang" v-model:deleteList="form.delete_files_collection"
                         label="Scan Surat Keterangan Magang/PKL/MBKM (maks 5, ukuran file maksimal 3 MB)"
                         :existing-files="suratMagangFiles" :max-files="5" accept=".jpg,.png,.jpeg,.pdf"

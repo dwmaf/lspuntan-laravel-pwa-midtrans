@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 // nanti harus dikasih, implements MustVerifyEmail
 
 class User extends Authenticatable 
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -82,4 +84,16 @@ class User extends Authenticatable
     // {
     //     return $this->no_tlp_hp; 
     // }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('User')
+            ->setDescriptionForEvent(fn(string $eventName) => "Data user {$this->name} telah di-{$eventName}")
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logOnly([
+                'banned_at',
+            ]);
+    }
 }

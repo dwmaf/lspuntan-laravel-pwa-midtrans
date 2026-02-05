@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Asesor extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity;
 
     protected $guarded = [
         
@@ -24,5 +25,18 @@ class Asesor extends Model
     public function sertifications()
     {
         return $this->belongsToMany(Sertification::class, 'asesor_sertification');
+    }
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Asesor')
+            ->setDescriptionForEvent(fn(string $eventName) => "Data Asesor {$this->user->name} telah di-{$eventName}")
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logOnly([                
+                'no_reg_met',
+                'masa_berlaku_sertif_teknis',
+                'masa_berlaku_sertif_asesor'
+            ]);
     }
 }

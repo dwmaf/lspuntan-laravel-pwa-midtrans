@@ -20,42 +20,12 @@ const isDeadlinePassed = computed(() => {
     return new Date() > new Date(props.sertification.asesmen.deadline);
 });
 
-// List of potential assessment documents
-const assessmentFields = [
-    { id: 'ak_1', label: 'AK-01 (Persetujuan Asesmen & Kerahasiaan)', skemaKey: 'format_ak_1' },
-    { id: 'ak_2', label: 'AK-02 (Rekaman Asesmen Kompetensi)', skemaKey: 'format_ak_2' },
-    { id: 'ak_3', label: 'AK-03 (Umpan Balik & Catatan Asesmen)', skemaKey: 'format_ak_3' },
-    { id: 'ak_4', label: 'AK-04 (Laporan Asesmen)', skemaKey: 'format_ak_4' },
-    { id: 'ac_1', label: 'AC-01 (Keputusan & Umpan Balik Asesmen)', skemaKey: 'format_ac_1' },
-    { id: 'map_1', label: 'MAP-01 (Merencanakan Aktivitas & Proses Asesmen)', skemaKey: 'format_map_1' },
-    { id: 'ia_1', label: 'IA-01 (Ceklis Observasi Aktivitas di Tempat Kerja)', skemaKey: 'format_ia_1' },
-    { id: 'ia_2', label: 'IA-02 (Tugas Praktik Demonstrasi)', skemaKey: 'format_ia_2' },
-    { id: 'ia_5', label: 'IA-05 (Pertanyaan Tertulis Pilihan Ganda)', skemaKey: 'format_ia_5' },
-    { id: 'ia_6', label: 'IA-06 (Pertanyaan Tertulis Esai)', skemaKey: 'format_ia_6' },
-    { id: 'ia_7', label: 'IA-07 (Pertanyaan Lisan)', skemaKey: 'format_ia_7' },
-];
-
-const activeFields = computed(() => {
-    return assessmentFields.filter(field => props.sertification.skema[field.skemaKey]);
-});
-
-const submissionMode = ref(props.asesi.asesiasesmen ? 'view' : 'submit');
+const submissionMode = ref(props.asesi.path_file_asesmen ? 'view' : 'submit');
 
 const form = useForm({
-    ak_1: null,
-    ak_2: null,
-    ak_3: null,
-    ak_4: null,
-    ac_1: null,
-    map_1: null,
-    ia_1: null,
-    ia_2: null,
-    ia_5: null,
-    ia_6: null,
-    ia_7: null,
+    path_file_asesmen: null,
     delete_files_asesi: [],
-    lampiran_lain: [],
-    delete_files_collection: [],
+    lampiran_lain: [],    
 });
 
 const submit = () => {
@@ -76,27 +46,13 @@ const showViewMode = () => {
     submissionMode.value = 'view';
 }
 
-const getExistingFileUrl = (fieldId) => {
-    if (!props.asesi.asesiasesmen) return '';
-    const path = props.asesi.asesiasesmen[fieldId];
-    return path ? `/storage/${path}` : '';
-};
-
-const getFiles = (collection, type) => {
-    if (!collection) return [];
-    return collection.filter(file => file.type === type);
-};
-
-const lampiranLainFiles = computed(() => getFiles(props.asesi.asesifiles, 'lampiran_lain'));
-
 </script>
 
 <template>
     <AsesiLayout>
 
         <CustomHeader :judul="`Instruksi Asesmen: ${sertification.skema?.nama_skema ?? ''}`" />
-        <AsesiSertifikasiMenu :sertification="props.sertification" :asesi="props.asesi"
-            :latest-transaction="props.asesi.latest_transaction" />
+        <AsesiSertifikasiMenu :sertification="props.sertification" :asesi="props.asesi"/>
 
         <div class="max-w-7xl mx-auto">
             <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
@@ -140,15 +96,16 @@ const lampiranLainFiles = computed(() => getFiles(props.asesi.asesifiles, 'lampi
                     </div>
 
                     <!-- Lampiran dari Asesor -->
-                    <div v-if="sertification.asesmen.asesmenfiles.length > 0" class="mt-4">
+                    <div v-if="sertification.asesmen?.path_file" class="mt-4">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Lampiran Soal/Materi:</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
-                            <a v-for="file in sertification.asesmen.asesmenfiles" :key="file.id"
-                                :href="`/storage/${file.path_file}`" target="_blank"
+                            <a
+                                :href="`/storage/${sertification.asesmen.path_file}`" target="_blank"
                                 class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
                                 <span
-                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">{{
-                                        file.path_file.split('/').pop() }}</span>
+                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
+                                    {{ sertification.asesmen.path_file.split('/').pop() }}
+                                        </span>
                             </a>
                         </div>
                     </div>
@@ -165,6 +122,9 @@ const lampiranLainFiles = computed(() => getFiles(props.asesi.asesifiles, 'lampi
                             <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 tracking-wider">
                                 {{ submissionMode === 'view' ? 'Berkas Tugas Terkumpul' : 'Unggah Berkas Tugas' }}
                             </h4>
+                            <div v-if="asesi.path_file_asesmen">
+                                {{ asesi.path_file_asesmen.split('/').pop() }}
+                            </div>
                             <div v-if="submissionMode === 'view' && !isDeadlinePassed">
                                 <SecondaryButton @click="showEditMode">
                                     Edit Pengiriman
@@ -174,27 +134,19 @@ const lampiranLainFiles = computed(() => getFiles(props.asesi.asesifiles, 'lampi
 
                         <form v-if="submissionMode === 'submit'" @submit.prevent="submit" class="space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div v-for="field in activeFields" :key="field.id">
-                                    <SingleFileInput v-model="form[field.id]" :id="field.id"
-                                        v-model:deleteList="form.delete_files_asesi" :delete-identifier="field.id"
-                                        :label="field.label" :existing-file-url="getExistingFileUrl(field.id)"
-                                        :error="form.errors[field.id]" required
-                                        :template-url="props.sertification.skema[field.skemaKey] ? `/storage/${props.sertification.skema[field.skemaKey]}` : null"
-                                        :disabled="submissionMode === 'view'" accept=".docx," />
-                                </div>
-                                <MultiFileInput v-model="form.lampiran_lain"
-                                    v-model:deleteList="form.delete_files_collection"
-                                    label="Lampiran lainnya (maks 5, ukuran file maksimal 5 MB)"
-                                    :existing-files="lampiranLainFiles" :max-files="5"
-                                    accept=".jpg,.png,.jpeg,.pdf,.docx,.pptx,.xlsx,.txt" :error="form.errors.lampiran_lain"
-                                    :error-list="form.errors['lampiran_lain.0']" />
+                                <SingleFileInput v-model="form.path_file_asesmen" id="path_file_asesmen"
+                                    v-model:deleteList="form.delete_files_asesi" delete-identifier="path_file_asesmen"
+                                    label="File asesmen anda" :existing-file-url="asesi?.file_path_asesmen ? `/storage/${asesi.file_path_asesmen}` : null"
+                                    :error="form.errors.path_file_asesmen" :required="!asesi?.file_path_asesmen || form.delete_files.includes('file_path_asesmen')"
+                                    :template-url="sertification.skema.format_asesmen ? `/storage/${sertification.skema.format_asesmen}` : null"
+                                    :disabled="submissionMode === 'view'" accept=".zip,.rar,.docx," />
                             </div>
 
                             <div v-if="submissionMode === 'submit'" class="flex items-center gap-4 mt-6">
                                 <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                                    {{ props.asesi.asesiasesmen ? 'Simpan Perubahan' : 'Kumpulkan Sekarang' }}
+                                    {{ props.asesi.path_file_asesmen ? 'Simpan Perubahan' : 'Kumpulkan Sekarang' }}
                                 </PrimaryButton>
-                                <SecondaryButton v-if="props.asesi.asesiasesmen" @click="showViewMode">
+                                <SecondaryButton v-if="props.asesi.path_file_asesmen" @click="showViewMode">
                                     Batal
                                 </SecondaryButton>
                             </div>

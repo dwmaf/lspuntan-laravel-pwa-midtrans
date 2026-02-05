@@ -11,8 +11,6 @@ use App\Models\Asesmenfile;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
-use App\Enums\AsesiStatus;
-use App\Enums\TransactionStatus;
 
 class AsesmenController extends Controller
 {
@@ -22,8 +20,8 @@ class AsesmenController extends Controller
         // dd($id);
         $sertification->load([
             'asesis.student.user',
-            'asesis.asesiasesmen',
-            'asesmen.asesmenfiles',
+            'asesis',
+            'asesmen',
             'skema'
         ]);
 
@@ -43,10 +41,8 @@ class AsesmenController extends Controller
         $validatedData = $request->validate([
             'content' => 'required|string',
             'deadline' => 'nullable|date',
-            'newFiles' => 'nullable|array|max:5',
-            'newFiles.*' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,pdf,doc,docx,ppt,pptx,xls,xlsx',
-            'delete_files_collection' => 'nullable|array',
-            'delete_files_collection.*' => 'integer|exists:asesmenfiles,id',
+            'path_file' => 'nullable|file|mimes:zip,rar,txt,docx,pdf,pptx,xlsx|max:5120',
+            'delete_files' => 'nullable|array',
             'send_notification' => 'boolean',
         ]);
         
@@ -57,10 +53,9 @@ class AsesmenController extends Controller
             'deadline' => $validatedData['deadline'],
             'user_id' => $request->user()->id,
         ]);
-        
+        FileHelper::handleSingleFileDeletes($asesmen, $request->input('delete_files', []));
+        FileHelper::handleSingleFileUploads($asesmen, ['path_file'], $request, 'sert_files');
         $asesmen->save();
-        FileHelper::handleCollectionFileDeletes(Asesmenfile::class, $request->input('delete_files_collection', []));
-        FileHelper::handleCollectionFileUploads(Asesmenfile::class, 'asesmen_id', $asesmen->id, $request, ['newFiles'], 'sert_files');
         if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
                 ->where('sertification_id', $sertification->id)
@@ -83,6 +78,7 @@ class AsesmenController extends Controller
     public function destroy(Sertification $sertification)
     {
         if ($sertification->asesmen) {
+            FileHelper::handleSingleFileDeletes($sertification->asesmen, ['path_file']);
             $sertification->asesmen->delete();
         }
 

@@ -35,7 +35,7 @@ class PendaftarController extends Controller
         Gate::authorize('view', $asesi);
         NotificationController::markAsRead($request);
         $sertification->load('skema');
-        $asesi->load(['student.user', 'asesifiles', 'makulnilais', 'sertifikat']);
+        $asesi->load(['student.user', 'asesifiles', 'sertifikat']);
         
         return Inertia::render('Admin/PendaftarDetail', [
             'asesi' => $asesi,
@@ -246,41 +246,18 @@ class PendaftarController extends Controller
         $user = $asesi->student->user;
         if ($user) {
             $title = 'Sertifikat Telah Terbit';
-            $body = 'Selamat! Sertifikat Anda telah diunggah.';
-            $url = route('asesi.sertifikasi.applied.show', [$sertification, $asesi]);
+            $body = 'Selamat! Sekarang anda bisa mendownload sertifikat anda.';
+            $url = route('asesi.sertifikasi.applied.show', [$sertification, $asesi, 'messageNotif' => $body]);
             $this->sendPushNotification($messaging, $user, $title, $body, $url, 'SertifikatUploaded');
         }
 
         return back()->with('message', 'Sertifikat berhasil disimpan.');
     }
 
-    public function updateApl(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
+    public function destroyCertificate(Sertification $sertification, Asesi $asesi, Request $request)
     {
-        $validatedData = $request->validate([
-            'apl_1' => [
-                'nullable',
-                Rule::requiredIf(function () use ($request) {
-                    return is_array($request->input('delete_files_asesi', [])) && in_array('apl_1', $request->input('delete_files_asesi', []));
-                }),
-                'file',
-                'mimes:pdf,docx,doc',
-                'max:2048'
-            ],
-            'apl_2' => [
-                'nullable',
-                Rule::requiredIf(function () use ($request) {
-                    return is_array($request->input('delete_files_asesi', [])) && in_array('apl_2', $request->input('delete_files_asesi', []));
-                }),
-                'file',
-                'mimes:pdf,docx,doc',
-                'max:2048'
-            ],
-            'delete_files_asesi' => 'nullable|array'
-        ]);
-        FileHelper::handleSingleFileDeletes($asesi, $request->input('delete_files_asesi', []));
-        FileHelper::handleSingleFileUploads($asesi, ['apl_1','apl_2'], $request, 'asesi_files');
-        FileHelper::saveIfDirty([$asesi]);
-
-        return back()->with('message', 'Apl asesi berhasil diupdate.');
+        FileHelper::handleSingleFileDeletes($asesi->sertifikat, ['file_path']);
+        $asesi->sertifikat->delete();
+        return back()->with('message', 'Sertifikat berhasil dihapus.');
     }
 }

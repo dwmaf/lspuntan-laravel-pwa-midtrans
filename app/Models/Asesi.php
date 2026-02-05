@@ -9,11 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Asesi extends Model
 {
-    use LogsActivity, HasFactory, SoftDeletes;
+    use LogsActivity, HasFactory;
     /** @use HasFactory<\Database\Factories\AsesiFactory> */
     protected $guarded = [];
     protected $casts = [
@@ -25,10 +24,6 @@ class Asesi extends Model
     {
         return $this->belongsTo(Student::class);
     }
-    public function makulnilais()
-    {
-        return $this->hasMany(Makulnilai::class);
-    }
     public function sertification()
     {
         return $this->belongsTo(Sertification::class);
@@ -37,25 +32,9 @@ class Asesi extends Model
     {
         return $this->hasMany(Asesifile::class);
     }
-    public function asesiasesmen()
-    {
-        return $this->hasOne(Asesiasesmen::class);
-    }
     public function sertifikat()
     {
         return $this->hasOne(Sertifikat::class);
-    }
-    protected static function booted(): void
-    {
-        static::deleting(function (Asesi $asesi) {
-            foreach ($asesi->asesifiles as $asesifile){
-                $asesifile->delete();
-            }
-            if ($asesi->asesiasesmen) {
-                $asesi->asesiasesmen->delete();
-            }
-            
-        });
     }
     public function getActivitylogOptions(): LogOptions
     {
@@ -63,13 +42,11 @@ class Asesi extends Model
             ->useLogName('Asesi')
             ->setDescriptionForEvent(fn(string $eventName) => "Data asesi {$this->student->user->name} telah di-{$eventName}")
             ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
             ->logOnly([
-                'status',
-                'sertification_id',
-                'catatan_perbaikan',
-                'apl_1',
-                'apl_2',
-                'foto_ktm',
+                'status_berkas',
+                'status_akses_asesmen',
+                'status_final'
             ]);
     }
 }

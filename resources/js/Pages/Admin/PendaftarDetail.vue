@@ -73,11 +73,6 @@ const closeModal = () => {
     showStatusModal.value = false;
 };
 
-const cancelEditAsesi = () => {
-    asesiForm.reset();
-    isEditingAsesi.value = false;
-};
-
 const cancelEditCertificate = () => {
     certificateForm.reset();
     isEditingCertificate.value = false;

@@ -3,6 +3,7 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
+import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import InputError from "@/Components/Input/InputError.vue";
 import InputLabel from "@/Components/Input/InputLabel.vue";
@@ -26,9 +27,6 @@ const props = defineProps({
 
 const formMode = ref('list'); // 'list', 'create', 'edit'
 const editingPengumumanId = ref(null);
-const showReadersModal = ref(false);
-const readersList = ref([]);
-const loadingReaders = ref(false);
 
 const form = useForm({
     content: '',
@@ -128,61 +126,6 @@ const formatDate = (dateString) => {
     }).format(date);
 };
 
-// Compute preview files from both new uploads and existing ones (if editing)
-const previewFiles = computed(() => {
-    let files = [];
-
-    // Existing files
-    if (formMode.value === 'edit' && editingPengumumanId.value) {
-        const currentPengumuman = props.pengumumans.data.find(p => p.id === editingPengumumanId.value);
-        if (currentPengumuman && currentPengumuman.newsfiles) {
-            const existing = currentPengumuman.newsfiles
-                .filter(f => !form.delete_files.includes(f.id))
-                .map(f => ({
-                    id: f.id,
-                    name: f.path_file.split('/').pop(),
-                    url: `/storage/${f.path_file}`,
-                    isLocal: false
-                }));
-            files = [...files, ...existing];
-        }
-    }
-
-    // New files (local)
-    if (form.newFiles && form.newFiles.length) {
-        const newUploads = Array.from(form.newFiles).map(file => ({
-            id: null,
-            name: file.name,
-            url: URL.createObjectURL(file),
-            isLocal: true,
-            fileObj: file
-        }));
-        files = [...files, ...newUploads];
-    }
-
-    return files;
-});
-
-const fetchReaders = (newsId) => {
-    loadingReaders.value = true;
-    readersList.value = [];
-    showReadersModal.value = true;
-
-    window.axios.get(route('admin.sertifikasi.assessment-announcement.readers', {
-        sert_id: props.sertification.id,
-        news_id: newsId
-    }))
-        .then(response => {
-            readersList.value = response.data;
-        })
-        .catch(error => {
-            console.error("Gagal mengambil data pembaca:", error);
-        })
-        .finally(() => {
-            loadingReaders.value = false;
-        });
-};
-
 const headerTitle = computed(() => {
     let action = '';
     if (formMode.value === 'edit') action = 'Edit ';
@@ -200,10 +143,12 @@ const headerTitle = computed(() => {
             <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit Pengumuman</h2>
             <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
                 <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
-                <MultiFileInput v-model="form.newFiles" v-model:delete-list="form.delete_files" label="Lampiran"
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
-                    :existing-files="pengumumans.data.find(p => p.id === editingPengumumanId)?.newsfiles || []"
-                    :error="form.errors.newFiles" :error-list="form.errors['newFiles.0']" />
+                <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
+                    delete-identifier="path_file" label="Lampiran Tambahan"
+                    :existing-file-url="pengumumans.data.find(p => p.id === editingPengumumanId)?.newsfiles ? `/storage/${asesmen.path_file}` : null"
+                    :is-marked-for-deletion="form.delete_files.includes('path_file')" accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf"
+                    :error="form.errors.path_file" @remove="removeFile('path_file')"/>
+                
                 <div class="mt-2">
                     <label class="flex items-center">
                         <Checkbox v-model:checked="form.send_notification" />
@@ -223,9 +168,10 @@ const headerTitle = computed(() => {
         <div v-if="formMode === 'create'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
                 <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
-                <MultiFileInput v-model="form.newFiles" label="Lampiran"
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx" :error="form.errors.newFiles"
-                    :error-list="form.errors['newFiles.0']" />
+                <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
+                    delete-identifier="path_file" label="Lampiran Tambahan"
+                    accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf"
+                    :error="form.errors.path_file" @remove="removeFile('path_file')"/>
                 <div class="mt-2">
                     <label class="flex items-center">
                         <Checkbox v-model:checked="form.send_notification" />
@@ -269,29 +215,16 @@ const headerTitle = computed(() => {
                     </h6>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                        <div v-if="pengumuman.newsfiles.length > 0" v-for="file in pengumuman.newsfiles" :key="file.id"
+                        <div v-if="pengumuman.path_file"
                             class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
-                            <a :href="`/storage/${file.path_file}`" target="_blank"
+                            <a :href="`/storage/${pengumuman.path_file}`" target="_blank"
                                 class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
-                                {{ file.path_file.split('/').pop() }}
+                                {{ pengumuman.path_file.split('/').pop() }}
                             </a>
                         </div>
                     </div>
 
-                    <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-end">
-                        <button type="button" @click="fetchReaders(pengumuman.id)"
-                            class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline transition-colors"
-                            title="Klik untuk melihat daftar pembaca">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            <span>Dibaca: {{ pengumuman.reads_count }} / {{ props.totalAsesis }} Asesi</span>
-                        </button>
-                    </div>
+                    
                 </div>
 
 
@@ -301,46 +234,6 @@ const headerTitle = computed(() => {
             Belum ada pengumuman.
         </div>
 
-        <Modal :show="showReadersModal" @close="showReadersModal = false">
-            <div class="p-6 bg-white dark:bg-gray-800">
-                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Status Literasi Asesi</h2>
-                <div class="border-t border-gray-200 dark:border-gray-700 max-h-[60vh] overflow-y-auto">
-                    <div v-if="loadingReaders" class="text-center py-4 text-gray-500">
-                        Memuat data...
-                    </div>
-                    <div v-else-if="readersList.length > 0" class="space-y-3">
-                        <div v-for="(reader, index) in readersList" :key="index"
-                            class="flex flex-col sm:flex-row justify-between gap-2 sm:items-center py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                            <div>
-                                <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ reader.name }}
-                                </div>
-                                <div class="text-xs text-gray-500">{{ reader.email }}</div>
-                            </div>
-                            <div class="mt-1 sm:mt-0 sm:text-right">
-                                <div v-if="reader.has_read" class="text-xs">
-                                    <span
-                                        class="px-2 py-1 font-semibold text-green-700 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300 whitespace-nowrap">
-                                        Dilihat pada {{ formatDate(reader.read_at) }} WIB
-                                    </span>
-                                </div>
-                                <div v-else class="text-xs">
-                                    <span
-                                        class="px-2 py-1 font-semibold text-red-700 bg-red-100 rounded-full dark:bg-red-900 dark:text-red-300 whitespace-nowrap">
-                                        Belum Dilihat
-                                    </span>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div v-else class="text-center py-4 text-gray-500 italic">
-                        Tidak ada data asesi.
-                    </div>
-                </div>
-                <div class="flex justify-end mt-4">
-                    <SecondaryButton @click="showReadersModal = false">Tutup</SecondaryButton>
-                </div>
-            </div>
-        </Modal>
+        
     </AdminLayout>
 </template>

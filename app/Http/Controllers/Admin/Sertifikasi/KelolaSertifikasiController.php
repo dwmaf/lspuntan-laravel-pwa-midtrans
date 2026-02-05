@@ -126,7 +126,6 @@ class KelolaSertifikasiController extends Controller
     {
         // dd($request);
         $validatedData = $request->validate([
-            'skema_id' => 'required',
             'asesor_ids' => 'required|array',
             'asesor_ids.*' => 'exists:asesors,id',
             'tgl_apply_dibuka' => 'required|date',
@@ -143,7 +142,6 @@ class KelolaSertifikasiController extends Controller
         
         DB::transaction(function () use ($validatedData, $sertification, $request) {
             $sertification->update([
-                'skema_id' => $validatedData['skema_id'],
                 'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
                 'tgl_apply_ditutup' => $validatedData['tgl_apply_ditutup'],
                 'tgl_asesmen_mulai' => $validatedData['tgl_asesmen_mulai'] ?? null,

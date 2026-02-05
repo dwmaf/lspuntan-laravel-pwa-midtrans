@@ -6,14 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use App\Models\Asesi;
-use App\Models\NewsRead;
-
 use App\Helpers\FileHelper;
 use App\Models\News;
-use App\Models\Newsfile;
-
 use App\Traits\SendsPushNotifications;
-
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
@@ -32,8 +27,7 @@ class PengumumanController extends Controller
         return Inertia::render('Admin/PengumumanAdmin', [
             'pengumumans' => Inertia::scroll(
                 News::where('sertification_id', $sertification->id)
-                    ->with('user.asesor', 'newsfiles')
-                    ->withCount('reads')
+                    ->with('user.asesor')
                     ->latest()
                     ->paginate(10)
             ),
@@ -47,20 +41,17 @@ class PengumumanController extends Controller
         // dd($request);
         $validatedData = $request->validate([
             'content' => 'required|string',
-            'newFiles' => 'nullable|array|max:5',
-            'newFiles.*' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,pdf,docx,doc,ppt,pptx,xls,xlsx',
+            'path_file' => 'nullable|file|mimes:zip,rar,txt,docx,pdf,pptx,xlsx|max:5120',
             'send_notification' => 'boolean',
         ]);
-        
-        $newsParams = [
+
+        $news = News::create([
             'user_id' => $request->user()->id,
             'sertification_id' => $sertification->id,
             'content' => $validatedData['content'],
-        ];
-
-        $news = News::create($newsParams);
+        ]);
+        FileHelper::handleSingleFileUploads($news, ['path_file'], $request, 'sert_files');
         
-        FileHelper::handleCollectionFileUploads(Newsfile::class, 'news_id', $news->id, $request, ['newFiles'], 'sert_files');
         
         if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
@@ -86,19 +77,15 @@ class PengumumanController extends Controller
         // dd($request);
         $request->validate([
             'content' => 'required|string',
-            'newFiles' => 'nullable|array|max:5',
-            'newFiles.*' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,pdf,doc,docx,ppt,pptx,xls,xlsx',
+            'path_file' => 'nullable|file|mimes:zip,rar,txt,docx,pdf,pptx,xlsx|max:5120',
             'delete_files' => 'nullable|array',
-            'delete_files.*' => 'integer|exists:newsfiles,id',
             'send_notification' => 'boolean',
-
         ]);
 
         $news->content = $request->content;
-
+        FileHelper::handleSingleFileDeletes($news, $request->input('delete_files', []));
+        FileHelper::handleSingleFileUploads($news, ['path_file'], $request, 'sert_files');
         $news->save();
-        FileHelper::handleCollectionFileDeletes(Newsfile::class, $request->input('delete_files', []));
-        FileHelper::handleCollectionFileUploads(Newsfile::class, 'news_id', $news->id, $request, ['newFiles'], 'sert_files');
 
         if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
@@ -122,34 +109,8 @@ class PengumumanController extends Controller
 
     public function destroy_pengumuman_asesmen(Sertification $sertification, News $news, Request $request)
     {
+        FileHelper::handleSingleFileDeletes($news, ['path_file']);
         $news->delete();
         return redirect(route('admin.sertifikasi.assessment-announcement.index', $sertification))->with('message', 'Berhasil menghapus pengumuman');
-    }
-
-    public function getReaders(Sertification $sertification, News $news, Request $request)
-    {
-        $allAsesis = Asesi::with(['student.user'])
-            ->where('sertification_id', $sertification->id)
-            ->where('status', 'dilanjutkan_asesmen')
-            ->get();
-
-        $newsReaders = NewsRead::where('news_id', $news->id)
-            ->pluck('read_at', 'user_id');
-
-        $readersStatus = $allAsesis->map(function ($asesi) use ($newsReaders) {
-            $user = $asesi->student->user;
-            $userId = $user->id ?? null;
-            $hasRead = $userId && $newsReaders->has($userId);
-            
-            return [
-                'name' => $user->name ?? 'Unknown',
-                'email' => $user->email ?? '-',
-                'nim' => $asesi->student->nim ?? '-',
-                'has_read' => $hasRead,
-                'read_at' => $hasRead ? $newsReaders[$userId] : null,
-            ];
-        });
-        
-        return response()->json($readersStatus);
     }
 }

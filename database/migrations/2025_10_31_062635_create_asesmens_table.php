@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('sertification_id')->constrained()->onDelete('cascade');
             $table->text('content')->nullable();
             $table->dateTime('deadline')->nullable();
+            $table->string('path_file')->nullable();
             $table->foreignId('user_id')->constrained();
             $table->timestamps();
         });
