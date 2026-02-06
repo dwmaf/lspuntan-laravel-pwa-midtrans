@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Enums\StatusSertifikasi;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -13,6 +14,12 @@ class Sertification extends Model
     /** @use HasFactory<\Database\Factories\SertificationFactory> */
     protected $guarded = [
         
+    ];
+    protected $casts = [
+        'status' => StatusSertifikasi::class, // Supaya jadi Enum Object
+        // 'tgl_apply_dibuka' => 'date',
+        // 'tgl_apply_ditutup' => 'date',
+        // 'jadwal_test' => 'datetime',
     ];
     public function asesors()
     {

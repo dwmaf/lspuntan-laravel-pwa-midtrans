@@ -56,16 +56,7 @@ class DatabaseSeeder extends Seeder
             ]));
         }
 
-        $skemaMakuls = [
-            'Skema Pendamping UMKM' => ['Manajemen UMKM', 'Analisis Kelayakan Bisnis', 'Pemasaran Strategis'],
-            'Skema Ahli K3 Umum' => ['Dasar-Dasar K3', 'Hukum Ketenagakerjaan', 'Audit Internal'],
-            'Skema Teknisi Penginderaan Jauh' => ['Sistem Informasi Geografis', 'Interpretasi Citra', 'Fotogrametri'],
-            'Penyuluh Kehutanan Fasilitator' => ['Ekologi Hutan', 'Komunikasi Massa', 'Pengembangan Masyarakat'],
-            'Skema Analis Sumber Daya Manusia (SDM)' => ['Manajemen SDM', 'Hubungan Industrial', 'Pelatihan dan Pengembangan'],
-            'Skema Pengoperasian PLC (Programmable Logic Controller)' => ['Elektronika Industri', 'Logika Pemrograman', 'Kontrol Otomasi'],
-            'Skema Penerapan K3-Laboratorium' => ['Keamanan Laboratorium', 'Kimia Analitik', 'Pengelolaan Limbah B3'],
-            'Skema Programmer' => ['Algoritma dan Pemrograman', 'Struktur Data', 'Pemrograman Web', 'Basis Data'],
-        ];
+        
 
 
         /** @var \App\Models\User|null $admin */

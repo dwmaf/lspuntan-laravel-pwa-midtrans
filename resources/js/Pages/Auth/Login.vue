@@ -1,14 +1,10 @@
 <script setup>
 import Checkbox from '@/Components/Input/Checkbox.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/Input/InputError.vue';
-import InputLabel from '@/Components/Input/InputLabel.vue';
 import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
 import TextInput from '@/Components/Input/TextInput.vue';
 import CustomHeader from '@/Components/CustomHeader.vue';
 import { Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import { Eye, EyeOff } from 'lucide-vue-next';
 
 defineProps({
     canResetPassword: {
@@ -18,7 +14,6 @@ defineProps({
         type: String,
     },
 });
-const showPassword = ref(false);
 const form = useForm({
     email: '',
     password: '',
@@ -35,7 +30,7 @@ const submit = () => {
 <template>
     <GuestLayout>
 
-        <CustomHeader judul="Log in" />
+        <CustomHeader judul="Log in Asesi" />
 
         <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
             {{ status }}
@@ -43,24 +38,8 @@ const submit = () => {
 
         <form @submit.prevent="submit">
             <TextInput id="email" label="Email" type="email" v-model="form.email" required autofocus autocomplete="username" :error="form.errors.email"/>
-            
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-                <!-- <TextInput id="password" type="password" v-model="form.password" required
-                    autocomplete="current-password" /> -->
-                <div class="relative">
-                    <input :type="showPassword ? 'text' : 'password'" id="password" v-model="form.password"
-                        class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                        required autocomplete="current-password">
-                    <button type="button" @click="showPassword = !showPassword"
-                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
-                        <Eye v-if="showPassword" class="text-lg text-gray-700 dark:text-gray-200" />
-                        <EyeOff v-if="!showPassword" class="text-lg text-gray-700 dark:text-gray-200" />
-                    </button>
-                </div>
-                <InputError :message="form.errors.password" />
-            </div>
-
+            <TextInput id="password" label="Password" type="password" v-model="form.password" required
+                autocomplete="current-password" :error="form.errors.password" />
             <div class="mt-4 block">
                 <label class="flex items-center">
                     <Checkbox name="remember" v-model:checked="form.remember" />
@@ -68,19 +47,22 @@ const submit = () => {
                 </label>
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
+            <div class="mt-6 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                 <Link v-if="canResetPassword" :href="route('password.request')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800">
-                    Forgot your password?
-                </Link>
-                <Link :href="route('register')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800">
-                    Belum punya akun? daftar
+                    class="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                    Lupa password?
                 </Link>
 
-                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Log in
-                </PrimaryButton>
+                <div class="flex items-center justify-end gap-4">
+                    <Link :href="route('register')"
+                        class="text-sm text-gray-600 underline hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                        Buat akun baru
+                    </Link>
+
+                    <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                        Log in
+                    </PrimaryButton>
+                </div>
             </div>
         </form>
     </GuestLayout>

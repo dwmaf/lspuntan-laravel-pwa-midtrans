@@ -57,30 +57,6 @@ function subscribe() {
         });
     }
 }
-// function requestPermissionAndGetToken() {
-//     console.log("Requesting permission for notifications...");
-//     Notification.requestPermission().then((perm) => {
-//         permission.value = perm;
-//         if (perm === 'granted') {
-//             enabled.value = true;
-//             console.log('Notification permission granted.');
-//             window.getToken(messaging, { vapidKey: 'BMrTLuoCHunyHVyUW3iA8b-_os4U84ESXBG-NMch2nR6gFRCaiO5xYcbU2p1S_ZFr95JSCXHvCNvNj3YWX8D75k' })
-//                 .then((currentToken) => {
-//                     if (currentToken) {
-//                         console.log('FCM Token:', currentToken);
-//                         window.sendTokenToServer(currentToken);
-//                     } else {
-//                         console.log('No registration token available. Request permission to generate one.');
-//                     }
-//                 }).catch((err) => {
-//                     console.log('An error occurred while retrieving token. ', err);
-//                 });
-//         } else {
-//             enabled.value = false;
-//             console.log('Unable to get permission to notify.');
-//         }
-//     });
-// }
 
 // Saat komponen dimuat, periksa status izin saat ini
 function getAndSendToken() {
