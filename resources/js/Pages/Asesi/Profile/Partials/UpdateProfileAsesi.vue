@@ -5,7 +5,7 @@ import TextInput from '@/Components/Input/TextInput.vue';
 import EditButton from "@/Components/Button/EditButton.vue";
 import SingleFileInput from '@/Components/Input/SingleFileInput.vue';
 import SelectInput from '@/Components/Input/SelectInput.vue';
-
+import { useFormat } from "@/Composables/useFormat";
 import FileIcon from '@/Components/FileIcon.vue';
 import Alert from '@/Components/Alert.vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
@@ -27,15 +27,7 @@ const genderOptions = [
     { value: 'Perempuan', text: 'Perempuan' },
 ];
 
-const formatDate = (dateString) => {
-    if (!dateString) return 'Tidak diisi';
-    return new Date(dateString).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    });
-};
-
+const { formatDate } = useFormat();
 const isProfileIncomplete = computed(() => {
     return !props.user?.name ||
         !props.student?.nik ||

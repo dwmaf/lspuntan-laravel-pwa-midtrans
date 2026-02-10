@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('no_reg_met')->nullable();
             $table->date('masa_berlaku_sertif_teknis')->nullable();
             $table->date('masa_berlaku_sertif_asesor')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

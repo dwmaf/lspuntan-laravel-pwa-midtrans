@@ -3,6 +3,7 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import ExportLink from "@/Components/Link/ExportLink.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
+import StatusBadge from '@/Components/StatusBadge.vue';
 import InputError from "@/Components/Input/InputError.vue";
 import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
@@ -14,6 +15,7 @@ import SelectInput from "@/Components/Input/SelectInput.vue";
 import NumberInput from "@/Components/Input/NumberInput.vue";
 import DateInput from "@/Components/Input/DateInput.vue";
 import Multiselect from '@/Components/Input/MultiSelect.vue';
+import { useFormat } from "@/Composables/useFormat";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed, watch, nextTick } from "vue";
 const props = defineProps({
@@ -69,29 +71,6 @@ const skemaOptions = computed(() => {
     return options;
 });
 
-const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    });
-};
-
-
-const formatDateTime = (dateString) => {
-    if (!dateString) return "N/A";
-    const formatted = new Date(dateString).toLocaleString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-    }).replace('pukul', ',').replace('.', ':');
-    return `${formatted} WIB`;
-};
-
 const edit = () => {
     form.skema_id = props.sertification.skema_id;
     form.tgl_apply_dibuka = props.sertification.tgl_apply_dibuka;
@@ -134,16 +113,9 @@ const destroy = () => {
         router.delete(route('admin.kelolasertifikasi.destroy', props.sertification.id));
     }
 };
-
+const { formatCurrency, formatDate, formatDateTime } = useFormat();
 const formattedHarga = computed(() => {
-    if (!form.harga) return "";
-    const number = parseFloat(form.harga);
-    if (isNaN(number)) return "";
-    return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        minimumFractionDigits: 0,
-    }).format(number);
+    return formatCurrency(form.biaya);
 });
 </script>
 <template>
@@ -205,6 +177,12 @@ const formattedHarga = computed(() => {
                                     required>
                                 <span class="ml-2 dark:text-gray-300">Selesai</span>
                             </label>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" v-model="form.status" value="dibatalkan"
+                                    class="cursor-pointer dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
+                                    required>
+                                <span class="ml-2 dark:text-gray-300">Dibatalkan</span>
+                            </label>
                         </div>
                         <InputError :message="form.errors.status" />
                     </div>
@@ -250,7 +228,7 @@ const formattedHarga = computed(() => {
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jadwal Pendaftaran</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
                             {{ formatDate(props.sertification.tgl_apply_dibuka) }} &ndash; {{
-                                formatDate(props.sertification.tgl_apply_ditutup) }}
+                                formatDateTime(props.sertification.tgl_apply_ditutup) }}
                         </dd>
                     </div>
                     <div>
@@ -259,6 +237,12 @@ const formattedHarga = computed(() => {
                             {{ formatDate(sertification.tgl_asesmen_mulai) }}
                             {{ sertification.tgl_asesmen_selesai ? ' - '
                                 + formatDate(sertification.tgl_asesmen_selesai) : '' }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Biaya</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            {{ formatCurrency(sertification.biaya) }}
                         </dd>
                     </div>
                     <div>
@@ -282,29 +266,25 @@ const formattedHarga = computed(() => {
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Asesi</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ props.sertification.asesis_count }} terdaftar</dd>
+                            {{ sertification.asesis_count }} terdaftar</dd>
                     </div>
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">TUK</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ props.sertification.tuk }}</dd>
+                            {{ sertification.tuk }}</dd>
                     </div>
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
                         <dd class="mt-1 text-sm">
-
-                            <span v-if="props.sertification.status === 'berlangsung'"
-                                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100">
+                            <StatusBadge v-if="sertification.status === 'berlangsung'" variant="success">
                                 Sedang Berlangsung
-                            </span>
-                            <span v-if="props.sertification.status === 'selesai'"
-                                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                            </StatusBadge>
+                            <StatusBadge v-if="sertification.status === 'selesai'" variant="primary">
                                 Selesai
-                            </span>
-                            <span v-if="props.sertification.status === 'dibatalkan'"
-                                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200">
+                            </StatusBadge>
+                            <StatusBadge v-if="sertification.status === 'dibatalkan'" variant="danger">
                                 Dibatalkan
-                            </span>
+                            </StatusBadge>
                         </dd>
                     </div>
                 </div>

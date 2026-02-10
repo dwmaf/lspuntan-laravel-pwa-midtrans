@@ -17,9 +17,6 @@ class Sertification extends Model
     ];
     protected $casts = [
         'status' => StatusSertifikasi::class, // Supaya jadi Enum Object
-        // 'tgl_apply_dibuka' => 'date',
-        // 'tgl_apply_ditutup' => 'date',
-        // 'jadwal_test' => 'datetime',
     ];
     public function asesors()
     {
@@ -47,7 +44,7 @@ class Sertification extends Model
     {
         return LogOptions::defaults()
             ->useLogName('Sertification')
-            ->setDescriptionForEvent(fn(string $eventName) => "Jadwal Sertifikasi skema {$this->skema->nama_skema} telah di-{$eventName}")
+            ->setDescriptionForEvent(fn(string $eventName) => "Jadwal Sertifikasi {$this->skema->nama_skema} telah di-{$eventName}")
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->logOnly([

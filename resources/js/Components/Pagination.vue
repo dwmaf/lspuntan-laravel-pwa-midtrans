@@ -1,6 +1,6 @@
 <template>
     <div v-if="links.length > 3"
-        class="lg:inline-flex items-stretch border border-gray-300 dark:border-gray-600 divide-x-2 divide-gray-300 dark:divide-gray-600 rounded-lg overflow-hidden hidden">
+        class="inline-flex items-stretch border border-gray-300 dark:border-gray-600 divide-x-2 divide-gray-300 dark:divide-gray-600 rounded-lg overflow-hidden">
         <template v-for="(link, key) in links" :key="key">
             <template v-if="key === 0 && link.url">
                 <Link :href="link.url ?? '#'" :disabled="!link.url"
@@ -32,7 +32,7 @@
             </template>
         </template>
     </div>
-    <div v-if="links.length > 3" class="flex lg:hidden justify-between w-full">
+    <div v-if="links.length < 3" class="flex justify-between w-full">
         <Link v-if="links[0].url" :href="links[0].url"
             class="px-4 py-2 text-sm font-bold flex items-center dark:text-gray-100 text-gray-700 justify-center border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
             <span>Previous</span>

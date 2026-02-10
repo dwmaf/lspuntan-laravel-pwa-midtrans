@@ -19,6 +19,7 @@ const props = defineProps({
     required: Boolean,
     error: String,
     templateUrl: String,
+    maxSize: { type: Number, default: 2048 },
 });
 
 const emit = defineEmits(['update:modelValue', 'update:deleteList']);
@@ -84,6 +85,19 @@ function handleValidationError(msg) {
         localValidationError.value = '';
     }, 3000);
 }
+
+const formattedMaxSize = computed(() => {
+    if (props.maxSize >= 1024) {
+        return (props.maxSize / 1024).toFixed(0) + ' MB';
+    }
+    return props.maxSize + ' KB';
+});
+
+const formattedAccept = computed(() => {
+    if (!props.accept) return 'Semua file';
+    return props.accept.split(',')
+    .map(ext => ext.trim().replace('.','').toUpperCase()).join(', ');
+});
 </script>
 
 <template>
@@ -96,7 +110,6 @@ function handleValidationError(msg) {
             </a>
         </div>
 
-        <!-- Main Drop Zone / File Display Container -->
         <div class="w-full p-2 rounded-xl  flex flex-col justify-center transition-all duration-300 ease-in-out relative bg-zinc-200 dark:bg-gray-700"
             :class="[
                 isDragActive ? 'bg-indigo-50 dark:bg-indigo-900/20 ring-2 ring-indigo-500' : '',
@@ -104,12 +117,9 @@ function handleValidationError(msg) {
             ]" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop"
             @click="showDropZone ? triggerBrowse() : null">
 
-            <!-- File Card (Visualisasi File Terpilih/Existing) -->
             <div v-if="!showDropZone" class="relative overflow-hidden rounded-lg shadow-sm">
-                <!-- Bagian konten utama ala FilePond (Dark Panel) -->
                 <div class="text-white rounded-lg py-1.5 px-2 flex items-center gap-3 shadow-inner"
                     :class="modelValue ? 'bg-[#369763]' : 'bg-[#635f5d]'">
-                    <!-- Icon -->
                     <div class="shrink-0 text-gray-300">
                         <FileIcon :path="existingFileUrl || (modelValue ? modelValue.name : '')" class="w-7 h-7" />
                     </div>
@@ -126,14 +136,11 @@ function handleValidationError(msg) {
 
                     <!-- Actions -->
                     <div class="flex items-center gap-2">
-                        <!-- Download Button -->
                         <a v-if="!modelValue" :href="fileDownloadUrl" target="_blank"
                             class="p-1.5 rounded-full hover:bg-gray-600 transition-colors text-gray-300 hover:text-white"
                             title="Open in new tab">
                             <Download class="w-4 h-4" />
                         </a>
-
-                        <!-- Remove Button -->
                         <button @click.stop="handleRemove" type="button"
                             class="p-1.5 rounded-full bg-black hover:outline-2 hover:outline-white transition-colors text-gray-300"
                             title="Remove">
@@ -143,20 +150,23 @@ function handleValidationError(msg) {
                 </div>
             </div>
 
-            <!-- Empty State / Drop Prompt -->
-            <div v-else class="pointer-events-none flex flex-col items-center gap-1 text-center py-3">
-                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                    Drop files here or<span class="underline"> Browse</span>
+            
+            <div v-else class="pointer-events-none flex flex-col items-center gap-1 text-center py-1">
+                <p class="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                    Drag & Drop atau <span class="text-indigo-600 dark:text-indigo-400 underline">Pilih File</span>
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
+                    <span class="block">Format: {{ formattedAccept }}</span>
+                    <span class="block">Maks: {{ formattedMaxSize }}</span>
                 </p>
             </div>
 
             <!-- Hidden Input -->
             <FileInput ref="fileInputRef" :model-value="modelValue"
                 @update:model-value="$emit('update:modelValue', $event)" @validation-error="handleValidationError"
-                :accept="accept" :required="required" />
+                :accept="accept" :max-size="maxSize" :required="required" />
         </div>
 
-        <!-- Error Messages -->
         <p v-if="localValidationError" class="mt-2 text-sm text-red-600 dark:text-red-400 animate-pulse">
             {{ localValidationError }}
         </p>

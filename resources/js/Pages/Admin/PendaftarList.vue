@@ -3,8 +3,9 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
 import TextInput from '@/Components/Input/TextInput.vue';
-import SmallLinkButton from "@/Components/SmallLinkButton.vue";
-import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
+import SeeButton from "@/Components/Button/SeeButton.vue";
+import StatusBadge from "@/Components/StatusBadge.vue";
+import { MoveRight, FunnelIcon, X, FileText, Lock, Award } from 'lucide-vue-next';
 import { ref, computed, watch, reactive } from 'vue';
 import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
 import SecondaryButton from '@/Components/Button/SecondaryButton.vue';
@@ -23,20 +24,20 @@ const selectedAsesis = ref([]);
 const getStatusBerkasAdministrasi = (status) => {
     const data = {
         'menunggu_verifikasi_admin': {
-            class: 'bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-100',
+            variant: 'primary',
             text: 'Menunggu Verifikasi Admin'
         },
         'perlu_perbaikan_berkas': {
-            class: 'bg-amber-100 text-amber-800 dark:bg-amber-700 dark:text-amber-100',
+            variant: 'warning',
             text: 'Perlu Perbaikan Berkas'
         },
         'sudah_lengkap': {
-            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            variant: 'success',
             text: 'Sudah Lengkap'
         },
     };
     return data[status] || {
-        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        variant: 'neutral',
         text: status
     };
 };
@@ -44,16 +45,16 @@ const getStatusBerkasAdministrasi = (status) => {
 const getStatusAksesMenuAsesmen = (status) => {
     const data = {
         'belum_diberikan': {
-            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            variant: 'warning',
             text: 'Belum Diberikan'
         },
         'diberikan': {
-            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            variant: 'success',
             text: 'Diberikan'
         },
     };
     return data[status] || {
-        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        variant: 'neutral',
         text: status
     };
 };
@@ -61,20 +62,24 @@ const getStatusAksesMenuAsesmen = (status) => {
 const getStatusFinalAsesi = (status) => {
     const data = {
         'belum_ditetapkan': {
-            class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+            variant: 'neutral',
             text: 'Belum Ditetapkan'
         },
         'belum_kompeten': {
-            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            variant: 'warning',
             text: 'Belum Kompeten'
         },
         'kompeten': {
-            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            variant: 'success',
             text: 'Kompeten'
+        },
+        'diskualifikasi': {
+            variant: 'danger',
+            text: 'Diskualifikasi'
         },
     };
     return data[status] || {
-        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        variant: 'neutral',
         text: status
     };
 };
@@ -201,17 +206,23 @@ const submitBulk = () => {
         <CustomHeader :judul="`${sertification.skema.nama_skema}: Daftar Peserta`" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
-        <div class="p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+        <div class="p-3 sm:p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
+            <div class="flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div v-if="selectedAsesis.length > 0" class="flex flex-wrap items-center gap-2">
                     <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                         {{ selectedAsesis.length }} dipilih:
                     </span>
-                    <SecondaryButton @click="openBulkModal('berkas')" class="py-1! px-2! text-[10px]!">Update Berkas
+                    <SecondaryButton @click="openBulkModal('berkas')" class="py-2! px-3! normal-case!">
+                        <FileText class="w-4 mr-1" />
+                        Update Status Berkas
                     </SecondaryButton>
-                    <SecondaryButton @click="openBulkModal('akses')" class="py-1! px-2! text-[10px]!">Update Akses
+                    <SecondaryButton @click="openBulkModal('akses')" class="py-2! px-3! normal-case!">
+                        <Lock class="w-4 mr-1" />
+                        Update Akses
                     </SecondaryButton>
-                    <SecondaryButton @click="openBulkModal('final')" class="py-1! px-2! text-[10px]!">Status Final
+                    <SecondaryButton @click="openBulkModal('final')" class="py-2! px-3! normal-case!">
+                        <Award class="w-4 mr-1" />
+                        Update Status Final
                     </SecondaryButton>
                 </div>
                 <div v-else></div>
@@ -234,7 +245,7 @@ const submitBulk = () => {
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left">
-                                <Checkbox v-model:checked="isSelectAll" />
+                                <Checkbox id="checkbox-select-all" v-model:checked="isSelectAll" />
                             </th>
                             <th scope="col"
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -268,7 +279,8 @@ const submitBulk = () => {
                         <tr v-if="filteredAsesis.length > 0" v-for="(asesi, index) in filteredAsesis" :key="asesi.id"
                             class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <Checkbox v-model:checked="selectedAsesis" :value="asesi.id" />
+                                <Checkbox :id="`checkbox-asesi-${asesi.id}`" v-model:checked="selectedAsesis"
+                                    :value="asesi.id" />
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ index + 1 }}
@@ -278,28 +290,25 @@ const submitBulk = () => {
                                 {{ asesi.student.user.name ?? 'Nama Tidak Tersedia' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <span
-                                    :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getStatusBerkasAdministrasi(asesi.status_berkas).class]">
+                                <StatusBadge :variant="getStatusBerkasAdministrasi(asesi.status_berkas).variant">
                                     {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
-                                </span>
+                                </StatusBadge>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <span
-                                    :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).class]">
+                                <StatusBadge :variant="getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).variant">
                                     {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
-                                </span>
+                                </StatusBadge>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <span
-                                    :class="['px-2 inline-flex text-xs leading-5 font-semibold rounded-full', getStatusFinalAsesi(asesi.status_final).class]">
+                                <StatusBadge :variant="getStatusFinalAsesi(asesi.status_final).variant">
                                     {{ getStatusFinalAsesi(asesi.status_final).text }}
-                                </span>
+                                </StatusBadge>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <SmallLinkButton
+                                <SeeButton
                                     :href="route('admin.sertifikasi.pendaftar.show', [props.sertification.id, asesi.id])">
                                     Detail
-                                </SmallLinkButton>
+                                </SeeButton>
                             </td>
                         </tr>
                         <tr v-else>

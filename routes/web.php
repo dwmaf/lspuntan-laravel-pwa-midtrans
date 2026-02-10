@@ -122,7 +122,7 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
         Route::patch('/pendaftar/{asesi}/update-akses-asesmen', [PendaftarController::class, 'updateAksesAsesmen'])->name('pendaftar.update-akses-asesmen'); // admin.sertifikasi.pendaftar.update-akses-menu-asesmen
         Route::patch('/pendaftar/{asesi}/update-status-final-asesi', [PendaftarController::class, 'updateStatusFinal'])->name('pendaftar.update-status-final'); // admin.sertifikasi.pendaftar.update-status-final-asesi
         Route::patch('/pendaftar/{asesi}/update-certificate', [PendaftarController::class, 'updateCertificate'])->name('pendaftar.update-certificate'); // admin.sertifikasi.pendaftar.upload-certificate
-        Route::patch('/pendaftar/{asesi}/update-apl', [PendaftarController::class, 'updateApl'])->name('pendaftar.update-apl'); // admin.sertifikasi.pendaftar.upload-apl
+        Route::delete('/pendaftar/{asesi}/destroy-certificate', [PendaftarController::class, 'destroyCertificate'])->name('pendaftar.destroy-certificate'); // admin.sertifikasi.pendaftar.destroy-certificate
     });
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     Route::prefix('users')->name('users.')->group(function () {

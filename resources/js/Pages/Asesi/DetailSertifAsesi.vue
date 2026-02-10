@@ -6,13 +6,12 @@ import PendaftarDetailDataStatis from "@/Pages/Admin/PendaftarDetailDataStatis.v
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
-import InputLabel from "@/Components/Input/InputLabel.vue";
-import FileIcon from "@/Components/FileIcon.vue";
+import StatusBadge from "@/Components/StatusBadge.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
-import InputError from "@/Components/Input/InputError.vue";
+import { useFormat } from "@/Composables/useFormat";
 import Alert from "@/Components/Alert.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import { ref, computed, onMounted } from 'vue';
@@ -49,10 +48,9 @@ onMounted(() => {
     }
 });
 
-// State untuk mode edit
 const isEditing = ref(false);
 
-// Inisialisasi form dengan data yang ada
+
 const form = useForm({
     _method: 'patch',
     name: props.asesi.student.user.name,
@@ -109,20 +107,20 @@ const removeMakul = (index) => form.makulNilais.splice(index, 1);
 const getStatusBerkasAdministrasi = (status) => {
     const data = {
         'menunggu_verifikasi_admin': {
-            class: 'bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-100',
+            variant: 'primary',
             text: 'Menunggu Verifikasi Admin'
         },
         'perlu_perbaikan_berkas': {
-            class: 'bg-amber-100 text-amber-800 dark:bg-amber-700 dark:text-amber-100',
+            variant: 'warning',
             text: 'Perlu Perbaikan Berkas'
         },
         'sudah_lengkap': {
-            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            variant: 'success',
             text: 'Sudah Lengkap'
         },
     };
     return data[status] || {
-        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        variant: 'neutral',
         text: status
     };
 };
@@ -130,16 +128,16 @@ const getStatusBerkasAdministrasi = (status) => {
 const getStatusAksesMenuAsesmen = (status) => {
     const data = {
         'belum_diberikan': {
-            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            variant: 'warning',
             text: 'Belum Diberikan'
         },
         'diberikan': {
-            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            variant: 'success',
             text: 'Diberikan'
         },
     };
     return data[status] || {
-        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        variant: 'neutral',
         text: status
     };
 };
@@ -147,24 +145,24 @@ const getStatusAksesMenuAsesmen = (status) => {
 const getStatusFinalAsesi = (status) => {
     const data = {
         'belum_ditetapkan': {
-            class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+            variant: 'neutral',
             text: 'Belum Ditetapkan'
         },
         'belum_kompeten': {
-            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            variant: 'warning',
             text: 'Belum Kompeten'
         },
         'kompeten': {
-            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            variant: 'success',
             text: 'Kompeten'
         },
         'diskualifikasi': {
-            class: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100',
+            variant: 'danger',
             text: 'Diskualifikasi'
         },
     };
     return data[status] || {
-        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        variant: 'neutral',
         text: status
     };
 };
@@ -177,18 +175,8 @@ const getFiles = (collection, type) => {
 const suratMagangFiles = computed(() => getFiles(props.asesi.asesifiles, 'surat_ket_magang'));
 const sertifPelatihanFiles = computed(() => getFiles(props.asesi.asesifiles, 'sertif_pelatihan'));
 const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_pendukung_lain'));
-const formatDateTime = (dateString) => {
-    if (!dateString) return "N/A";
-    const formatted = new Date(dateString).toLocaleString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-    }).replace('pukul', ',').replace('.', ':');
-    return `${formatted} WIB`;
-};
+
+const { formatCurrency,formatDateTime } = useFormat();
 </script>
 
 <template>
@@ -247,7 +235,7 @@ const formatDateTime = (dateString) => {
                     <p class="text-sm text-gray-800 dark:text-gray-100">
                         Silahkan lakukan pembayaran sebesar
                         <span class="font-medium">
-                            Rp {{ new Intl.NumberFormat('id-ID').format(sertification.biaya) }}
+                            {{ formatCurrency(sertification.biaya) }}
                         </span>
                         ke nomor rekening
                         <span class="font-medium">
@@ -403,31 +391,26 @@ const formatDateTime = (dateString) => {
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">
                             Status Berkas Administrasi Asesi</dt>
                         <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
-                            <span
-                                :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusBerkasAdministrasi(asesi.status_berkas).class]">
+                            <StatusBadge :variant="getStatusBerkasAdministrasi(asesi.status_berkas).variant">
                                 {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
-                            </span>
-
+                            </StatusBadge>
                         </dd>
                     </div>
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Hak Akses Menu Asesmen
                         </dt>
                         <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
-                            <span
-                                :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).class]">
+                            <StatusBadge :variant="getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).variant">
                                 {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
-                            </span>
+                            </StatusBadge>
                         </dd>
                     </div>
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Akhir Asesi</dt>
                         <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
-                            <span
-                                :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusFinalAsesi(asesi.status_final).class]">
+                            <StatusBadge :variant="getStatusFinalAsesi(asesi.status_final).variant">
                                 {{ getStatusFinalAsesi(asesi.status_final).text }}
-                            </span>
-
+                            </StatusBadge>
                         </dd>
                     </div>
                 </div>

@@ -1,6 +1,8 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import SecondaryButton from '@/Components/Button/SecondaryButton.vue';
+import SeeButton from '@/Components/Button/SeeButton.vue';
+import BackButton from '@/Components/Button/BackButton.vue';
 import Modal from '@/Components/Modal.vue';
 import Pagination from '@/Components/Pagination.vue';
 import { Head, router } from '@inertiajs/vue3';
@@ -12,6 +14,7 @@ import SelectInput from '@/Components/Input/SelectInput.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import InputLabel from '@/Components/Input/InputLabel.vue';
 import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
+import { useFormat } from "@/Composables/useFormat";
 const props = defineProps({
     logs: Object,
     filters: Object,
@@ -81,14 +84,8 @@ const backToList = () => {
     selectedLog.value = null;
     viewMode.value = 'list';
 };
-const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleString('id-ID', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    });
-};
+
+const { formatDateTime } = useFormat();
 const cleanSubjectType = (subject) => {
     if (!subject) return 'N/A';
     const parts = subject.split('\\');
@@ -136,40 +133,45 @@ const formatProperties = (props) => {
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
                             <th
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase pl-3">
                                 No</th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                 Deskripsi</th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                 Oleh
                             </th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                 Waktu
                             </th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase pr-3">
                                 Aksi
                             </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         <tr v-for="(log, index) in logs.data" :key="log.id">
-                            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">{{ logs.from + index }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">{{ log.description }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                            <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200 pl-3">{{ logs.from + index }}</td>
+                            <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
+                                <div class="truncate max-w-[300px] lg:max-w-none" :title="log.description">
+                                    {{ log.description }}
+                                </div>
+                            </td>
+                            <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
                                 {{ log.causer?.name ?? 'Sistem' }}
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                {{ formatDate(log.created_at) }}
+                            <td class="px-2 py-3 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                {{ formatDateTime(log.created_at, 'short') }}
                             </td>
-                            <td class="px-6 py-4">
-                                <button @click="showDetailView(log)"
+                            <td class="px-2 py-3 pr-3">
+                                <SeeButton @click="showDetailView(log)">Lihat</SeeButton>
+                                <!-- <button @click="showDetailView(log)"
                                     class="cursor-pointer px-2 py-1 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-700">
                                     Lihat
-                                </button>
+                                </button> -->
                             </td>
                         </tr>
                         <tr v-if="logs.data.length === 0">
@@ -191,9 +193,9 @@ const formatProperties = (props) => {
             class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div class="flex justify-between items-center mb-6 border-b pb-4 dark:border-gray-700">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Detail Aktivitas</h3>
-                <SecondaryButton @click="backToList">
+                <BackButton @click="backToList">
                     Kembali
-                </SecondaryButton>
+                </BackButton>
             </div>
 
             <dl class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-8">
@@ -209,7 +211,7 @@ const formatProperties = (props) => {
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Waktu</dt>
-                    <dd class="mt-1 text-base text-gray-900 dark:text-gray-200">{{ formatDate(selectedLog.created_at) }}
+                    <dd class="mt-1 text-base text-gray-900 dark:text-gray-200">{{ formatDateTime(selectedLog.created_at) }}
                     </dd>
                 </div>
                 <div>

@@ -7,31 +7,17 @@ import InputError from '@/Components/Input/InputError.vue';
 import { X, Download, UploadCloud } from 'lucide-vue-next';
 
 const props = defineProps({
-    modelValue: {
-        type: Array,
-        default: () => [],
-    },
-    existingFiles: {
-        type: Array,
-        default: () => [],
-    },
-    deleteList: {
-        type: Array,
-        default: () => [],
-    },
+    modelValue: {type: Array,default: () => [],},
+    existingFiles: {type: Array,default: () => [],},
+    deleteList: {type: Array,default: () => [],},
     label: String,
-    maxFiles: {
-        type: Number,
-        default: 5,
-    },
+    maxFiles: { type: Number, default: 5, },
     accept: String,
     required: { type: Boolean, default: false },
     error: String,
     errorList: String,
-    inputId: {
-        type: String,
-        default: 'file-input'
-    },
+    inputId: { type: String, default: 'file-input' },
+    maxSize: { type: Number, default: 2048 },
 });
 
 const emit = defineEmits(['update:modelValue', 'update:deleteList']);
@@ -126,25 +112,46 @@ function getDownloadUrl(file) {
     }
     return '#';
 }
+const formattedMaxSize = computed(() => {
+    if (props.maxSize >= 1024) {
+        return (props.maxSize / 1024).toFixed(0) + ' MB';
+    }
+    return props.maxSize + ' KB';
+});
+
+const formattedAccept = computed(() => {
+    if (!props.accept) return 'Semua file';
+    return props.accept.split(',')
+        .map(ext => ext.trim().replace('.', '').toUpperCase())
+        .join(', ');
+});
 </script>
 
 <template>
     <div class="w-full">
-        <InputLabel :for="inputId" :value="`${label} (${displayedFiles.length}/${maxFiles})`" :required="required" />
-
-        <!-- Main Container (DropZone + List) -->
+        <InputLabel :for="inputId" :value="label" :required="required" />
         <div class="w-full p-2 rounded-xl flex flex-col relative bg-zinc-200 dark:bg-gray-700 " :class="[
             isDragActive ? 'bg-indigo-50 dark:bg-indigo-900/20 ring-2 ring-indigo-500' : '',
-            remainingSlots > 0 ? 'cursor-pointer hover:bg-zinc-300 dark:hover:bg-gray-700' : 'cursor-default'
+            remainingSlots > 0 ? 'cursor-pointer hover:bg-zinc-300 dark:hover:bg-gray-600' : 'cursor-default'
         ]" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop"
             @click="remainingSlots > 0 ? triggerBrowse() : null">
-            <!-- Drop Hint / Browse Trigger (Only visible if slots remain) -->
+            <!-- Dropzone (Only visible if slots remain) -->
             <div v-if="remainingSlots > 0"
-                class="pointer-events-none flex flex-col items-center gap-1 text-center py-4 flex-1 justify-center">
-                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                    Drop files here or<span class="underline"> Browse</span>
+                class="pointer-events-none flex flex-col items-center gap-1 text-center py-1 flex-1 justify-center">
+                <p class="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                    Drag & Drop atau <span class="underline">Pilih File</span>
                 </p>
+                
+                <!-- INFO BATASAN FILE -->
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex flex-col gap-0.5">
+                    <span>Format: {{ formattedAccept }}</span>
+                    <span>Maks size/file: {{ formattedMaxSize }}</span>
+                    <span v-if="maxFiles > 1" class="font-medium text-gray-600 dark:text-gray-300">
+                        Sisa slot: {{ remainingSlots }} file
+                    </span>
+                </div>
             </div>
+
             <!-- List Files -->
             <transition-group name="list" tag="div" class="flex flex-col gap-2 w-full">
                 <div v-for="file in displayedFiles" :key="file.uniqueId"
@@ -153,7 +160,6 @@ function getDownloadUrl(file) {
 
                     <div class="text-white rounded-lg py-1.5 px-2 flex items-center gap-3 shadow-inner"
                         :class="file.isNew ? 'bg-[#369763]' : 'bg-[#635f5d]'">
-                        <!-- Icon -->
                         <div class="shrink-0 text-gray-300">
                             <FileIcon :path="file.path_file" class="w-7 h-7" />
                         </div>
@@ -171,14 +177,11 @@ function getDownloadUrl(file) {
 
                         <!-- Actions -->
                         <div class="flex items-center gap-2">
-                            <!-- Download -->
                             <a v-if="!file.isNew" :href="getDownloadUrl(file)" target="_blank"
                                 class="p-1.5 rounded-full hover:bg-gray-600 transition-colors text-gray-300 hover:text-white"
                                 title="Open in new tab">
                                 <Download class="w-4 h-4" />
                             </a>
-
-                            <!-- Remove -->
                             <button @click="removeFile(file)" type="button"
                                 class="p-1.5 rounded-full bg-black hover:outline-2 hover:outline-white transition-colors text-gray-300"
                                 title="Remove">
@@ -189,11 +192,8 @@ function getDownloadUrl(file) {
                 </div>
             </transition-group>
 
-
-
-            <!-- Hidden Input -->
             <FileInput ref="fileInputRef" :model-value="modelValue" @update:modelValue="handleFileSelection"
-                @validation-error="handleValidationError" :accept="accept"
+                @validation-error="handleValidationError" :accept="accept" :max-size="maxSize"
                 :required="required && displayedFiles.length === 0" multiple :max-files="remainingSlots" />
         </div>
 

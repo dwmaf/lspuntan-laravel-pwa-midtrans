@@ -1,8 +1,6 @@
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
-import InputError from "@/Components/Input/InputError.vue";
 import CustomHeader from "@/Components/CustomHeader.vue";
-import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryLinkButton from "@/Components/SecondaryLinkButton.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
@@ -11,6 +9,7 @@ import SelectInput from "@/Components/Input/SelectInput.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
 import { useForm, Link } from "@inertiajs/vue3";
+import { useFormat } from "@/Composables/useFormat";
 import { ref } from "vue";
 
 const props = defineProps({
@@ -66,29 +65,16 @@ const form = useForm({
 const submit = () => {
     form.post(route('asesi.sertifikasi.apply.store', { student: props.student }));
 };
-const formatDateTime = (dateString) => {
-    if (!dateString) return "N/A";
-    const formatted = new Date(dateString).toLocaleString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-    }).replace('pukul', ',').replace('.', ':');
-    return `${formatted} WIB`;
-};
+
+const { formatDateTime } = useFormat();
 </script>
 
 <template>
     <AsesiLayout>
-        <CustomHeader judul="Pendaftaran Sertifikasi" />
+        
+        <CustomHeader :judul="`Pendaftaran Sertifikasi: ${sertification.skema.nama_skema}`" />
 
         <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                Daftar Sertifikasi: {{ sertification.skema.nama_skema }}
-            </h3>
-
             <form @submit.prevent="submit" class="mt-6 space-y-6">
                 <!-- Data Pribadi -->
                 <h3 class="dark:text-gray-300 font-semibold">A. Data Pribadi</h3>

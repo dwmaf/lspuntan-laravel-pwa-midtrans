@@ -1,7 +1,7 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
-import InputLabel from "@/Components/Input/InputLabel.vue";
+import StatusBadge from "@/Components/StatusBadge.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
@@ -44,17 +44,7 @@ const form = useForm({
     is_active: true,
     format_apl_1: null,
     format_apl_2: null,
-    format_ak_1: null,
-    format_ak_2: null,
-    format_ak_3: null,
-    format_ak_4: null,
-    format_ac_1: null,
-    format_map_1: null,
-    format_ia_1: null,
-    format_ia_2: null,
-    format_ia_5: null,
-    format_ia_6: null,
-    format_ia_7: null,
+    format_asesmen: null,
     delete_files: [],
     _method: 'POST',
 });
@@ -63,17 +53,7 @@ const form = useForm({
 const docFields = [
     { id: 'format_apl_1', label: 'FR. APL.01' },
     { id: 'format_apl_2', label: 'FR. APL.02' },
-    { id: 'format_ak_1', label: 'FR. AK.01' },
-    { id: 'format_ak_2', label: 'FR. AK.02' },
-    { id: 'format_ak_3', label: 'FR. AK.03' },
-    { id: 'format_ak_4', label: 'FR. AK.04' },
-    { id: 'format_ac_1', label: 'FR. AC.01' },
-    { id: 'format_map_1', label: 'FR. MAP.01' },
-    { id: 'format_ia_1', label: 'FR. IA.01' },
-    { id: 'format_ia_2', label: 'FR. IA.02' },
-    { id: 'format_ia_5', label: 'FR. IA.05' },
-    { id: 'format_ia_6', label: 'FR. IA.06' },
-    { id: 'format_ia_7', label: 'FR. IA.07' },
+    { id: 'format_asesmen', label: 'File Lampiran Asesmen' },
 ];
 
 const showCreateForm = () => {
@@ -144,10 +124,9 @@ const destroy = (id) => {
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <Checkbox id="is_active" v-model:checked="form.is_active" />
-                    <InputLabel for="is_active" value="Skema Aktif (Muncul saat pendaftaran sertifikasi baru)" />
-                </div>
+                <Checkbox id="is_active_skema_create" v-model:checked="form.is_active" label="Skema Aktif" :description="form.is_active
+                    ? 'Asesor aktif dan dapat dipilih untuk sertifikasi baru.'
+                    : 'Asesor nonaktif (disembunyikan dari pilihan sertifikasi baru).'" />
                 <div class="flex items-center gap-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                     </PrimaryButton>
@@ -174,10 +153,9 @@ const destroy = (id) => {
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <Checkbox id="is_active" v-model:checked="form.is_active" />
-                    <InputLabel for="is_active" value="Skema Aktif (Muncul saat pendaftaran sertifikasi baru)" />
-                </div>
+                <Checkbox id="is_active_skema_edit" v-model:checked="form.is_active" label="Skema Aktif" :description="form.is_active
+                    ? 'Skema aktif dan dapat dipilih untuk sertifikasi baru.'
+                    : 'Skema nonaktif (disembunyikan dari pilihan sertifikasi baru).'" />
                 <div class="flex items-center gap-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                     </PrimaryButton>
@@ -199,32 +177,32 @@ const destroy = (id) => {
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
                             <th
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="pl-3 px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 No</th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Skema</th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider  min-w-[350px]">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider  min-w-[350px]">
                                 Format File</th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Status</th>
                             <th
-                                class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="pr-3 px-2 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         <tr v-for="(skema, index) in skemas.data" :key="skema.id">
                             <td
-                                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                class="pl-3 px-2 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {{ index + 1 }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
+                            <td class="px-2 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
                                 {{ skema.nama_skema }}
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                            <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
                                 <div class="flex flex-wrap gap-1 ">
                                     <template v-for="field in docFields" :key="field.id">
                                         <a v-if="skema[field.id]" :href="`/storage/${skema[field.id]}`" target="_blank"
@@ -237,13 +215,15 @@ const destroy = (id) => {
                                         Belum ada format file</p>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
-                                <span v-if="skema.is_active"
-                                    class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">Aktif</span>
-                                <span v-else
-                                    class="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-500 rounded-full">Non-Aktif</span>
+                            <td class="px-2 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
+                                <StatusBadge v-if="skema.is_active" variant="success">
+                                    Aktif
+                                </StatusBadge>
+                                <StatusBadge v-else variant="danger">
+                                    Non-Aktif
+                                </StatusBadge>
                             </td>
-                            <td class="px-4 py-2 text-center">
+                            <td class="pr-3 px-2 py-3 text-center">
                                 <div class="flex items-center justify-center space-x-2">
                                     <EditButton @click="showEditForm(skema)">Edit</EditButton>
                                     <DeleteButton @click="destroy(skema.id)">Hapus</DeleteButton>
@@ -274,8 +254,10 @@ const destroy = (id) => {
                     data dan audit</li>
                 <li>Jika ingin agar skema sertifikasi tidak muncul dalam pilihan ketika memulai event sertifikasi, cukup
                     ubah
-                    statusnya jadi "Non-aktif" Skema hanya bisa dihapus jika belum pernah terlibat dalam sertifikasi</li>
-                <li>Skema sertifikasi yang statusnya bisa diubah jadi "Non-Aktif" hanya jika tidak ada sertifikasi yang berlangsung</li>
+                    statusnya jadi "Non-aktif" Skema hanya bisa dihapus jika belum pernah terlibat dalam sertifikasi
+                </li>
+                <li>Skema sertifikasi yang statusnya bisa diubah jadi "Non-Aktif" hanya jika tidak ada sertifikasi yang
+                    berlangsung</li>
             </ul>
         </Alert>
     </AdminLayout>

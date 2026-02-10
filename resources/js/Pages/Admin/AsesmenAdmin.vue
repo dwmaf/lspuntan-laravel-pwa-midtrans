@@ -6,16 +6,19 @@ import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
 import AddButton from "@/Components/Button/AddButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import SeeButton from "@/Components/Button/SeeButton.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import DateInput from "@/Components/Input/DateInput.vue";
 import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import CreatorInfo from "@/Components/CreatorInfo.vue";
-import Modal from "@/Components/Modal.vue";
+import FileCard from "@/Components/FileCard.vue"; 
+import BackButton from "@/Components/Button/BackButton.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
+import { FileText, CheckCircle, Download, Edit, AlertTriangle, Clock } from 'lucide-vue-next';
 import { ref, computed, onMounted } from 'vue';
-
+import { useFormat } from "@/Composables/useFormat";
 
 const props = defineProps({
     sertification: Object,
@@ -23,22 +26,7 @@ const props = defineProps({
     initialAsesiId: [String, Number],
 });
 
-const assessmentFields = [
-    { id: 'ak_1', label: 'AK-01' },
-    { id: 'ak_2', label: 'AK-02' },
-    { id: 'ak_3', label: 'AK-03' },
-    { id: 'ak_4', label: 'AK-04' },
-    { id: 'ac_1', label: 'AC-01' },
-    { id: 'map_1', label: 'MAP-01' },
-    { id: 'ia_1', label: 'IA-01' },
-    { id: 'ia_2', label: 'IA-02' },
-    { id: 'ia_5', label: 'IA-05' },
-    { id: 'ia_6', label: 'IA-06' },
-    { id: 'ia_7', label: 'IA-07' },
-];
-
 const isEditing = ref(false);
-const isPreviewing = ref(false);
 
 const viewMode = ref('list');
 const selectedAsesi = ref(null);
@@ -105,57 +93,15 @@ const deleteAsesmen = () => {
         });
     }
 };
-const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const now = new Date();
 
-    const isToday = date.getDate() === now.getDate() &&
-        date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear();
-
-    const isSameYear = date.getFullYear() === now.getFullYear();
-
-    if (isToday) {
-        return new Intl.DateTimeFormat('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        }).format(date);
-    }
-
-    if (isSameYear) {
-        return new Intl.DateTimeFormat('id-ID', {
-            day: 'numeric',
-            month: 'long'
-        }).format(date);
-    }
-
-    return new Intl.DateTimeFormat('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }).format(date);
-};
-const formatDateTime = (dateString) => {
-    if (!dateString) return "N/A";
-    const formatted = new Date(dateString).toLocaleString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-    }).replace('pukul', ',').replace('.', ':');
-    return `${formatted} WIB`;
-};
+const { formatDateTime } = useFormat();
 </script>
 <template>
     <AdminLayout>
         <CustomHeader :judul="`${sertification.skema.nama_skema}: Asesmen`" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
         <!-- Mode Tampilan -->
-        <div id="view-asesmen" v-if="!isEditing">
+        <div id="view-asesmen" v-if="!isEditing" class="max-w-3xl mx-auto">
             <div v-if="!sertification.asesmen" class="flex flex-col gap-2">
                 <AddButton class="self-end" @click="enterEditMode">Buat Asesmen</AddButton>
                 <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
@@ -167,10 +113,8 @@ const formatDateTime = (dateString) => {
             </div>
             <div v-else class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <div class="flex justify-between items-center mb-2">
-                    <CreatorInfo :name="sertification.asesmen?.name"
-                        :created-at="sertification.asesmen?.created_at"
-                        :updated-at="sertification.asesmen?.updated_at" v-if="sertification.asesmen"
-                        class="mb-4" />
+                    <CreatorInfo :name="sertification.asesmen?.name" :created-at="sertification.asesmen?.created_at"
+                        :updated-at="sertification.asesmen?.updated_at" v-if="sertification.asesmen" class="mb-4" />
                     <div>
                         <div class="flex items-center gap-3">
                             <EditButton @click="enterEditMode">Edit</EditButton>
@@ -194,13 +138,12 @@ const formatDateTime = (dateString) => {
                         {{ sertification.asesmen.path_file.split('/').pop() }}
                     </a>
                 </div>
-                
+
             </div>
         </div>
 
-
         <!-- Mode edit  -->
-        <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-2">
+        <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-2 max-w-3xl mx-auto">
             <div class="flex justify-between items-center mb-2">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
                     {{ sertification.asesmen ? "Edit Instruksi Asesmen" : "Buat Instruksi Asesmen" }}
@@ -214,8 +157,9 @@ const formatDateTime = (dateString) => {
                 <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                     delete-identifier="path_file" label="Lampiran Tambahan"
                     :existing-file-url="asesmen?.path_file ? `/storage/${asesmen.path_file}` : null"
-                    :is-marked-for-deletion="form.delete_files.includes('path_file')" accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf"
-                    :error="form.errors.path_file" @remove="removeFile('path_file')"/>
+                    :is-marked-for-deletion="form.delete_files.includes('path_file')"
+                    accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file"
+                    @remove="removeFile('path_file')" />
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
@@ -228,14 +172,14 @@ const formatDateTime = (dateString) => {
                 </div>
                 <div class="mt-2">
                     <label class="flex items-center">
-                        <Checkbox v-model:checked="form.send_notification" />
+                        <Checkbox id="send_notif" v-model:checked="form.send_notification" />
                         <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">Kirim Notifikasi ke Asesi?</span>
                     </label>
                 </div>
             </form>
         </div>
 
-        <div v-if="viewMode === 'list'" class="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2">
+        <div v-if="viewMode === 'list'" class="p-3 sm:p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2 max-w-3xl mx-auto">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
@@ -276,42 +220,37 @@ const formatDateTime = (dateString) => {
                                     ada tugas dikumpulkan</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button v-if="asesi.path_file_asesmen" @click="showDetailView(asesi)"
-                                    class="cursor-pointer px-2 py-1 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-700">
+                                <SeeButton
+                                    v-if="asesi.path_file_asesmen" @click="showDetailView(asesi)">
                                     Lihat
-                                </button>
+                                </SeeButton>
                                 <span v-else class="text-xs text-gray-500">Belum ada tugas dikumpulkan</span>
                             </td>
                         </tr>
 
                         <tr v-if="!props.filteredAsesi.length">
                             <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                                Belum ada pendaftar yang diberikan hak akses ke menu asesmen
+                                Belum ada asesi yang diberikan hak akses ke menu asesmen
                             </td>
                         </tr>
-
                     </tbody>
                 </table>
             </div>
         </div>
-        <div v-if="viewMode === 'detail'" class="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2">
-            <div class="flex justify-between items-center mb-4">
+        <div v-if="viewMode === 'detail'" class="p-3 sm:p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2 max-w-3xl mx-auto">
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                     Tugas Terkumpul - {{ selectedAsesi?.student?.user?.name }}
                 </h3>
-                <SecondaryButton @click="showListView">
-                    &larr; Kembali ke Daftar
-                </SecondaryButton>
+                <BackButton @click="showListView" class="self-end sm:self-auto" />
             </div>
-
-            <div v-if="selectedAsesi.path_file_asesmen"
-                class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
-                <div class="flex-1 truncate">
-                    <a :href="`/storage/${selectedAsesi.path_file_asesmen}`" target="_blank"
-                        class="text-blue-600 dark:text-blue-400 hover:underline">
-                        {{ selectedAsesi.path_file_asesmen.split('/').pop() }}
-                    </a>
-                </div>
+            <div v-if="selectedAsesi.path_file_asesmen">
+                <FileCard 
+                    :title="selectedAsesi.path_file_asesmen"
+                    :href="`/storage/${selectedAsesi.path_file_asesmen}`"
+                    icon="file"
+                    status="Sudah Dikumpulkan"
+                />
             </div>
             <p v-else class="text-sm text-gray-500">Tidak ada file yang ditemukan untuk asesi ini.</p>
         </div>

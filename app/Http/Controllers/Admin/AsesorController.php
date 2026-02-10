@@ -37,11 +37,11 @@ class AsesorController extends Controller
             ->when($request->input('role'), function ($query, $role) {
                 $query->whereHas('roles', fn($q) => $q->where('name', $role));
             })
-            ->when($request->input('trashed'), function ($query, $trashed) {
-                if ($trashed === 'with') {
-                    $query->withTrashed();
-                } elseif ($trashed === 'only') {
-                    $query->onlyTrashed();
+            ->when($request->input('status'), function ($query, $status) {
+                if ($status === 'active') {
+                    $query->where('is_active', true);
+                } elseif ($status === 'inactive') {
+                    $query->where('is_active', false);
                 }
             })
             ->withCount('sertifications')
@@ -52,7 +52,7 @@ class AsesorController extends Controller
         return Inertia::render('Admin/AsesorAdmin', [
             'asesors' => $asesors,
             'skemas' => Skema::all(),
-            'filters' => $request->only(['skema','search', 'trashed']),
+            'filters' => $request->only(['skema','search', 'status']),
         ]);
     }
 
@@ -63,11 +63,12 @@ class AsesorController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'no_tlp_hp' => 'required|string|max:255',
-            'no_met' => 'required|string|max:255', // Validasi input dari UI
+            'no_met' => 'required|string|max:255',
             'masa_berlaku_sertif_teknis' => 'required|date',
             'masa_berlaku_sertif_asesor' => 'required|date',
             'selectedSkemas' => ['required', 'array'],
             'selectedSkemas.*' => ['exists:skemas,id'],
+            'is_active' => ['nullable', 'boolean'],
         ]);
         DB::transaction(function () use ($request) {
             $user = User::create([
@@ -79,9 +80,10 @@ class AsesorController extends Controller
             $user->assignRole('asesor');
             $asesor = Asesor::create([
                 'user_id' => $user->id,
-                'no_reg_met' => $request->no_met, // Map no_met UI ke no_reg_met DB
+                'no_reg_met' => $request->no_met,
                 'masa_berlaku_sertif_teknis' => $request->masa_berlaku_sertif_teknis,
                 'masa_berlaku_sertif_asesor' => $request->masa_berlaku_sertif_asesor,
+                'is_active' => $request->boolean('is_active', true)
             ]);
             $asesor->skemas()->attach($request->selectedSkemas);
             $user->markEmailAsVerified();
@@ -105,6 +107,7 @@ class AsesorController extends Controller
             'password' => ['nullable'],
             'selectedSkemas' => ['required', 'array'],
             'selectedSkemas.*' => ['exists:skemas,id'],
+            'is_active' => ['nullable', 'boolean'], // Tambahan status
         ]);
 
         // Cek skema yang akan dihapus
@@ -112,11 +115,11 @@ class AsesorController extends Controller
         $newSkemas = $request->selectedSkemas;
         $removedSkemas = array_diff($currentSkemas, $newSkemas);
 
-        // Validasi: cek apakah ada sertifikasi aktif dengan skema yang akan dihapus
+        // Validasi: cek apakah ada sertifikasi dengan skema yang akan dihapus
         if (!empty($removedSkemas)) {
             $activeSertifications = $asesor->sertifications()
                 ->whereIn('skema_id', $removedSkemas)
-                ->whereIn('status', ['berlangsung', 'pendaftaran'])
+                ->whereIn('status', ['berlangsung'])
                 ->with('skema')
                 ->get();
 
@@ -124,6 +127,18 @@ class AsesorController extends Controller
                 $skemaNames = $activeSertifications->pluck('skema.nama_skema')->unique()->implode(', ');
                 return back()->withErrors([
                     'selectedSkemas' => "Tidak dapat menghapus skema: {$skemaNames}. Asesor masih ditugaskan pada sertifikasi yang sedang berlangsung dengan skema tersebut."
+                ]);
+            }
+        }
+
+        if ($asesor->is_active && $request->boolean('is_active') === false) {
+            $isBusy = $asesor->sertifications()
+                ->where('status', 'berlangsung')
+                ->exists();
+
+            if ($isBusy) {
+                return back()->withErrors([
+                    'is_active' => 'Asesor tidak dapat dinonaktifkan karena masih terlibat dalam sertifikasi yang sedang berlangsung.'
                 ]);
             }
         }
@@ -140,9 +155,10 @@ class AsesorController extends Controller
 
             $user_asesor->update($userData);
             $asesor->update([
-                'no_reg_met' => $request->no_met, // Update no_reg_met
+                'no_reg_met' => $request->no_met,
                 'masa_berlaku_sertif_teknis' => $request->masa_berlaku_sertif_teknis,
-                'masa_berlaku_sertif_asesor' => $request->masa_berlaku_sertif_asesor
+                'masa_berlaku_sertif_asesor' => $request->masa_berlaku_sertif_asesor,
+                'is_active' => $request->boolean('is_active'),
             ]);
             $asesor->skemas()->sync($request->selectedSkemas);
         });
@@ -157,32 +173,18 @@ class AsesorController extends Controller
         if ($user && $user->id === Auth::id()) {
             return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
         }
+        if ($asesor->sertifications()->exists() || $asesor->plotingans()->exists()) {
+             return redirect(route('admin.asesor.index'))->with('error', 'Asesor tidak bisa dihapus karena memiliki riwayat sertifikasi. Silakan non-aktifkan statusnya di menu Edit.');
+        }
 
         DB::transaction(function () use ($asesor, $user) {
-            // Kita tidak men-detach skema agar jika di-restore, kompetensinya kembali
-            // $asesor->skemas()->detach();
-            
-            $asesor->delete(); // Soft Delete Asesor
-            
+            $asesor->skemas()->detach();
+            $asesor->delete();
             if ($user) {
-                // Gunakan fitur BAN (banned_at) alih-alih menghapus user
-                // Ini mencegah putusnya relasi di database jika ada constraint
-                $user->update(['banned_at' => now()]);
+                $user->delete();
             }
         });
         return redirect(route('admin.asesor.index'))->with('message', 'Data asesor berhasil dinonaktifkan (User telah di-banned)');
-    }
-
-    public function restore($id)
-    {
-        $asesor = Asesor::withTrashed()->findOrFail($id);
-        $asesor->restore();
-        
-        if ($asesor->user) {
-            $asesor->user->update(['banned_at' => null]);
-        }
-        
-        return redirect()->back()->with('message', 'Data Asesor berhasil dipulihkan.');
     }
 
     public function export()

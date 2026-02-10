@@ -1,18 +1,10 @@
 <script setup>
 import { computed } from 'vue';
 import FileIcon from '@/Components/FileIcon.vue';
+import { useFormat } from "@/Composables/useFormat";
 const props = defineProps({
     asesi: Object,
 });
-
-const formatDate = (dateString) => {
-    if (!dateString) return 'Tidak diisi';
-    return new Date(dateString).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    });
-};
 
 const getFiles = (collection, type) => {
     if (!collection) return [];
@@ -27,7 +19,7 @@ const getFileName = (path) => {
     if (!path) return '';
     return path.split('/').pop();
 }
-
+const { formatDate } = useFormat();
 </script>
 
 <template>

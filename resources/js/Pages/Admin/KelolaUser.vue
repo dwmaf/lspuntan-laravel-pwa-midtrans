@@ -2,7 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CustomHeader from '@/Components/CustomHeader.vue';
 import EditButton from '@/Components/Button/EditButton.vue';
-import InputLabel from '@/Components/Input/InputLabel.vue';
+import StatusBadge from '@/Components/StatusBadge.vue';
 import DeleteButton from '@/Components/Button/DeleteButton.vue';
 import Modal from '@/Components/Modal.vue';
 import ToggleSwitch from '@/Components/ToggleSwitch.vue';
@@ -17,6 +17,7 @@ import SuccessButton from '@/Components/Button/SuccessButton.vue';
 import Pagination from '@/Components/Pagination.vue';
 import SelectInput from '@/Components/Input/SelectInput.vue';
 import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
+import { useFormat } from "@/Composables/useFormat";
 
 const authUser = usePage().props.auth.user;
 const props = defineProps({
@@ -129,27 +130,7 @@ const cancelEdit = () => {
     form.reset();
     form.clearErrors();
 };
-const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('id-ID', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
-};
-
-const formatDateTime = (dateString) => {
-    if (!dateString) return;
-    const formatted = new Date(dateString).toLocaleString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-    }).replace('pukul', ',').replace('.', ':');
-    return `${formatted} WIB`;
-};
+const { formatDate, formatDateTime } = useFormat();
 
 const save = () => {
     form.post(route('admin.users.update', selectedUser.value.id), {
@@ -226,10 +207,14 @@ const save = () => {
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <div v-if="user.roles.length > 0" class="flex flex-wrap gap-1">
-                                    <span v-for="role in user.roles" :key="role.id"
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 capitalize">
+                                    <StatusBadge 
+                                        v-for="role in user.roles" 
+                                        :key="role.id" 
+                                        variant="primary"
+                                        class="capitalize"
+                                    >
                                         {{ role.name }}
-                                    </span>
+                                    </StatusBadge>
                                 </div>
                                 <span v-else class="text-xs text-gray-400 italic">No Role</span>
                             </td>
@@ -258,8 +243,8 @@ const save = () => {
                 </table>
             </div>
 
-            <div class="mt-4 flex justify-between items-center">
-                <span v-if="users.total > 0" class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
+            <div class="mt-4 flex flex-col md:flex-row justify-between items-center gap-3">
+                <span v-if="users.total > 0" class="text-sm text-gray-700 dark:text-gray-400">
                     Menampilkan {{ users.from }} sampai {{ users.to }} dari {{ users.total }} hasil
                 </span>
                 <span v-else></span>

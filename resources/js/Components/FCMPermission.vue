@@ -2,6 +2,7 @@
 import Modal from '@/Components/Modal.vue';
 import DeleteButton from '@/Components/Button/DeleteButton.vue';
 import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
+import SecondaryButton from '@/Components/Button/SecondaryButton.vue';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
@@ -14,8 +15,7 @@ const subscribed = ref(props.isSubscribed);
 const permission = ref('default');
 
 const closeModal = () => {
-    userToBan.value = null;
-    showBanModal.value = false;
+    showFCMModal.value = false;
 };
 
 function confirmAction() {

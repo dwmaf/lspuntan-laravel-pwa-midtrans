@@ -13,6 +13,9 @@ import Pagination from "@/Components/Pagination.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import Multiselect from "@/Components/Input/MultiSelect.vue";
 import Alert from "@/Components/Alert.vue";
+import ExportLink from "@/Components/Link/ExportLink.vue";
+import Checkbox from "@/Components/Input/Checkbox.vue";
+import StatusBadge from "@/Components/StatusBadge.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed, onMounted, onUnmounted, reactive, watch } from "vue";
 import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
@@ -24,7 +27,7 @@ const props = defineProps({
 });
 const filtersForm = reactive({
     skema: props.filters.skema || '',
-    trashed: props.filters.trashed || '',
+    status: props.filters.status || '',
     search: props.filters.search || '',
 });
 const hasActiveFilters = computed(() => {
@@ -58,10 +61,10 @@ const skemaMultiselectOptions = computed(() =>
     props.skemas.map(skema => ({ id: skema.id, name: skema.nama_skema }))
 );
 
-const trashedOptions = [
-    { value: '', text: 'Hanya Aktif' },
-    { value: 'with', text: 'Semua (Termasuk Sampah)' },
-    { value: 'only', text: 'Hanya Sampah' },
+const statusOptions = [
+    { value: '', text: 'Semua' },
+    { value: 'active', text: 'Aktif' },
+    { value: 'inactive', text: 'Nonaktif' },
 ];
 
 const applyFilters = () => {
@@ -73,7 +76,7 @@ const applyFilters = () => {
 };
 const resetFilters = () => {
     filtersForm.skema = '';
-    filtersForm.trashed = '';
+    filtersForm.status = '';
     filtersForm.search = '';
     applyFilters();
 };
@@ -87,6 +90,7 @@ const form = useForm({
     masa_berlaku_sertif_teknis: '',
     masa_berlaku_sertif_asesor: '',
     no_tlp_hp: '',
+    is_active: true,
     selectedSkemas: [],
     _method: 'POST',
 });
@@ -95,6 +99,7 @@ const form = useForm({
 const showCreateForm = () => {
     form.reset();
     form._method = 'POST';
+    form.is_active = true;
     formMode.value = 'create';
 };
 
@@ -108,6 +113,7 @@ const showEditForm = (asesor) => {
     form.masa_berlaku_sertif_asesor = asesor.masa_berlaku_sertif_asesor;
     form.no_tlp_hp = asesor.user.no_tlp_hp;
     form.selectedSkemas = asesor.skemas.map(s => s.id);
+    form.is_active = !!asesor.is_active;
     form._method = 'PATCH';
     formMode.value = 'edit';
 };
@@ -178,6 +184,12 @@ const restore = (id) => {
                         :error="form.errors.masa_berlaku_sertif_asesor" />
                     <TextInput id="no_tlp_hp" label="No. HP/WA" v-model="form.no_tlp_hp" type="text" required
                         :error="form.errors.no_tlp_hp" />
+                    <Checkbox v-if="formMode === 'edit'" id="is_active_asesor" v-model:checked="form.is_active"
+                        label="Status Aktif" :description="form.is_active
+                            ? 'Asesor aktif dan dapat dipilih untuk sertifikasi baru.'
+                            : 'Asesor nonaktif (disembunyikan dari pilihan sertifikasi baru).'"
+                        :error="form.errors.is_active" />
+
                 </div>
                 <div class="flex items-center gap-4">
                     <PrimaryButton :disabled="form.processing">Simpan</PrimaryButton>
@@ -190,10 +202,7 @@ const restore = (id) => {
         <div v-else class="flex flex-col">
             <CustomHeader judul="Manajemen Asesor">
                 <div class="flex gap-2">
-                    <a :href="route('admin.asesor.export')" target="_blank"
-                        class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150">
-                        Export Excel
-                    </a>
+                    <ExportLink :href="route('admin.asesor.export')" target="_blank">Export</ExportLink>
                     <AddButton @click="showCreateForm">Tambah Asesor</AddButton>
                 </div>
             </CustomHeader>
@@ -214,43 +223,54 @@ const restore = (id) => {
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider pl-3">
                                     No</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Nama & Email</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Skema Sertifikasi</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Jumlah Sertifikasi</th>
                                 <th
-                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    Status</th>
+                                <th
+                                    class="px-2 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider pr-3">
                                     Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <tr v-for="(asesor, index) in asesors.data" :key="asesor.id"
                                 :class="{ 'bg-red-50 dark:bg-red-900/20': asesor.deleted_at }">
-                                <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                                <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200 pl-3">
                                     {{ index + asesors.from }}
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                                <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
                                     <div class="font-medium">{{ asesor.user.name }}</div>
                                     <div class="text-xs text-gray-500">{{ asesor.user.email }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-200">
+                                <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
                                     <div class="flex flex-wrap gap-1">
                                         <span v-for="skema in asesor.skemas" :key="skema.id"
-                                            class="inline-block rounded bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium">{{
+                                            class="inline-block rounded bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium whitespace-nowrap">{{
                                                 skema.nama_skema }}</span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">
+                                <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
                                     <div class="font-medium">{{ asesor.sertifications_count }} kali</div>
                                 </td>
-                                <td class="px-4 py-2 text-center">
+                                <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                    <StatusBadge v-if="asesor.is_active" variant="success">
+                                        Aktif
+                                    </StatusBadge>
+                                    <StatusBadge v-else variant="danger">
+                                        Non-Aktif
+                                    </StatusBadge>
+                                </td>
+                                <td class="px-2 py-3 text-center pr-3">
                                     <div v-if="asesor.deleted_at" class="flex items-center justify-center space-x-2">
                                         <SecondaryButton @click="restore(asesor.id)"
                                             class="bg-green-100! text-green-800! border-green-300 hover:bg-green-200!">
@@ -284,6 +304,8 @@ const restore = (id) => {
                 <li>Asesor hanya bisa dihapus jika belum pernah terlibat dalam sertifikasi</li>
                 <li>Asesor tidak bisa dihapus jika telah pernah terlibat dalam sertifikasi demi kebutuhan akuntabilitas
                     data dan audit</li>
+                <li>Gunakan status Nonaktif pada menu Edit agar asesor tidak muncul pada pilihan untuk memulai jadwal
+                    sertifikasi</li>
             </ul>
         </Alert>
     </AdminLayout>
@@ -295,8 +317,7 @@ const restore = (id) => {
         </div>
         <div class="p-6 flex flex-col gap-4">
             <SelectInput id="skema-filter" label="Skema" v-model="filtersForm.skema" :options="skemaOptions" />
-            <SelectInput id="trashed-filter" label="Status Data" v-model="filtersForm.trashed"
-                :options="trashedOptions" />
+            <SelectInput id="status-filter" label="Status Data" v-model="filtersForm.status" :options="statusOptions" />
             <div class="my-4 border-t border-gray-200 dark:border-gray-600"></div>
             <div class=" flex gap-3">
                 <SecondaryButton @click="resetFilters"> Reset </SecondaryButton>

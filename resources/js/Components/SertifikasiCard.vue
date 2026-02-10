@@ -1,6 +1,7 @@
 <script setup>
-import { BookOpen, CalendarRange, DollarSign, MapPin, Users } from "lucide-vue-next";
+import { BookOpen, CalendarRange, DollarSign, MapPin, Users, Banknote } from "lucide-vue-next";
 import { IconChalkboardTeacher, IconPointFilled } from "@tabler/icons-vue";
+import { useFormat } from "@/Composables/useFormat";
 
 const props = defineProps({
     sert: Object,
@@ -8,21 +9,8 @@ const props = defineProps({
     showTuk: { type: Boolean, default: false },
     showAsesiCount: { type: Boolean, default: false },
 });
+const { formatDate, formatCurrency } = useFormat();
 
-const formatDate = (dateString) => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    return new Intl.DateTimeFormat('id-ID', options).format(date);
-};
-
-const formatCurrency = (value) => {
-    return new Intl.NumberFormat('id-ID', { 
-        style: 'currency', 
-        currency: 'IDR', 
-        minimumFractionDigits: 0 
-    }).format(value);
-};
 </script>
 
 <template>
@@ -55,23 +43,21 @@ const formatCurrency = (value) => {
                 </div>
             </div>
 
-            <!-- Common Info -->
             <div class="flex items-center gap-2">
                 <CalendarRange class="shrink-0 w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p class="text-gray-600 text-sm dark:text-gray-300">
                     <span class="font-semibold lg:inline hidden">Pendaftaran:</span>
-                    {{ formatDate(sert.tgl_apply_dibuka) }} &ndash; {{ formatDate(sert.tgl_apply_ditutup) }}
+                    {{ formatDate(sert.tgl_apply_dibuka, 'short') }} &ndash; {{ formatDate(sert.tgl_apply_ditutup, 'short') }}
                 </p>
             </div>
 
             <div class="flex items-center gap-2">
-                <DollarSign class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <Banknote class="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p class="text-gray-600 text-sm dark:text-gray-300">
                     <span class="font-semibold">Biaya:</span> {{ formatCurrency(sert.biaya) }}
                 </p>
             </div>
 
-            <!-- TUK Section -->
             <div v-if="showTuk" class="flex items-center gap-2">
                 <MapPin class="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p class="text-gray-600 text-sm dark:text-gray-300">

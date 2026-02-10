@@ -96,13 +96,11 @@ const showViewMode = () => {
         <div class="max-w-7xl mx-auto">
             <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <div v-if="props.sertification.asesmen">
-                    <!-- Info Pembuat Tugas -->
                     <div class="flex items-center gap-3 mb-4">
                         <CreatorInfo :name="sertification.asesmen?.name" :created-at="sertification.asesmen?.created_at"
                             :updated-at="sertification.asesmen?.updated_at" v-if="sertification.asesmen" class="mb-4" />
                     </div>
 
-                    <!-- Rincian Tugas -->
                     <div v-html="props.sertification.asesmen.content.replace(/\n/g, '<br>')"
                         class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-100"></div>
 
@@ -119,7 +117,7 @@ const showViewMode = () => {
                         </div>
                     </div>
 
-                    <!-- Lampiran dari Asesor -->
+                    <!-- Lampiran Tambahan dari Asesor -->
                     <div v-if="sertification.asesmen?.path_file" class="mt-4">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Lampiran Tambahan:</h4>
                         <a :href="`/storage/${sertification.asesmen.path_file}`" target="_blank"
@@ -155,11 +153,11 @@ const showViewMode = () => {
                                 </div>
 
                                 <!-- Info File -->
-                                <div class="flex-1 min-w-0">
+                                <div class="flex-1 min-w-0 w-full">
                                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate mb-1">
                                         {{ asesi.path_file_asesmen.split('/').pop() }}
                                     </p>
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex items-center">
                                         <span
                                             class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                                             <CheckCircle class="w-3.5 h-3.5" />
@@ -170,19 +168,16 @@ const showViewMode = () => {
 
                                 <!-- Action Buttons -->
                                 <div
-                                    class="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200 dark:border-gray-700">
-                                    <!-- Tombol Download -->
+                                    class="flex items-center gap-2 mt-2 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200 dark:border-gray-700">
                                     <a :href="`/storage/${asesi.path_file_asesmen}`" target="_blank"
                                         class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full sm:w-auto">
-                                        <Download class="w-4 h-4 sm:mr-2" />
-                                        <span class="hidden sm:inline">Unduh</span>
+                                        <Download class="w-4 h-4 mr-2" />
+                                        <span >Lihat</span>
                                     </a>
-
                                     <SecondaryButton v-if="!isDeadlinePassed" @click="showEditMode"
                                         class="w-full sm:w-auto justify-center">
-                                        <Edit class="w-4 h-4 sm:mr-2" />
-                                        <span class="hidden sm:inline">Ubah File</span>
-                                        <span class="sm:hidden">Edit</span>
+                                        <Edit class="w-4 h-4 mr-2" />
+                                        <span>Edit</span>
                                     </SecondaryButton>
                                 </div>
                             </div>
@@ -200,7 +195,7 @@ const showViewMode = () => {
                                 :disabled="submissionMode === 'view'" accept=".zip,.rar,.docx," />
                             <div class="flex items-center gap-4 mt-6">
                                 <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                                    {{ props.asesi.path_file_asesmen ? 'Simpan Perubahan' : 'Kumpulkan Sekarang' }}
+                                    {{ props.asesi.path_file_asesmen ? 'Simpan' : 'Kumpulkan Sekarang' }}
                                 </PrimaryButton>
                                 <SecondaryButton v-if="props.asesi.path_file_asesmen" @click="showViewMode">
                                     Batal

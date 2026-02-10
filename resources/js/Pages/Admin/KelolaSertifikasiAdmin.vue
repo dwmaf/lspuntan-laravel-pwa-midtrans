@@ -13,6 +13,7 @@ import Modal from "@/Components/Modal.vue";
 import NumberInput from "@/Components/Input/NumberInput.vue";
 import DateInput from "@/Components/Input/DateInput.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
+import { useFormat } from "@/Composables/useFormat"; 
 import { ref, computed, watch, reactive } from "vue";
 import { FunnelIcon, X } from "lucide-vue-next";
 import Multiselect from "@/Components/Input/MultiSelect.vue";
@@ -97,6 +98,7 @@ const availableAsesors = computed(() => {
         return [];
     }
     const filtered = props.asesors.filter(asesor =>
+        asesor.is_active === 1 &&
         asesor.skemas.some(skema => skema.id == form.skema_id)
     );
 
@@ -108,15 +110,10 @@ const availableAsesors = computed(() => {
 watch(() => form.skema_id, (newSkemaId) => {
     form.asesor_ids = [];
 });
+
+const { formatCurrency } = useFormat();
 const formattedHarga = computed(() => {
-    if (!form.biaya) return '';
-    const number = parseFloat(form.biaya);
-    if (isNaN(number)) return '';
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-    }).format(number);
+    return formatCurrency(form.biaya);
 });
 
 const submit = () => {

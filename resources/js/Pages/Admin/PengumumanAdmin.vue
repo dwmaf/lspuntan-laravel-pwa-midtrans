@@ -93,39 +93,6 @@ const deletePengumuman = (pengumumanId) => {
     }
 };
 
-const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const now = new Date();
-
-    const isToday = date.getDate() === now.getDate() &&
-        date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear();
-
-    const isSameYear = date.getFullYear() === now.getFullYear();
-
-    if (isToday) {
-        return new Intl.DateTimeFormat('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        }).format(date);
-    }
-
-    if (isSameYear) {
-        return new Intl.DateTimeFormat('id-ID', {
-            day: 'numeric',
-            month: 'long'
-        }).format(date);
-    }
-
-    return new Intl.DateTimeFormat('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }).format(date);
-};
-
 const headerTitle = computed(() => {
     let action = '';
     if (formMode.value === 'edit') action = 'Edit ';
@@ -139,19 +106,24 @@ const headerTitle = computed(() => {
     <AdminLayout>
         <CustomHeader :judul="headerTitle" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
-        <div v-if="formMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Edit Pengumuman</h2>
+        <div v-if="formMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-3xl mx-auto">
             <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
-                <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
-                <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
-                    delete-identifier="path_file" label="Lampiran Tambahan"
-                    :existing-file-url="pengumumans.data.find(p => p.id === editingPengumumanId)?.newsfiles ? `/storage/${asesmen.path_file}` : null"
-                    :is-marked-for-deletion="form.delete_files.includes('path_file')" accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf"
-                    :error="form.errors.path_file" @remove="removeFile('path_file')"/>
+                <div class="">
+                    <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
+                </div>
+                <div class="">
+                    <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
+                        delete-identifier="path_file" label="Lampiran Tambahan"
+                        :existing-file-url="pengumumans.data.find(p => p.id === editingPengumumanId)?.newsfiles ? `/storage/${asesmen.path_file}` : null"
+                        :is-marked-for-deletion="form.delete_files.includes('path_file')" accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf"
+                        :error="form.errors.path_file" @remove="removeFile('path_file')"
+                        
+                        />
+                </div>
                 
                 <div class="mt-2">
                     <label class="flex items-center">
-                        <Checkbox v-model:checked="form.send_notification" />
+                        <Checkbox id="send_notif" v-model:checked="form.send_notification" />
                         <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">Kirim Notifikasi ke
                             Asesi?</span>
                     </label>
@@ -165,7 +137,7 @@ const headerTitle = computed(() => {
                 </div>
             </form>
         </div>
-        <div v-if="formMode === 'create'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div v-if="formMode === 'create'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-3xl mx-auto">
             <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
                 <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
                 <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
@@ -174,7 +146,7 @@ const headerTitle = computed(() => {
                     :error="form.errors.path_file" @remove="removeFile('path_file')"/>
                 <div class="mt-2">
                     <label class="flex items-center">
-                        <Checkbox v-model:checked="form.send_notification" />
+                        <Checkbox id="send_notif" v-model:checked="form.send_notification" />
                         <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">Kirim Notifikasi ke
                             Asesi?</span>
                     </label>
@@ -188,7 +160,7 @@ const headerTitle = computed(() => {
                 </div>
             </form>
         </div>
-        <div v-if="formMode === 'list'">
+        <div v-if="formMode === 'list'" class="max-w-3xl mx-auto">
             <div class="flex flex-col gap-2 mb-2">
                 <AddButton class="self-end" @click="showCreateForm">Tambah Pengumuman</AddButton>
                 <div v-if="!pengumumans" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
@@ -197,7 +169,6 @@ const headerTitle = computed(() => {
                 </div>
             </div>
             <InfiniteScroll data="pengumumans" class="space-y-2">
-
                 <div v-if="pengumumans.data.length > 0" v-for="pengumuman in pengumumans.data" :key="pengumuman.id"
                     class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-2 gap-2">
@@ -226,14 +197,7 @@ const headerTitle = computed(() => {
 
                     
                 </div>
-
-
             </InfiniteScroll>
         </div>
-        <div v-else class="text-center text-gray-500 dark:text-gray-300 py-8">
-            Belum ada pengumuman.
-        </div>
-
-        
     </AdminLayout>
 </template>

@@ -6,17 +6,21 @@ import PendaftarDetailDataStatis from "@/Pages/Admin/PendaftarDetailDataStatis.v
 import Modal from "@/Components/Modal.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import DangerButton from "@/Components/Button/DangerButton.vue";
+import SecondaryLinkButton from "@/Components/SecondaryLinkButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
 import SeeButton from "@/Components/Button/SeeButton.vue";
 import LoadingSpinner from "@/Components/LoadingSpinner.vue";
-import InputLabel from "@/Components/Input/InputLabel.vue";
+import StatusBadge from "@/Components/StatusBadge.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import FileIcon from "@/Components/FileIcon.vue";
+import BackButton from "@/Components/Button/BackButton.vue";
+import FileCard from "@/Components/FileCard.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
-import InputError from "@/Components/Input/InputError.vue";
-import { useForm, usePage, Link } from "@inertiajs/vue3";
+import { Award } from 'lucide-vue-next';
+import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { ref, computed } from 'vue';
 
 const props = defineProps({
@@ -31,13 +35,6 @@ const showStatusModal = ref(false);
 const modalType = ref(''); // 'berkas', 'akses', 'final'
 const isEditingAsesi = ref(false);
 const isEditingCertificate = ref(false);
-
-const asesiForm = useForm({
-    _method: 'PATCH',
-    apl_1: null,
-    apl_2: null,
-    delete_files_asesi: [],
-});
 
 const statusForm = useForm({
     status_berkas: props.asesi.status_berkas,
@@ -95,24 +92,47 @@ const submitCertificate = () => {
     });
 };
 
+const deleteCertificate = () => {
+    if (confirm('Apakah Anda yakin ingin menghapus sertifikat ini secara permanen?')) {
+        router.delete(route('admin.sertifikasi.pendaftar.destroy-certificate', {
+            sertification: props.sertification.id,
+            asesi: props.asesi.id
+        }), {
+            onSuccess: () => {
+                certificateForm.defaults({
+                    nomor_seri: '',
+                    nomor_sertifikat: '',
+                    nomor_registrasi: '',
+                    tanggal_terbit: '',
+                    berlaku_hingga: '',
+                    file_path: null,
+                    delete_files: [],
+                });
+                certificateForm.reset();
+                isEditingCertificate.value = false;
+            },
+            preserveScroll: true
+        });
+    }
+};
 
 const getStatusBerkasAdministrasi = (status) => {
     const data = {
         'menunggu_verifikasi_admin': {
-            class: 'bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-100',
+            variant: 'primary',
             text: 'Menunggu Verifikasi Admin'
         },
         'perlu_perbaikan_berkas': {
-            class: 'bg-amber-100 text-amber-800 dark:bg-amber-700 dark:text-amber-100',
+            variant: 'warning',
             text: 'Perlu Perbaikan Berkas'
         },
         'sudah_lengkap': {
-            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            variant: 'success',
             text: 'Sudah Lengkap'
         },
     };
     return data[status] || {
-        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        variant: 'neutral',
         text: status
     };
 };
@@ -120,16 +140,16 @@ const getStatusBerkasAdministrasi = (status) => {
 const getStatusAksesMenuAsesmen = (status) => {
     const data = {
         'belum_diberikan': {
-            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            variant: 'warning',
             text: 'Belum Diberikan'
         },
         'diberikan': {
-            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            variant: 'success',
             text: 'Diberikan'
         },
     };
     return data[status] || {
-        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        variant: 'neutral',
         text: status
     };
 };
@@ -137,24 +157,24 @@ const getStatusAksesMenuAsesmen = (status) => {
 const getStatusFinalAsesi = (status) => {
     const data = {
         'belum_ditetapkan': {
-            class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100',
+            variant: 'neutral',
             text: 'Belum Ditetapkan'
         },
         'belum_kompeten': {
-            class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100',
+            variant: 'warning',
             text: 'Belum Kompeten'
         },
         'kompeten': {
-            class: 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100',
+            variant: 'success',
             text: 'Kompeten'
         },
         'diskualifikasi': {
-            class: 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100',
+            variant: 'danger',
             text: 'Diskualifikasi'
         },
     };
     return data[status] || {
-        class: 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
+        variant: 'neutral',
         text: status
     };
 };
@@ -166,18 +186,12 @@ const getStatusFinalAsesi = (status) => {
         <CustomHeader :judul="`${sertification.skema.nama_skema}: Detail Peserta`" />
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
-        <!-- Tampilan Detail Utama -->
         <div v-show="!isEditingCertificate && !isEditingAsesi"
-            class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Rincian Pendaftar</h3>
-                <Link :href="route('admin.sertifikasi.pendaftar.index', props.sertification.id)"
-                    class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer">
-                    &larr; Kembali</Link>
+            class="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <div class="flex justify-end items-center mb-4">
+                <BackButton :href="route('admin.sertifikasi.pendaftar.index', props.sertification.id)" class="self-end sm:self-auto" />
             </div>
-
             <PendaftarDetailDataStatis :asesi="props.asesi" />
-
             <!-- Bagian E: Status -->
             <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">E. Status</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
@@ -185,30 +199,27 @@ const getStatusFinalAsesi = (status) => {
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Berkas Administrasi
                         Asesi</dt>
                     <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
-                        <span
-                            :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusBerkasAdministrasi(asesi.status_berkas).class]">
+                        <StatusBadge :variant="getStatusBerkasAdministrasi(asesi.status_berkas).variant">
                             {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
-                        </span>
+                        </StatusBadge>
                         <EditButton @click="openModal('berkas')">Ubah Status</EditButton>
                     </dd>
                 </div>
                 <div>
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Hak Akses Menu Asesmen</dt>
                     <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
-                        <span
-                            :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).class]">
+                        <StatusBadge :variant="getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).variant">
                             {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
-                        </span>
+                        </StatusBadge>
                         <EditButton @click="openModal('akses')">Ubah Status</EditButton>
                     </dd>
                 </div>
                 <div>
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Akhir Asesi</dt>
                     <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
-                        <span
-                            :class="['px-2 py-1 text-xs leading-5 font-semibold rounded-full', getStatusFinalAsesi(asesi.status_final).class]">
+                        <StatusBadge :variant="getStatusFinalAsesi(asesi.status_final).variant">
                             {{ getStatusFinalAsesi(asesi.status_final).text }}
-                        </span>
+                        </StatusBadge>
                         <EditButton @click="openModal('final')">Ubah Status</EditButton>
                     </dd>
                 </div>
@@ -217,22 +228,26 @@ const getStatusFinalAsesi = (status) => {
 
             <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">F. Sertifikat
             </h3>
-            <div class="mt-2">
-                <dt v-if="!asesi.sertifikat" class="block text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Sertifikat bisa
-                    diupload jika status akhir asesi adalah Kompeten</dt>
-                <EditButton v-if="props.asesi.sertifikat" @click="isEditingCertificate = true">Ubah Data Sertifikat
-                </EditButton>
-                <SeeButton class="mt-1" v-else-if="props.asesi.status_final === 'kompeten'"
-                    @click="isEditingCertificate = true">
-                    Upload Sertifikat</SeeButton>
-                <a v-if="props.asesi.sertifikat" :href="`/storage/${props.asesi.sertifikat.file_path}`" target="_blank"
-                    class="text-sm text-blue-500 hover:text-blue-700 mt-1">
-                    Lihat Sertifikat
-                </a>
+            <div class="mt-4">
+                <p v-if="!asesi.sertifikat && props.asesi.status_final !== 'kompeten'"
+                    class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">
+                    Sertifikat bisa diupload jika status akhir asesi adalah <strong>Kompeten</strong>.
+                </p>
+
+                <div v-else-if="!asesi.sertifikat && props.asesi.status_final === 'kompeten'">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Belum ada sertifikat yang diunggah.</p>
+                    <SeeButton @click="isEditingCertificate = true">
+                        Upload Sertifikat
+                    </SeeButton>
+                </div>
+
+                <FileCard v-else-if="props.asesi.sertifikat" :title="props.asesi.sertifikat.file_path"
+                    :href="`/storage/${props.asesi.sertifikat.file_path}`" icon="award" status="Telah Terbit"
+                    editable @edit="isEditingCertificate = true">
+                </FileCard>
             </div>
         </div>
-        
+
 
         <!-- Form Edit Sertifikat -->
         <div v-show="isEditingCertificate" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -241,7 +256,7 @@ const getStatusFinalAsesi = (status) => {
             </h3>
             <p class="my-1 text-sm text-gray-600 dark:text-gray-400">Untuk: <span class="font-semibold">{{
                 props.asesi.student.user.name }}</span></p>
-            <form @submit.prevent="submitCertificate" class="flex flex-col gap-4 mt-4">
+            <form @submit.prevent="submitCertificate" class="grid md:grid-cols-2 gap-4 mt-4">
                 <TextInput id="nomor_seri" label="Nomor Seri" v-model="certificateForm.nomor_seri" type="text" required
                     :error="certificateForm.errors.nomor_seri" />
                 <TextInput id="nomor_sertifikat" label="Nomor Sertifikat" v-model="certificateForm.nomor_sertifikat"
@@ -261,6 +276,10 @@ const getStatusFinalAsesi = (status) => {
                 <div class="flex gap-2 items-center">
                     <PrimaryButton :disabled="certificateForm.processing">Simpan</PrimaryButton>
                     <SecondaryButton type="button" @click="cancelEditCertificate">Batal</SecondaryButton>
+                    <DangerButton v-if="props.asesi.sertifikat" type="button" @click="deleteCertificate"
+                        :disabled="certificateForm.processing">
+                        Hapus Sertifikat
+                    </DangerButton>
                 </div>
             </form>
         </div>
