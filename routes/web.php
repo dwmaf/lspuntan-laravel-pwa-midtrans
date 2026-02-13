@@ -154,20 +154,17 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
     });
 });
 
-// Route untuk menerima notifikasi (webhook) dari Midtrans.
-// Route ini harus di luar middleware 'auth' karena diakses oleh server Midtrans.
-// Route::post('/midtrans/webhook', [PaymentController::class, 'handleWebhook'])->name('midtrans.webhook');
 
 // Below will be commented on production
-Route::resource('filepond-test', FilePondTestController::class);
-Route::post('/filepond/process', [FilePondTestController::class, 'processFile'])->name('filepond.process');
-Route::get('/filepond/load', [FilePondTestController::class, 'loadFile'])->name('filepond.load');
-Route::delete('/filepond/revert', [FilePondTestController::class, 'revertFile'])->name('filepond.revert');
-Route::get('/test', function () { //will be commented on production
-    return view('dumpbladefiles.testing-file', [
-        'sertification' => Sertification::find(1)
-    ]);
-});
+// Route::resource('filepond-test', FilePondTestController::class);
+// Route::post('/filepond/process', [FilePondTestController::class, 'processFile'])->name('filepond.process');
+// Route::get('/filepond/load', [FilePondTestController::class, 'loadFile'])->name('filepond.load');
+// Route::delete('/filepond/revert', [FilePondTestController::class, 'revertFile'])->name('filepond.revert');
+// Route::get('/test', function () { //will be commented on production
+//     return view('dumpbladefiles.testing-file', [
+//         'sertification' => Sertification::find(1)
+//     ]);
+// });
 Route::get('/debug-firebase', function () { //will be commented on production
     try {
         $messaging = app('firebase.messaging');
@@ -176,14 +173,14 @@ Route::get('/debug-firebase', function () { //will be commented on production
         dd($e);
     }
 });
-Route::prefix('dev')->name('dev.')->group(function () { //will be commented on production
-    Route::get('/list/sertifications', [DevelopmentController::class, 'index'])->name('list.sertifications'); // dev.list.sertifications
-    Route::prefix('sertification')->name('sertification.')->group(function () {
-        Route::get('/{sert_id}/show', [DevelopmentController::class, 'detailSertification'])->name('show'); // dev.sertification.show
-        Route::delete('/{sert_id}/destroy/asesmen', [DevelopmentController::class, 'destroyAsesmen'])->name('destroy.asesmen'); // dev.sertification.destroy.asesmen
-        Route::post('/{sert_id}/store/news', [DevelopmentController::class, 'storeDummyNews'])->name('store.news'); // dev.sertification.store.news
-        Route::delete('/{sert_id}/destroy/news', [DevelopmentController::class, 'destroyNews'])->name('destroy.news'); // dev.sertification.destroy.news
-        Route::get('/{sert_id}/list/asesis', [DevelopmentController::class, 'listAsesis'])->name('list.asesis'); // dev.sertification.list.asesis
-    });
-});
+// Route::prefix('dev')->name('dev.')->group(function () {
+//     Route::get('/list/sertifications', [DevelopmentController::class, 'index'])->name('list.sertifications'); // dev.list.sertifications
+//     Route::prefix('sertification')->name('sertification.')->group(function () {
+//         Route::get('/{sert_id}/show', [DevelopmentController::class, 'detailSertification'])->name('show'); // dev.sertification.show
+//         Route::delete('/{sert_id}/destroy/asesmen', [DevelopmentController::class, 'destroyAsesmen'])->name('destroy.asesmen'); // dev.sertification.destroy.asesmen
+//         Route::post('/{sert_id}/store/news', [DevelopmentController::class, 'storeDummyNews'])->name('store.news'); // dev.sertification.store.news
+//         Route::delete('/{sert_id}/destroy/news', [DevelopmentController::class, 'destroyNews'])->name('destroy.news'); // dev.sertification.destroy.news
+//         Route::get('/{sert_id}/list/asesis', [DevelopmentController::class, 'listAsesis'])->name('list.asesis'); // dev.sertification.list.asesis
+//     });
+// });
 require __DIR__ . '/auth.php';

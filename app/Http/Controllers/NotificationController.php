@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class NotificationController extends Controller
 {
@@ -12,8 +13,9 @@ class NotificationController extends Controller
     {
         $user = $request->user();
         $notifications = $user->notificationLogs()->paginate(15);
-
-        return view('admin.notifikasi.notifikasi', compact('notifications'));
+        return Inertia::render('Asesi/NotifikasiList', [
+            'allNotifications' => $notifications, 
+        ]);
     }
 
     public function markAllRead(Request $request): JsonResponse

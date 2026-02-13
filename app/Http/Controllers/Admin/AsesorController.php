@@ -173,7 +173,7 @@ class AsesorController extends Controller
         if ($user && $user->id === Auth::id()) {
             return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
         }
-        if ($asesor->sertifications()->exists() || $asesor->plotingans()->exists()) {
+        if ($asesor->sertifications()->exists()) {
              return redirect(route('admin.asesor.index'))->with('error', 'Asesor tidak bisa dihapus karena memiliki riwayat sertifikasi. Silakan non-aktifkan statusnya di menu Edit.');
         }
 

@@ -24,16 +24,16 @@ const props = defineProps({
     <AsesiLayout>
         <CustomHeader judul="Profil"/>
         <div class="flex flex-col gap-4">
-            <div class="bg-white p-4 rounded-lg dark:bg-gray-800">
+            <div class="bg-white p-4 rounded-lg dark:bg-gray-800 max-w-3xl">
                 <UpdateProfileAsesi
                     :user="props.user"
                     :student="props.student"
                 />
             </div>
-            <div class="bg-white p-4 rounded-lg dark:bg-gray-800">
+            <div class="bg-white p-4 rounded-lg dark:bg-gray-800 max-w-3xl">
                 <UpdatePassword />
             </div>
-            <div class="bg-white p-4 rounded-lg dark:bg-gray-800">
+            <div class="bg-white p-4 rounded-lg dark:bg-gray-800 max-w-3xl">
                 <FCMPermission :is-subscribed="isSubscribed"/>
             </div>
         </div>

@@ -56,6 +56,18 @@ class SkemaController extends Controller
             'format_asesmen' => 'nullable|file|mimes:zip,rar|max:5120',
         ]);
 
+        if ($skema->is_active && $request->boolean('is_active') === false) {
+            $isUsedInActiveSertification = $skema->sertifications()
+                ->where('status', 'berlangsung')
+                ->exists();
+
+            if ($isUsedInActiveSertification) {
+                return back()->withErrors([
+                    'is_active' => 'Skema tidak dapat dinonaktifkan karena sedang digunakan dalam sertifikasi yang berlangsung.'
+                ]);
+            }
+        }
+
         $skema->fill($request->only(['nama_skema']));
         $skema->is_active = $request->boolean('is_active');
 

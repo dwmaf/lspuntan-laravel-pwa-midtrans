@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Sertification;
+use App\Models\Skema;
 use App\Models\Sertifikat;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,24 +13,28 @@ class CertificateVerificationController extends Controller
 {
     public function index(Request $request)
     {
-        $sertifications = Sertification::with('skema')->where('status', '!=', 'belum_berlangsung')->get();
+        // Ambil Skema yang unik/distinct, bukan per event sertifikasi
+        // Kita bisa ambil semua skema, atau hanya skema yang pernah ada sertifikasinya
+        $skemas = Skema::orderBy('nama_skema', 'asc')->get();
+
         $certificate = null;
-        if ($request->filled('nomor_sertifikat') && $request->filled('sertification_id')) {
+        if ($request->filled('nomor_sertifikat') && $request->filled('skema_id')) {
             $foundCertificate = Sertifikat::where('nomor_sertifikat', $request->nomor_sertifikat)
                 ->with(['asesi.student.user', 'asesi.sertification.skema'])
                 ->first();
 
-            if ($foundCertificate && $foundCertificate->asesi->sertification_id == $request->sertification_id) {
+            // Cek apakah sertifikat ditemukan DAN skema-nya cocok
+            if ($foundCertificate && $foundCertificate->asesi->sertification->skema_id == $request->skema_id) {
                 $certificate = $foundCertificate;
             } else {
-                return redirect()->back()->withErrors(['search' => 'Data sertifikat tidak ditemukan atau tidak cocok.'])->withInput();
+                return redirect()->back()->withErrors(['search' => 'Data sertifikat tidak ditemukan atau tidak cocok dengan skema yang dipilih.'])->withInput();
             }
         }
 
         return Inertia::render('Public/VerifyCertificate', [
-            'sertifications' => $sertifications,
+            'skemas' => $skemas,
             'certificate' => $certificate,
-            'input' => $request->only(['nomor_sertifikat', 'sertification_id']),
+            'input' => $request->only(['nomor_sertifikat', 'skema_id']),
         ]);
     }
 }

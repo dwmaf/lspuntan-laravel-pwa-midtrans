@@ -3,6 +3,7 @@ import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import PrimaryLinkButton from "@/Components/PrimaryLinkButton.vue";
 import CustomHeader from "@/Components/CustomHeader.vue";
 import SertifikasiCard from "@/Components/SertifikasiCard.vue";
+import SertifikasiRiwayatTable from "@/Components/SertifikasiRiwayatTable.vue";
 import { ref, computed } from "vue";
 
 const props = defineProps({
@@ -14,8 +15,8 @@ const props = defineProps({
 const activeTab = ref('tersedia');
 
 const displaySertifications = computed(() => {
-    return activeTab.value === 'tersedia' 
-        ? props.sertifications_tersedia 
+    return activeTab.value === 'tersedia'
+        ? props.sertifications_tersedia
         : props.sertifications_saya;
 });
 
@@ -81,45 +82,53 @@ const getSertifikasiStatus = (sert) => {
             <hr class="border-gray-200 dark:border-gray-700 mb-6" />
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <SertifikasiCard v-for="sert in displaySertifications" :key="sert.id" :sert="sert">
-                    <template #badges>
-                        <span v-if="sert.status === 'selesai'"
-                            class="px-2 py-1 text-xs font-semibold rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                            Selesai
-                        </span>
+                <template v-if="activeTab === 'tersedia'">
+                    <SertifikasiCard v-for="sert in displaySertifications" :key="sert.id" :sert="sert">
+                        <template #badges>
+                            <span v-if="sert.status === 'selesai'"
+                                class="px-2 py-1 text-xs font-semibold rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                Selesai
+                            </span>
 
-                        <span v-if="isNew(sert) && getSertifikasiStatus(sert).type === 'open'"
-                            class="px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100">
-                            Baru
-                        </span>
-                        <span v-if="getSertifikasiStatus(sert).type === 'open'"
-                            class="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100">
-                            Dibuka
-                        </span>
-                        <span v-else-if="getSertifikasiStatus(sert).type === 'closed'"
-                            class="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100">
-                            Ditutup
-                        </span>
-                    </template>
+                            <span v-if="isNew(sert) && getSertifikasiStatus(sert).type === 'open'"
+                                class="px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100">
+                                Baru
+                            </span>
+                            <span v-if="getSertifikasiStatus(sert).type === 'open'"
+                                class="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100">
+                                Dibuka
+                            </span>
+                            <span v-else-if="getSertifikasiStatus(sert).type === 'closed'"
+                                class="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100">
+                                Ditutup
+                            </span>
+                        </template>
 
-                    <template #actions>
-                        <PrimaryLinkButton v-if="getSertifikasiStatus(sert).href" :href="getSertifikasiStatus(sert).href">
-                            {{ getSertifikasiStatus(sert).text }}
-                        </PrimaryLinkButton>
-                        <span v-else
-                            :class="['inline-block font-medium px-4 py-2 rounded-lg', getSertifikasiStatus(sert).class]">
-                            {{ getSertifikasiStatus(sert).text }}
-                        </span>
-                    </template>
-                </SertifikasiCard>
+                        <template #actions>
+                            <PrimaryLinkButton v-if="getSertifikasiStatus(sert).href"
+                                :href="getSertifikasiStatus(sert).href">
+                                {{ getSertifikasiStatus(sert).text }}
+                            </PrimaryLinkButton>
+                            <span v-else
+                                :class="['inline-block font-medium px-4 py-2 rounded-lg', getSertifikasiStatus(sert).class]">
+                                {{ getSertifikasiStatus(sert).text }}
+                            </span>
+                        </template>
+                    </SertifikasiCard>
+                </template>
+                <div v-else class="col-span-1 md:col-span-2">
+                    <SertifikasiRiwayatTable :sertifications="displaySertifications" :asesis="asesis" />
+                </div>
 
-                <div v-if="displaySertifications.length === 0"
+
+                <div v-if="displaySertifications.length === 0 && activeTab === 'tersedia'"
                     class="col-span-1 sm:col-span-2 text-center py-12 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
                     <p class="text-gray-500 dark:text-gray-400">
-                        {{ activeTab === 'tersedia' ? 'Saat ini belum ada sertifikasi yang dibuka.' : 'Anda belum mendaftar di sertifikasi manapun.' }}
+                        Saat ini belum ada sertifikasi yang dibuka.
                     </p>
                 </div>
             </div>
+
         </div>
     </AsesiLayout>
 </template>

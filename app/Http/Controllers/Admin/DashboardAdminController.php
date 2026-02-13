@@ -4,13 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Skema;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
-use App\Helpers\FileHelper;
 use App\Models\Asesi;
-
+use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Facades\DB;
 use App\Models\Sertification;
 use Inertia\Inertia;
@@ -19,14 +14,26 @@ class DashboardAdminController extends Controller
 {
     public function index()
     {
-        // $pendingRegistrants = Transaction::
-        //                         where('status','pending')
-        //                         ->get();
-        $totalAsesi = Asesi::all();
-        $asesiBaruDaftar = Asesi::where('status_berkas','menunggu_verifikasi_berkas')->get();
-        $asesiLulus = Asesi::where('status_final','kompeten')->get();
+        $totalAsesiCount = Asesi::count();
+        $asesiLulusCount = Asesi::where('status_final', 'kompeten')->count();
+
+        // (Database Query lebih cepat daripada JS Filter)
+        // Base Query untuk asesi yang sedang dalam sertifikasi berlangsung
+        $baseQuery = Asesi::whereHas('sertification', function ($query) {
+            $query->where('status', 'berlangsung');
+        });
+
+        $pipelineStats = [
+            'verifikasi_berkas' => (clone $baseQuery)->where('status_berkas', 'menunggu_verifikasi_admin')->count(),
+            'revisi_asesi'      => (clone $baseQuery)->where('status_berkas', 'perlu_perbaikan_berkas')->count(),
+            'menunggu_jadwal'   => (clone $baseQuery)->where('status_berkas', 'sudah_lengkap')
+                                                   ->where('status_akses_asesmen', 'belum_diberikan')->count(),
+            'proses_asesmen'    => (clone $baseQuery)->where('status_akses_asesmen', 'diberikan')
+                                                   ->where('status_final', 'belum_ditetapkan')->count(),
+        ];
+
         $sertificationBerlangsung = Sertification::with('skema')->withCount('asesis')->where('status', 'berlangsung')->get();
-        $sertificationSelesai = Sertification::with('skema')->withCount('asesis')->where('status', 'selesai')->get();
+        $sertificationSelesaiCount = Sertification::where('status', 'selesai')->count();
         $monthlyStats = Asesi::select(
             DB::raw('count(id) as count'), 
             DB::raw("DATE_FORMAT(created_at, '%Y-%m') as date")
@@ -50,18 +57,22 @@ class DashboardAdminController extends Controller
             ->limit(5)
             ->get();
 
+        $recentActivities = Activity::with('causer')
+            ->latest()
+            ->take(5)
+            ->get();
         return Inertia::render('Admin/DashboardAdmin', [
-            // 'pendingRegistrants' => $pendingRegistrants,
             'sertificationBerlangsung' => $sertificationBerlangsung,
-            'sertificationSelesai' => $sertificationSelesai,
-            'totalAsesi' => $totalAsesi,
-            'asesiLulus' => $asesiLulus,
-            'asesiBaruDaftar' => $asesiBaruDaftar,
+            'sertificationSelesaiCount' => $sertificationSelesaiCount, 
+            'totalAsesiCount' => $totalAsesiCount, 
+            'asesiLulusCount' => $asesiLulusCount, 
+            'pipelineStats' => $pipelineStats,
             'charts' => [
                 'monthlyStats' => $monthlyStats,
                 'competencyStats' => $competencyStats,
                 'topSchemes' => $topSchemes,
-            ]
+            ],
+            'recentActivities' => $recentActivities 
         ]);
     }
 

@@ -42,6 +42,7 @@ class KelolaSertifikasiAsesiController extends Controller
             ->get();
 
         $sertifications_saya = Sertification::with('skema')
+            ->where('status', 'selesai')
             ->whereHas('asesis', fn($q) => $q->where('student_id', $student->id))
             ->orderBy('tgl_apply_dibuka', 'desc')
             ->get();
