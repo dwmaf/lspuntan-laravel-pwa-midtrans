@@ -77,20 +77,6 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard'); //admin.dashboard
 
-    Route::prefix('skema')->name('skema.')->group(function () {
-        Route::get('/', [SkemaController::class, 'create'])->name('create'); // admin.skema.create
-        Route::post('/', [SkemaController::class, 'store'])->name('store'); // admin.skema.store
-        Route::patch('/{skema}/update', [SkemaController::class, 'update'])->name('update'); // admin.skema.update
-        Route::delete('/{skema}/destroy', [SkemaController::class, 'destroy'])->name('destroy'); // admin.skema.destroy
-    });
-    Route::prefix('asesor')->name('asesor.')->group(function () {
-        Route::get('/index', [AsesorController::class, 'index'])->name('index'); // admin.asesor.index
-        Route::get('/export', [AsesorController::class, 'export'])->name('export'); // admin.asesor.export
-        Route::post('/', [AsesorController::class, 'store'])->name('store'); // admin.asesor.store
-        Route::patch('/{asesor}/update', [AsesorController::class, 'update'])->name('update'); // admin.asesor.update
-        Route::delete('/{asesor}/destroy', [AsesorController::class, 'destroy'])->name('destroy'); // admin.asesor.destroy
-        Route::patch('/{id}/restore', [AsesorController::class, 'restore'])->name('restore'); // admin.asesor.restore
-    });
     Route::prefix('kelolasertifikasi')->name('kelolasertifikasi.')->group(function () {
         Route::get('/index', [KelolaSertifikasiController::class, 'index'])->name('index'); // admin.kelolasertifikasi.index
         Route::post('/store', [KelolaSertifikasiController::class, 'store'])->name('store'); // admin.kelolasertifikasi.store
@@ -108,8 +94,6 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
         Route::post('/announcement/store', [PengumumanController::class, 'store_pengumuman_asesmen'])->name('announcement.store'); // admin.sertifikasi.assessment-announcement.store
         Route::patch('/announcement/update/{news}', [PengumumanController::class, 'update_pengumuman_asesmen'])->name('assessment-announcement.update'); // admin.sertifikasi.assessment-announcement.update
         Route::delete('/announcement/destroy/{news}', [PengumumanController::class, 'destroy_pengumuman_asesmen'])->name('assessment-announcement.destroy'); // admin.sertifikasi.assessment-announcement.update
-        Route::delete('/announcement/file/{id_file}', [PengumumanController::class, 'destroyPengumumanFile'])->name('assessment-announcement.file.destroy');
-        Route::get('/announcement/{news}/readers', [PengumumanController::class, 'getReaders'])->name('assessment-announcement.readers');
     });
 
     Route::prefix('sertifikasi/{sertification}')->name('sertifikasi.')->group(function () {
@@ -124,6 +108,30 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
         Route::patch('/pendaftar/{asesi}/update-certificate', [PendaftarController::class, 'updateCertificate'])->name('pendaftar.update-certificate'); // admin.sertifikasi.pendaftar.upload-certificate
         Route::delete('/pendaftar/{asesi}/destroy-certificate', [PendaftarController::class, 'destroyCertificate'])->name('pendaftar.destroy-certificate'); // admin.sertifikasi.pendaftar.destroy-certificate
     });
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::patch('/{user}', [UserController::class, 'update'])->name('update');
+        Route::post('/{user}/ban', [UserController::class, 'ban'])->name('ban');
+    });
+});
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('skema')->name('skema.')->group(function () {
+        Route::get('/', [SkemaController::class, 'create'])->name('create'); // admin.skema.create
+        Route::post('/', [SkemaController::class, 'store'])->name('store'); // admin.skema.store
+        Route::patch('/{skema}/update', [SkemaController::class, 'update'])->name('update'); // admin.skema.update
+        Route::delete('/{skema}/destroy', [SkemaController::class, 'destroy'])->name('destroy'); // admin.skema.destroy
+    });
+    Route::prefix('asesor')->name('asesor.')->group(function () {
+        Route::get('/index', [AsesorController::class, 'index'])->name('index'); // admin.asesor.index
+        Route::get('/export', [AsesorController::class, 'export'])->name('export'); // admin.asesor.export
+        Route::post('/', [AsesorController::class, 'store'])->name('store'); // admin.asesor.store
+        Route::patch('/{asesor}/update', [AsesorController::class, 'update'])->name('update'); // admin.asesor.update
+        Route::delete('/{asesor}/destroy', [AsesorController::class, 'destroy'])->name('destroy'); // admin.asesor.destroy
+        Route::patch('/{id}/restore', [AsesorController::class, 'restore'])->name('restore'); // admin.asesor.restore
+    });
+
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');

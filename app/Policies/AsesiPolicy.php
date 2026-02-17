@@ -90,4 +90,14 @@ class AsesiPolicy
     {
         return false;
     }
+
+    /**
+     * Determine whether the user can manage (create/update/delete) certificate for asesi.
+     * Only admin can manage certificates, asesor cannot.
+     */
+    public function manageCertificate(User $user, Asesi $asesi): bool
+    {
+        // Hanya admin yang bisa manage sertifikat
+        return $user->hasRole('admin');
+    }
 }

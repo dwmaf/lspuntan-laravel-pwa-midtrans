@@ -17,20 +17,22 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class AsesorController extends Controller
 {
     public function index(Request $request)
     {
+        Gate::authorize('viewAny', Asesor::class);
         $asesors = Asesor::query()
             ->with('skemas', 'user')
             ->when($request->input('search'), function ($query, $search) {
-                $query->whereHas('user',function ($q) use ($search) {
+                $query->whereHas('user', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
                 });
             })
             ->when($request->input('skema'), function ($query, $skema) {
-                $query->whereHas('skemas',function ($q) use ($skema) {
+                $query->whereHas('skemas', function ($q) use ($skema) {
                     $q->where('skemas.id', $skema);
                 });
             })
@@ -52,12 +54,13 @@ class AsesorController extends Controller
         return Inertia::render('Admin/AsesorAdmin', [
             'asesors' => $asesors,
             'skemas' => Skema::all(),
-            'filters' => $request->only(['skema','search', 'status']),
+            'filters' => $request->only(['skema', 'search', 'status']),
         ]);
     }
 
     public function store(Request $request)
     {
+        Gate::authorize('create', Asesor::class);
         // dd($request);
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -96,6 +99,7 @@ class AsesorController extends Controller
 
     public function update(Asesor $asesor, Request $request)
     {
+        Gate::authorize('update', $asesor);
         $user_asesor = $asesor->user;
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -168,13 +172,14 @@ class AsesorController extends Controller
 
     public function destroy(Asesor $asesor)
     {
+        Gate::authorize('delete', $asesor);
         $user = $asesor->user;
-        
+
         if ($user && $user->id === Auth::id()) {
             return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
         }
         if ($asesor->sertifications()->exists()) {
-             return redirect(route('admin.asesor.index'))->with('error', 'Asesor tidak bisa dihapus karena memiliki riwayat sertifikasi. Silakan non-aktifkan statusnya di menu Edit.');
+            return redirect(route('admin.asesor.index'))->with('error', 'Asesor tidak bisa dihapus karena memiliki riwayat sertifikasi. Silakan non-aktifkan statusnya di menu Edit.');
         }
 
         DB::transaction(function () use ($asesor, $user) {
@@ -189,6 +194,7 @@ class AsesorController extends Controller
 
     public function export()
     {
+        Gate::authorize('viewAny', Asesor::class);
         return Excel::download(new AsesorExport, 'Laporan_Asesor_LSP_Untan.xlsx');
     }
 }

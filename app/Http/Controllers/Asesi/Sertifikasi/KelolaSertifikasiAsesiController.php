@@ -64,8 +64,12 @@ class KelolaSertifikasiAsesiController extends Controller
             return redirect()->route('asesi.sertifikasi.applied.show', [$sertification, $existingAsesi])->with('message', 'Anda sudah terdaftar pada skema sertifikasi ini.');
         }
 
-        if (!$sertification->skema->is_active) {
-            return redirect()->route('asesi.sertifikasi.list')->with('error', 'Skema sertifikasi ini sudah tidak aktif dan tidak menerima pendaftaran baru.');
+        if ($sertification->status->value === 'selesai' || $sertification->status->value === 'dibatalkan') {
+            return redirect()->route('asesi.sertifikasi.index')->with('error', 'Sertifikasi ini sudah selesai/dibatalkan dan tidak menerima pendaftaran baru.');
+        }
+
+        if ($sertification->tgl_apply_ditutup && now()->greaterThan($sertification->tgl_apply_ditutup)) {
+            return redirect()->route('asesi.sertifikasi.index')->with('error', 'Masa pendaftaran sertifikasi ini sudah berakhir.');
         }
         return Inertia::render('Asesi/ApplySertifAsesi', [
             'sertification' => $sertification->load('skema'),
@@ -76,6 +80,7 @@ class KelolaSertifikasiAsesiController extends Controller
 
     public function submitForm(Student $student, Request $request, Messaging $messaging)
     {
+        Gate::authorize('update', $student);
         // dd($request);
         $request->validate([
             'sertification_id' => 'required|string|max:255',
@@ -121,23 +126,27 @@ class KelolaSertifikasiAsesiController extends Controller
             'delete_files' => 'nullable|array',
         ]);
         $sertification = Sertification::findOrFail($request->sertification_id);
-        if (!$sertification->skema->is_active) {
-            return redirect()->route('asesi.sertifikasi.list')->with('error', 'Skema sertifikasi ini sudah tidak aktif dan tidak menerima pendaftaran baru.');
+        if ($sertification->status->value === 'selesai' || $sertification->status->value === 'dibatalkan') {
+            return redirect()->route('asesi.sertifikasi.index')->with('error', 'Sertifikasi ini sudah selesai/dibatalkan dan tidak menerima pendaftaran baru.');
+        }
+
+        if ($sertification->tgl_apply_ditutup && now()->greaterThan($sertification->tgl_apply_ditutup)) {
+            return redirect()->route('asesi.sertifikasi.index')->with('error', 'Masa pendaftaran sertifikasi ini sudah berakhir.');
         }
 
         $asesi = DB::transaction(function () use ($request, $student, $messaging) {
             $user = $student->user;
-            $student->fill($request->only(['nik','tmpt_lhr','tgl_lhr','kelamin','kebangsaan','no_tlp_rmh','no_tlp_kntr','kualifikasi_pendidikan',]));
+            $student->fill($request->only(['nik', 'tmpt_lhr', 'tgl_lhr', 'kelamin', 'kebangsaan', 'no_tlp_rmh', 'no_tlp_kntr', 'kualifikasi_pendidikan',]));
             $user->fill($request->only(['no_tlp_hp', 'name']));
             FileHelper::handleSingleFileDeletes($student, $request->input('delete_files', []));
             FileHelper::handleSingleFileUploads($student, ['foto_ktp', 'pas_foto'], $request, 'student_files');
             FileHelper::saveIfDirty([$student, $user]);
-            
+
             $asesi = new Asesi($request->only(['sertification_id', 'tujuan_sert', 'rekap_nilai']));
             $asesi->student_id = $student->id;
-            FileHelper::handleSingleFileUploads($asesi, ['bukti_bayar','apl_1', 'apl_2', 'foto_ktm', 'transkrip_nilai'], $request, 'asesi_files');
+            FileHelper::handleSingleFileUploads($asesi, ['bukti_bayar', 'apl_1', 'apl_2', 'foto_ktm', 'transkrip_nilai'], $request, 'asesi_files');
             $asesi->save();
-            FileHelper::handleCollectionFileUploads(Asesifile::class,'asesi_id',$asesi->id, $request,['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain'], 'asesi_files');
+            FileHelper::handleCollectionFileUploads(Asesifile::class, 'asesi_id', $asesi->id, $request, ['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain'], 'asesi_files');
 
             return $asesi;
         });
@@ -167,6 +176,7 @@ class KelolaSertifikasiAsesiController extends Controller
 
     public function showApplied(Sertification $sertification, Asesi $asesi, Request $request)
     {
+        Gate::authorize('view', $asesi);
         NotificationController::markAsRead($request);
         $asesi->load([
             'student.user',
@@ -174,9 +184,6 @@ class KelolaSertifikasiAsesiController extends Controller
             'sertifikat'
         ]);
         $student = $asesi->student;
-        
-        Gate::authorize('view', $asesi);
-
         return Inertia::render('Asesi/DetailSertifAsesi', [
             'sertification' => $sertification->load('skema'),
             'asesi' => $asesi,
@@ -190,7 +197,7 @@ class KelolaSertifikasiAsesiController extends Controller
     public function updateApplied(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
         // dd($request);
-        Gate::authorize('update',$asesi);
+        Gate::authorize('update', $asesi);
         $asesi->load('student.user', 'asesifiles');
         $student = $asesi->student;
         $user = $student->user;
@@ -300,18 +307,18 @@ class KelolaSertifikasiAsesiController extends Controller
             $initialStatus = $asesi->status;
             $student->fill($request->only(['nik', 'tmpt_lhr', 'tgl_lhr', 'kelamin', 'kebangsaan', 'no_tlp_rmh', 'no_tlp_kntr', 'no_tlp_hp', 'kualifikasi_pendidikan',]));
             $user->fill($request->only(['no_tlp_hp', 'name']));
-            $asesi->fill($request->only(['tujuan_sert','rekap_nilai']));
+            $asesi->fill($request->only(['tujuan_sert', 'rekap_nilai']));
             FileHelper::handleSingleFileDeletes($student, $request->input('delete_files_student', []));
             FileHelper::handleSingleFileDeletes($asesi, $request->input('delete_files_asesi', []));
             FileHelper::handleCollectionFileDeletes(Asesifile::class, $request->input('delete_files_collection', []));
 
             FileHelper::handleSingleFileUploads($student, ['foto_ktp', 'pas_foto'], $request, 'student_files');
-            FileHelper::handleSingleFileUploads($asesi, ['bukti_bayar','apl_1', 'apl_2', 'foto_ktm', 'transkrip_nilai'], $request, 'asesi_files');
-            FileHelper::handleCollectionFileUploads(Asesifile::class,'asesi_id',$asesi->id, $request,['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain'], 'asesi_files');
+            FileHelper::handleSingleFileUploads($asesi, ['bukti_bayar', 'apl_1', 'apl_2', 'foto_ktm', 'transkrip_nilai'], $request, 'asesi_files');
+            FileHelper::handleCollectionFileUploads(Asesifile::class, 'asesi_id', $asesi->id, $request, ['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain'], 'asesi_files');
 
             FileHelper::saveIfDirty([$student, $user, $asesi]);
 
-            
+
 
             if ($initialStatus === 'perlu_perbaikan_berkas') {
                 $asesi->status = 'daftar';

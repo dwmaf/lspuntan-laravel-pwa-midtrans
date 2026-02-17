@@ -11,7 +11,7 @@ import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import DateInput from "@/Components/Input/DateInput.vue";
 import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import CreatorInfo from "@/Components/CreatorInfo.vue";
-import FileCard from "@/Components/FileCard.vue"; 
+import FileCard from "@/Components/FileCard.vue";
 import BackButton from "@/Components/Button/BackButton.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
@@ -156,10 +156,9 @@ const { formatDateTime } = useFormat();
                     :error="form.errors.deadline" />
                 <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                     delete-identifier="path_file" label="Lampiran Tambahan"
-                    :existing-file-url="asesmen?.path_file ? `/storage/${asesmen.path_file}` : null"
+                    :existing-file-url="sertification.asesmen?.path_file ? `/storage/${sertification.asesmen.path_file}` : null"
                     :is-marked-for-deletion="form.delete_files.includes('path_file')"
-                    accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file"
-                    @remove="removeFile('path_file')" />
+                    accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
@@ -220,8 +219,7 @@ const { formatDateTime } = useFormat();
                                     ada tugas dikumpulkan</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <SeeButton
-                                    v-if="asesi.path_file_asesmen" @click="showDetailView(asesi)">
+                                <SeeButton v-if="asesi.path_file_asesmen" @click="showDetailView(asesi)">
                                     Lihat
                                 </SeeButton>
                                 <span v-else class="text-xs text-gray-500">Belum ada tugas dikumpulkan</span>

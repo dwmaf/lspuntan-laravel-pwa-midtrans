@@ -117,10 +117,16 @@ const destroy = (id) => {
                     :error="form.errors.nama_skema" />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div v-for="field in docFields" :key="field.id">
-                        <SingleFileInput v-model="form[field.id]" v-model:deleteList="form.delete_files"
-                            :delete-identifier="field.id" :label="`Format ${field.label}`" accept=".docx"
-                            :error="form.errors[field.id]" />
+                    <SingleFileInput v-model="form.format_apl_1" v-model:deleteList="form.delete_files"
+                        delete-identifier="format_apl_1" label="Format FR. APL.01" accept=".docx"
+                        :error="form.errors.format_apl_1" />
+                    <SingleFileInput v-model="form.format_apl_2" v-model:deleteList="form.delete_files"
+                        delete-identifier="format_apl_2" label="Format FR. APL.02" accept=".docx"
+                        :error="form.errors.format_apl_2" />
+                    <div class="md:col-span-2">
+                        <SingleFileInput v-model="form.format_asesmen" v-model:deleteList="form.delete_files"
+                            delete-identifier="format_asesmen" label="File Lampiran Asesmen" accept=".zip,.rar"
+                            :error="form.errors.format_asesmen" />
                     </div>
                 </div>
 
@@ -144,12 +150,22 @@ const destroy = (id) => {
                     :error="form.errors.nama_skema" />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div v-for="field in docFields" :key="field.id">
-                        <SingleFileInput v-model="form[field.id]" :label="`Format ${field.label}`"
-                            v-model:deleteList="form.delete_files" :delete-identifier="field.id"
-                            :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.[field.id] ? `/storage/${props.skemas.data.find(s => s.id === form.id)?.[field.id]}` : null"
-                            :is-marked-for-deletion="form.delete_files.includes(field.id)" accept=".pdf,.docx"
-                            :error="form.errors[field.id]" />
+                    <SingleFileInput v-model="form.format_apl_1" label="Format FR. APL.01"
+                        v-model:deleteList="form.delete_files" delete-identifier="format_apl_1"
+                        :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_apl_1 ? `/storage/${props.skemas.data.find(s => s.id === form.id)?.format_apl_1}` : null"
+                        :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".docx"
+                        :error="form.errors.format_apl_1" />
+                    <SingleFileInput v-model="form.format_apl_2" label="Format FR. APL.02"
+                        v-model:deleteList="form.delete_files" delete-identifier="format_apl_2"
+                        :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_apl_2 ? `/storage/${props.skemas.data.find(s => s.id === form.id)?.format_apl_2}` : null"
+                        :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".docx"
+                        :error="form.errors.format_apl_2" />
+                    <div class="md:col-span-2">
+                        <SingleFileInput v-model="form.format_asesmen" label="File Lampiran Asesmen"
+                            v-model:deleteList="form.delete_files" delete-identifier="format_asesmen"
+                            :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_asesmen ? `/storage/${props.skemas.data.find(s => s.id === form.id)?.format_asesmen}` : null"
+                            :is-marked-for-deletion="form.delete_files.includes('format_asesmen')" accept=".zip,.rar"
+                            :error="form.errors.format_asesmen" />
                     </div>
                 </div>
 

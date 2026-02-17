@@ -71,6 +71,7 @@ const submit = () => {
     form.post(route('asesi.assessmen.update', [props.sertification.id, props.asesi.id]), {
         forceFormData: true,
         onSuccess: () => {
+            form.reset();
             submissionMode.value = 'view';
         },
     });
@@ -105,11 +106,12 @@ const showViewMode = () => {
                         class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-100"></div>
 
 
-                    <div class="mt-4 mb-4 p-3 rounded-md border"
-                        :class="deadlineStatus.colorClass">
+                    <div class="mt-4 mb-4 p-3 rounded-md border" :class="deadlineStatus.colorClass">
                         <div class="flex items-center gap-2">
-                            <CheckCircle v-if="asesi.path_file_asesmen" class="h-5 w-5" :class="deadlineStatus.iconColor" />
-                            <AlertTriangle v-else-if="isDeadlinePassed" class="h-5 w-5" :class="deadlineStatus.iconColor" />
+                            <CheckCircle v-if="asesi.path_file_asesmen" class="h-5 w-5"
+                                :class="deadlineStatus.iconColor" />
+                            <AlertTriangle v-else-if="isDeadlinePassed" class="h-5 w-5"
+                                :class="deadlineStatus.iconColor" />
                             <Clock v-else class="h-5 w-5" :class="deadlineStatus.iconColor" />
                             <span class="text-sm font-medium" :class="deadlineStatus.textClass">
                                 {{ deadlineStatus.text }}
@@ -172,7 +174,7 @@ const showViewMode = () => {
                                     <a :href="`/storage/${asesi.path_file_asesmen}`" target="_blank"
                                         class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full sm:w-auto">
                                         <Download class="w-4 h-4 mr-2" />
-                                        <span >Lihat</span>
+                                        <span>Lihat</span>
                                     </a>
                                     <SecondaryButton v-if="!isDeadlinePassed" @click="showEditMode"
                                         class="w-full sm:w-auto justify-center">
@@ -189,6 +191,7 @@ const showViewMode = () => {
                                 v-model:deleteList="form.delete_files_asesi" delete-identifier="path_file_asesmen"
                                 label="File asesmen anda"
                                 :existing-file-url="asesi?.path_file_asesmen ? `/storage/${asesi.path_file_asesmen}` : null"
+                                :is-marked-for-deletion="form.delete_files_asesi.includes('path_file_asesmen')"
                                 :error="form.errors.path_file_asesmen"
                                 :required="!asesi?.path_file_asesmen || form.delete_files_asesi.includes('path_file_asesmen')"
                                 :template-url="sertification.skema.format_asesmen ? `/storage/${sertification.skema.format_asesmen}` : null"

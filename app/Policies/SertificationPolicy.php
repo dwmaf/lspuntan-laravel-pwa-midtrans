@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\Asesor;
 use App\Models\Sertification;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -13,7 +14,8 @@ class SertificationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // Admin dan asesor bisa lihat list sertifikasi
+        return $user->hasRole(['admin', 'asesor']);
     }
 
     /**
@@ -21,6 +23,22 @@ class SertificationPolicy
      */
     public function view(User $user, Sertification $sertification): bool
     {
+        // Admin bisa lihat semua sertifikasi
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        // Asesor hanya bisa lihat sertifikasi yang mereka ampu
+        if ($user->hasRole('asesor')) {
+            $asesor = Asesor::where('user_id', $user->id)->first();
+            
+            if (!$asesor) {
+                return false;
+            }
+
+            return $sertification->asesors()->where('asesors.id', $asesor->id)->exists();
+        }
+
         return false;
     }
 
@@ -29,7 +47,8 @@ class SertificationPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // Hanya admin yang bisa create sertifikasi baru
+        return $user->hasRole('admin');
     }
 
     /**
@@ -37,7 +56,8 @@ class SertificationPolicy
      */
     public function update(User $user, Sertification $sertification): bool
     {
-        return false;
+        // Hanya admin yang bisa update sertifikasi
+        return $user->hasRole('admin');
     }
 
     /**
@@ -45,7 +65,8 @@ class SertificationPolicy
      */
     public function delete(User $user, Sertification $sertification): bool
     {
-        return false;
+        // Hanya admin yang bisa delete sertifikasi
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +74,7 @@ class SertificationPolicy
      */
     public function restore(User $user, Sertification $sertification): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +82,23 @@ class SertificationPolicy
      */
     public function forceDelete(User $user, Sertification $sertification): bool
     {
-        return false;
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Determine whether the user can manage assessment (create/update tasks) for the certification.
+     */
+    public function manageAssessment(User $user, Sertification $sertification): bool
+    {
+        // Re-use view logic: Admin allowed, Asesor allowed if assigned
+        return $this->view($user, $sertification);
+    }
+
+    /**
+     * Determine whether the user can manage announcements for the certification.
+     */
+    public function manageAnnouncement(User $user, Sertification $sertification): bool
+    {
+        return $this->view($user, $sertification);
     }
 }

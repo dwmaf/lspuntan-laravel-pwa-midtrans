@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\Sertification;
 use App\Models\Asesi;
 use App\Traits\SendsPushNotifications;
+use App\Traits\AuthorizesBulkActions;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
@@ -20,9 +21,13 @@ use Illuminate\Support\Facades\Gate;
 class PendaftarController extends Controller
 {
     use SendsPushNotifications;
+    use AuthorizesBulkActions;
+    
     public function listAsesi(Sertification $sertification, Request $request)
     {
-        // dd($student);
+        // Authorization: Admin bisa lihat semua, Asesor hanya yang mereka ampu
+        Gate::authorize('view', $sertification);
+        
         $sertification->load('skema', 'asesis.student.user');
         
         return Inertia::render('Admin/PendaftarList', [
@@ -43,6 +48,7 @@ class PendaftarController extends Controller
             'statusAksesMenuAsesmenOptions' => StatusAksesMenuAsesmen::options(),
             'statusBerkasAdministrasiOptions' => StatusBerkasAdministrasi::options(),
             'StatusFinalAsesiOptions' => StatusFinalAsesi::options(),
+            'canManageCertificate' => Gate::allows('manageCertificate', $asesi),
         ]);
     }
 
@@ -89,6 +95,7 @@ class PendaftarController extends Controller
 
     public function updateStatusFinal(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
+        Gate::authorize('update', $asesi);
         $messageNotif = '';
         if ($request->status_final === StatusFinalAsesi::KOMPETEN->value) {
             $messageNotif = 'Selamat, Anda dinyatakan Kompeten pada skema sertifikasi ini.';
@@ -118,6 +125,10 @@ class PendaftarController extends Controller
             'asesi_ids.*' => 'exists:asesis,id',
             'status_akses_asesmen' => ['required', Rule::in(['belum_diberikan', 'diberikan'])],
         ]);
+
+        // Authorization: Cek apakah user bisa update semua asesi yang dipilih
+        $asesis = Asesi::whereIn('id', $request->asesi_ids)->get();
+        $this->authorizeBulk('update', $asesis);
 
         $messageNotif = '';
         if ($request->status_akses_asesmen === StatusAksesMenuAsesmen::BELUM_DIBERIKAN->value) {
@@ -152,6 +163,9 @@ class PendaftarController extends Controller
             'status_final' => ['required', Rule::in(['belum_ditetapkan', 'belum_kompeten', 'kompeten', 'diskualifikasi'])],
         ]);
 
+        // Authorization: Cek apakah user bisa update semua asesi yang dipilih
+        $asesis = Asesi::whereIn('id', $request->asesi_ids)->get();
+        $this->authorizeBulk('update', $asesis);
         $messageNotif = '';
         if ($request->status_final === StatusFinalAsesi::KOMPETEN->value) {
             $messageNotif = 'Selamat, Anda dinyatakan Kompeten pada skema sertifikasi ini.';
@@ -191,6 +205,10 @@ class PendaftarController extends Controller
             'catatan_perbaikan' => 'nullable|string',
         ]);
 
+        // Authorization: Cek apakah user bisa update semua asesi yang dipilih
+        $asesis = Asesi::whereIn('id', $request->asesi_ids)->get();
+        $this->authorizeBulk('update', $asesis);
+
         $messageNotif = '';
         if ($request->status_berkas === StatusBerkasAdministrasi::SUDAH_LENGKAP->value) {
             $messageNotif = 'Berkas Anda telah dinyatakan lengkap.';
@@ -220,11 +238,29 @@ class PendaftarController extends Controller
 
     public function updateCertificate(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
+        // Authorization: Hanya admin yang bisa manage sertifikat
+        Gate::authorize('manageCertificate', $asesi);
+        
         $sertifikat = $asesi->sertifikat()->firstOrNew(['asesi_id' => $asesi->id]);
         $validatedData = $request->validate([
-            'nomor_seri' => 'nullable|string|max:255',
-            'nomor_sertifikat' => 'nullable|string|max:255',
-            'nomor_registrasi' => 'nullable|string|max:255',
+            'nomor_seri' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('sertifikats', 'nomor_seri')->ignore($sertifikat->id),
+            ],
+            'nomor_sertifikat' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('sertifikats', 'nomor_sertifikat')->ignore($sertifikat->id),
+            ],
+            'nomor_registrasi' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('sertifikats', 'nomor_registrasi')->ignore($sertifikat->id),
+            ],
             'tanggal_terbit' => 'required|date',
             'berlaku_hingga' => 'required|date|after_or_equal:tanggal_terbit',
             'file_path' => [
@@ -256,6 +292,9 @@ class PendaftarController extends Controller
 
     public function destroyCertificate(Sertification $sertification, Asesi $asesi, Request $request)
     {
+        // Authorization: Hanya admin yang bisa manage sertifikat
+        Gate::authorize('manageCertificate', $asesi);
+        
         FileHelper::handleSingleFileDeletes($asesi->sertifikat, ['file_path']);
         $asesi->sertifikat->delete();
         return back()->with('message', 'Sertifikat berhasil dihapus.');

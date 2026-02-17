@@ -6,14 +6,13 @@ import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import Pagination from "@/Components/Pagination.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
-import PrimaryLinkButton from "@/Components/PrimaryLinkButton.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import Modal from "@/Components/Modal.vue";
 import NumberInput from "@/Components/Input/NumberInput.vue";
 import DateInput from "@/Components/Input/DateInput.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
-import { useFormat } from "@/Composables/useFormat"; 
+import { useFormat } from "@/Composables/useFormat";
 import { ref, computed, watch, reactive } from "vue";
 import { FunnelIcon, X } from "lucide-vue-next";
 import Multiselect from "@/Components/Input/MultiSelect.vue";
@@ -26,6 +25,7 @@ const props = defineProps({
     activeSkemas: Array,
     filters: Object,
     errors: Object,
+    isAsesor: Boolean,
 });
 const filtersForm = reactive({
     date_from: props.filters.date_from || '',
@@ -128,7 +128,7 @@ const submit = () => {
     <AdminLayout>
         <CustomHeader judul="Manajemen Sertifikasi" />
         <nav class="flex flex-wrap space-x-4 mt-1" aria-label="Tabs">
-            <div>
+            <div v-if="!isAsesor">
                 <button @click="tab = 'mulai'"
                     class="flex items-center gap-2 px-4 py-3 font-semibold text-sm hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600 cursor-pointer">
                     Mulai Sertifikasi
@@ -201,7 +201,7 @@ const submit = () => {
                 </SertifikasiTable>
             </div>
 
-            <div v-show="tab === 'mulai'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <div v-if="!isAsesor" v-show="tab === 'mulai'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
                     Mulai Sertifikasi
                 </h2>

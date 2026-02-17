@@ -6,7 +6,10 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 use Kreait\Firebase\Contract\Messaging;
-use App\Services\FakeMessagingService; 
+use App\Services\FakeMessagingService;
+use Illuminate\Support\Facades\Gate;
+use Spatie\Activitylog\Models\Activity;
+use App\Policies\ActivityPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Activity::class, ActivityPolicy::class);
+
         // 2. Daftarkan event listener di sini
         // Event::listen(
         //     Registered::class,

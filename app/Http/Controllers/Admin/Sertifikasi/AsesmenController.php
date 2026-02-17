@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Sertifikasi;
 
 use App\Http\Controllers\Controller;
 use App\Traits\SendsPushNotifications;
+use App\Traits\AuthorizesAsesor;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use App\Models\Asesi;
@@ -11,13 +12,16 @@ use App\Models\Asesmenfile;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
+use Illuminate\Support\Facades\Gate;
 
 class AsesmenController extends Controller
 {
     use SendsPushNotifications;
+
     public function edit(Sertification $sertification, Request $request)
     {
         // dd($id);
+        Gate::authorize('manageAssessment', $sertification);
         $sertification->load([
             'asesis.student.user',
             'asesis',
@@ -38,6 +42,7 @@ class AsesmenController extends Controller
     public function update_tugas_asesmen(Sertification $sertification, Request $request, Messaging $messaging)
     {
         // dd($request);
+        Gate::authorize('manageAssessment', $sertification);
         $validatedData = $request->validate([
             'content' => 'required|string',
             'deadline' => 'nullable|date',
@@ -77,6 +82,7 @@ class AsesmenController extends Controller
 
     public function destroy(Sertification $sertification)
     {
+        Gate::authorize('manageAssessment', $sertification);
         if ($sertification->asesmen) {
             FileHelper::handleSingleFileDeletes($sertification->asesmen, ['path_file']);
             $sertification->asesmen->delete();

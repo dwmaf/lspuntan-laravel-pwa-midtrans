@@ -27,19 +27,42 @@ const userRole = computed(() => {
     const roles = page.props.auth?.roles || [];
     return roles.length > 0 ? roles.join(', ').toUpperCase() : 'USER';
 });
-const notification = computed(() => page.props?.flash?.message);
-const isNotificationVisible = ref(false);
-let notificationTimer = null;
+const flashMessage = computed(() => page.props?.flash?.message);
+const flashError = computed(() => page.props?.flash?.error);
 
-watch(notification, (newValue) => {
-    if (newValue) {
-        isNotificationVisible.value = true;
-        clearTimeout(notificationTimer);
-        notificationTimer = setTimeout(() => {
-            isNotificationVisible.value = false;
-        }, 3000);
+const toasts = ref([]);
+
+const showNotification = (content, type) => {
+    if (!content) return;
+    console.log(`[Notification] Showing ${type}: ${content}`);
+
+    const id = crypto.randomUUID();
+    toasts.value.push({
+        id,
+        content,
+        type
+    });
+
+    setTimeout(() => {
+        removeToast(id);
+    }, 5000);
+};
+
+const removeToast = (id) => {
+    toasts.value = toasts.value.filter(t => t.id !== id);
+};
+
+// Watch flash messages and clear them after showing to allow sequential identical notifications
+watch(() => page.props.flash, (flash) => {
+    if (flash?.message) {
+        showNotification(flash.message, 'success');
+        page.props.flash.message = null;
     }
-});
+    if (flash?.error) {
+        showNotification(flash.error, 'error');
+        page.props.flash.error = null;
+    }
+}, { deep: true, immediate: true });
 
 const isSidebarOpen = ref(true);
 
@@ -56,15 +79,33 @@ onMounted(() => {
 
 <template>
     <div>
-        <Transition enter-active-class="transition ease-out duration-300"
-            enter-from-class="transform opacity-0 translate-x-full" enter-to-class="transform opacity-100 translate-x-0"
-            leave-active-class="transition ease-in duration-300" leave-from-class="transform opacity-100 translate-x-0"
-            leave-to-class="transform opacity-0 translate-x-full">
-            <div v-if="isNotificationVisible"
-                class="fixed top-20 right-4 text-sm px-4 py-2 rounded-lg shadow-lg bg-green-600 text-white z-50">
-                {{ notification }}
-            </div>
-        </Transition>
+        <!-- Toast Container -->
+        <div class="fixed top-20 right-4 z-[100] flex flex-col gap-3 pointer-events-none">
+            <TransitionGroup enter-active-class="transition ease-out duration-300"
+                enter-from-class="transform opacity-0 translate-x-full"
+                enter-to-class="transform opacity-100 translate-x-0"
+                leave-active-class="transition ease-in duration-200 absolute"
+                leave-from-class="transform opacity-100 translate-x-0"
+                leave-to-class="transform opacity-0 translate-x-full" move-class="transition duration-300">
+                <div v-for="toast in toasts" :key="toast.id" :class="[
+                    'pointer-events-auto text-sm px-4 py-3 rounded-lg shadow-lg font-medium flex items-center justify-between gap-4 min-w-[280px] max-w-md border-l-4',
+                    toast.type === 'success' ? 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-green-500 shadow-green-500/10' : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-red-500 shadow-red-500/10'
+                ]">
+                    <div class="flex items-center gap-3">
+                        <div
+                            :class="['p-1 rounded-full', toast.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-red-100 dark:bg-red-900/30 text-red-600']">
+                            <span v-if="toast.type === 'success'" class="block w-4 h-4 text-center leading-4">✓</span>
+                            <span v-else class="block w-4 h-4 text-center leading-4">✕</span>
+                        </div>
+                        <span class="flex-1">{{ toast.content }}</span>
+                    </div>
+                    <button @click="removeToast(toast.id)"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                        ✕
+                    </button>
+                </div>
+            </TransitionGroup>
+        </div>
         <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 z-20 bg-black/50 md:hidden">
         </div>
         <div class="flex min-h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">

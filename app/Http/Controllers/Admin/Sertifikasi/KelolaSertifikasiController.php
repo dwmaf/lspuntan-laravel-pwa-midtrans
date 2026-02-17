@@ -14,48 +14,76 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
+use App\Traits\AuthorizesAsesor;
 use App\Traits\SendsPushNotifications;
 use Maatwebsite\Excel\Facades\Excel;
 
 class KelolaSertifikasiController extends Controller
 {
     use SendsPushNotifications;
+    use AuthorizesAsesor;
     public function index(Request $request)
     {
+        $user = auth()->user();
+        $hasAdminRole = $user->hasRole('admin');
+        $isOnlyAsesor = $user->hasRole('asesor') && !$hasAdminRole;
+        $asesorId = null;
+
+        // Jika user HANYA asesor (bukan admin), ambil ID asesor-nya
+        if ($isOnlyAsesor) {
+            $asesor = Asesor::where('user_id', $user->id)->first();
+            $asesorId = $asesor?->id;
+        }
+
+        // Query untuk sertifikasi berlangsung
+        $sertificationsBerlangsung = Sertification::with('skema', 'asesors.user')
+            ->withCount('asesis')
+            ->where('status', 'berlangsung')
+            ->when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
+                $query->whereHas('asesors', function ($subQuery) use ($asesorId) {
+                    $subQuery->where('asesors.id', $asesorId);
+                });
+            })
+            ->orderBy('tgl_apply_dibuka', 'desc')
+            ->get();
+
+        // Query untuk sertifikasi selesai
+        $sertificationsSelesai = Sertification::with('skema', 'asesors.user')
+            ->withCount('asesis')
+            ->when($request->input('date_from'), function ($query, $dateFrom) {
+                $query->whereDate('tgl_apply_dibuka', '>=', $dateFrom);
+            })
+            ->when($request->input('date_to'), function ($query, $dateTo) {
+                $query->whereDate('tgl_apply_ditutup', '<=', $dateTo);
+            })
+            ->when($request->input('asesor'), function ($query, $asesorId) {
+                $query->whereHas('asesors', function ($subQuery) use ($asesorId) {
+                    $subQuery->where('asesors.id', $asesorId);
+                });
+            })
+            ->when($request->input('skema'), function ($query, $skema) {
+                $query->whereHas('skema', fn($q) => $q->where('id', $skema));
+            })
+            ->when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
+                $query->whereHas('asesors', function ($subQuery) use ($asesorId) {
+                    $subQuery->where('asesors.id', $asesorId);
+                });
+            })
+            ->whereIn('status', ['selesai', 'dibatalkan'])
+            ->orderBy('tgl_apply_ditutup', 'desc')
+            ->latest()
+            ->paginate(10)
+            ->onEachSide(0)
+            ->withQueryString();
 
         return Inertia::render('Admin/KelolaSertifikasiAdmin', [
-            'sertifications_berlangsung' => Sertification::with('skema', 'asesors.user')
-                ->withCount('asesis')
-                ->where('status', 'berlangsung')
-                ->orderBy('tgl_apply_dibuka', 'desc')
-                ->get(),
-            'sertifications_selesai' => Sertification::with('skema', 'asesors.user')
-                ->withCount('asesis')
-                ->when($request->input('date_from'), function ($query, $dateFrom) {
-                    $query->whereDate('tgl_apply_dibuka', '>=', $dateFrom);
-                })
-                ->when($request->input('date_to'), function ($query, $dateTo) {
-                    $query->whereDate('tgl_apply_ditutup', '<=', $dateTo);
-                })
-                ->when($request->input('asesor'), function ($query, $asesorId) {
-                    $query->whereHas('asesors', function ($subQuery) use ($asesorId) {
-                        $subQuery->where('asesors.id', $asesorId);
-                    });
-                })
-                ->when($request->input('skema'), function ($query, $skema) {
-                    $query->whereHas('skema', fn($q) => $q->where('id', $skema));
-                })
-                ->whereIn('status', ['selesai', 'dibatalkan'])
-                ->orderBy('tgl_apply_ditutup', 'desc')
-                ->latest()
-                ->paginate(10)
-                ->onEachSide(0)
-                ->withQueryString(),
+            'sertifications_berlangsung' => $sertificationsBerlangsung,
+            'sertifications_selesai' => $sertificationsSelesai,
             'asesors' => Asesor::with('skemas', 'user')->withCount('sertifications')->get(),
             'skemas' => Skema::all(),
             'activeSkemas' => Skema::where('is_active', true)->get(),
             'filters' => $request->only(['date_from', 'date_to', 'asesor', 'skema', 'tab']),
-
+            'isAsesor' => $isOnlyAsesor,
         ]);
     }
 
@@ -113,12 +141,19 @@ class KelolaSertifikasiController extends Controller
 
     public function show(Sertification $sertification)
     {
+        $this->authorizeAsesor($sertification);
+
+        $user = auth()->user();
+        $hasAdminRole = $user->hasRole('admin');
+        $isOnlyAsesor = $user->hasRole('asesor') && !$hasAdminRole;
+
         $sertification->load('skema', 'asesors.user')->loadCount('asesis');
         return Inertia::render('Admin/DetailSertifikasiAdmin', [
             'sertification' => $sertification,
             'asesors' => Asesor::with('skemas', 'user')->get(),
             'skemas' => Skema::all(),
             'activeSkemas' => Skema::where('is_active', true)->get(),
+            'isAsesor' => $isOnlyAsesor,
         ]);
     }
 

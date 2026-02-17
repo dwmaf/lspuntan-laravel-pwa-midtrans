@@ -9,7 +9,6 @@ import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
-import DeleteButton from "@/Components/Button/DeleteButton.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import NumberInput from "@/Components/Input/NumberInput.vue";
@@ -23,6 +22,7 @@ const props = defineProps({
     asesors: Array,
     skemas: Array,
     activeSkemas: Array,
+    isAsesor: Boolean,
 });
 const isEditing = ref(false);
 const form = useForm({
@@ -108,11 +108,7 @@ const submit = () => {
         }
     );
 };
-const destroy = () => {
-    if (confirm('Apakah Anda yakin ingin menghapus data sertifikasi ini?Ini akan menghapus semua data asesi yang mendaftar ke jadwal sertifikasi ini. Ini tidak akan menghapus skema atau asesor terkait')) {
-        router.delete(route('admin.kelolasertifikasi.destroy', props.sertification.id));
-    }
-};
+
 const { formatCurrency, formatDate, formatDateTime } = useFormat();
 const formattedHarga = computed(() => {
     return formatCurrency(form.biaya);
@@ -201,13 +197,10 @@ const formattedHarga = computed(() => {
 
 
                     <div class="flex items-center space-x-3">
-                        <EditButton @click="edit">Edit</EditButton>
+                        <EditButton v-if="!isAsesor" @click="edit">Edit</EditButton>
                         <ExportLink :href="route('admin.kelolasertifikasi.report.export_excel', props.sertification.id)"
                             target="_blank">Export</ExportLink>
-                        <DeleteButton
-                            v-if="props.sertification.status == 'berlangsung' && props.sertification.asesis_count == 0"
-                            @click="destroy">Hapus
-                        </DeleteButton>
+
                     </div>
                 </div>
 

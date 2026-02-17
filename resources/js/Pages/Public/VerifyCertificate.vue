@@ -42,7 +42,7 @@ const isExpired = computed(() => {
     if (!props.certificate?.berlaku_hingga) return false;
     const expiryDate = new Date(props.certificate.berlaku_hingga);
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to compare dates only
+    today.setHours(0, 0, 0, 0);
     return expiryDate < today;
 });
 
@@ -73,7 +73,7 @@ const skemaOptions = computed(() => {
 
             <p class="mt-4 text-center text-gray-500 dark:text-gray-400 max-w-lg text-sm leading-relaxed">
                 Laman resmi ini digunakan untuk memverifikasi keaslian, validitas, dan status masa berlaku sertifikat
-                kompetensi yang telah diterbitkan oleh Lembaga Sertifikasi Profesi (LSP) Universitas Tanjungpura.
+                kompetensi yang telah diterbitkan oleh BNSP dan disalurkan oleh Lembaga Sertifikasi Profesi (LSP) Universitas Tanjungpura.
             </p>
         </div>
 

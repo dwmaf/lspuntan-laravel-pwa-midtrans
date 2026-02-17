@@ -29,31 +29,38 @@ const userRole = computed(() => {
 const flashMessage = computed(() => page.props?.flash?.message);
 const flashError = computed(() => page.props?.flash?.error);
 
-const isNotificationVisible = ref(false);
-const notificationContent = ref('');
-const notificationType = ref('success'); // 'success','error'
-let notificationTimer = null;
+const toasts = ref([]);
 
 const showNotification = (content, type) => {
     if (!content) return;
+    console.log(`[Notification] Showing ${type}: ${content}`);
 
-    notificationContent.value = content;
-    notificationType.value = type;
-    isNotificationVisible.value = true;
+    const id = crypto.randomUUID();
+    toasts.value.push({
+        id,
+        content,
+        type
+    });
 
-    clearTimeout(notificationTimer);
-    notificationTimer = setTimeout(() => {
-        isNotificationVisible.value = false;
-    }, 4000);
+    setTimeout(() => {
+        removeToast(id);
+    }, 5000);
 };
 
-watch(flashMessage, (newValue) => {
-    if (newValue) showNotification(newValue, 'success');
-}, { immediate: true });
+const removeToast = (id) => {
+    toasts.value = toasts.value.filter(t => t.id !== id);
+};
 
-watch(flashError, (newValue) => {
-    if (newValue) showNotification(newValue, 'error');
-}, { immediate: true });
+watch(() => page.props.flash, (flash) => {
+    if (flash?.message) {
+        showNotification(flash.message, 'success');
+        page.props.flash.message = null;
+    }
+    if (flash?.error) {
+        showNotification(flash.error, 'error');
+        page.props.flash.error = null;
+    }
+}, { deep: true, immediate: true });
 const isSidebarOpen = ref(true);
 
 const toggleSidebar = () => {
@@ -69,19 +76,33 @@ onMounted(() => {
 
 <template>
     <div>
-        <Transition enter-active-class="transition ease-out duration-300"
-            enter-from-class="transform opacity-0 translate-x-full" enter-to-class="transform opacity-100 translate-x-0"
-            leave-active-class="transition ease-in duration-300" leave-from-class="transform opacity-100 translate-x-0"
-            leave-to-class="transform opacity-0 translate-x-full">
-            <div v-if="isNotificationVisible" :class="[
-                'fixed top-20 right-4 text-sm px-4 py-2 rounded-lg shadow-lg z-50 text-white font-medium flex items-center gap-2',
-                notificationType === 'success' ? 'bg-green-600' : 'bg-red-600'
-            ]">
-                <span v-if="notificationType === 'success'">✓</span>
-                <span v-else>✕</span>
-                {{ notificationContent }}
-            </div>
-        </Transition>
+        <!-- Toast Container -->
+        <div class="fixed top-20 right-4 z-[100] flex flex-col gap-3 pointer-events-none">
+            <TransitionGroup enter-active-class="transition ease-out duration-300"
+                enter-from-class="transform opacity-0 translate-x-full"
+                enter-to-class="transform opacity-100 translate-x-0"
+                leave-active-class="transition ease-in duration-200 absolute"
+                leave-from-class="transform opacity-100 translate-x-0"
+                leave-to-class="transform opacity-0 translate-x-full" move-class="transition duration-300">
+                <div v-for="toast in toasts" :key="toast.id" :class="[
+                    'pointer-events-auto text-sm px-4 py-3 rounded-lg shadow-lg text-white font-medium flex items-center justify-between gap-4 min-w-[280px] max-w-md border-l-4',
+                    toast.type === 'success' ? 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-green-500 shadow-green-500/10' : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-red-500 shadow-red-500/10'
+                ]">
+                    <div class="flex items-center gap-3">
+                        <div
+                            :class="['p-1 rounded-full', toast.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-red-100 dark:bg-red-900/30 text-red-600']">
+                            <span v-if="toast.type === 'success'" class="block w-4 h-4 text-center leading-4">✓</span>
+                            <span v-else class="block w-4 h-4 text-center leading-4">✕</span>
+                        </div>
+                        <span class="flex-1">{{ toast.content }}</span>
+                    </div>
+                    <button @click="removeToast(toast.id)"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                        ✕
+                    </button>
+                </div>
+            </TransitionGroup>
+        </div>
         <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 z-20 bg-black/50 md:hidden">
         </div>
         <div class="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">

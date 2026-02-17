@@ -7,11 +7,13 @@ use App\Models\User;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Spatie\Activitylog\Models\Activity;
+use Illuminate\Support\Facades\Gate;
 
 class ActivityLogController extends Controller
 {
     public function index(Request $request)
     {
+        Gate::authorize('viewAny', Activity::class);
         $logs = Activity::with('causer')
             ->when($request->input('search'), function ($query, $search) {
                 $query->where(function ($subQuery) use ($search) {
@@ -24,16 +26,16 @@ class ActivityLogController extends Controller
                 });
             })
             ->when($request->input('date_from'), function ($query, $dateFrom) {
-                $query->whereDate('created_at','>=',$dateFrom);
+                $query->whereDate('created_at', '>=', $dateFrom);
             })
             ->when($request->input('date_to'), function ($query, $dateTo) {
-                $query->whereDate('created_at','<=',$dateTo);
+                $query->whereDate('created_at', '<=', $dateTo);
             })
             ->when($request->input('subject_type'), function ($query, $subject) {
-                $query->where('subject_type',$subject);
+                $query->where('subject_type', $subject);
             })
             ->when($request->input('event'), function ($query, $event) {
-                $query->where('event',$event);
+                $query->where('event', $event);
             })
             ->latest()
             ->paginate(15)
@@ -42,7 +44,7 @@ class ActivityLogController extends Controller
         $subjects = Activity::query()->select('subject_type')->whereNotNull('subject_type')->distinct()->pluck('subject_type');
         return Inertia::render('Admin/ActivityLog', [
             'logs' => $logs,
-            'filters' => $request->only(['search','date_from','date_to','subject_type','event']),
+            'filters' => $request->only(['search', 'date_from', 'date_to', 'subject_type', 'event']),
             'filterOptions' => [
                 'subjects' => $subjects,
             ],

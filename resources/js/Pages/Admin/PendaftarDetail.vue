@@ -29,6 +29,7 @@ const props = defineProps({
     statusAksesMenuAsesmenOptions: Array,
     statusBerkasAdministrasiOptions: Array,
     StatusFinalAsesiOptions: Array,
+    canManageCertificate: Boolean,
 });
 
 const showStatusModal = ref(false);
@@ -189,7 +190,8 @@ const getStatusFinalAsesi = (status) => {
         <div v-show="!isEditingCertificate && !isEditingAsesi"
             class="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div class="flex justify-end items-center mb-4">
-                <BackButton :href="route('admin.sertifikasi.pendaftar.index', props.sertification.id)" class="self-end sm:self-auto" />
+                <BackButton :href="route('admin.sertifikasi.pendaftar.index', props.sertification.id)"
+                    class="self-end sm:self-auto" />
             </div>
             <PendaftarDetailDataStatis :asesi="props.asesi" />
             <!-- Bagian E: Status -->
@@ -226,25 +228,29 @@ const getStatusFinalAsesi = (status) => {
             </div>
 
 
-            <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">F. Sertifikat
-            </h3>
-            <div class="mt-4">
-                <p v-if="!asesi.sertifikat && props.asesi.status_final !== 'kompeten'"
-                    class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">
-                    Sertifikat bisa diupload jika status akhir asesi adalah <strong>Kompeten</strong>.
-                </p>
+            <!-- F. Sertifikat - Hanya untuk Admin -->
+            <div v-if="canManageCertificate">
+                <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">F.
+                    Sertifikat
+                </h3>
+                <div class="mt-4">
+                    <p v-if="!asesi.sertifikat && props.asesi.status_final !== 'kompeten'"
+                        class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">
+                        Sertifikat bisa diupload jika status akhir asesi adalah <strong>Kompeten</strong>.
+                    </p>
 
-                <div v-else-if="!asesi.sertifikat && props.asesi.status_final === 'kompeten'">
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Belum ada sertifikat yang diunggah.</p>
-                    <SeeButton @click="isEditingCertificate = true">
-                        Upload Sertifikat
-                    </SeeButton>
+                    <div v-else-if="!asesi.sertifikat && props.asesi.status_final === 'kompeten'">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Belum ada sertifikat yang diunggah.</p>
+                        <SeeButton @click="isEditingCertificate = true">
+                            Upload Sertifikat
+                        </SeeButton>
+                    </div>
+
+                    <FileCard v-else-if="props.asesi.sertifikat" :title="props.asesi.sertifikat.file_path"
+                        :href="`/storage/${props.asesi.sertifikat.file_path}`" icon="award" status="Telah Terbit"
+                        editable @edit="isEditingCertificate = true">
+                    </FileCard>
                 </div>
-
-                <FileCard v-else-if="props.asesi.sertifikat" :title="props.asesi.sertifikat.file_path"
-                    :href="`/storage/${props.asesi.sertifikat.file_path}`" icon="award" status="Telah Terbit"
-                    editable @edit="isEditingCertificate = true">
-                </FileCard>
             </div>
         </div>
 

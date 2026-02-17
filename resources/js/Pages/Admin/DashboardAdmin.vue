@@ -15,7 +15,8 @@ const props = defineProps({
     asesiLulusCount: Number,
     pipelineStats: Object,
     charts: Object,
-    recentActivities: Array
+    recentActivities: Array,
+    isAsesor: Boolean,
 });
 
 const isDark = useDark();
@@ -124,7 +125,6 @@ const timeAgo = (dateParam) => {
     }).format(date);
 };
 
-// Helper untuk warna indikator berdasarkan event
 const getActivityColor = (event) => {
     switch (event) {
         case 'created': return 'bg-green-500';
@@ -134,58 +134,73 @@ const getActivityColor = (event) => {
     }
 };
 
-// Helper untuk menerjemahkan event ke Bahasa Indonesia (Opsional)
 const formatEventName = (event) => {
     const map = { created: 'Dibuat', updated: 'Diperbarui', deleted: 'Dihapus' };
     return map[event] || event;
 }
 
+// Calculate total asesi in pipeline and percentage for each stage
+const pipelinePercentages = computed(() => {
+    const total = props.pipelineStats.verifikasi_berkas +
+        props.pipelineStats.revisi_asesi +
+        props.pipelineStats.menunggu_jadwal +
+        props.pipelineStats.proses_asesmen;
+
+    if (total === 0) return {
+        verifikasi_berkas: 0,
+        revisi_asesi: 0,
+        menunggu_jadwal: 0,
+        proses_asesmen: 0
+    };
+
+    return {
+        verifikasi_berkas: Math.round((props.pipelineStats.verifikasi_berkas / total) * 100),
+        revisi_asesi: Math.round((props.pipelineStats.revisi_asesi / total) * 100),
+        menunggu_jadwal: Math.round((props.pipelineStats.menunggu_jadwal / total) * 100),
+        proses_asesmen: Math.round((props.pipelineStats.proses_asesmen / total) * 100)
+    };
+});
+
 </script>
 
 <template>
     <AdminLayout>
-        <CustomHeader judul="Dashboard Admin" />
+        <CustomHeader :judul="isAsesor ? 'Dashboard Asesor' : 'Dashboard Admin'" />
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <Link :href="route('admin.kelolasertifikasi.index')"
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Sertifikasi Berlangsung
+                <div class="min-w-0">
+                    <h3 title="Sertifikasi Berlangsung"
+                        class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Sertifikasi Berlangsung
                     </h3>
                     <p class="mt-1 text-3xl font-semibold text-blue-600">{{ sertificationBerlangsung.length }}</p>
                 </div>
-                <Award class="w-8 h-8 text-blue-600" />
+                <Award class="w-8 h-8 text-blue-600 shrink-0 ml-3" />
             </Link>
             <Link :href="route('admin.kelolasertifikasi.index', { tab: 'selesai' })"
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Sertifikasi Selesai</h3>
+                <div class="min-w-0">
+                    <h3 title="Sertifikasi Berlangsung"
+                        class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Sertifikasi Selesai</h3>
                     <p class="mt-1 text-3xl font-semibold text-green-600">{{ sertificationSelesaiCount }}</p>
                 </div>
-                <Activity class="w-8 h-8 text-green-600" />
+                <Activity class="w-8 h-8 text-green-600 shrink-0 ml-3" />
             </Link>
-            <!-- <div
-                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Bukti Pembayaran Pending</h3>
-                    <p class="mt-1 text-3xl font-semibold text-yellow-600">{{ pendingRegistrants.length }}</p>
-                </div>
-                <Wallet class="w-8 h-8 text-yellow-600 shrink-0" />
-            </div> -->
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
-                <div>
+                <div class="min-w-0">
                     <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Asesi</h3>
                     <p class="mt-1 text-3xl font-semibold text-purple-600">{{ totalAsesiCount }}</p>
                 </div>
-                <Users class="w-8 h-8 text-purple-600" />
+                <Users class="w-8 h-8 text-purple-600 shrink-0 ml-3" />
             </div>
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
-                <div>
+                <div class="min-w-0">
                     <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Lulusan</h3>
                     <p class="mt-1 text-3xl font-semibold text-fuchsia-600">{{ asesiLulusCount }}</p>
                 </div>
-                <GraduationCap class="w-8 h-8 text-fuchsia-600" />
+                <GraduationCap class="w-8 h-8 text-fuchsia-600 shrink-0 ml-3" />
             </div>
         </div>
 
@@ -200,48 +215,56 @@ const formatEventName = (event) => {
                     <!-- Step 1 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">1. Menunggu Verifikasi Admin</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">1. Menunggu
+                            Verifikasi Admin</p>
                         <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{
                             pipelineStats.verifikasi_berkas }}</p>
                         <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
-                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: 45%"></div>
+                            <div class="bg-blue-500 h-1.5 rounded-full"
+                                :style="`width: ${pipelinePercentages.verifikasi_berkas}%`"></div>
                         </div>
                     </div>
                     <!-- Step 2 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">2. Asesi Harus Lengkapi Berkas</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">2. Asesi Harus
+                            Lengkapi Berkas</p>
                         <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ pipelineStats.revisi_asesi
                             || '-' }}</p>
                         <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
-                            <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 60%"></div>
+                            <div class="bg-yellow-500 h-1.5 rounded-full"
+                                :style="`width: ${pipelinePercentages.revisi_asesi}%`"></div>
                         </div>
                     </div>
                     <!-- Step 3 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">3. Belum Diberikan Akses Asesmen</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">3. Belum Diberikan
+                            Akses Asesmen</p>
                         <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{
                             pipelineStats.menunggu_jadwal }}</p>
                         <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
-                            <div class="bg-purple-500 h-1.5 rounded-full" style="width: 30%"></div>
+                            <div class="bg-purple-500 h-1.5 rounded-full"
+                                :style="`width: ${pipelinePercentages.menunggu_jadwal}%`"></div>
                         </div>
                     </div>
                     <!-- Step 4 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">4. Menunggu Pleno</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">4. Menunggu Pleno
+                        </p>
                         <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ pipelineStats.proses_asesmen
                             || '-' }}</p>
                         <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
-                            <div class="bg-green-500 h-1.5 rounded-full" style="width: 80%"></div>
+                            <div class="bg-green-500 h-1.5 rounded-full"
+                                :style="`width: ${pipelinePercentages.proses_asesmen}%`"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4" v-if="props.charts">
+        <div v-if="!isAsesor && props.charts" class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
             <!-- Trend Chart - Full Width on Mobile, 2/3 on Desktop -->
             <div
                 class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm lg:col-span-2">
@@ -254,7 +277,8 @@ const formatEventName = (event) => {
             <div class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Rasio Kelulusan</h3>
                 <div class="flex items-center justify-center h-[300px]">
-                    <VueApexCharts :key="isDark" type="donut" width="100%" :options="competencyOptions" :series="competencySeries" />
+                    <VueApexCharts :key="isDark" type="donut" width="100%" :options="competencyOptions"
+                        :series="competencySeries" />
                 </div>
             </div>
 
@@ -285,7 +309,7 @@ const formatEventName = (event) => {
                 </Link>
             </div>
 
-            <div
+            <div v-if="!isAsesor"
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex flex-col gap-2">
                 <h3 class="text-xl font-medium text-gray-800 dark:text-gray-100 truncate">Aktivitas Terbaru</h3>
                 <p class="text-sm font-normal text-gray-500">Ringkasan aktivitas sistem</p>

@@ -13,7 +13,7 @@ class SkemaPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -21,7 +21,7 @@ class SkemaPolicy
      */
     public function view(User $user, Skema $skema): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -29,7 +29,7 @@ class SkemaPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -37,7 +37,7 @@ class SkemaPolicy
      */
     public function update(User $user, Skema $skema): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -45,7 +45,7 @@ class SkemaPolicy
      */
     public function delete(User $user, Skema $skema): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +53,7 @@ class SkemaPolicy
      */
     public function restore(User $user, Skema $skema): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +61,6 @@ class SkemaPolicy
      */
     public function forceDelete(User $user, Skema $skema): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 }

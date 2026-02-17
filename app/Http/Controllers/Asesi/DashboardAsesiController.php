@@ -17,13 +17,13 @@ class DashboardAsesiController extends Controller
         $user = $request->user();
         $student = $user->student;
 
-        if (!$student) {
-            return Inertia::render('Asesi/DashboardAsesi', [
-                'sertifikasiBerlangsung' => [],
-                'sertifikasiSelesai' => [],
-                'pengumumanTerbaru' => [],
-            ]);
-        }
+        // if (!$student) {
+        //     return Inertia::render('Asesi/DashboardAsesi', [
+        //         'sertifikasiBerlangsung' => [],
+        //         'sertifikasiSelesai' => [],
+        //         'pengumumanTerbaru' => [],
+        //     ]);
+        // }
 
         // Ambil ID sertifikasi yang diikuti oleh student ini
         $sertificationIds = Asesi::where('student_id', $student->id)
@@ -50,7 +50,7 @@ class DashboardAsesiController extends Controller
             ->get();
 
         $sertifikasiBerlangsung = $asesis->filter(function ($asesi) {
-            return $asesi->sertification->status === StatusSertifikasi::BERLANGSUNG; 
+            return $asesi->sertification->status === StatusSertifikasi::BERLANGSUNG;
         })->values();
 
         $sertifikasiSelesai = $asesis->filter(function ($asesi) {

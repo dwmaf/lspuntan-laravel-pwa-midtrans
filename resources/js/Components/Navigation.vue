@@ -25,10 +25,12 @@ const props = defineProps({
 });
 const page = usePage();
 const roles = computed(() => page.props.auth.roles ?? []);
+console.log(roles.value);
+
 const hasAdminRole = computed(() => roles.value.includes('admin'));
 const hasAsesorRole = computed(() => roles.value.includes('asesor'));
 const hasAsesiRole = computed(() => roles.value.includes('asesi'));
-// console.log("role admin:",hasAdminRole.value);
+console.log("role admin:",hasAdminRole.value);
 // console.log("role asesi:",hasAsesiRole.value);
 const navLinks = computed(() => {
     if (hasAdminRole.value || hasAsesorRole.value) {
@@ -37,7 +39,8 @@ const navLinks = computed(() => {
             { href: route('admin.kelolasertifikasi.index'), label: 'Sertifikasi', active: route().current('admin.kelolasertifikasi.*'), icon: IconCertificate },
             { href: route('profile.edit'), label: 'Profile', active: route().current('profile.edit'), icon: IconUser },
         ];
-        if (hasAdminRole) {
+        if (hasAdminRole.value) {
+            // console.log("ini harusnya cuman muncul utk yg punya role admin");
             links.push(
                 { href: route('admin.skema.create'), label: 'Skema', active: route().current('admin.skema.*'), icon: IconBook },
                 { href: route('admin.asesor.index'), label: 'Asesor', active: route().current('admin.asesor.*'), icon: IconChalkboardTeacher },

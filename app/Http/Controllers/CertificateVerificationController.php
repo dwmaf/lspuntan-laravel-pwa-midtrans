@@ -13,8 +13,6 @@ class CertificateVerificationController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil Skema yang unik/distinct, bukan per event sertifikasi
-        // Kita bisa ambil semua skema, atau hanya skema yang pernah ada sertifikasinya
         $skemas = Skema::orderBy('nama_skema', 'asc')->get();
 
         $certificate = null;
@@ -23,7 +21,6 @@ class CertificateVerificationController extends Controller
                 ->with(['asesi.student.user', 'asesi.sertification.skema'])
                 ->first();
 
-            // Cek apakah sertifikat ditemukan DAN skema-nya cocok
             if ($foundCertificate && $foundCertificate->asesi->sertification->skema_id == $request->skema_id) {
                 $certificate = $foundCertificate;
             } else {

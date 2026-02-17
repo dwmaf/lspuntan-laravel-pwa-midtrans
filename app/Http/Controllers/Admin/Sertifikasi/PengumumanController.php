@@ -12,7 +12,7 @@ use App\Traits\SendsPushNotifications;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Kreait\Firebase\Contract\Messaging;
-
+use Illuminate\Support\Facades\Gate;
 
 class PengumumanController extends Controller
 {
@@ -20,6 +20,8 @@ class PengumumanController extends Controller
 
     public function index_pengumuman_asesmen(Sertification $sertification, Request $request)
     {
+        Gate::authorize('manageAnnouncement', $sertification);
+
         $sertification->load('skema');
         $totalAsesis = Asesi::where('sertification_id', $sertification->id)
             ->count();
@@ -38,6 +40,8 @@ class PengumumanController extends Controller
 
     public function store_pengumuman_asesmen(Sertification $sertification, Request $request, Messaging $messaging)
     {
+        Gate::authorize('manageAnnouncement', $sertification);
+
         // dd($request);
         $validatedData = $request->validate([
             'content' => 'required|string',
@@ -51,8 +55,8 @@ class PengumumanController extends Controller
             'content' => $validatedData['content'],
         ]);
         FileHelper::handleSingleFileUploads($news, ['path_file'], $request, 'sert_files');
-        
-        
+        $news->save();
+
         if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
                 ->where('sertification_id', $sertification->id)
@@ -74,15 +78,17 @@ class PengumumanController extends Controller
 
     public function update_pengumuman_asesmen(Sertification $sertification, News $news, Request $request, Messaging $messaging)
     {
+        Gate::authorize('manageAnnouncement', $sertification);
+
         // dd($request);
-        $request->validate([
+        $validatedData = $request->validate([
             'content' => 'required|string',
             'path_file' => 'nullable|file|mimes:zip,rar,txt,docx,pdf,pptx,xlsx|max:5120',
             'delete_files' => 'nullable|array',
             'send_notification' => 'boolean',
         ]);
 
-        $news->content = $request->content;
+        $news->content = $validatedData['content'];
         FileHelper::handleSingleFileDeletes($news, $request->input('delete_files', []));
         FileHelper::handleSingleFileUploads($news, ['path_file'], $request, 'sert_files');
         $news->save();
@@ -90,9 +96,8 @@ class PengumumanController extends Controller
         if ($request->boolean('send_notification')) {
             $asesis = Asesi::with(['student.user'])
                 ->where('sertification_id', $sertification->id)
-                ->where('status', 'dilanjutkan_asesmen')
                 ->get();
-    
+
             if ($asesis->isNotEmpty()) {
                 $title = 'Pengumuman Diperbarui';
                 $body = 'Pengumuman diperbarui: ' . Str::limit($news->content, 100);
@@ -109,6 +114,8 @@ class PengumumanController extends Controller
 
     public function destroy_pengumuman_asesmen(Sertification $sertification, News $news, Request $request)
     {
+        Gate::authorize('manageAnnouncement', $sertification);
+
         FileHelper::handleSingleFileDeletes($news, ['path_file']);
         $news->delete();
         return redirect(route('admin.sertifikasi.assessment-announcement.index', $sertification))->with('message', 'Berhasil menghapus pengumuman');

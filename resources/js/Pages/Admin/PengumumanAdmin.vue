@@ -30,7 +30,7 @@ const editingPengumumanId = ref(null);
 
 const form = useForm({
     content: '',
-    newFiles: [],
+    path_file: null,
     delete_files: [],
     send_notification: true,
     _method: 'POST',
@@ -46,7 +46,7 @@ const showCreateForm = () => {
 const showEditForm = (pengumuman) => {
     form.reset();
     form.content = pengumuman.content;
-    form.newFiles = [];
+    form.path_file = null;
     form.delete_files = [];
     form.send_notification = !pengumuman.published_at;
     form._method = 'PATCH';
@@ -75,13 +75,13 @@ const submit = () => {
     if (formMode.value === 'create') {
         form.post(route('admin.sertifikasi.announcement.store', { sertification: props.sertification.id }), options);
     } else if (formMode.value === 'edit') {
-        form.post(route('admin.sertifikasi.assessment-announcement.update', { sert_id: props.sertification.id, peng_id: editingPengumumanId.value }), options);
+        form.post(route('admin.sertifikasi.assessment-announcement.update', { sertification: props.sertification.id, news: editingPengumumanId.value }), options);
     }
 };
 
 const deletePengumuman = (pengumumanId) => {
     if (confirm('Yakin ingin menghapus pengumuman ini?')) {
-        router.delete(route('admin.sertifikasi.assessment-announcement.destroy', { sert_id: props.sertification.id, peng_id: pengumumanId }), {
+        router.delete(route('admin.sertifikasi.assessment-announcement.destroy', { sertification: props.sertification.id, news: pengumumanId }), {
             preserveScroll: true,
             onSuccess: () => {
                 router.reload({
@@ -114,13 +114,11 @@ const headerTitle = computed(() => {
                 <div class="">
                     <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                         delete-identifier="path_file" label="Lampiran Tambahan"
-                        :existing-file-url="pengumumans.data.find(p => p.id === editingPengumumanId)?.newsfiles ? `/storage/${asesmen.path_file}` : null"
-                        :is-marked-for-deletion="form.delete_files.includes('path_file')" accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf"
-                        :error="form.errors.path_file" @remove="removeFile('path_file')"
-                        
-                        />
+                        :existing-file-url="pengumumans.data.find(p => p.id === editingPengumumanId)?.path_file ? `/storage/${pengumumans.data.find(p => p.id === editingPengumumanId).path_file}` : null"
+                        :is-marked-for-deletion="form.delete_files.includes('path_file')"
+                        accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
                 </div>
-                
+
                 <div class="mt-2">
                     <label class="flex items-center">
                         <Checkbox id="send_notif" v-model:checked="form.send_notification" />
@@ -132,7 +130,7 @@ const headerTitle = computed(() => {
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                         Update
                     </PrimaryButton>
-                    
+
                     <SecondaryButton type="button" @click="cancelForm">Batal</SecondaryButton>
                 </div>
             </form>
@@ -142,8 +140,7 @@ const headerTitle = computed(() => {
                 <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
                 <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                     delete-identifier="path_file" label="Lampiran Tambahan"
-                    accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf"
-                    :error="form.errors.path_file" @remove="removeFile('path_file')"/>
+                    accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
                 <div class="mt-2">
                     <label class="flex items-center">
                         <Checkbox id="send_notif" v-model:checked="form.send_notification" />
@@ -155,7 +152,7 @@ const headerTitle = computed(() => {
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                         Simpan
                     </PrimaryButton>
-                    
+
                     <SecondaryButton type="button" @click="cancelForm">Batal</SecondaryButton>
                 </div>
             </form>
@@ -195,7 +192,7 @@ const headerTitle = computed(() => {
                         </div>
                     </div>
 
-                    
+
                 </div>
             </InfiniteScroll>
         </div>

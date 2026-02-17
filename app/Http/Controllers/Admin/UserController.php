@@ -8,17 +8,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
     public function index(Request $request)
     {
+        Gate::authorize('viewAny', User::class);
         $users = User::query()
             ->with('roles')
             ->when($request->input('search'), function ($query, $search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('name', 'like', "%{$search}%")
-                             ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%");
                 });
             })
             ->when($request->input('role'), function ($query, $role) {
@@ -54,6 +56,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        Gate::authorize('update', $user);
         $request->validate([
             'name' => 'required|string|max:255',
             'no_tlp_hp' => 'nullable|string|max:20',
@@ -78,7 +81,8 @@ class UserController extends Controller
 
     public function ban(User $user)
     {
-        if ($user->id === Auth::id()){
+        Gate::authorize('ban', $user);
+        if ($user->id === Auth::id()) {
             return redirect()->back()->withErrors(['error' => 'Anda tidak dapat menangguhkan akun Anda sendiri.']);
         }
         if ($user->banned_at) {

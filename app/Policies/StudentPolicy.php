@@ -13,7 +13,7 @@ class StudentPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -21,7 +21,7 @@ class StudentPolicy
      */
     public function view(User $user, Student $student): bool
     {
-        return false;
+        return $user->hasRole('admin') || $user->id === $student->user_id;
     }
 
     /**
@@ -29,7 +29,7 @@ class StudentPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -37,7 +37,7 @@ class StudentPolicy
      */
     public function update(User $user, Student $student): bool
     {
-        return false;
+        return $user->hasRole('admin') || $user->id === $student->user_id;
     }
 
     /**
@@ -45,7 +45,7 @@ class StudentPolicy
      */
     public function delete(User $user, Student $student): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,7 +53,7 @@ class StudentPolicy
      */
     public function restore(User $user, Student $student): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
     /**
@@ -61,6 +61,6 @@ class StudentPolicy
      */
     public function forceDelete(User $user, Student $student): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 }

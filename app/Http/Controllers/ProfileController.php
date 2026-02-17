@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Gate;
 
 class ProfileController extends Controller
 {
@@ -26,6 +27,7 @@ class ProfileController extends Controller
     // buat nampilin halaman edit profile dari sisi admin
     public function edit(Request $request)
     {
+        Gate::authorize('manageAdminProfile', User::class);
         return Inertia::render('Admin/Profile/ProfileAdmin', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
@@ -35,6 +37,7 @@ class ProfileController extends Controller
     // buat nampilin halaman edit profile dari sisi asesi
     public function edit_asesi(Request $request)
     {
+        Gate::authorize('manageAsesiProfile', User::class);
         $user = $request->user()->load('student');
         return Inertia::render('Asesi/Profile/ProfileAsesi', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
@@ -47,6 +50,7 @@ class ProfileController extends Controller
     // buat mengupdate profile yg tadi diedit dari sisi admin
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        Gate::authorize('manageAdminProfile', User::class);
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty(['email', 'no_tlp_hp'])) {
@@ -60,8 +64,8 @@ class ProfileController extends Controller
     // buat mengupdate profile yg tadi diedit dari sisi asesi
     public function update_asesi(Request $request)
     {
-        // $student = $request->user()->student;
-        $student = Student::with('user')->find($request->id);
+        Gate::authorize('manageAsesiProfile', User::class);
+        $student = $request->user()->student;
         $user = $student->user;
 
         $request->validate([
@@ -94,7 +98,7 @@ class ProfileController extends Controller
             'delete_files' => 'nullable|array',
         ]);
 
-        $student->fill($request->only(['nik','tmpt_lhr','tgl_lhr','kelamin','kebangsaan','no_tlp_rmh','no_tlp_kntr','kualifikasi_pendidikan',]));
+        $student->fill($request->only(['nik', 'tmpt_lhr', 'tgl_lhr', 'kelamin', 'kebangsaan', 'no_tlp_rmh', 'no_tlp_kntr', 'kualifikasi_pendidikan',]));
         $user->fill($request->only(['no_tlp_hp', 'name',]));
         // dd($user);
         FileHelper::handleSingleFileDeletes($student, $request->input('delete_files', []));
@@ -102,24 +106,5 @@ class ProfileController extends Controller
         FileHelper::saveIfDirty([$student, $user]);
 
         return back()->with('message', 'Profil berhasil diperbarui');
-    }
-
-    // untuk menghapus akun
-    public function destroy(Request $request): RedirectResponse
-    {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
     }
 }

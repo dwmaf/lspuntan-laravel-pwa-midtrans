@@ -8,11 +8,13 @@ use App\Models\Asesi;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Gate;
 
 class PengumumanAsesiController extends Controller
 {
     public function index(Sertification $sertification, Asesi $asesi, Request $request)
     {
+        Gate::authorize('view', $asesi);
         // dd($request);
         NotificationController::markAsRead($request);
         $sertification->load(['news', 'skema']);
