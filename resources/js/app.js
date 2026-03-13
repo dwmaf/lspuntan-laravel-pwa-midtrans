@@ -22,10 +22,10 @@ createInertiaApp({
 
 
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/serviceworker.js').then(function (registration) {
             console.log('Service Worker registered with scope:', registration.scope);
-        }, function(err) {
+        }, function (err) {
             console.log('Service Worker registration failed:', err);
         });
     });
@@ -51,17 +51,21 @@ const messaging = getMessaging(app);
 window.getToken = getToken;
 window.messaging = messaging;
 
-window.sendTokenToServer = function(token) {
-    axios.post('/fcm/token', {
+window.sendTokenToServer = function (token) {
+    return axios.post('/fcm/token', {
         token: token
     })
-    .then(response => console.log("Token saved to server:", response.data))
-    .catch(error => {
-        console.error("Error sending token to server:", error);
-        if (error.response) {
-            console.error("Server Response:", error.response.data);
-        }
-    });
+        .then(response => {
+            console.log("Token saved to server:", response.data);
+            return response;
+        })
+        .catch(error => {
+            console.error("Error sending token to server:", error);
+            if (error.response) {
+                console.error("Server Response:", error.response.data);
+            }
+            throw error;
+        });
 }
 
 

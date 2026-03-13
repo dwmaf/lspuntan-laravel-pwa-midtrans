@@ -46,8 +46,11 @@ trait SendsPushNotifications
         $urlWithId = $url . $separator . 'notification_id=' . $notificationLog->id;
 
         $message = CloudMessage::new()
-            ->withNotification(FirebaseNotification::create($title, $body))
-            ->withData(['url' => $urlWithId]);
+            ->withData([
+                'title' => $title,
+                'body' => $body,
+                'url' => $urlWithId,
+            ]);
         try {
             $messaging->send($message->toToken($recipient->fcm_token));
         } catch (NotFound $e) {

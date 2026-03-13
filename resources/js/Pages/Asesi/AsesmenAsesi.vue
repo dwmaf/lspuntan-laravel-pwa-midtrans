@@ -6,6 +6,8 @@ import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import CreatorInfo from "@/Components/CreatorInfo.vue";
+import FileIcon from '@/Components/FileIcon.vue';
+import FileCard from "@/Components/FileCard.vue";
 import { FileText, CheckCircle, Download, Edit, AlertTriangle, Clock } from 'lucide-vue-next';
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { computed, ref } from 'vue';
@@ -94,8 +96,8 @@ const showViewMode = () => {
         <CustomHeader :judul="`Instruksi Asesmen: ${sertification.skema?.nama_skema ?? ''}`" />
         <AsesiSertifikasiMenu :sertification="props.sertification" :asesi="props.asesi" />
 
-        <div class="max-w-7xl mx-auto">
-            <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
+        <div class="max-w-3xl mx-auto">
+            <div class="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <div v-if="props.sertification.asesmen">
                     <div class="flex items-center gap-3 mb-4">
                         <CreatorInfo :name="sertification.asesmen?.name" :created-at="sertification.asesmen?.created_at"
@@ -123,9 +125,10 @@ const showViewMode = () => {
                     <div v-if="sertification.asesmen?.path_file" class="mt-4">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Lampiran Tambahan:</h4>
                         <a :href="`/storage/${sertification.asesmen.path_file}`" target="_blank"
-                            class="mt-1 flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
+                            class="text-sm flex items-center gap-2 group min-w-0">
+                            <FileIcon :path="sertification.asesmen.path_file" />
                             <span
-                                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
+                                class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">
                                 {{ sertification.asesmen.path_file.split('/').pop() }}
                             </span>
                         </a>
@@ -145,45 +148,9 @@ const showViewMode = () => {
                                     'Unggah Tugas Asesmen' }}
                             </h4>
                         </div>
-                        <div v-if="submissionMode === 'view' && asesi.path_file_asesmen"
-                            class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                <div
-                                    class="p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
-                                    <FileText class="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                                </div>
-
-                                <!-- Info File -->
-                                <div class="flex-1 min-w-0 w-full">
-                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate mb-1">
-                                        {{ asesi.path_file_asesmen.split('/').pop() }}
-                                    </p>
-                                    <div class="flex items-center">
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                            <CheckCircle class="w-3.5 h-3.5" />
-                                            Sudah Dikumpulkan
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Action Buttons -->
-                                <div
-                                    class="flex items-center gap-2 mt-2 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200 dark:border-gray-700">
-                                    <a :href="`/storage/${asesi.path_file_asesmen}`" target="_blank"
-                                        class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full sm:w-auto">
-                                        <Download class="w-4 h-4 mr-2" />
-                                        <span>Lihat</span>
-                                    </a>
-                                    <SecondaryButton v-if="!isDeadlinePassed" @click="showEditMode"
-                                        class="w-full sm:w-auto justify-center">
-                                        <Edit class="w-4 h-4 mr-2" />
-                                        <span>Edit</span>
-                                    </SecondaryButton>
-                                </div>
-                            </div>
-                        </div>
+                        <FileCard v-if="submissionMode === 'view' && asesi.path_file_asesmen"
+                            :title="asesi.path_file_asesmen" :href="`/storage/${asesi.path_file_asesmen}`"
+                            status="Sudah Dikumpulkan" :editable="!isDeadlinePassed" @edit="showEditMode" />
 
                         <form v-if="submissionMode === 'submit'" @submit.prevent="submit"
                             class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">

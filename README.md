@@ -1,70 +1,132 @@
-<<<<<<< HEAD
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# LSP UNTAN - Laravel PWA
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi PWA (Progressive Web App) berbasis Laravel untuk LSP UNTAN. Proyek ini menggunakan Laravel sebagai backend, dengan teknologi Inertia.js / Vue.js untuk frontend (di-build menggunakan Vite), serta terintegrasi dengan Firebase Cloud Messaging (FCM) untuk fitur push notification.
 
-## About Laravel
+## Prasyarat
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Pastikan perangkat Anda sudah terinstal:
+- PHP >= 8.1
+- Composer
+- Node.js & NPM / pnpm
+- MySQL / MariaDB
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Langkah-langkah Instalasi
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 1. Clone Repository
+Clone repository proyek ini ke direktori lokal Anda:
+```bash
+git clone <url-repository>
+cd lsp-untan-laravel-pwa
+```
 
-## Learning Laravel
+### 2. Install Dependencies
+Install seluruh dependency untuk PHP dan Node.js:
+```bash
+composer install
+npm install
+# atau jika menggunakan pnpm:
+# pnpm install
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 3. Konfigurasi Environment (`.env`)
+Copy file `.env.example` menjadi `.env`:
+```bash
+cp .env.example .env
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Sesuaikan konfigurasi di dalam file `.env` berdasarkan spesifikasi lingkungan lokal Anda. Berikut beberapa konfigurasi utama yang perlu diperhatikan:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**a. URL Aplikasi (Penting untuk PWA & Push Notification)**
+Jika Anda menggunakan ngrok atau domain lokal, pastikan menggunakan `https` (Service Worker membutuhkan HTTPS) atau `localhost`:
+```env
+APP_NAME="LSP UNTAN"
+APP_ENV=local
+APP_URL=https://undaughterly-lon-subexternally.ngrok-free.dev
+# atau APP_URL=http://localhost:8000
+```
 
-## Laravel Sponsors
+**b. Konfigurasi Database**
+Buat database bernama `skripsi_pwa` di MySQL, dan sesuaikan dengan kredensial Anda:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=skripsi_pwa
+DB_USERNAME=root
+DB_PASSWORD=password_database_anda
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+**c. Konfigurasi Firebase & Push Notification (FCM)**
+Aplikasi ini menggunakan Firebase Admin SDK dan VAPID. Pastikan Anda memiliki file kredensial JSON Firebase Service Account dan konfigurasi frontend diletakkan di `.env`:
+```env
+# File Service Account JSON (simpan di storage/app/firebase/...)
+FIREBASE_CREDENTIALS=storage/app/firebase/file-jsonn.json
 
-### Premium Partners
+# Konfigurasi Frontend Firebase
+VITE_FCM_API_KEY=
+VITE_FCM_AUTH_DOMAIN=
+VITE_FCM_PROJECT_ID=
+VITE_FCM_STORAGE_BUCKET=
+VITE_FCM_MESSAGING_SENDER_ID=
+VITE_FCM_APP_ID=
+VITE_FCM_MEASUREMENT_ID=
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+# Kunci Publik VAPID untuk Web Push Notification
+VITE_VAPID_PUBLIC_KEY=
+```
 
-## Contributing
+**d. Konfigurasi Mail (opsional)**
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+...
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**e. Konfigurasi Queue**
+Proyek ini menggunakan database untuk queue (seperti pengiriman email/notifikasi di background).
+```env
+QUEUE_CONNECTION=database
+```
 
-## Code of Conduct
+### 4. Setup Aplikasi Laravel
+Jalankan command-command berikut untuk inisialisasi aplikasi:
+```bash
+# Generate APP_KEY
+php artisan key:generate
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Menjalankan migrasi database (beserta data dummy jika ada seeder)
+php artisan migrate --seed
 
-## Security Vulnerabilities
+# Membuat link untuk folder storage (supaya file upload bisa diakses publik)
+php artisan storage:link
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Menjalankan Aplikasi
 
-## License
+Untuk menjalankan aplikasi secara lokal dengan fungsionalitas penuh (termasuk background job & queue), Anda perlu membuka beberapa tab terminal.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-=======
-# lspuntan-laravel-pwa-midtrans
->>>>>>> b71711221d164315536f098667e9c49f3bc92007
+**Terminal 1: Laravel Backend Server**
+```bash
+php artisan serve
+```
+
+**Terminal 2: Vite Frontend Server (Hot-Reloading)**
+```bash
+npm run dev
+# atau pnpm run dev
+```
+
+**Terminal 3: Queue Worker (Untuk notifikasi FCM / Job background lainnya)**
+```bash
+php artisan queue:work
+```
+
+*(Opsional)* **Terminal 4: Ngrok (Jika ingin tes Push Notification & PWA di Device Lain via HTTPS)**
+```bash
+ngrok http --domain=undaughterly-lon-subexternally.ngrok-free.dev 8000
+```
+*(Jangan lupa sesuaikan `APP_URL` di `.env` dengan domain ngrok Anda dan restart server Vite & Laravel setelah mengubah .env)*
+
+## PWA & Notifikasi
+Karena aplikasi ini adalah Progressive Web App, beberapa fitur canggih seperti Push Notification (FCM) dan Add to Home Screen mungkin mewajibkan akses melalui **HTTPS** (atau `localhost`). Pastikan `APP_URL` dan jaringan yang digunakan sudah mendukung hal tersebut.

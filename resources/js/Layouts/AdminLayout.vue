@@ -85,7 +85,7 @@ onMounted(() => {
                 leave-from-class="transform opacity-100 translate-x-0"
                 leave-to-class="transform opacity-0 translate-x-full" move-class="transition duration-300">
                 <div v-for="toast in toasts" :key="toast.id" :class="[
-                    'pointer-events-auto text-sm px-4 py-3 rounded-lg shadow-lg text-white font-medium flex items-center justify-between gap-4 min-w-[280px] max-w-md border-l-4',
+                    'pointer-events-auto text-sm px-4 py-3 rounded-lg shadow-lg font-medium flex items-center justify-between gap-4 min-w-[280px] max-w-md border-l-4',
                     toast.type === 'success' ? 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-green-500 shadow-green-500/10' : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-red-500 shadow-red-500/10'
                 ]">
                     <div class="flex items-center gap-3">

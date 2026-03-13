@@ -3,11 +3,9 @@
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\Sertifikasi\AsesmenController;
 use App\Http\Controllers\Admin\Sertifikasi\KelolaSertifikasiController;
-use App\Http\Controllers\Admin\Sertifikasi\PembayaranController;
 use App\Http\Controllers\Admin\Sertifikasi\PendaftarController;
 use App\Http\Controllers\Admin\Sertifikasi\PengumumanController;
 use App\Http\Controllers\Admin\SkemaController;
-use App\Http\Controllers\Asesi\Sertifikasi\PembayaranAsesiController;
 use App\Http\Controllers\Asesi\Sertifikasi\AsesmenAsesiController;
 use App\Http\Controllers\Asesi\Sertifikasi\KelolaSertifikasiAsesiController;
 use App\Http\Controllers\Asesi\DashboardAsesiController;
@@ -16,16 +14,11 @@ use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Asesi\Sertifikasi\PengumumanAsesiController;
 use App\Http\Controllers\FcmController;
-use App\Http\Controllers\Dev\DevelopmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OfflineController;
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CertificateVerificationController;
-use App\Http\Controllers\FilePondTestController;
-use App\Models\Sertification;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Vite;
 use Inertia\Inertia;
 
@@ -56,6 +49,12 @@ Route::get('/serviceworker.js', function () {
         ->view('serviceworker', $data) // Kirim data ke view
         ->header('Content-Type', 'application/javascript');
 })->name('pwa.serviceworker');
+
+Route::get('/firebase-messaging-sw.js', function () {
+    return response(view('firebase-messaging-sw')->render())
+        ->header('Content-Type', 'application/javascript')
+        ->header('Service-Worker-Allowed', '/');
+})->middleware([]);
 
 Route::get('/verify-certificate', [CertificateVerificationController::class, 'index'])->name('certificate.verify');
 
@@ -147,14 +146,14 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
 
     // Grouping sertifikasi context for asesi
     Route::prefix('sertifikasi/{sertification}/{asesi}')->group(function () {
-        Route::get('/assessmen/index', [AsesmenAsesiController::class, 'index'])->name('assessmen.index'); 
+        Route::get('/assessmen/index', [AsesmenAsesiController::class, 'index'])->name('assessmen.index');
         Route::post('/assessmen', [AsesmenAsesiController::class, 'update'])->name('assessmen.update');
         Route::get('/pengumuman/index', [PengumumanAsesiController::class, 'index'])->name('pengumuman.index');
         Route::post('/pengumuman/{news}/read', [PengumumanAsesiController::class, 'markAsRead'])->name('pengumuman.mark-read');
     });
 
     Route::prefix('sertifikasi')->name('sertifikasi.')->group(function () {
-        Route::get('/index', [KelolaSertifikasiAsesiController::class, 'listSertifications'])->name('index'); 
+        Route::get('/index', [KelolaSertifikasiAsesiController::class, 'listSertifications'])->name('index');
         Route::get('/{sertification}/apply/create', [KelolaSertifikasiAsesiController::class, 'applyForm'])->name('apply.create');
         Route::post('/{student}/apply/store', [KelolaSertifikasiAsesiController::class, 'submitForm'])->name('apply.store');
         Route::get('/{sertification}/{asesi}/applied/show', [KelolaSertifikasiAsesiController::class, 'showApplied'])->name('applied.show');

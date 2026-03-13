@@ -21,9 +21,11 @@ export default defineConfig({
         }),
     ],
     server: {
+        // host: '0.0.0.0',
         cors: true,
         hmr: {
             host: 'localhost',
+            // host: '10.91.233.144',
         }
     }
 });

@@ -21,6 +21,19 @@
 
 <body class="font-sans antialiased">
     @inertia
+    <script>
+    // Tangkap pesan telepati dari Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', function(event) {
+            // Cek apakah pesannya adalah perintah pindah halaman
+            if (event.data && event.data.action === 'NAVIGATE_FROM_NOTIF') {
+                console.log('Dapat perintah pindah URL dari SW:', event.data.url);
+                // Eksekusi pindah halaman dari sisi Front-End!
+                window.location.href = event.data.url;
+            }
+        });
+    }
+</script>
 </body>
 
 </html>

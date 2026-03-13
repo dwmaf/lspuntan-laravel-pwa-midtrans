@@ -37,5 +37,13 @@ return [
     'fonnte' => [
         'token' => env('FONNTE_TOKEN'),
     ],
-
+    'fcm' => [
+        'api_key' => env('VITE_FCM_API_KEY'),
+        'auth_domain' => env('VITE_FCM_AUTH_DOMAIN'),
+        'project_id' => env('VITE_FCM_PROJECT_ID'),
+        'storage_bucket' => env('VITE_FCM_STORAGE_BUCKET'),
+        'messaging_sender_id' => env('VITE_FCM_MESSAGING_SENDER_ID'),
+        'app_id' => env('VITE_FCM_APP_ID'),
+        'measurement_id' => env('VITE_FCM_MEASUREMENT_ID'),
+    ],
 ];

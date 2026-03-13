@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('format_apl_2')->nullable();
             $table->string('format_asesmen')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->softDeletes();
             $table->timestamps();
         });
     }

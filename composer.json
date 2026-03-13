@@ -59,7 +59,11 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "set FORCE_COLOR=1 && npx concurrently -c \"cyan,yellow\" \"php artisan serve --ansi\" \"pnpm dev\" --names=server,vite --success first"
+            "set FORCE_COLOR=1 && npx concurrently -c \"cyan,yellow\" \"php artisan serve --host=0.0.0.0 --port=8000 --ansi\" \"pnpm dev --host\" --names=server,vite --success first"
+        ],
+        "prod": [
+            "Composer\\Config::disableProcessTimeout",
+            "set FORCE_COLOR=1 && npx concurrently -c \"cyan,yellow\" \"php artisan serve --host=0.0.0.0 --port=8000 --ansi\" \"ngrok http --domain=undaughterly-lon-subexternally.ngrok-free.dev 8000\" --names=server,ngrok --success first"
         ]
     },
     "extra": {

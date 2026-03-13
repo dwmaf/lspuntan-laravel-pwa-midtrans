@@ -12,6 +12,7 @@ import DateInput from "@/Components/Input/DateInput.vue";
 import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import CreatorInfo from "@/Components/CreatorInfo.vue";
 import FileCard from "@/Components/FileCard.vue";
+import FileIcon from '@/Components/FileIcon.vue';
 import BackButton from "@/Components/Button/BackButton.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
@@ -131,11 +132,13 @@ const { formatDateTime } = useFormat();
                         {{ sertification.asesmen.deadline ? formatDateTime(sertification.asesmen.deadline) : "-" }}
                     </dd>
                 </div>
-                <div v-if="sertification.asesmen?.path_file"
-                    class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
+                <div v-if="sertification.asesmen?.path_file">
                     <a :href="`/storage/${sertification.asesmen.path_file}`" target="_blank"
-                        class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
-                        {{ sertification.asesmen.path_file.split('/').pop() }}
+                        class="text-sm flex items-center gap-2 group min-w-0">
+                        <FileIcon :path="sertification.asesmen.path_file" />
+                        <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">
+                            {{ sertification.asesmen.path_file.split('/').pop() }}
+                        </span>
                     </a>
                 </div>
 

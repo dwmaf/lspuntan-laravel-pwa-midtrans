@@ -11,6 +11,7 @@ import TextInput from "@/Components/Input/TextInput.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
+import FileCard from "@/Components/FileCard.vue";
 import { useFormat } from "@/Composables/useFormat";
 import Alert from "@/Components/Alert.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
@@ -68,7 +69,6 @@ const form = useForm({
     alamat_kantor: props.asesi.student?.alamat_kantor || '',
     no_tlp_email_fax: props.asesi.student?.no_tlp_email_fax || '',
     tujuan_sert: props.asesi.tujuan_sert,
-    // makulNilais: props.asesi.makulnilais.length > 0 ? props.asesi.makulnilais.map(m => ({ nama_makul: m.nama_makul, nilai_makul: m.nilai_makul })) : [{ nama_makul: '', nilai_makul: '' }],
     rekap_nilai: props.asesi.rekap_nilai,
     bukti_bayar: null,
     apl_1: null,
@@ -176,7 +176,7 @@ const suratMagangFiles = computed(() => getFiles(props.asesi.asesifiles, 'surat_
 const sertifPelatihanFiles = computed(() => getFiles(props.asesi.asesifiles, 'sertif_pelatihan'));
 const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_pendukung_lain'));
 
-const { formatCurrency,formatDateTime } = useFormat();
+const { formatCurrency, formatDateTime } = useFormat();
 </script>
 
 <template>
@@ -257,7 +257,8 @@ const { formatCurrency,formatDateTime } = useFormat();
                             :error="form.errors.bukti_bayar"
                             :existing-file-url="asesi?.bukti_bayar ? `/storage/${asesi.bukti_bayar}` : null"
                             :is-marked-for-deletion="form.delete_files_asesi.includes('bukti_bayar')"
-                            delete-identifier="bukti_bayar" :required="!asesi?.bukti_bayar || form.delete_files_asesi.includes('bukti_bayar')" />
+                            delete-identifier="bukti_bayar"
+                            :required="!asesi?.bukti_bayar || form.delete_files_asesi.includes('bukti_bayar')" />
                     </div>
                     <!-- Mata Kuliah Dinamis -->
                     <!-- <div>
@@ -339,8 +340,8 @@ const { formatCurrency,formatDateTime } = useFormat();
                     <SingleFileInput v-model="form.transkrip_nilai" v-model:deleteList="form.delete_files_asesi"
                         delete-identifier="transkrip_nilai" label="Transkrip Nilai Terbaru" is-label-required
                         :existing-file-url="asesi?.transkrip_nilai ? `/storage/${asesi.transkrip_nilai}` : null"
-                        :is-marked-for-deletion="form.delete_files_asesi.includes('transkrip_nilai')" accept=".doc,.docx"
-                        :error="form.errors.transkrip_nilai"
+                        :is-marked-for-deletion="form.delete_files_asesi.includes('transkrip_nilai')"
+                        accept=".doc,.docx" :error="form.errors.transkrip_nilai"
                         :required="!asesi?.transkrip_nilai || form.delete_files_asesi.includes('transkrip_nilai')" />
                     <MultiFileInput v-model="form.surat_ket_magang" v-model:deleteList="form.delete_files_collection"
                         label="Scan Surat Keterangan Magang/PKL/MBKM (maks 5, ukuran file maksimal 3 MB)"
@@ -364,7 +365,7 @@ const { formatCurrency,formatDateTime } = useFormat();
             </div>
 
             <!-- Mode Tampilan -->
-            <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <div v-else class="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <div class="flex justify-end mb-4">
                     <EditButton @click="enterEditMode">Edit Data</EditButton>
                 </div>
@@ -420,18 +421,11 @@ const { formatCurrency,formatDateTime } = useFormat();
                     <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">F.
                         Sertifikat
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                        <div>
-                            <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Sertifikat
-                                Asesi
-                            </dt>
-                            <dd v-if="asesi.status_final === 'kompeten'" class="mt-1 text-sm space-y-2">
-                                <a :href="`/storage/${asesi.sertifikat.file_path}`" target="_blank"
-                                    class="text-blue-500 hover:text-blue-700">
-                                    Lihat Sertifikat
-                                </a>
-                            </dd>
-                        </div>
+
+                    <div class="mt-4">
+                        <FileCard v-if="asesi.status_final === 'kompeten' && asesi.sertifikat" :title="asesi.sertifikat.file_path"
+                                    :href="`/storage/${asesi.sertifikat.file_path}`" icon="award"
+                                    status="Telah Terbit" />
                     </div>
                 </div>
             </div>

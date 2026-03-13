@@ -14,6 +14,7 @@ import { ref, computed } from 'vue';
 import AddButton from "@/Components/Button/AddButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
 import DeleteButton from "@/Components/Button/DeleteButton.vue";
+import FileIcon from '@/Components/FileIcon.vue';
 import Modal from "@/Components/Modal.vue";
 import ToggleSwitch from "@/Components/ToggleSwitch.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
@@ -182,16 +183,16 @@ const headerTitle = computed(() => {
                         class="font-medium text-sm text-gray-800 dark:text-gray-100">
                     </h6>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                        <div v-if="pengumuman.path_file"
-                            class="flex items-center justify-between gap-4 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-xs">
-                            <a :href="`/storage/${pengumuman.path_file}`" target="_blank"
-                                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 hover:underline truncate flex-1">
+                    <div v-if="pengumuman.path_file"
+                        class="mt-2">
+                        <a :href="`/storage/${pengumuman.path_file}`" target="_blank"
+                            class="text-sm flex items-center gap-2 group min-w-0">
+                            <FileIcon :path="pengumuman.path_file" />
+                            <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">
                                 {{ pengumuman.path_file.split('/').pop() }}
-                            </a>
-                        </div>
+                            </span>
+                        </a>
                     </div>
-
 
                 </div>
             </InfiniteScroll>
