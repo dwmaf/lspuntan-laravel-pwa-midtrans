@@ -16,6 +16,7 @@ import FileIcon from '@/Components/FileIcon.vue';
 import BackButton from "@/Components/Button/BackButton.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
+import Modal from "@/Components/Modal.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
 import { FileText, CheckCircle, Download, Edit, AlertTriangle, Clock } from 'lucide-vue-next';
 import { ref, computed, onMounted } from 'vue';
@@ -85,14 +86,20 @@ const submit = () => {
     });
 };
 
+const showDeleteConfirmModal = ref(false);
+const confirmDelete = () => {
+    showDeleteConfirmModal.value = true;
+};
+const closeDeleteModal = () => {
+    showDeleteConfirmModal.value = false;
+};
 const deleteAsesmen = () => {
-    if (confirm('Apakah Anda yakin ingin menghapus tugas asesmen ini? Instruksi dan lampiran soal akan dihapus, namun tugas/dokumen yang sudah dikumpulkan asesi akan TETAP TERSIMPAN.')) {
-        router.delete(route('admin.sertifikasi.assessment.destroy', props.sertification.id), {
-            onSuccess: () => {
-                cancelEdit();
-            },
-        });
-    }
+    router.delete(route('admin.sertifikasi.assessment.destroy', props.sertification.id), {
+        onSuccess: () => {
+            closeDeleteModal();
+            cancelEdit();
+        },
+    });
 };
 
 const { formatDateTime } = useFormat();
@@ -125,7 +132,7 @@ const { formatDateTime } = useFormat();
 
                 <div v-html="sertification.asesmen.content.replace(/\n/g, '<br>')"
                     class="font-medium text-sm text-gray-800 dark:text-gray-100"></div>
-                <div class="flex">
+                <div class="flex my-1">
                     <dt class="text-sm font-medium text-gray-800 dark:text-gray-400 mr-1">Batas Akhir Pengumpulan :
                     </dt>
                     <dd v-if="sertification.asesmen" class="text-sm text-gray-900 dark:text-gray-100">
@@ -168,7 +175,7 @@ const { formatDateTime } = useFormat();
                         </PrimaryButton>
                         <SecondaryButton type="button" @click="cancelEdit">Batal</SecondaryButton>
                     </div>
-                    <DangerButton v-if="props.sertification.asesmen" type="button" @click="deleteAsesmen">
+                    <DangerButton v-if="props.sertification.asesmen" type="button" @click="confirmDelete">
                         Hapus Asesmen
                     </DangerButton>
                 </div>
@@ -255,5 +262,23 @@ const { formatDateTime } = useFormat();
             </div>
             <p v-else class="text-sm text-gray-500">Tidak ada file yang ditemukan untuk asesi ini.</p>
         </div>
+        <Modal :show="showDeleteConfirmModal" @close="closeDeleteModal">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    Apakah Anda yakin ingin menghapus tugas asesmen ini?
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Instruksi dan lampiran soal akan dihapus, namun tugas atau dokumen yang sudah dikumpulkan oleh asesi akan <span class="font-bold">TETAP TERSIMPAN</span> di sistem.
+                </p>
+
+                <div class="mt-6 flex justify-end">
+                    <SecondaryButton @click="closeDeleteModal"> Batal </SecondaryButton>
+                    <DangerButton class="ml-3" @click="deleteAsesmen">
+                        Ya, Hapus Asesmen
+                    </DangerButton>
+                </div>
+            </div>
+        </Modal>
     </AdminLayout>
 </template>

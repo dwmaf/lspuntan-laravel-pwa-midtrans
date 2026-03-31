@@ -1,8 +1,9 @@
 <script setup>
 import AsesiLayout from '@/Layouts/AsesiLayout.vue';
 import CustomHeader from '@/Components/CustomHeader.vue';
+import StatusBadge from "@/Components/StatusBadge.vue";
 import { Link } from "@inertiajs/vue3";
-import { Award, Activity, Wallet, GraduationCap, Bell, Clock, AlertTriangle } from 'lucide-vue-next';
+import { Award, Activity, Bell, Clock } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
 import { computed } from 'vue';
 
@@ -27,27 +28,67 @@ const isProfileIncomplete = computed(() => {
         !props.student?.pas_foto;
 });
 
-const getBerkasColor = (status) => {
-    switch (status) {
-        case 'sudah_lengkap': return 'bg-green-100 text-green-800 border-green-200';
-        case 'perlu_perbaikan_berkas': return 'bg-red-100 text-red-800 border-red-200 animate-pulse'; // Kasih animasi biar sadar
-        default: return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    }
+const getStatusBerkasAdministrasi = (status) => {
+    const data = {
+        'menunggu_verifikasi_admin': {
+            variant: 'primary',
+            text: 'Menunggu Verifikasi Admin'
+        },
+        'perlu_perbaikan_berkas': {
+            variant: 'warning',
+            text: 'Perlu Perbaikan Berkas'
+        },
+        'sudah_lengkap': {
+            variant: 'success',
+            text: 'Sudah Lengkap'
+        },
+    };
+    return data[status] || {
+        variant: 'neutral',
+        text: status
+    };
 };
 
-const getAsesmenColor = (status) => {
-    return status === 'diberikan'
-        ? 'bg-blue-100 text-blue-800 border-blue-200'
-        : 'bg-gray-100 text-gray-500 border-gray-200';
+const getStatusAksesMenuAsesmen = (status) => {
+    const data = {
+        'belum_diberikan': {
+            variant: 'warning',
+            text: 'Belum Diberikan'
+        },
+        'diberikan': {
+            variant: 'success',
+            text: 'Diberikan'
+        },
+    };
+    return data[status] || {
+        variant: 'neutral',
+        text: status
+    };
 };
 
-const getFinalColor = (status) => {
-    switch (status) {
-        case 'kompeten': return 'bg-emerald-100 text-emerald-800 border-emerald-200 font-bold';
-        case 'belum_kompeten': return 'bg-red-100 text-red-800 border-red-200';
-        case 'diskualifikasi': return 'bg-black text-white border-black';
-        default: return 'bg-gray-100 text-gray-400 border-gray-200 border-dashed';
-    }
+const getStatusFinalAsesi = (status) => {
+    const data = {
+        'belum_ditetapkan': {
+            variant: 'neutral',
+            text: 'Belum Ditetapkan'
+        },
+        'belum_kompeten': {
+            variant: 'warning',
+            text: 'Belum Kompeten'
+        },
+        'kompeten': {
+            variant: 'success',
+            text: 'Kompeten'
+        },
+        'diskualifikasi': {
+            variant: 'danger',
+            text: 'Diskualifikasi'
+        },
+    };
+    return data[status] || {
+        variant: 'neutral',
+        text: status
+    };
 };
 </script>
 
@@ -115,29 +156,26 @@ const getFinalColor = (status) => {
                                 <span class="text-gray-500 dark:text-gray-400 flex items-center gap-2">
                                     📄 Administrasi
                                 </span>
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium border"
-                                    :class="getBerkasColor(asesi.status_berkas)">
-                                    {{ asesi.status_berkas_label }}
-                                </span>
+                                <StatusBadge :variant="getStatusBerkasAdministrasi(asesi.status_berkas).variant">
+                                    {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
+                                </StatusBadge>
                             </div>
                             <div class="flex items-center justify-between text-sm">
                                 <span class="text-gray-500 dark:text-gray-400 flex items-center gap-2">
                                     📝 Akses Ujian
                                 </span>
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium border"
-                                    :class="getAsesmenColor(asesi.status_akses_asesmen)">
-                                    {{ asesi.status_akses_asesmen_label }}
-                                </span>
+                                <StatusBadge :variant="getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).variant">
+                                    {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
+                                </StatusBadge>
                             </div>
                             <div
                                 class="flex items-center justify-between text-sm pt-2 border-t border-gray-100 dark:border-gray-700 mt-2">
                                 <span class="text-gray-700 dark:text-gray-300 font-medium">
                                     🎓 Hasil Akhir
                                 </span>
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium border"
-                                    :class="getFinalColor(asesi.status_final)">
-                                    {{ asesi.status_final_label }}
-                                </span>
+                                <StatusBadge :variant="getStatusFinalAsesi(asesi.status_final).variant">
+                                    {{ getStatusFinalAsesi(asesi.status_final).text }}
+                                </StatusBadge>
                             </div>
                         </div>
                     </Link>

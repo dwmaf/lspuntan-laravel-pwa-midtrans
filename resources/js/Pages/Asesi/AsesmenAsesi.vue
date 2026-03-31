@@ -105,7 +105,7 @@ const showViewMode = () => {
                     </div>
 
                     <div v-html="props.sertification.asesmen.content.replace(/\n/g, '<br>')"
-                        class="prose dark:prose-invert max-w-none text-sm text-gray-800 dark:text-gray-100"></div>
+                        class="prose dark:prose-invert max-w-none font-medium text-sm text-gray-800 dark:text-gray-100"></div>
 
 
                     <div class="mt-4 mb-4 p-3 rounded-md border" :class="deadlineStatus.colorClass">

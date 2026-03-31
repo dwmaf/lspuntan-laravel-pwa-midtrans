@@ -3,6 +3,7 @@ import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import TextInput from '@/Components/Input/TextInput.vue';
 import EditButton from "@/Components/Button/EditButton.vue";
+import { useFormat } from "@/Composables/useFormat";
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -40,6 +41,8 @@ const submit = () => {
         },
     });
 };
+
+const { formatDate } = useFormat();
 </script>
 
 <template>
@@ -106,6 +109,51 @@ const submit = () => {
                     </dd>
                 </div>
             </dl>
+            <div v-if="user.asesor">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-3">
+                    Informasi Asesor (Read-Only)
+                </h2>
+                
+
+                <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">No. Registrasi MET</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            {{ user.asesor.no_reg_met || 'Belum Diatur' }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Akun Asesor</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            <span v-if="user.asesor.is_active" class="px-2 py-1 bg-green-100 text-green-800 rounded-lg text-xs font-semibold">Aktif</span>
+                            <span v-else class="px-2 py-1 bg-red-100 text-red-800 rounded-lg text-xs font-semibold">Non-Aktif</span>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Masa Berlaku Sertifikat Teknis</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            {{ formatDate(user.asesor.masa_berlaku_sertif_teknis) }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Masa Berlaku Sertifikat Asesor</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            {{ formatDate(user.asesor.masa_berlaku_sertif_asesor) }}
+                        </dd>
+                    </div>
+                    <div class="md:col-span-2 mt-2">
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Skema yang Diampu</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            <ul class="list-disc ml-5 w-fit" v-if="user.asesor.skemas && user.asesor.skemas.length > 0">
+                                <li v-for="skema in user.asesor.skemas" :key="skema.id" class="text-sm">
+                                    {{ skema.nama_skema }}
+                                </li>
+                            </ul>
+                            <p v-else class="text-xs italic text-gray-500">Belum ada skema yang ditugaskan.</p>
+                        </dd>
+                    </div>
+                </dl>
+            </div>
         </div>
     </section>
 </template>

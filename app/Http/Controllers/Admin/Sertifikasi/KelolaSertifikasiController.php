@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Asesi;
 use App\Exports\LaporanSertifikasiExport;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Sertification;
 use App\Models\Skema;
 use App\Models\Asesor;
@@ -24,7 +25,8 @@ class KelolaSertifikasiController extends Controller
     use AuthorizesAsesor;
     public function index(Request $request)
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $hasAdminRole = $user->hasRole('admin');
         $isOnlyAsesor = $user->hasRole('asesor') && !$hasAdminRole;
         $asesorId = null;
@@ -143,7 +145,8 @@ class KelolaSertifikasiController extends Controller
     {
         $this->authorizeAsesor($sertification);
 
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $hasAdminRole = $user->hasRole('admin');
         $isOnlyAsesor = $user->hasRole('asesor') && !$hasAdminRole;
 

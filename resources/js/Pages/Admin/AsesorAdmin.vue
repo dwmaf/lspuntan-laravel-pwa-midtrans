@@ -143,15 +143,23 @@ const save = () => {
     }
 };
 
-const destroy = (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus asesor ini?')) {
-        router.delete(route('admin.asesor.destroy', id));
-    }
+const showDeleteConfirmModal = ref(false);
+const asesorToDelete = ref(null);
+
+const confirmDelete = (asesor) => {
+    asesorToDelete.value = asesor;
+    showDeleteConfirmModal.value = true;
 };
 
-const restore = (id) => {
-    if (confirm('Apakah Anda yakin ingin memulihkan asesor ini?')) {
-        router.patch(route('admin.asesor.restore', id));
+const closeDeleteModal = () => {
+    showDeleteConfirmModal.value = false;
+    asesorToDelete.value = null;
+};
+const destroy = () => {
+    if (asesorToDelete.value) {
+        router.delete(route('admin.asesor.destroy', asesorToDelete.value.id), {
+            onSuccess: () => closeDeleteModal()
+        });
     }
 };
 
@@ -244,7 +252,7 @@ const restore = (id) => {
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <tr v-for="(asesor, index) in asesors.data" :key="asesor.id"
-                                :class="{ 'bg-red-50 dark:bg-red-900/20': asesor.deleted_at }">
+                                >
                                 <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200 pl-3">
                                     {{ index + asesors.from }}
                                 </td>
@@ -271,15 +279,9 @@ const restore = (id) => {
                                     </StatusBadge>
                                 </td>
                                 <td class="px-2 py-3 text-center pr-3">
-                                    <div v-if="asesor.deleted_at" class="flex items-center justify-center space-x-2">
-                                        <SecondaryButton @click="restore(asesor.id)"
-                                            class="bg-green-100! text-green-800! border-green-300 hover:bg-green-200!">
-                                            Restore
-                                        </SecondaryButton>
-                                    </div>
-                                    <div v-else class="flex items-center justify-center space-x-2">
+                                    <div class="flex items-center justify-center space-x-2">
                                         <EditButton @click="showEditForm(asesor)">Edit</EditButton>
-                                        <DeleteButton @click="destroy(asesor.id)">Hapus</DeleteButton>
+                                        <DeleteButton @click="confirmDelete(asesor)">Hapus</DeleteButton>
                                     </div>
                                 </td>
                             </tr>
@@ -322,6 +324,25 @@ const restore = (id) => {
             <div class=" flex gap-3">
                 <SecondaryButton @click="resetFilters"> Reset </SecondaryButton>
                 <PrimaryButton @click="applyFilters">Apply Filter</PrimaryButton>
+            </div>
+        </div>
+    </Modal>
+    <Modal :show="showDeleteConfirmModal" @close="closeDeleteModal">
+        <div class="p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                Apakah Anda yakin ingin menghapus asesor ini?
+            </h2>
+
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Asesor <span class="font-bold">{{ asesorToDelete?.user?.name }}</span> akan dihapus. 
+                Tindakan ini tidak dapat dibatalkan. Jika asesor ini sudah terlibat dalam suatu sertifikasi, penghapusan akan gagal demi akuntabilitas data.
+            </p>
+
+            <div class="mt-6 flex justify-end">
+                <SecondaryButton @click="closeDeleteModal"> Batal </SecondaryButton>
+                <DeleteButton class="ml-3" @click="destroy">
+                    Ya, Hapus Asesor
+                </DeleteButton>
             </div>
         </div>
     </Modal>

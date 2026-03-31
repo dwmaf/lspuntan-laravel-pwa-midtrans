@@ -164,48 +164,48 @@ const save = () => {
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 No
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Nama
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Email
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Role
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Tanggal Bergabung
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Email Verified
                             </th>
-                            <th scope="col" class="relative px-6 py-3">
+                            <th scope="col" class="relative px-2 py-3">
                                 <span class="sr-only">Actions</span>
                             </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         <tr v-for="(user, index) in users.data" :key="user.id">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-2 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-500 dark:text-gray-400">{{ index + users.from }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-2 py-4 whitespace-nowrap">
                                 <div
                                     :class="['text-sm', user.name ? 'font-medium text-gray-900 dark:text-gray-100' : 'italic text-gray-400 dark:text-gray-500']">
                                     {{ user.name || 'Belum diisi' }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-2 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-500 dark:text-gray-400">{{ user.email }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <div v-if="user.roles.length > 0" class="flex flex-wrap gap-1">
                                     <StatusBadge 
                                         v-for="role in user.roles" 
@@ -218,14 +218,14 @@ const save = () => {
                                 </div>
                                 <span v-else class="text-xs text-gray-400 italic">No Role</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ formatDate(user.created_at) }}
                             </td>
                             <td
-                                :class="['px-6 py-4 whitespace-nowrap text-sm', user.email_verified_at ? ' text-gray-500 dark:text-gray-400' : 'italic text-gray-400 dark:text-gray-500']">
+                                :class="['px-2 py-4 whitespace-nowrap text-sm', user.email_verified_at ? ' text-gray-500 dark:text-gray-400' : 'italic text-gray-400 dark:text-gray-500']">
                                 {{ formatDateTime(user.email_verified_at) || 'Belum terverifikasi' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex gap-2">
+                            <td class="px-2 py-4 whitespace-nowrap text-right text-sm font-medium flex gap-2">
                                 <EditButton @click="enterEditMode(user)">Edit</EditButton>
                                 <template v-if="user.id !== authUser.id">
                                     <DeleteButton v-if="!user.banned_at" @click="confirmBanUser(user)">Ban
@@ -235,7 +235,7 @@ const save = () => {
                             </td>
                         </tr>
                         <tr v-if="users.data.length === 0">
-                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                            <td colspan="5" class="px-2 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                 Tidak ada data pengguna.
                             </td>
                         </tr>
@@ -293,7 +293,8 @@ const save = () => {
             </h2>
 
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Pengguna <span class="font-bold">{{ userToBan?.email }}</span>
+                Pengguna <span class="font-bold">{{ userToBan?.name }}</span>
+                dengan email <span class="font-bold">{{ userToBan?.email }}</span>
                 {{ userToBan?.banned_at ? 'akan bisa login kembali.' : 'tidak akan bisa login.' }}
             </p>
 

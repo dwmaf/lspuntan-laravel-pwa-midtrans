@@ -244,31 +244,31 @@ const submitBulk = () => {
                 <table class="min-w-full ">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left">
+                            <th scope="col" class="px-2 py-3 text-left">
                                 <Checkbox id="checkbox-select-all" v-model:checked="isSelectAll" />
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 No
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Nama Asesi
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Status Berkas Administrasi
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Akses Menu Asesmen
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Status Final Asesi
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Aksi
                             </th>
 
@@ -278,33 +278,33 @@ const submitBulk = () => {
 
                         <tr v-if="filteredAsesis.length > 0" v-for="(asesi, index) in filteredAsesis" :key="asesi.id"
                             class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-2 py-4 whitespace-nowrap">
                                 <Checkbox :id="`checkbox-asesi-${asesi.id}`" v-model:checked="selectedAsesis"
                                     :value="asesi.id" />
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ index + 1 }}
                             </td>
                             <td
-                                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {{ asesi.student.user.name ?? 'Nama Tidak Tersedia' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <td class="px-2 py-4 whitespace-nowrap text-sm">
                                 <StatusBadge :variant="getStatusBerkasAdministrasi(asesi.status_berkas).variant">
                                     {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
                                 </StatusBadge>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <td class="px-2 py-4 whitespace-nowrap text-sm">
                                 <StatusBadge :variant="getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).variant">
                                     {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
                                 </StatusBadge>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <td class="px-2 py-4 whitespace-nowrap text-sm">
                                 <StatusBadge :variant="getStatusFinalAsesi(asesi.status_final).variant">
                                     {{ getStatusFinalAsesi(asesi.status_final).text }}
                                 </StatusBadge>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td class="px-2 py-4 whitespace-nowrap text-sm font-medium">
                                 <SeeButton
                                     :href="route('admin.sertifikasi.pendaftar.show', [props.sertification.id, asesi.id])">
                                     Detail
@@ -312,7 +312,7 @@ const submitBulk = () => {
                             </td>
                         </tr>
                         <tr v-else>
-                            <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                            <td colspan="4" class="px-2 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
                                 Tidak ada data pendaftar untuk skema ini.
                             </td>
                         </tr>

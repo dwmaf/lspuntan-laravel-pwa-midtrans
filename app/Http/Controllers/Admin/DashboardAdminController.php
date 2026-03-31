@@ -8,6 +8,7 @@ use App\Models\Asesi;
 use App\Models\Asesor;
 use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Sertification;
 use Inertia\Inertia;
 
@@ -15,7 +16,8 @@ class DashboardAdminController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $hasAdminRole = $user->hasRole('admin');
         $isOnlyAsesor = $user->hasRole('asesor') && !$hasAdminRole;
         

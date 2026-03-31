@@ -28,8 +28,13 @@ class ProfileController extends Controller
     public function edit(Request $request)
     {
         Gate::authorize('manageAdminProfile', User::class);
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        if ($user->hasRole('asesor')) {
+            $user->load('asesor.skemas');
+        }
         return Inertia::render('Admin/Profile/ProfileAdmin', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
             'isSubscribed' => !is_null($request->user()->fcm_token),
         ]);

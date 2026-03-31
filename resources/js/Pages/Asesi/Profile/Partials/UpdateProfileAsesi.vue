@@ -82,22 +82,24 @@ const submit = () => {
                 </h2>
             </header>
             <form @submit.prevent="submit" class="mt-6 space-y-6">
-                <TextInput id="name" label="Nama Lengkap Sesuai KTP" v-model="form.name" type="text" required
-                    :error="form.errors.name" />
-                <TextInput id="nik" label="No. KTP" v-model="form.nik" type="text" required :error="form.errors.nik" />
-                <TextInput id="tmpt_lhr" label="Tempat Lahir" v-model="form.tmpt_lhr" type="text" required
-                    :error="form.errors.tmpt_lhr" />
-                <TextInput id="tgl_lhr" label="Tanggal Lahir" v-model="form.tgl_lhr" type="date" required
-                    :error="form.errors.tgl_lhr" />
-                <SelectInput id="kelamin" label="Jenis Kelamin" v-model="form.kelamin" :options="genderOptions"
-                        placeholder="--Pilih Kelamin--" :error="form.errors.kelamin" required />
-                <TextInput id="kebangsaan" label="Kebangsaan" v-model="form.kebangsaan" type="text" required
-                    :error="form.errors.kebangsaan" />
-                <TextInput id="no_tlp_hp" label="No. Tlp HP(WA)" v-model="form.no_tlp_hp" type="text" required
-                    :error="form.errors.no_tlp_hp" />
-                <TextInput id="kualifikasi_pendidikan" label="Kualifikasi Pendidikan Terakhir"
-                    v-model="form.kualifikasi_pendidikan" type="text" required
-                    :error="form.errors.kualifikasi_pendidikan" />
+                <div class="grid md:grid-cols-2 gap-6">
+                    <TextInput id="name" label="Nama Lengkap Sesuai KTP" v-model="form.name" type="text" required
+                        :error="form.errors.name" />
+                    <TextInput id="nik" label="No. KTP" v-model="form.nik" type="text" required :error="form.errors.nik" />
+                    <TextInput id="tmpt_lhr" label="Tempat Lahir" v-model="form.tmpt_lhr" type="text" required
+                        :error="form.errors.tmpt_lhr" />
+                    <TextInput id="tgl_lhr" label="Tanggal Lahir" v-model="form.tgl_lhr" type="date" required
+                        :error="form.errors.tgl_lhr" />
+                    <SelectInput id="kelamin" label="Jenis Kelamin" v-model="form.kelamin" :options="genderOptions"
+                            placeholder="--Pilih Kelamin--" :error="form.errors.kelamin" required />
+                    <TextInput id="kebangsaan" label="Kebangsaan" v-model="form.kebangsaan" type="text" required
+                        :error="form.errors.kebangsaan" />
+                    <TextInput id="no_tlp_hp" label="No. Tlp HP(WA)" v-model="form.no_tlp_hp" type="text" required
+                        :error="form.errors.no_tlp_hp" />
+                    <TextInput id="kualifikasi_pendidikan" label="Kualifikasi Pendidikan Terakhir"
+                        v-model="form.kualifikasi_pendidikan" type="text" required
+                        :error="form.errors.kualifikasi_pendidikan" />
+                </div>
                 <SingleFileInput v-model="form.foto_ktp" v-model:deleteList="form.delete_files"
                     delete-identifier="foto_ktp" label="Foto KTP" is-label-required
                     :existing-file-url="student?.foto_ktp ? `/storage/${student.foto_ktp}` : null"

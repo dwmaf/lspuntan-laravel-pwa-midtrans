@@ -33,7 +33,7 @@ const trendOptions = computed(() => {
         chart: { type: 'area', toolbar: { show: false }, fontFamily: 'Inter, sans-serif', background: 'transparent' },
         theme: { mode: isDark.value ? 'dark' : 'light' }, // Beritahu engine chart
         dataLabels: { enabled: false },
-        stroke: { curve: 'smooth', width: 2 },
+        stroke: { curve: 'straight', width: 2 },
         xaxis: {
             categories: props.charts?.monthlyStats.map(s => s.date) || [],
             labels: { style: { colors: text } }, // Terapkan warna text
@@ -251,7 +251,7 @@ const pipelinePercentages = computed(() => {
                     <!-- Step 4 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">4. Menunggu Pleno
+                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">4. Akses asesmen Diberikan tapi Status Final belum ditentukan
                         </p>
                         <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ pipelineStats.proses_asesmen
                             || '-' }}</p>

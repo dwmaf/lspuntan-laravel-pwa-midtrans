@@ -80,7 +80,7 @@ onMounted(() => {
 <template>
     <div>
         <!-- Toast Container -->
-        <div class="fixed top-20 right-4 z-[100] flex flex-col gap-3 pointer-events-none">
+        <div class="fixed top-20 right-4 z-100 flex flex-col gap-3 pointer-events-none">
             <TransitionGroup enter-active-class="transition ease-out duration-300"
                 enter-from-class="transform opacity-0 translate-x-full"
                 enter-to-class="transform opacity-100 translate-x-0"

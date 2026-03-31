@@ -54,6 +54,6 @@ class RegisteredUserController extends Controller
         });
         Auth::login($user);
 
-        return redirect(route('asesi.dashboard', absolute: false));
+        return redirect(route('asesi.dashboard', absolute: false))->with('message', 'Registrasi berhasil! Selamat datang di aplikasi LSP UNTAN.');
     }
 }

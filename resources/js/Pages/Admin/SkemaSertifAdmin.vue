@@ -12,6 +12,7 @@ import Pagination from "@/Components/Pagination.vue";
 import DeleteButton from "@/Components/Button/DeleteButton.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import Alert from "@/Components/Alert.vue";
+import Modal from '@/Components/Modal.vue';
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed, reactive, watch } from "vue";
 
@@ -90,9 +91,24 @@ const save = () => {
     }
 };
 
-const destroy = (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus skema ini?')) {
-        router.delete(route('admin.skema.destroy', id));
+const showDeleteConfirmModal = ref(false);
+const skemaToDelete = ref(null);
+
+const confirmDelete = (skema) => {
+    skemaToDelete.value = skema;
+    showDeleteConfirmModal.value = true;
+};
+
+const closeDeleteModal = () => {
+    showDeleteConfirmModal.value = false;
+    skemaToDelete.value = null;
+};
+
+const destroy = () => {
+    if (skemaToDelete.value) {
+        router.delete(route('admin.skema.destroy', skemaToDelete.value.id), {
+            onSuccess: () => closeDeleteModal()
+        });
     }
 };
 
@@ -196,10 +212,10 @@ const destroy = (id) => {
                                 class="pl-3 px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 No</th>
                             <th
-                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ">
                                 Skema</th>
                             <th
-                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider  min-w-[350px]">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider max-w-[300px]">
                                 Format File</th>
                             <th
                                 class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -215,7 +231,7 @@ const destroy = (id) => {
                                 class="pl-3 px-2 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {{ index + 1 }}
                             </td>
-                            <td class="px-2 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
+                            <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
                                 {{ skema.nama_skema }}
                             </td>
                             <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
@@ -242,7 +258,7 @@ const destroy = (id) => {
                             <td class="pr-3 px-2 py-3 text-center">
                                 <div class="flex items-center justify-center space-x-2">
                                     <EditButton @click="showEditForm(skema)">Edit</EditButton>
-                                    <DeleteButton @click="destroy(skema.id)">Hapus</DeleteButton>
+                                    <DeleteButton @click="confirmDelete(skema)">Hapus</DeleteButton>
                                 </div>
                             </td>
                         </tr>
@@ -276,5 +292,25 @@ const destroy = (id) => {
                     berlangsung</li>
             </ul>
         </Alert>
+        <Modal :show="showDeleteConfirmModal" @close="closeDeleteModal">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    Apakah Anda yakin ingin menghapus skema ini?
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    <span class="font-bold">{{ skemaToDelete?.nama_skema }}</span> akan dihapus. 
+                    Tindakan ini tidak dapat dibatalkan. Jika skema ini sudah terlibat dalam suatu sertifikasi, penghapusan
+                    gagal demi akuntabilitas data.
+                </p>
+
+                <div class="mt-6 flex justify-end">
+                    <SecondaryButton @click="closeDeleteModal"> Batal </SecondaryButton>
+                    <DeleteButton class="ml-3" @click="destroy">
+                        Ya, Hapus Skema
+                    </DeleteButton>
+                </div>
+            </div>
+        </Modal>
     </AdminLayout>
 </template>

@@ -80,11 +80,41 @@ const submit = () => {
     }
 };
 
-const deletePengumuman = (pengumumanId) => {
-    if (confirm('Yakin ingin menghapus pengumuman ini?')) {
-        router.delete(route('admin.sertifikasi.assessment-announcement.destroy', { sertification: props.sertification.id, news: pengumumanId }), {
+const showDeleteConfirmModal = ref(false);
+const pengumumanToDelete = ref(null);
+
+const confirmDelete = (pengumumanId) => {
+    pengumumanToDelete.value = pengumumanId;
+    showDeleteConfirmModal.value = true;
+};
+
+const closeDeleteModal = () => {
+    showDeleteConfirmModal.value = false;
+    pengumumanToDelete.value = null;
+};
+
+// const deletePengumuman = (pengumumanId) => {
+//     if (confirm('Yakin ingin menghapus pengumuman ini?')) {
+//         router.delete(route('admin.sertifikasi.assessment-announcement.destroy', { sertification: props.sertification.id, news: pengumumanId }), {
+//             preserveScroll: true,
+//             onSuccess: () => {
+//                 router.reload({
+//                     only: ['pengumumans'],
+//                     reset: ['pengumumans'],
+//                 });
+//             }
+//         });
+//     }
+// };
+const deletePengumuman = () => {
+    if (pengumumanToDelete.value) {
+        router.delete(route('admin.sertifikasi.assessment-announcement.destroy', {
+            sertification: props.sertification.id,
+            news: pengumumanToDelete.value
+        }), {
             preserveScroll: true,
             onSuccess: () => {
+                closeDeleteModal(); // Tutup modal ketika sukses
                 router.reload({
                     only: ['pengumumans'],
                     reset: ['pengumumans'],
@@ -110,7 +140,8 @@ const headerTitle = computed(() => {
         <div v-if="formMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-3xl mx-auto">
             <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
                 <div class="">
-                    <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
+                    <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required
+                        :error="form.errors.content" />
                 </div>
                 <div class="">
                     <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
@@ -138,7 +169,8 @@ const headerTitle = computed(() => {
         </div>
         <div v-if="formMode === 'create'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-3xl mx-auto">
             <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
-                <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required :error="form.errors.content"/>
+                <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required
+                    :error="form.errors.content" />
                 <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                     delete-identifier="path_file" label="Lampiran Tambahan"
                     accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
@@ -175,7 +207,7 @@ const headerTitle = computed(() => {
 
                         <div class="mt-1 flex flex-wrap gap-2 md:justify-end w-full md:w-auto">
                             <EditButton @click="showEditForm(pengumuman)">Edit</EditButton>
-                            <DeleteButton @click="deletePengumuman(pengumuman.id)">Hapus</DeleteButton>
+                            <DeleteButton @click="confirmDelete(pengumuman.id)">Hapus</DeleteButton>
                         </div>
                     </div>
 
@@ -183,8 +215,7 @@ const headerTitle = computed(() => {
                         class="font-medium text-sm text-gray-800 dark:text-gray-100">
                     </h6>
 
-                    <div v-if="pengumuman.path_file"
-                        class="mt-2">
+                    <div v-if="pengumuman.path_file" class="mt-2">
                         <a :href="`/storage/${pengumuman.path_file}`" target="_blank"
                             class="text-sm flex items-center gap-2 group min-w-0">
                             <FileIcon :path="pengumuman.path_file" />
@@ -197,5 +228,21 @@ const headerTitle = computed(() => {
                 </div>
             </InfiniteScroll>
         </div>
+        <Modal :show="showDeleteConfirmModal" @close="closeDeleteModal">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    Yakin ingin menghapus pengumuman ini?
+                </h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Pengumuman dan lampirannya (jika ada) akan dihapus dari sistem.
+                </p>
+                <div class="mt-6 flex justify-end">
+                    <SecondaryButton @click="closeDeleteModal"> Batal </SecondaryButton>
+                    <DeleteButton class="ml-3" @click="deletePengumuman">
+                        Ya, Hapus
+                    </DeleteButton>
+                </div>
+            </div>
+        </Modal>
     </AdminLayout>
 </template>

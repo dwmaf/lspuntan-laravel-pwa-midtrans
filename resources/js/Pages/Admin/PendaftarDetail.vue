@@ -93,28 +93,38 @@ const submitCertificate = () => {
     });
 };
 
+const showDeleteCertModal = ref(false);
+
+const confirmDeleteCertificate = () => {
+    showDeleteCertModal.value = true;
+};
+
+const closeDeleteCertModal = () => {
+    showDeleteCertModal.value = false;
+};
 const deleteCertificate = () => {
-    if (confirm('Apakah Anda yakin ingin menghapus sertifikat ini secara permanen?')) {
-        router.delete(route('admin.sertifikasi.pendaftar.destroy-certificate', {
-            sertification: props.sertification.id,
-            asesi: props.asesi.id
-        }), {
-            onSuccess: () => {
-                certificateForm.defaults({
-                    nomor_seri: '',
-                    nomor_sertifikat: '',
-                    nomor_registrasi: '',
-                    tanggal_terbit: '',
-                    berlaku_hingga: '',
-                    file_path: null,
-                    delete_files: [],
-                });
-                certificateForm.reset();
-                isEditingCertificate.value = false;
-            },
-            preserveScroll: true
-        });
-    }
+    router.delete(route('admin.sertifikasi.pendaftar.destroy-certificate', {
+        sertification: props.sertification.id,
+        asesi: props.asesi.id
+    }), {
+        onSuccess: () => {
+            certificateForm.defaults({
+                nomor_seri: '',
+                nomor_sertifikat: '',
+                nomor_registrasi: '',
+                tanggal_terbit: '',
+                berlaku_hingga: '',
+                file_path: null,
+                delete_files: [],
+            });
+            certificateForm.reset();
+            isEditingCertificate.value = false;
+            closeDeleteCertModal(); // Tutup modal saat berhasil
+        },
+        preserveScroll: true
+    });
+    // if (confirm('Apakah Anda yakin ingin menghapus sertifikat ini secara permanen?')) {
+    // }
 };
 
 const getStatusBerkasAdministrasi = (status) => {
@@ -282,7 +292,7 @@ const getStatusFinalAsesi = (status) => {
                 <div class="flex gap-2 items-center">
                     <PrimaryButton :disabled="certificateForm.processing">Simpan</PrimaryButton>
                     <SecondaryButton type="button" @click="cancelEditCertificate">Batal</SecondaryButton>
-                    <DangerButton v-if="props.asesi.sertifikat" type="button" @click="deleteCertificate"
+                    <DangerButton v-if="props.asesi.sertifikat" type="button" @click="confirmDeleteCertificate"
                         :disabled="certificateForm.processing">
                         Hapus Sertifikat
                     </DangerButton>
@@ -326,6 +336,26 @@ const getStatusFinalAsesi = (status) => {
                         <LoadingSpinner v-if="statusForm.processing" />
                     </div>
                 </form>
+            </div>
+        </Modal>
+
+         <Modal :show="showDeleteCertModal" @close="closeDeleteCertModal">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    Apakah Anda yakin ingin menghapus sertifikat ini?
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Sertifikat milik <span class="font-bold">{{ props.asesi.student.user.name }}</span> akan dihapus secara permanen. 
+                    Tindakan ini tidak dapat dibatalkan.
+                </p>
+
+                <div class="mt-6 flex justify-end">
+                    <SecondaryButton @click="closeDeleteCertModal"> Batal </SecondaryButton>
+                    <DangerButton class="ml-3" @click="deleteCertificate" :class="{ 'opacity-25': certificateForm.processing }" :disabled="certificateForm.processing">
+                        Ya, Hapus Sertifikat
+                    </DangerButton>
+                </div>
             </div>
         </Modal>
 
