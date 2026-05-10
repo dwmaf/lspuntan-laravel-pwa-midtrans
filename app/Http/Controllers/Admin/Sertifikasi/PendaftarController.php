@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin\Sertifikasi;
 
-use App\Enums\StatusAksesMenuAsesmen;
 use App\Enums\StatusBerkasAdministrasi;
 use App\Enums\StatusFinalAsesi;
 use App\Http\Controllers\Controller;
@@ -45,7 +44,6 @@ class PendaftarController extends Controller
         return Inertia::render('Admin/PendaftarDetail', [
             'asesi' => $asesi,
             'sertification' => $sertification,
-            'statusAksesMenuAsesmenOptions' => StatusAksesMenuAsesmen::options(),
             'statusBerkasAdministrasiOptions' => StatusBerkasAdministrasi::options(),
             'StatusFinalAsesiOptions' => StatusFinalAsesi::options(),
             'canManageCertificate' => Gate::allows('manageCertificate', $asesi),
@@ -60,6 +58,8 @@ class PendaftarController extends Controller
             $messageNotif = 'Berkas Anda telah dinyatakan lengkap.';
         } else if ($request->status_berkas === StatusBerkasAdministrasi::PERLU_PERBAIKAN_BERKAS->value) {
             $messageNotif = 'Ada berkas yang perlu anda perbaiki.';
+        } else if ($request->status_berkas === StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN->value) {
+            $messageNotif = 'Berkas Anda sedang dalam antrean untuk diverifikasi oleh Admin LSP.';
         }
         
         $asesi->update([
@@ -70,27 +70,6 @@ class PendaftarController extends Controller
         $user = $asesi->student->user;
         if ($user) $this->sendPushNotification($messaging, $user, 'Update Status Pengajuan Asesi', $messageNotif, route('asesi.sertifikasi.applied.show', [$sertification, $asesi, 'messageNotif' => $messageNotif]), 'StatusAsesiUpdated');
         return redirect()->back()->with('message', 'Status asesi berhasil diperbarui');
-    }
-
-    public function updateAksesAsesmen(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
-    {
-        Gate::authorize('update', $asesi);
-        // dd($request);
-        if ($request->status_akses_asesmen === StatusAksesMenuAsesmen::BELUM_DIBERIKAN->value) {
-            $messageNotif = 'Hak akses ke menu asesmen anda belum diberikan.';
-        } else if ($request->status_akses_asesmen === StatusAksesMenuAsesmen::DIBERIKAN->value) {
-            $messageNotif = 'Hak akses ke menu asesmen telah diberikan.';
-        }
-        
-        $asesi->update(['status_akses_asesmen'=>$request->status_akses_asesmen]);
-        $user = $asesi->student->user;
-        if ($user) {
-            $title = 'Update Akses Menu Asesmen';
-            $body = $messageNotif;
-            $url = route('asesi.sertifikasi.applied.show', [$sertification, $asesi, 'messageNotif' => $messageNotif]);
-            $this->sendPushNotification($messaging, $user, $title, $body, $url, 'StatusAsesiUpdated');
-        }
-        return redirect()->back()->with('message', 'Hak akses asesi ke menu asesmen berhasil diperbarui!');
     }
 
     public function updateStatusFinal(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
@@ -118,43 +97,7 @@ class PendaftarController extends Controller
         }
         return redirect()->back()->with('message', 'Status akhir asesi berhasil diperbarui');   
     }
-    public function updateAksesAsesmenBulk(Sertification $sertification, Request $request, Messaging $messaging)
-    {
-        $request->validate([
-            'asesi_ids' => 'required|array',
-            'asesi_ids.*' => 'exists:asesis,id',
-            'status_akses_asesmen' => ['required', Rule::in(['belum_diberikan', 'diberikan'])],
-        ]);
-
-        // Authorization: Cek apakah user bisa update semua asesi yang dipilih
-        $asesis = Asesi::whereIn('id', $request->asesi_ids)->get();
-        $this->authorizeBulk('update', $asesis);
-
-        $messageNotif = '';
-        if ($request->status_akses_asesmen === StatusAksesMenuAsesmen::BELUM_DIBERIKAN->value) {
-            $messageNotif = 'Hak akses ke menu asesmen anda belum diberikan.';
-        } else if ($request->status_akses_asesmen === StatusAksesMenuAsesmen::DIBERIKAN->value) {
-            $messageNotif = 'Hak akses ke menu asesmen telah diberikan.';
-        }
-
-        Asesi::whereIn('id', $request->asesi_ids)->update(['status_akses_asesmen' => $request->status_akses_asesmen]);
-
-        $asesis = Asesi::with(['student.user'])
-                ->whereIn('id', $request->asesi_ids)
-                ->get();
-
-        if ($asesis->isNotEmpty()) {
-            foreach ($asesis as $asesi) {
-                $user = $asesi->student->user ?? null;
-                if ($user) {
-                    $url = route('asesi.sertifikasi.applied.show', [$sertification, $asesi, 'messageNotif' => $messageNotif]);
-                    $this->sendPushNotification($messaging, $user, 'Update Akses Menu Asesmen', $messageNotif, $url, 'StatusAsesiUpdated');
-                }
-            }
-        }
-
-        return redirect()->back()->with('message', count($request->asesi_ids) . ' asesi berhasil diperbarui hak aksesnya.');   
-    }
+    
     public function updateStatusFinalBulk(Sertification $sertification, Request $request, Messaging $messaging)
     {
         $request->validate([
@@ -214,6 +157,8 @@ class PendaftarController extends Controller
             $messageNotif = 'Berkas Anda telah dinyatakan lengkap.';
         } else if ($request->status_berkas === StatusBerkasAdministrasi::PERLU_PERBAIKAN_BERKAS->value) {
             $messageNotif = 'Ada berkas yang perlu anda perbaiki.';
+        } else if ($request->status_berkas === StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN->value) {
+            $messageNotif = 'Berkas Anda sedang dalam antrean untuk diverifikasi oleh Admin LSP.';
         }
         
         Asesi::whereIn('id', $request->asesi_ids)->update([

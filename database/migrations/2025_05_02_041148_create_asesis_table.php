@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\StatusAksesMenuAsesmen;
 use App\Enums\StatusBerkasAdministrasi;
 use App\Enums\StatusFinalAsesi;
 use Illuminate\Database\Migrations\Migration;
@@ -19,7 +18,6 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained();
             $table->foreignId('sertification_id')->constrained();
             $table->string('status_berkas')->default(StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN->value);
-            $table->string('status_akses_asesmen')->default(StatusAksesMenuAsesmen::BELUM_DIBERIKAN->value);
             $table->string('status_final')->default(StatusFinalAsesi::BELUM_DITETAPKAN->value);
             $table->string('tujuan_sert');
             $table->string('apl_1');

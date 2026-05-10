@@ -29,7 +29,7 @@ class AsesmenController extends Controller
             'skema'
         ]);
 
-        $filteredAsesi = $sertification->asesis->where('status_akses_asesmen','diberikan')->values();
+        $filteredAsesi = $sertification->asesis->where('status_berkas','sudah_lengkap')->values();
         // dd($filteredAsesi);
 
         return Inertia::render('Admin/AsesmenAdmin', [

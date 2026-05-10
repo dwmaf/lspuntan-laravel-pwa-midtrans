@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\StatusBerkasAdministrasi;
-use App\Enums\StatusAksesMenuAsesmen;
 use App\Enums\StatusFinalAsesi;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +17,6 @@ class Asesi extends Model
     protected $guarded = [];
     protected $casts = [
         'status_berkas' => StatusBerkasAdministrasi::class,
-        'status_akses_asesmen' => StatusAksesMenuAsesmen::class,
         'status_final' => StatusFinalAsesi::class,
     ];
     protected $appends = [

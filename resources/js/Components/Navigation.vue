@@ -2,7 +2,6 @@
 import { ref, computed } from "vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import NavLink from "./NavLink.vue";
-import DevNavLink from "./Development/DevNavLink.vue";
 import {
     IconLayoutDashboard,
     IconCertificate,
@@ -13,7 +12,7 @@ import {
     IconLogs,
     IconUsers,
     IconCaretLeftFilled,
-    IconCode
+    IconUserCircle
 } from '@tabler/icons-vue';
 
 const emit = defineEmits(['close']);
@@ -24,13 +23,18 @@ const props = defineProps({
     }
 });
 const page = usePage();
+const user = computed(() => page.props.auth?.user);
+const userRole = computed(() => {
+    const roles = page.props.auth?.roles || [];
+    return roles.length > 0 ? roles.join(', ') : 'user';
+});
 const roles = computed(() => page.props.auth.roles ?? []);
 console.log(roles.value);
 
 const hasAdminRole = computed(() => roles.value.includes('admin'));
 const hasAsesorRole = computed(() => roles.value.includes('asesor'));
 const hasAsesiRole = computed(() => roles.value.includes('asesi'));
-console.log("role admin:",hasAdminRole.value);
+console.log("role admin:", hasAdminRole.value);
 // console.log("role asesi:",hasAsesiRole.value);
 const navLinks = computed(() => {
     if (hasAdminRole.value || hasAsesorRole.value) {
@@ -74,20 +78,35 @@ const navLinks = computed(() => {
             <div class="flex" v-if="props.isOpen">
                 <div class="shrink-0 flex items-center">
                     <Link :href="route('admin.dashboard')">
-                    <img src="/logo-lsp.png" alt="Logo LSP" class="block h-15 w-auto" />
+                        <img src="/logo-lsp.png" alt="Logo LSP" class="block h-15 w-auto" />
                     </Link>
                 </div>
             </div>
-            <button @click="emit('close')"
+            <button @click="emit('close')" aria-label="Tutup Menu"
                 class="text-gray-700 dark:text-gray-200 cursor-pointer mb-2 absolute top-5 right-5 flex md:hidden">
                 <IconCaretLeftFilled size="20" strokeWidth="2" />
             </button>
 
             <div class="flex-1 pr-3" :class="props.isOpen ? 'overflow-y-auto custom-scrollbar' : 'overflow-visible'">
+                <div class="sm:hidden px-3 py-3 flex items-center gap-3">
+                    <IconUserCircle stroke-width="1.5" class="w-9 h-9 text-gray-500 shrink-0" />
+                    <div class="flex flex-col min-w-0" v-if="props.isOpen">
+                        <span class="text-sm font-semibold text-gray-900 dark:text-gray-200 truncate uppercase">
+                            {{ user?.name }}
+                        </span>
+                        <span
+                            class="text-[10px] text-blue-600 dark:text-blue-400 font-bold tracking-widest mt-0.5 capitalize">
+                            {{ userRole }}
+                        </span>
+                    </div>
+                </div>
                 <NavLink v-for="link in navLinks" :key="link.href" :href="link.href" :active="link.active"
                     :icon="link.icon" :is-open="props.isOpen">{{ link.label }}
                 </NavLink>
+
                 <div class="my-2 border-t border-gray-200 dark:border-gray-600"></div>
+
+
                 <NavLink :href="route('logout')" :icon="IconLogout" method="post" :is-open="props.isOpen" as="button">
                     Log Out
                 </NavLink>

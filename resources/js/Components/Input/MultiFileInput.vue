@@ -26,7 +26,7 @@ const fileInputRef = ref(null);
 const isDragActive = ref(false);
 const localValidationError = ref('');
 
-// 1. Buat satu daftar gabungan untuk semua file yang akan ditampilkan.
+
 const displayedFiles = computed(() => {
     // Filter file lama yang TIDAK ada di daftar hapus, tandai sebagai 'isNew: false'.
     const visibleExisting = props.existingFiles
@@ -35,9 +35,9 @@ const displayedFiles = computed(() => {
 
     // Map file baru untuk memiliki struktur yang sama, tandai sebagai 'isNew: true'.
     const newFiles = props.modelValue.map((file, index) => ({
-        id: `new-${index}`, // ID sementara untuk rendering
-        path_file: file.name, // Gunakan nama file sebagai path sementara
-        fileObject: file, // Simpan objek file asli
+        id: `new-${index}`, 
+        path_file: file.name, 
+        fileObject: file, 
         isNew: true,
         uniqueId: `new-${index}-${file.name}`
     }));
@@ -45,12 +45,12 @@ const displayedFiles = computed(() => {
     return [...visibleExisting, ...newFiles];
 });
 
-// 2. Hitung sisa slot berdasarkan daftar gabungan. Ini lebih akurat.
+
 const remainingSlots = computed(() => {
     return props.maxFiles - displayedFiles.value.length;
 });
 
-// 3. Fungsi hapus yang cerdas, bisa membedakan file lama dan baru.
+
 const removeFile = (file) => {
     if (file.isNew) {
         // Jika file baru, hapus dari 'modelValue' (form.newFiles)
@@ -156,7 +156,7 @@ const formattedAccept = computed(() => {
             <transition-group name="list" tag="div" class="flex flex-col gap-2 w-full">
                 <div v-for="file in displayedFiles" :key="file.uniqueId"
                     class="relative overflow-hidden rounded-lg shadow-sm" @click.stop>
-                    <!-- Stop propogation so clicking card doesn't open browse -->
+                    
 
                     <div class="text-white rounded-lg py-1.5 px-2 flex items-center gap-3 shadow-inner"
                         :class="file.isNew ? 'bg-[#369763]' : 'bg-[#635f5d]'">

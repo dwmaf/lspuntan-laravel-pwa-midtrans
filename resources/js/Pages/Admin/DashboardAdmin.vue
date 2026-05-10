@@ -2,7 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CustomHeader from '@/Components/CustomHeader.vue';
 import { Link } from "@inertiajs/vue3";
-import { Award, Activity, Users, Wallet, GraduationCap, User2 } from 'lucide-vue-next';
+import { Award, Activity, Users, GraduationCap, User2 } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
 import VueApexCharts from "vue3-apexcharts";
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
@@ -25,7 +25,7 @@ const isDark = useDark();
 // });
 // Chart 1: Trend Pendaftaran (Line/Area)
 const trendOptions = computed(() => {
-    // Definisi Warna
+    
     const text = isDark.value ? '#cbd5e1' : '#64748b'; // Slate-300 (Dark) / Slate-500 (Light)
     const grid = isDark.value ? '#374151' : '#e2e8f0'; // Gray-700 (Dark) / Gray-200 (Light)
 
@@ -36,12 +36,13 @@ const trendOptions = computed(() => {
         stroke: { curve: 'straight', width: 2 },
         xaxis: {
             categories: props.charts?.monthlyStats.map(s => s.date) || [],
-            labels: { style: { colors: text } }, // Terapkan warna text
+            labels: { style: { colors: text }, rotate: -45 },
             axisBorder: { show: false },
             axisTicks: { show: false }
         },
-        yaxis: { labels: { style: { colors: text } } }, // Terapkan warna text
-        grid: { borderColor: grid, strokeDashArray: 4 }, // Terapkan warna grid
+        
+        yaxis: { labels: { style: { colors: text } } },
+        grid: { borderColor: grid, strokeDashArray: 4 },
         tooltip: { theme: isDark.value ? 'dark' : 'light', x: { format: 'MM/yy' } },
         colors: ['#3b82f6'],
         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } }
@@ -66,11 +67,35 @@ const schemeOptions = computed(() => {
         dataLabels: { enabled: true, textAnchor: 'start', style: { colors: ['#fff'] }, offsetX: 0 },
         xaxis: {
             categories: props.charts?.topSchemes.map(s => s.nama_skema) || [],
-            labels: { show: true, style: { colors: text } } // Warna Label X
+            labels: { show: true, style: { colors: text } }
         },
         yaxis: {
-            labels: { style: { colors: text }, maxWidth: 200 } // Warna Label Y
+            labels: { style: { colors: text }, maxWidth: 200 }
         },
+        responsive: [
+            {
+                breakpoint: 768,
+                options: {
+                    yaxis: {
+                        labels: {
+                            style: { colors: text },
+                            maxWidth: 150,
+                            formatter: function (val) {
+                                if (val && val.length > 20) {
+                                    return val.substring(0, 20) + "...";
+                                }
+                                return val;
+                            }
+                        }
+                    },
+                    plotOptions: {
+                        bar: {
+                            barHeight: '85%'
+                        }
+                    }
+                }
+            }
+        ],
         colors: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
         legend: { show: false },
         grid: { show: false }
@@ -85,7 +110,7 @@ const schemeSeries = computed(() => [{
 // Chart 3: Status Kompetensi (Donut)
 const competencyOptions = computed(() => {
     const text = isDark.value ? '#cbd5e1' : '#64748b';
-    const border = isDark.value ? '#1f2937' : '#ffffff'; // Border donut menyesuaikan bg card
+    const border = isDark.value ? '#1f2937' : '#ffffff';
 
     return {
         chart: { type: 'donut', fontFamily: 'Inter, sans-serif', background: 'transparent' },
@@ -94,9 +119,9 @@ const competencyOptions = computed(() => {
         colors: ['#10b981', '#ef4444', '#f59e0b'],
         legend: {
             position: 'bottom',
-            labels: { colors: text } // Warna Legend
+            labels: { colors: text }
         },
-        stroke: { show: true, colors: [border] }, // Warna Border Donut
+        stroke: { show: true, colors: [border] },
         plotOptions: { pie: { donut: { size: '65%' } } }
     };
 });
@@ -143,20 +168,17 @@ const formatEventName = (event) => {
 const pipelinePercentages = computed(() => {
     const total = props.pipelineStats.verifikasi_berkas +
         props.pipelineStats.revisi_asesi +
-        props.pipelineStats.menunggu_jadwal +
         props.pipelineStats.proses_asesmen;
 
     if (total === 0) return {
         verifikasi_berkas: 0,
         revisi_asesi: 0,
-        menunggu_jadwal: 0,
         proses_asesmen: 0
     };
 
     return {
         verifikasi_berkas: Math.round((props.pipelineStats.verifikasi_berkas / total) * 100),
         revisi_asesi: Math.round((props.pipelineStats.revisi_asesi / total) * 100),
-        menunggu_jadwal: Math.round((props.pipelineStats.menunggu_jadwal / total) * 100),
         proses_asesmen: Math.round((props.pipelineStats.proses_asesmen / total) * 100)
     };
 });
@@ -208,10 +230,10 @@ const pipelinePercentages = computed(() => {
             <div
                 class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm col-span-1 lg:col-span-4">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-                    <Activity class="w-5 h-5 text-gray-500" />
+                    <Activity class="shrink-0 w-5 h-5 text-gray-500" />
                     Status Pipeline Sertifikasi yang Berlangsung
                 </h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <!-- Step 1 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
@@ -239,19 +261,8 @@ const pipelinePercentages = computed(() => {
                     <!-- Step 3 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">3. Belum Diberikan
-                            Akses Asesmen</p>
-                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{
-                            pipelineStats.menunggu_jadwal }}</p>
-                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
-                            <div class="bg-purple-500 h-1.5 rounded-full"
-                                :style="`width: ${pipelinePercentages.menunggu_jadwal}%`"></div>
-                        </div>
-                    </div>
-                    <!-- Step 4 -->
-                    <div
-                        class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">4. Akses asesmen Diberikan tapi Status Final belum ditentukan
+                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">4. Akses asesmen
+                            Diberikan tapi Status Final belum ditentukan
                         </p>
                         <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ pipelineStats.proses_asesmen
                             || '-' }}</p>
@@ -267,14 +278,18 @@ const pipelinePercentages = computed(() => {
         <div v-if="!isAsesor && props.charts" class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
             <!-- Trend Chart - Full Width on Mobile, 2/3 on Desktop -->
             <div
-                class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm lg:col-span-2">
+                class="bg-white dark:bg-gray-800 p-2 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm lg:col-span-2">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Trend Pendaftaran (12 Bulan
                     Terakhir)</h3>
-                <VueApexCharts :key="isDark" type="area" height="320" :options="trendOptions" :series="trendSeries" />
+                    <div class="overflow-x-auto pb-2">
+                        <div class="min-w-125">
+                        <VueApexCharts :key="isDark" type="area" height="320" :options="trendOptions" :series="trendSeries" />
+                    </div>
+                </div>
             </div>
 
             <!-- Competency Chart - 1/3 on Desktop -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="bg-white dark:bg-gray-800 p-2 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Rasio Kelulusan</h3>
                 <div class="flex items-center justify-center h-[300px]">
                     <VueApexCharts :key="isDark" type="donut" width="100%" :options="competencyOptions"
@@ -287,7 +302,12 @@ const pipelinePercentages = computed(() => {
                 class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm lg:col-span-3">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Top 5 Skema Sertifikasi Paling
                     Diminati</h3>
-                <VueApexCharts :key="isDark" type="bar" height="300" :options="schemeOptions" :series="schemeSeries" />
+                <div class="overflow-x-auto">
+                    <div class="min-w-150">
+                        <VueApexCharts :key="isDark" type="bar" height="300" :options="schemeOptions"
+                            :series="schemeSeries" />
+                    </div>
+                </div>
             </div>
         </div>
 

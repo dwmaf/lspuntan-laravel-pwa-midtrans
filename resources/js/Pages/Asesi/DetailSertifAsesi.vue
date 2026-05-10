@@ -21,7 +21,6 @@ const props = defineProps({
     sertification: Object,
     student: Object,
     asesi: Object,
-    statusAksesMenuAsesmenOptions: Array,
     statusBerkasAdministrasiOptions: Array,
     StatusFinalAsesiOptions: Array,
 });
@@ -117,23 +116,6 @@ const getStatusBerkasAdministrasi = (status) => {
         'sudah_lengkap': {
             variant: 'success',
             text: 'Sudah Lengkap'
-        },
-    };
-    return data[status] || {
-        variant: 'neutral',
-        text: status
-    };
-};
-
-const getStatusAksesMenuAsesmen = (status) => {
-    const data = {
-        'belum_diberikan': {
-            variant: 'warning',
-            text: 'Belum Diberikan'
-        },
-        'diberikan': {
-            variant: 'success',
-            text: 'Diberikan'
         },
     };
     return data[status] || {
@@ -397,15 +379,7 @@ const { formatCurrency, formatDateTime } = useFormat();
                             </StatusBadge>
                         </dd>
                     </div>
-                    <div>
-                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Hak Akses Menu Asesmen
-                        </dt>
-                        <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
-                            <StatusBadge :variant="getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).variant">
-                                {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
-                            </StatusBadge>
-                        </dd>
-                    </div>
+                    
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Akhir Asesi</dt>
                         <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">

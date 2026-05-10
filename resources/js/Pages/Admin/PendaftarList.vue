@@ -42,23 +42,6 @@ const getStatusBerkasAdministrasi = (status) => {
     };
 };
 
-const getStatusAksesMenuAsesmen = (status) => {
-    const data = {
-        'belum_diberikan': {
-            variant: 'warning',
-            text: 'Belum Diberikan'
-        },
-        'diberikan': {
-            variant: 'success',
-            text: 'Diberikan'
-        },
-    };
-    return data[status] || {
-        variant: 'neutral',
-        text: status
-    };
-};
-
 const getStatusFinalAsesi = (status) => {
     const data = {
         'belum_ditetapkan': {
@@ -92,10 +75,7 @@ const statusBerkasAdministrasiOptions = [
     { value: 'perlu_perbaikan_berkas', text: 'Perlu Perbaikan Berkas' },
     { value: 'sudah_lengkap', text: 'Sudah Lengkap' },
 ];
-const statusAksesMenuAsesmenOptions = [
-    { value: 'belum_diberikan', text: 'Belum Diberikan' },
-    { value: 'diberikan', text: 'Diberikan' },
-];
+
 const statusFinalAsesiOptions = [
     { value: 'belum_ditentukan', text: 'Belum Ditentukan' },
     { value: 'belum_kompeten', text: 'Belum Kompeten' },
@@ -104,13 +84,11 @@ const statusFinalAsesiOptions = [
 
 const filtersForm = ref({
     statusBerkasAdministrasi: '',
-    statusAksesMenuAsesmen: '',
     statusFinalAsesi: '',
 });
 
 const activeFilters = ref({
     statusBerkasAdministrasi: '',
-    statusAksesMenuAsesmen: '',
     statusFinalAsesi: '',
 });
 
@@ -120,8 +98,8 @@ const applyFilters = () => {
 };
 
 const resetFilters = () => {
-    filtersForm.value = { statusBerkasAdministrasi: '', statusAksesMenuAsesmen: '', statusFinalAsesi: '' };
-    activeFilters.value = { statusBerkasAdministrasi: '', statusAksesMenuAsesmen: '', statusFinalAsesi: '' };
+    filtersForm.value = { statusBerkasAdministrasi: '', statusFinalAsesi: '' };
+    activeFilters.value = { statusBerkasAdministrasi: '', statusFinalAsesi: '' };
     // showFilterModal.value = false; // Optional: close on reset or keep open
 };
 
@@ -146,9 +124,6 @@ const filteredAsesis = computed(() => {
     if (activeFilters.value.statusBerkasAdministrasi) {
         result = result.filter(asesi => asesi.status_berkas === activeFilters.value.statusBerkasAdministrasi);
     }
-    if (activeFilters.value.statusAksesMenuAsesmen) {
-        result = result.filter(asesi => asesi.status_akses_asesmen === activeFilters.value.statusAksesMenuAsesmen);
-    }
     if (activeFilters.value.statusFinalAsesi) {
         result = result.filter(asesi => asesi.status_final === activeFilters.value.statusFinalAsesi);
     }
@@ -168,17 +143,16 @@ const isSelectAll = computed({
 });
 
 const showBulkActionModal = ref(false);
-const bulkType = ref(''); // 'berkas', 'akses', 'final'
+const bulkType = ref(''); // 'berkas', 'final'
 const bulkForm = useForm({
     asesi_ids: [],
     status_berkas: '',
-    status_akses_asesmen: '',
     status_final: '',
     catatan_perbaikan: '',
 });
 
 const openBulkModal = (type) => {
-    bulkForm.reset('status_berkas', 'status_akses_asesmen', 'status_final', 'catatan_perbaikan');
+    bulkForm.reset('status_berkas', 'status_final', 'catatan_perbaikan');
     bulkType.value = type;
     bulkForm.asesi_ids = selectedAsesis.value;
     showBulkActionModal.value = true;
@@ -187,7 +161,6 @@ const openBulkModal = (type) => {
 const submitBulk = () => {
     let routeName = '';
     if (bulkType.value === 'berkas') routeName = 'admin.sertifikasi.pendaftar.update-status-berkas-bulk';
-    if (bulkType.value === 'akses') routeName = 'admin.sertifikasi.pendaftar.update-akses-asesmen-bulk';
     if (bulkType.value === 'final') routeName = 'admin.sertifikasi.pendaftar.update-status-final-bulk';
 
     bulkForm.patch(route(routeName, [props.sertification.id]), {
@@ -215,10 +188,6 @@ const submitBulk = () => {
                     <SecondaryButton @click="openBulkModal('berkas')" class="py-2! px-3! normal-case!">
                         <FileText class="w-4 mr-1" />
                         Update Status Berkas
-                    </SecondaryButton>
-                    <SecondaryButton @click="openBulkModal('akses')" class="py-2! px-3! normal-case!">
-                        <Lock class="w-4 mr-1" />
-                        Update Akses
                     </SecondaryButton>
                     <SecondaryButton @click="openBulkModal('final')" class="py-2! px-3! normal-case!">
                         <Award class="w-4 mr-1" />
@@ -261,10 +230,6 @@ const submitBulk = () => {
                             </th>
                             <th scope="col"
                                 class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                Akses Menu Asesmen
-                            </th>
-                            <th scope="col"
-                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Status Final Asesi
                             </th>
                             <th scope="col"
@@ -286,17 +251,15 @@ const submitBulk = () => {
                                 {{ index + 1 }}
                             </td>
                             <td
-                                class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                class="px-2 py-4 flex flex-col gap-1 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {{ asesi.student.user.name ?? 'Nama Tidak Tersedia' }}
+                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ asesi.student.user.email }}
+                                </div>
                             </td>
                             <td class="px-2 py-4 whitespace-nowrap text-sm">
                                 <StatusBadge :variant="getStatusBerkasAdministrasi(asesi.status_berkas).variant">
                                     {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
-                                </StatusBadge>
-                            </td>
-                            <td class="px-2 py-4 whitespace-nowrap text-sm">
-                                <StatusBadge :variant="getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).variant">
-                                    {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
                                 </StatusBadge>
                             </td>
                             <td class="px-2 py-4 whitespace-nowrap text-sm">
@@ -331,9 +294,6 @@ const submitBulk = () => {
                     <SelectInput id="statusBerkasAdministrasi" label="Status Berkas Asesi"
                         v-model="filtersForm.statusBerkasAdministrasi"
                         :options="[{ value: '', text: 'Semua' }, ...statusBerkasAdministrasiOptions]" />
-                    <SelectInput id="statusAksesMenuAsesmen" label="Status Akses Menu Asesmen"
-                        v-model="filtersForm.statusAksesMenuAsesmen"
-                        :options="[{ value: '', text: 'Semua' }, ...statusAksesMenuAsesmenOptions]" />
                     <SelectInput id="statusFinalAsesi" label="Status Final Asesi" v-model="filtersForm.statusFinalAsesi"
                         :options="[{ value: '', text: 'Semua' }, ...statusFinalAsesiOptions]" />
                 </div>
@@ -367,12 +327,6 @@ const submitBulk = () => {
                                     v-model="bulkForm.catatan_perbaikan" />
                             </div>
                         </template>
-
-                        <template v-if="bulkType === 'akses'">
-                            <SelectInput label="Akses Menu Asesmen" v-model="bulkForm.status_akses_asesmen"
-                                :options="statusAksesMenuAsesmenOptions" />
-                        </template>
-
                         <template v-if="bulkType === 'final'">
                             <SelectInput label="Status Final Asesi" v-model="bulkForm.status_final"
                                 :options="statusFinalAsesiOptions" />

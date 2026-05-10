@@ -9,7 +9,6 @@ use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use App\Helpers\FileHelper;
-use App\Models\Asesiasesmen;
 use Inertia\Inertia;
 use App\Traits\SendsPushNotifications;
 use Kreait\Firebase\Contract\Messaging;
@@ -21,6 +20,7 @@ class AsesmenAsesiController extends Controller
     public function index(Sertification $sertification, Asesi $asesi, Request $request)
     {
         Gate::authorize('view', $asesi);
+        // buat agar hanya bisa masuk jika status berkasnya sudah lengkap
         NotificationController::markAsRead($request);
         return Inertia::render('Asesi/AsesmenAsesi', [
             'sertification' => $sertification->load('skema', 'asesmen'), 

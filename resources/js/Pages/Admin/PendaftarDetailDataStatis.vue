@@ -72,6 +72,11 @@ const { formatDate } = useFormat();
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {{ asesi.student?.kualifikasi_pendidikan || 'Tidak diisi' }}</dd>
             </div>
+            <div>
+                <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Email</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {{ asesi.student?.user?.email || 'Tidak ada' }}</dd>
+            </div>
         </dl>
 
         <!-- Data Pekerjaan -->

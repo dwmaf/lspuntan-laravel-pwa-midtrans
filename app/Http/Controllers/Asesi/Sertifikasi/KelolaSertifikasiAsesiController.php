@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Asesi\Sertifikasi;
 
-use App\Enums\StatusAksesMenuAsesmen;
 use App\Enums\StatusBerkasAdministrasi;
 use App\Enums\StatusFinalAsesi;
 use App\Http\Controllers\Controller;
@@ -188,7 +187,6 @@ class KelolaSertifikasiAsesiController extends Controller
             'sertification' => $sertification->load('skema'),
             'asesi' => $asesi,
             'student' => $student,
-            'statusAksesMenuAsesmenOptions' => StatusAksesMenuAsesmen::options(),
             'statusBerkasAdministrasiOptions' => StatusBerkasAdministrasi::options(),
             'StatusFinalAsesiOptions' => StatusFinalAsesi::options(),
         ]);

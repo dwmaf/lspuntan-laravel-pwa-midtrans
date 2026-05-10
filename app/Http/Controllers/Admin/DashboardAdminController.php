@@ -68,9 +68,7 @@ class DashboardAdminController extends Controller
         $pipelineStats = [
             'verifikasi_berkas' => (clone $baseQuery)->where('status_berkas', 'menunggu_verifikasi_admin')->count(),
             'revisi_asesi'      => (clone $baseQuery)->where('status_berkas', 'perlu_perbaikan_berkas')->count(),
-            'menunggu_jadwal'   => (clone $baseQuery)->where('status_berkas', 'sudah_lengkap')
-                                                   ->where('status_akses_asesmen', 'belum_diberikan')->count(),
-            'proses_asesmen'    => (clone $baseQuery)->where('status_akses_asesmen', 'diberikan')
+            'proses_asesmen'    => (clone $baseQuery)->where('status_berkas', 'sudah_lengkap')
                                                    ->where('status_final', 'belum_ditetapkan')->count(),
         ];
 

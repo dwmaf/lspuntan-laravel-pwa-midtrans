@@ -26,21 +26,19 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     asesi: Object,
     sertification: Object,
-    statusAksesMenuAsesmenOptions: Array,
     statusBerkasAdministrasiOptions: Array,
     StatusFinalAsesiOptions: Array,
     canManageCertificate: Boolean,
 });
 
 const showStatusModal = ref(false);
-const modalType = ref(''); // 'berkas', 'akses', 'final'
+const modalType = ref(''); // 'berkas', 'final'
 const isEditingAsesi = ref(false);
 const isEditingCertificate = ref(false);
 
 const statusForm = useForm({
     status_berkas: props.asesi.status_berkas,
     catatan_perbaikan: props.asesi.catatan_perbaikan || '',
-    status_akses_asesmen: props.asesi.status_akses_asesmen,
     status_final: props.asesi.status_final,
 });
 
@@ -61,7 +59,6 @@ const openModal = (type) => {
     // Re-sync values from props to ensure form is clean and accurate
     statusForm.status_berkas = props.asesi.status_berkas;
     statusForm.catatan_perbaikan = props.asesi.catatan_perbaikan || '';
-    statusForm.status_akses_asesmen = props.asesi.status_akses_asesmen;
     statusForm.status_final = props.asesi.status_final;
     showStatusModal.value = true;
 };
@@ -79,7 +76,6 @@ const cancelEditCertificate = () => {
 const submitStatusUpdate = () => {
     let routeName = '';
     if (modalType.value === 'berkas') routeName = 'admin.sertifikasi.pendaftar.update-status-berkas';
-    if (modalType.value === 'akses') routeName = 'admin.sertifikasi.pendaftar.update-akses-asesmen';
     if (modalType.value === 'final') routeName = 'admin.sertifikasi.pendaftar.update-status-final';
 
     statusForm.patch(route(routeName, { sertification: props.sertification.id, asesi: props.asesi.id }), {
@@ -148,23 +144,6 @@ const getStatusBerkasAdministrasi = (status) => {
     };
 };
 
-const getStatusAksesMenuAsesmen = (status) => {
-    const data = {
-        'belum_diberikan': {
-            variant: 'warning',
-            text: 'Belum Diberikan'
-        },
-        'diberikan': {
-            variant: 'success',
-            text: 'Diberikan'
-        },
-    };
-    return data[status] || {
-        variant: 'neutral',
-        text: status
-    };
-};
-
 const getStatusFinalAsesi = (status) => {
     const data = {
         'belum_ditetapkan': {
@@ -215,15 +194,6 @@ const getStatusFinalAsesi = (status) => {
                             {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
                         </StatusBadge>
                         <EditButton @click="openModal('berkas')">Ubah Status</EditButton>
-                    </dd>
-                </div>
-                <div>
-                    <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Hak Akses Menu Asesmen</dt>
-                    <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
-                        <StatusBadge :variant="getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).variant">
-                            {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
-                        </StatusBadge>
-                        <EditButton @click="openModal('akses')">Ubah Status</EditButton>
                     </dd>
                 </div>
                 <div>
@@ -305,7 +275,6 @@ const getStatusFinalAsesi = (status) => {
             <div class="p-4">
                 <h3 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-6">
                     {{ modalType === 'berkas' ? 'Konfirmasi Ubah Status Berkas' :
-                        modalType === 'akses' ? 'Konfirmasi Ubah Akses Menu Asesmen' :
                             'Konfirmasi Ubah Status Akhir Asesi' }}
                 </h3>
 
@@ -318,13 +287,6 @@ const getStatusFinalAsesi = (status) => {
                             id="catatan_perbaikan" label="Catatan Perbaikan" v-model="statusForm.catatan_perbaikan"
                             required :error="statusForm.errors.catatan_perbaikan" rows="3" />
                     </template>
-
-                    <template v-else-if="modalType === 'akses'">
-                        <SelectInput id="status_akses_asesmen" label="Hak Akses Asesi ke Menu Asesmen"
-                            v-model="statusForm.status_akses_asesmen" :options="statusAksesMenuAsesmenOptions"
-                            :error="statusForm.errors.status_akses_asesmen" required />
-                    </template>
-
                     <template v-else-if="modalType === 'final'">
                         <SelectInput id="status_final" label="Status Akhir Asesi" v-model="statusForm.status_final"
                             :options="StatusFinalAsesiOptions" :error="statusForm.errors.status_final" required />

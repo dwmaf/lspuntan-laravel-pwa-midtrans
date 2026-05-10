@@ -26,7 +26,7 @@ const markAllRead = async () => {
 <template>
     <div class="relative flex items-center ml-4">
         <div @click="showNotifikasi = !showNotifikasi">
-            <button class="relative focus:outline-none cursor-pointer p-1">
+            <button class="relative focus:outline-none cursor-pointer p-1" aria-label="Notifikasi">
                 <Bell class="w-6 h-6 text-gray-700 dark:text-gray-200" />
                 <span v-if="unreadCount > 0 && unreadCount <= 99"
                     class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/4 -translate-y-1/4">
@@ -58,7 +58,7 @@ const markAllRead = async () => {
             </div>
             <div
                 class="border-t border-gray-100 dark:border-gray-600 flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-b-md">
-                <button @click="markAllRead"
+                <button @click="markAllRead" aria-label="Tandai Dibaca Semua"
                     class="text-xs text-gray-700 dark:text-gray-300 hover:underline cursor-pointer">Tandai dibaca
                     semua</button>
                 <Link :href="route('notifications.index')"
@@ -68,7 +68,7 @@ const markAllRead = async () => {
         <div v-show="showNotifikasi" class="fixed inset-0 z-40 bg-white dark:bg-gray-900 flex flex-col md:hidden">
             <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Notifikasi</h2>
-                <button @click="showNotifikasi = false"
+                <button @click="showNotifikasi = false" aria-label="Tutup Notifikasi"
                     class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
@@ -92,7 +92,7 @@ const markAllRead = async () => {
             </div>
             <div
                 class="border-t border-gray-200 dark:border-gray-700 flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50">
-                <button @click="markAllRead" class="text-sm text-gray-700 dark:text-gray-300 hover:underline">Tandai
+                <button @click="markAllRead" class="text-sm text-gray-700 dark:text-gray-300 hover:underline" aria-label="Tanda Dibaca Semua">Tandai
                     dibaca semua</button>
                 <Link :href="route('notifications.index')"
                     class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Lihat semua</Link>
