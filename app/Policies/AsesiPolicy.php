@@ -32,8 +32,8 @@ class AsesiPolicy
         }
 
         // Asesor hanya bisa lihat asesi di sertifikasi yang dia tangani
-        return $user->hasRole('asesor') && 
-               $asesi->sertification->asesors()->where('user_id', $user->id)->exists();
+        return $user->hasRole('asesor') &&
+            $asesi->sertification->asesors()->where('user_id', $user->id)->exists();
     }
 
     /**
@@ -60,9 +60,30 @@ class AsesiPolicy
             return true;
         }
 
-        // Asesor hanya bisa update asesi di sertifikasi yang dia tangani
-        return $user->hasRole('asesor') && 
-               $asesi->sertification->asesors()->where('user_id', $user->id)->exists();
+        // Jika user adalah asesor, periksa apakah dia adalah asesor penguji asesi ini
+        if ($user->hasRole('asesor')) {
+            $asesor = $user->asesor; // relasi user ke asesor
+            return $asesor && $asesor->id === $asesi->asesor_id;
+        }
+
+        return false;
+    }
+
+    public function updateStatusFinal(User $user, Asesi $asesi): bool
+    {
+        // Pastikan user adalah asesor
+        if (!$user->hasRole('asesor')) {
+            return false;
+        }
+
+        // Asesor hanya bisa jika ia adalah asesor penguji asesi ini
+        $asesor = $user->asesor;
+        return $asesor && $asesor->id === $asesi->asesor_id;
+    }
+
+    public function assignAsesor(User $user, Asesi $asesi): bool
+    {
+        return $user->hasRole('admin');
     }
 
     /**

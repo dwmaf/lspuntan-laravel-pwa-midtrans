@@ -22,6 +22,14 @@ const isDeadlinePassed = computed(() => {
     return new Date() > new Date(props.sertification.asesmen.deadline);
 });
 
+const isStatusFinalLocked = computed (() => {
+    return props.asesi.status_final !== 'belum_ditentukan';
+});
+
+const cannotSubmit = computed(() => {
+    return isDeadlinePassed.value || isStatusFinalLocked.value;
+});
+
 const deadlineStatus = computed(() => {
     const hasSubmitted = !!props.asesi.path_file_asesmen;
     const deadline = props.sertification.asesmen?.deadline;

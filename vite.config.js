@@ -13,7 +13,7 @@ export default defineConfig({
         }),
         vue({
             template: {
-                transformAssetUrls:{
+                transformAssetUrls: {
                     base: null,
                     includeAbsolute: false,
                 },
@@ -27,5 +27,25 @@ export default defineConfig({
             host: 'localhost',
             // host: '10.91.233.144',
         }
-    }
+    },
+    build: {
+        target: 'esnext', // Atau 'es2020'
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('apexcharts')) {
+                            return 'vendor-charts';
+                        }
+                        if (id.includes('firebase')) {
+                            return 'vendor-firebase';
+                        }
+                        return 'vendor'; // Library lain jadi satu di vendor biasa
+                    }
+                }
+            }
+        },
+        minify: 'esbuild',
+        sourcemap: false,
+    },
 });

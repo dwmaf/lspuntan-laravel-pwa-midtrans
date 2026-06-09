@@ -106,7 +106,7 @@ class KelolaSertifikasiController extends Controller
             'bank' => 'required|string|max:255',
             'atas_nama_rek' => 'required|string|max:255',
         ]);
-        
+
         $sertification = null;
 
         DB::transaction(function () use ($validatedData, $request, &$sertification) {
@@ -123,7 +123,7 @@ class KelolaSertifikasiController extends Controller
                 'tuk' => $validatedData['tuk'] ?? null,
                 'status' => 'berlangsung',
             ]);
-            
+
             if (!empty($validatedData['asesor_ids'])) {
                 $sertification->asesors()->attach($validatedData['asesor_ids']);
             }
@@ -150,7 +150,27 @@ class KelolaSertifikasiController extends Controller
         $hasAdminRole = $user->hasRole('admin');
         $isOnlyAsesor = $user->hasRole('asesor') && !$hasAdminRole;
 
-        $sertification->load('skema', 'asesors.user')->loadCount('asesis');
+        $sertification->load('skema', 'asesors.user')->loadCount([
+            'asesis',
+            'asesis as asesis_menunggu_verifikasi_count' => function ($query) {
+                $query->where('status_berkas','menunggu_verifikasi_admin');
+            },
+            'asesis as asesis_perlu_perbaikan_count' => function ($query) {
+                $query->where('status_berkas','perlu_perbaikan_berkas');
+            },
+            'asesis as asesis_proses_asesmen_count' => function ($query) {
+                $query->where('status_berkas','sudah_lengkap')->where('status_final','belum_ditetapkan');
+            },
+            'asesis as asesis_kompeten_count' => function ($query) {
+                $query->where('status_final','kompeten');
+            },
+            'asesis as asesis_belum_kompeten_count' => function ($query) {
+                $query->where('status_final','belum_kompeten');
+            },
+            'asesis as asesis_diskualifikasi_count' => function ($query) {
+                $query->where('status_final','diskualifikasi');
+            },
+        ]);
         return Inertia::render('Admin/DetailSertifikasiAdmin', [
             'sertification' => $sertification,
             'asesors' => Asesor::with('skemas', 'user')->get(),
@@ -177,7 +197,7 @@ class KelolaSertifikasiController extends Controller
             'atas_nama_rek' => 'required|string|max:255',
             'status' => 'required|in:berlangsung,selesai,dibatalkan',
         ]);
-        
+
         DB::transaction(function () use ($validatedData, $sertification, $request) {
             $sertification->update([
                 'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
@@ -211,7 +231,7 @@ class KelolaSertifikasiController extends Controller
         $sertification->update(['status' => 'dibatalkan']);
         return back()->with('message', 'Sertifikasi berhasil dibatalkan.');
     }
-    
+
     public function export_excel(Sertification $sertification)
     {
         $sertification->load('skema', 'asesis.student.user', 'asesors.user');

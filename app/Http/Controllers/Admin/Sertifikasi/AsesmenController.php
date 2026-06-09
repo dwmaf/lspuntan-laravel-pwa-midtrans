@@ -26,11 +26,15 @@ class AsesmenController extends Controller
             'asesis.student.user',
             'asesis',
             'asesmen',
-            'skema'
+            'skema',
+            'asesors.user'
         ]);
 
-        $filteredAsesi = $sertification->asesis->where('status_berkas','sudah_lengkap')->values();
-        // dd($filteredAsesi);
+        $asesorId = $request->user()->asesor?->id;
+        $filteredAsesi = $sertification->asesis
+            ->where('status_berkas', 'sudah_lengkap')
+            ->where('asesor_id', $asesorId)
+            ->values();
 
         return Inertia::render('Admin/AsesmenAdmin', [
             'sertification' => $sertification,

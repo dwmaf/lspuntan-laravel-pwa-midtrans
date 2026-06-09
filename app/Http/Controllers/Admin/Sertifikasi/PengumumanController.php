@@ -22,7 +22,7 @@ class PengumumanController extends Controller
     {
         Gate::authorize('manageAnnouncement', $sertification);
 
-        $sertification->load('skema');
+        $sertification->load(['skema', 'asesors.user']);
         $totalAsesis = Asesi::where('sertification_id', $sertification->id)
             ->count();
 

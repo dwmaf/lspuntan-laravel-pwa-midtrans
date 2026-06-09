@@ -21,20 +21,12 @@ class Asesi extends Model
     ];
     protected $appends = [
         'status_berkas_label',
-        'status_akses_asesmen_label',
         'status_final_label',
     ];
     protected function statusBerkasLabel(): Attribute
     {
         return Attribute::make(
             get: fn () => $this->status_berkas?->label(),
-        );
-    }
-
-    protected function statusAksesAsesmenLabel(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->status_akses_asesmen?->label(),
         );
     }
 
@@ -51,6 +43,10 @@ class Asesi extends Model
     public function sertification()
     {
         return $this->belongsTo(Sertification::class);
+    }
+    public function asesor()
+    {
+        return $this->belongsTo(Asesor::class);
     }
     public function asesifiles()
     {

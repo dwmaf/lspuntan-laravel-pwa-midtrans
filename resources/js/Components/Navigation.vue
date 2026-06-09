@@ -28,13 +28,10 @@ const userRole = computed(() => {
     const roles = page.props.auth?.roles || [];
     return roles.length > 0 ? roles.join(', ') : 'user';
 });
-const roles = computed(() => page.props.auth.roles ?? []);
-console.log(roles.value);
-
+const roles = computed(() => (page.props.auth.roles ?? []).map(r => typeof r === 'string' ? r : r.name));
 const hasAdminRole = computed(() => roles.value.includes('admin'));
 const hasAsesorRole = computed(() => roles.value.includes('asesor'));
 const hasAsesiRole = computed(() => roles.value.includes('asesi'));
-console.log("role admin:", hasAdminRole.value);
 // console.log("role asesi:",hasAsesiRole.value);
 const navLinks = computed(() => {
     if (hasAdminRole.value || hasAsesorRole.value) {
@@ -78,7 +75,7 @@ const navLinks = computed(() => {
             <div class="flex" v-if="props.isOpen">
                 <div class="shrink-0 flex items-center">
                     <Link :href="route('admin.dashboard')">
-                        <img src="/logo-lsp.png" alt="Logo LSP" class="block h-15 w-auto" />
+                        <img src="/logo-lsp-resized.png" alt="Logo LSP" class="block h-15 w-auto" width="75" height="60"/>
                     </Link>
                 </div>
             </div>
@@ -101,13 +98,13 @@ const navLinks = computed(() => {
                     </div>
                 </div>
                 <NavLink v-for="link in navLinks" :key="link.href" :href="link.href" :active="link.active"
-                    :icon="link.icon" :is-open="props.isOpen">{{ link.label }}
+                    :icon="link.icon" :is-open="props.isOpen" :label="link.label">{{ link.label }}
                 </NavLink>
 
                 <div class="my-2 border-t border-gray-200 dark:border-gray-600"></div>
 
 
-                <NavLink :href="route('logout')" :icon="IconLogout" method="post" :is-open="props.isOpen" as="button">
+                <NavLink :href="route('logout')" :icon="IconLogout" method="post" :is-open="props.isOpen" as="button" label="Log Out">
                     Log Out
                 </NavLink>
                 <!-- <DevNavLink :href="route('dev.list.sertifications')" :icon="IconCode" :is-open="props.isOpen"

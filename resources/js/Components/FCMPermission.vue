@@ -94,7 +94,9 @@ function subscribe() {
 }
 
 // Saat komponen dimuat, periksa status izin saat ini
-function getAndSendToken() {
+async function getAndSendToken() {
+    await import('@/firebase');
+
     return window.getToken(window.messaging, { vapidKey: import.meta.env.VAPID_PUBLIC_KEY })
         .then((currentToken) => {
             if (currentToken) {
@@ -203,7 +205,7 @@ function handleToggleClick() {
                 </DeleteButton>
                 <PrimaryButton v-else @click="confirmAction" class="ml-3" :disabled="isLoading">
                     <span v-if="isLoading" class="mr-2 text-white">
-                        <LoadingSpinner class="!text-white" />
+                        <LoadingSpinner class="text-white!" />
                     </span>
                     Ya, Aktifkan
                 </PrimaryButton>

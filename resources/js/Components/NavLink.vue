@@ -1,7 +1,6 @@
 <script setup>
-import { computed, defineAsyncComponent } from "vue";
+import { computed } from "vue";
 import { Link } from "@inertiajs/vue3";
-import { WindArrowDown } from "lucide-vue-next";
 
 const props = defineProps({
     href: {
@@ -23,6 +22,14 @@ const props = defineProps({
         type: String,
         default: 'get',
     },
+    as: {
+        type: String,
+        default: 'a',
+    },
+    label: {
+        type: String,
+        required: true,
+    },
 });
 
 const classes = computed(() =>
@@ -33,7 +40,7 @@ const classes = computed(() =>
 </script>
 
 <template>
-    <Link :href="href" :class="classes" :method="method" class="group">
+    <Link :href="href" :class="classes" :method="method" :as="as" class="group" :aria-label="label">
         <component 
             v-if="icon" 
             :is="icon" 

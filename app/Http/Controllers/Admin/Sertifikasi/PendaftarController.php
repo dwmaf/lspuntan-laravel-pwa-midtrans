@@ -21,14 +21,14 @@ class PendaftarController extends Controller
 {
     use SendsPushNotifications;
     use AuthorizesBulkActions;
-    
+
     public function listAsesi(Sertification $sertification, Request $request)
     {
-        // Authorization: Admin bisa lihat semua, Asesor hanya yang mereka ampu
+        // Authorization: Admin bisa lihat semua, Asesor hanya asesi yang mereka ampu
         Gate::authorize('view', $sertification);
-        
-        $sertification->load('skema', 'asesis.student.user');
-        
+
+        $sertification->load('skema', 'asesis.student.user', 'asesis.asesor.user', 'asesors.user');
+
         return Inertia::render('Admin/PendaftarList', [
             'sertification' => $sertification,
         ]);
@@ -38,9 +38,9 @@ class PendaftarController extends Controller
     {
         Gate::authorize('view', $asesi);
         NotificationController::markAsRead($request);
-        $sertification->load('skema');
-        $asesi->load(['student.user', 'asesifiles', 'sertifikat']);
-        
+        $sertification->load('skema', 'asesors.user');
+        $asesi->load(['student.user', 'asesifiles', 'sertifikat', 'asesor.user']);
+
         return Inertia::render('Admin/PendaftarDetail', [
             'asesi' => $asesi,
             'sertification' => $sertification,
@@ -53,6 +53,12 @@ class PendaftarController extends Controller
     public function updateStatusBerkas(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
         Gate::authorize('update', $asesi);
+        if ($asesi->status_final->value !== StatusFinalAsesi::BELUM_DITETAPKAN->value) {
+            return redirect()->back()->with('error', 'Gagal! Status berkas sudah terkunci karena status akhir asesi telah ditetapkan.');
+        }
+        if (!is_null($asesi->asesor_id)) {
+            return redirect()->back()->with('error', 'Gagal! Status berkas sudah terkunci karena asesor telah ditetapkan.');
+        }
         $messageNotif = '';
         if ($request->status_berkas === StatusBerkasAdministrasi::SUDAH_LENGKAP->value) {
             $messageNotif = 'Berkas Anda telah dinyatakan lengkap.';
@@ -61,7 +67,7 @@ class PendaftarController extends Controller
         } else if ($request->status_berkas === StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN->value) {
             $messageNotif = 'Berkas Anda sedang dalam antrean untuk diverifikasi oleh Admin LSP.';
         }
-        
+
         $asesi->update([
             'status_berkas' => $request->status_berkas,
             'catatan_perbaikan' => ($request->status_berkas === StatusBerkasAdministrasi::PERLU_PERBAIKAN_BERKAS->value) ? $request->catatan_perbaikan : null,
@@ -74,7 +80,19 @@ class PendaftarController extends Controller
 
     public function updateStatusFinal(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
-        Gate::authorize('update', $asesi);
+        Gate::authorize('updateStatusFinal', $asesi);
+        if ($asesi->sertifikat()->exists()) {
+            return redirect()->back()->with('error', 'Gagal! Status akhir tidak dapat diubah karena sertifikat telah diterbitkan.');
+        }
+        if (is_null($asesi->asesor_id)) {
+            return redirect()->back()->with('error', 'Gagal! Anda belum bisa menetapkan status akhir karena asesor belum ditetapkan.');
+        }
+        if (
+            $request->status_final !== StatusFinalAsesi::BELUM_DITETAPKAN->value &&
+            $asesi->status_berkas->value !== StatusBerkasAdministrasi::SUDAH_LENGKAP->value
+        ) {
+            return redirect()->back()->with('error', 'Gagal! Anda belum bisa menetapkan status akhir karena berkas asesi belum berstatus Sudah Lengkap.');
+        }
         $messageNotif = '';
         if ($request->status_final === StatusFinalAsesi::KOMPETEN->value) {
             $messageNotif = 'Selamat, Anda dinyatakan Kompeten pada skema sertifikasi ini.';
@@ -95,9 +113,52 @@ class PendaftarController extends Controller
             $url = route('asesi.sertifikasi.applied.show', [$sertification, $asesi, 'messageNotif' => $messageNotif]);
             $this->sendPushNotification($messaging, $user, $title, $body, $url, 'StatusAsesiUpdated');
         }
-        return redirect()->back()->with('message', 'Status akhir asesi berhasil diperbarui');   
+        return redirect()->back()->with('message', 'Status akhir asesi berhasil diperbarui');
     }
-    
+
+    public function assignAsesor(Sertification $sertification, Asesi $asesi, Request $request)
+    {
+        Gate::authorize('assignAsesor', $asesi);
+
+        if ($asesi->status_final->value !== StatusFinalAsesi::BELUM_DITETAPKAN->value) {
+            return back()->with('error', 'Gagal! Asesor tidak dapat diubah karena status akhir telah ditetapkan.');
+        }
+
+        $request->validate(['asesor_id' => 'required|exists:asesors,id']);
+        if (!$sertification->asesors->contains($request->asesor_id)) {
+            return back()->with('error', 'Asesor tidak terdatar di sertifikasi ini.');
+        }
+
+        $asesi->update(['asesor_id' => $request->asesor_id]);
+        return back()->with('message', 'Asesor berhasil ditetapkan.');
+    }
+
+    public function assignAsesorBulk(Sertification $sertification, Request $request)
+    {
+        $request->validate([
+            'asesi_ids' => 'required|array',
+            'asesi_ids.*' => 'exists:asesis,id',
+            'asesor_id' => 'required|exists:asesors,id',
+        ]);
+        if (!$sertification->asesors->contains($request->asesor_id)) {
+            return back()->with('error', 'Asesor tidak terdatar di sertifikasi ini.');
+        }
+
+        $asesis = Asesi::whereIn('id', $request->asesi_ids)->get();
+        foreach ($asesis as $asesi) {
+            Gate::authorize('assignAsesor', $asesi);
+            if ($asesi->status_berkas->value !== StatusBerkasAdministrasi::SUDAH_LENGKAP->value) {
+                return redirect()->back()->with('error', 'Gagal: Salah satu asesi belum memiliki berkas yang lengkap.');
+            }
+            if ($asesi->status_final->value !== StatusFinalAsesi::BELUM_DITETAPKAN->value) {
+                return redirect()->back()->with('error', 'Gagal: Salah satu asesi sudah memiliki status final yang ditetapkan.');
+            }
+        }
+
+        Asesi::whereIn('id', $request->asesi_ids)->update(['asesor_id' => $request->asesor_id]);
+        return redirect()->back()->with('message', count($request->asesi_ids) . ' asesi berhasil di-assign ke asesor.');
+    }
+
     public function updateStatusFinalBulk(Sertification $sertification, Request $request, Messaging $messaging)
     {
         $request->validate([
@@ -107,8 +168,21 @@ class PendaftarController extends Controller
         ]);
 
         // Authorization: Cek apakah user bisa update semua asesi yang dipilih
-        $asesis = Asesi::whereIn('id', $request->asesi_ids)->get();
-        $this->authorizeBulk('update', $asesis);
+        $asesis = Asesi::with(['student.user', 'asesor', 'sertifikat'])->whereIn('id', $request->asesi_ids)->get();
+        foreach ($asesis as $asesi) {
+            // Panggil policy yang sudah kita buat sebelumnya untuk menolak admin / asesor lain
+            Gate::authorize('updateStatusFinal', $asesi);
+
+            if ($asesi->sertifikat) {
+                return redirect()->back()->with('error', 'Gagal: Salah satu asesi sudah diterbitkan sertifikatnya.');
+            }
+            if (is_null($asesi->asesor_id)) {
+                return redirect()->back()->with('error', 'Gagal: Salah satu asesi belum ditetapkan asesornya.');
+            }
+            if ($asesi->status_berkas->value !== StatusBerkasAdministrasi::SUDAH_LENGKAP->value) {
+                return redirect()->back()->with('error', 'Gagal: Salah satu asesi belum berstatus berkas Sudah Lengkap.');
+            }
+        }
         $messageNotif = '';
         if ($request->status_final === StatusFinalAsesi::KOMPETEN->value) {
             $messageNotif = 'Selamat, Anda dinyatakan Kompeten pada skema sertifikasi ini.';
@@ -123,8 +197,8 @@ class PendaftarController extends Controller
         Asesi::whereIn('id', $request->asesi_ids)->update(['status_final' => $request->status_final]);
 
         $asesis = Asesi::with(['student.user'])
-                ->whereIn('id', $request->asesi_ids)
-                ->get();
+            ->whereIn('id', $request->asesi_ids)
+            ->get();
 
         if ($asesis->isNotEmpty()) {
             foreach ($asesis as $asesi) {
@@ -136,7 +210,7 @@ class PendaftarController extends Controller
             }
         }
 
-        return redirect()->back()->with('message', count($request->asesi_ids) . ' asesi berhasil diperbarui status finalnya.');   
+        return redirect()->back()->with('message', count($request->asesi_ids) . ' asesi berhasil diperbarui status finalnya.');
     }
 
     public function updateStatusBerkasBulk(Sertification $sertification, Request $request, Messaging $messaging)
@@ -160,7 +234,7 @@ class PendaftarController extends Controller
         } else if ($request->status_berkas === StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN->value) {
             $messageNotif = 'Berkas Anda sedang dalam antrean untuk diverifikasi oleh Admin LSP.';
         }
-        
+
         Asesi::whereIn('id', $request->asesi_ids)->update([
             'status_berkas' => $request->status_berkas,
             'catatan_perbaikan' => ($request->status_berkas === StatusBerkasAdministrasi::PERLU_PERBAIKAN_BERKAS->value) ? $request->catatan_perbaikan : null,
@@ -171,6 +245,9 @@ class PendaftarController extends Controller
             ->get();
 
         foreach ($asesis as $asesi) {
+            if ($asesi->asesor_id !== null || $asesi->status_final->value !== StatusFinalAsesi::BELUM_DITETAPKAN->value) {
+                return redirect()->back()->with('error', 'Salah satu asesi yang dipilih sudah memiliki asesor atau status final.');
+            }
             $user = $asesi->student->user;
             if ($user) {
                 $url = route('asesi.sertifikasi.applied.show', [$sertification, $asesi, 'messageNotif' => $messageNotif]);
@@ -185,7 +262,7 @@ class PendaftarController extends Controller
     {
         // Authorization: Hanya admin yang bisa manage sertifikat
         Gate::authorize('manageCertificate', $asesi);
-        
+
         $sertifikat = $asesi->sertifikat()->firstOrNew(['asesi_id' => $asesi->id]);
         $validatedData = $request->validate([
             'nomor_seri' => [
@@ -239,7 +316,7 @@ class PendaftarController extends Controller
     {
         // Authorization: Hanya admin yang bisa manage sertifikat
         Gate::authorize('manageCertificate', $asesi);
-        
+
         FileHelper::handleSingleFileDeletes($asesi->sertifikat, ['file_path']);
         $asesi->sertifikat->delete();
         return back()->with('message', 'Sertifikat berhasil dihapus.');

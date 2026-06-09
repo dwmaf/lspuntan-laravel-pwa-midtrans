@@ -13,13 +13,53 @@ import SelectInput from '@/Components/Input/SelectInput.vue';
 import InputLabel from '@/Components/Input/InputLabel.vue';
 import Modal from '@/Components/Modal.vue';
 import Checkbox from '@/Components/Input/Checkbox.vue';
-import { useForm } from '@inertiajs/vue3';
+import { useForm, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     sertification: Object,
 });
 
 const selectedAsesis = ref([]);
+
+const roles = computed(() => (usePage().props.auth.roles ?? []).map(r => typeof r === 'string' ? r : r.name));
+const isAdmin = computed(() => roles.value.includes('admin'));
+
+const canBulkUpdateBerkas = computed(() => {
+    if (selectedAsesis.value.length === 0) return false;
+    if (!isAdmin.value) return false;
+    const selected = filteredAsesis.value.filter(a => selectedAsesis.value.includes(a.id));
+    return selected.every(a => {
+        const finalStatus = typeof a.status_final === 'object' ? a.status_final?.value : a.status_final;
+        return !a.asesor_id && finalStatus === 'belum_ditetapkan';
+    });
+});
+
+const canBulkAssignAsesor = computed(() => {
+    if (selectedAsesis.value.length === 0) return false;
+    if (!isAdmin.value) return false;
+    
+    const selected = filteredAsesis.value.filter(a => selectedAsesis.value.includes(a.id));
+    return selected.every(a => {
+        const berkasStatus = typeof a.status_berkas === 'object' ? a.status_berkas?.value : a.status_berkas;
+        const finalStatus = typeof a.status_final === 'object' ? a.status_final?.value : a.status_final;
+        return berkasStatus === 'sudah_lengkap' && finalStatus === 'belum_ditetapkan';
+    });
+});
+
+
+const canBulkUpdateFinal = computed(() => {
+    if (selectedAsesis.value.length === 0) return false;
+    const selected = filteredAsesis.value.filter(a => selectedAsesis.value.includes(a.id));
+    return selected.every(a => {
+        const user = usePage().props.auth.user;
+        const berkasStatus = typeof a.status_berkas === 'object' ? a.status_berkas?.value : a.status_berkas;
+        
+        return berkasStatus === 'sudah_lengkap' && 
+               a.asesor_id !== null &&
+               !isAdmin.value &&
+               user.id === a.asesor?.user_id;
+    });
+});
 
 const getStatusBerkasAdministrasi = (status) => {
     const data = {
@@ -100,19 +140,17 @@ const applyFilters = () => {
 const resetFilters = () => {
     filtersForm.value = { statusBerkasAdministrasi: '', statusFinalAsesi: '' };
     activeFilters.value = { statusBerkasAdministrasi: '', statusFinalAsesi: '' };
-    // showFilterModal.value = false; // Optional: close on reset or keep open
+    showFilterModal.value = false; // Optional: close on reset or keep open
 };
 
 const closeFilterModal = () => {
     showFilterModal.value = false;
-    // Reset form to currently active filters to discard unsaved changes
     filtersForm.value = { ...activeFilters.value };
 };
 
 const filteredAsesis = computed(() => {
     let result = props.sertification.asesis;
 
-    // Filter by Search Query (Name or Email)
     if (searchQuery.value) {
         const lower = searchQuery.value.toLowerCase();
         result = result.filter(asesi =>
@@ -143,16 +181,24 @@ const isSelectAll = computed({
 });
 
 const showBulkActionModal = ref(false);
-const bulkType = ref(''); // 'berkas', 'final'
+const bulkType = ref(''); // 'berkas', 'asesor', 'final'
 const bulkForm = useForm({
     asesi_ids: [],
     status_berkas: '',
     status_final: '',
     catatan_perbaikan: '',
+    asesor_id: '',
+});
+
+const asesorOptions = computed(() => {
+    return props.sertification.asesors.map(asesor => ({
+        value: asesor.id,
+        text: asesor.user.name
+    }));
 });
 
 const openBulkModal = (type) => {
-    bulkForm.reset('status_berkas', 'status_final', 'catatan_perbaikan');
+    bulkForm.reset('status_berkas', 'status_final', 'catatan_perbaikan', 'asesor_id');
     bulkType.value = type;
     bulkForm.asesi_ids = selectedAsesis.value;
     showBulkActionModal.value = true;
@@ -162,6 +208,7 @@ const submitBulk = () => {
     let routeName = '';
     if (bulkType.value === 'berkas') routeName = 'admin.sertifikasi.pendaftar.update-status-berkas-bulk';
     if (bulkType.value === 'final') routeName = 'admin.sertifikasi.pendaftar.update-status-final-bulk';
+    if (bulkType.value === 'assign_asesor') routeName = 'admin.sertifikasi.pendaftar.assign-asesor-bulk';
 
     bulkForm.patch(route(routeName, [props.sertification.id]), {
         onSuccess: () => {
@@ -177,6 +224,7 @@ const submitBulk = () => {
 <template>
     <AdminLayout>
         <CustomHeader :judul="`${sertification.skema.nama_skema}: Daftar Peserta`" />
+        
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
         <div class="p-3 sm:p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
@@ -185,14 +233,27 @@ const submitBulk = () => {
                     <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                         {{ selectedAsesis.length }} dipilih:
                     </span>
-                    <SecondaryButton @click="openBulkModal('berkas')" class="py-2! px-3! normal-case!">
+                    <SecondaryButton v-if="canBulkUpdateBerkas" @click="openBulkModal('berkas')" class="py-2! px-3! normal-case!">
                         <FileText class="w-4 mr-1" />
                         Update Status Berkas
                     </SecondaryButton>
-                    <SecondaryButton @click="openBulkModal('final')" class="py-2! px-3! normal-case!">
+                    <SecondaryButton v-if="canBulkAssignAsesor" @click="openBulkModal('assign_asesor')" class="py-2! px-3! normal-case!">
+                        <FileText class="w-4 mr-1" />
+                        Assign Asesor
+                    </SecondaryButton>
+                    <SecondaryButton v-if="canBulkUpdateFinal" @click="openBulkModal('final')" class="py-2! px-3! normal-case!">
                         <Award class="w-4 mr-1" />
                         Update Status Final
                     </SecondaryButton>
+                    <span v-if="!canBulkUpdateBerkas && !canBulkAssignAsesor && !canBulkUpdateFinal" 
+                          class="text-xs italic text-red-500 max-w-sm leading-tight inline-block">
+                        <template v-if="$page.props.auth.user.role === 'admin'">
+                            *Beberapa aksi tidak tersedia karena asesi yang dipilih memiliki status yang beragam, atau tidak memenuhi syarat (contoh: sudah memiliki asesor/status akhir).
+                        </template>
+                        <template v-else>
+                            *Beberapa aksi tidak tersedia. Pastikan berkas asesi telah dinyatakan lengkap oleh Admin dan ditugaskan kepada Anda.
+                        </template>
+                    </span>
                 </div>
                 <div v-else></div>
 
@@ -230,6 +291,10 @@ const submitBulk = () => {
                             </th>
                             <th scope="col"
                                 class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Asesor
+                            </th>
+                            <th scope="col"
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Status Final Asesi
                             </th>
                             <th scope="col"
@@ -240,7 +305,6 @@ const submitBulk = () => {
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 ">
-
                         <tr v-if="filteredAsesis.length > 0" v-for="(asesi, index) in filteredAsesis" :key="asesi.id"
                             class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <td class="px-2 py-4 whitespace-nowrap">
@@ -260,6 +324,14 @@ const submitBulk = () => {
                             <td class="px-2 py-4 whitespace-nowrap text-sm">
                                 <StatusBadge :variant="getStatusBerkasAdministrasi(asesi.status_berkas).variant">
                                     {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
+                                </StatusBadge>
+                            </td>
+                            <td class="px-2 py-4 whitespace-nowrap text-sm">
+                                <span v-if="asesi.asesor" class="font-medium text-gray-900 dark:text-gray-100">
+                                    {{ asesi.asesor.user?.name }}
+                                </span>
+                                <StatusBadge v-else variant="neutral">
+                                    Belum Ditetapkan
                                 </StatusBadge>
                             </td>
                             <td class="px-2 py-4 whitespace-nowrap text-sm">
@@ -330,6 +402,9 @@ const submitBulk = () => {
                         <template v-if="bulkType === 'final'">
                             <SelectInput label="Status Final Asesi" v-model="bulkForm.status_final"
                                 :options="statusFinalAsesiOptions" />
+                        </template>
+                        <template v-if="bulkType === 'assign_asesor'">
+                            <SelectInput label="Asesor Penguji" v-model="bulkForm.asesor_id" :options="asesorOptions" />
                         </template>
                     </div>
 

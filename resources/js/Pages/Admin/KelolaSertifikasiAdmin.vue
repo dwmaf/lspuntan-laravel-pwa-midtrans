@@ -178,7 +178,7 @@ const submit = () => {
                     empty-message="Tidak ada riwayat sertifikasi untuk filter yang dipilih.">
                     <template #filter>
                         <div class="flex justify-end items-center gap-2 mb-4">
-                            <button data-cy="filter-trigger-button" @click="openFilterModal"
+                            <button data-cy="filter-trigger-button" @click="openFilterModal" aria-label="filter"
                                 class="relative mt-1 inline-flex items-center px-3 py-3 border border-gray-300 dark:border-gray-500 text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
                                 <FunnelIcon class="w-4 h-4" />
                                 <span v-if="hasActiveFilters"
@@ -254,7 +254,7 @@ const submit = () => {
     </AdminLayout>
     <Modal :show="showFilterModal" @close="showFilterModal = false">
         <div class="flex justify-end p-2">
-            <button @click="closeFilterModal">
+            <button @click="closeFilterModal" aria-label="Tutup filter">
                 <X class="w-4 dark:text-white" />
             </button>
         </div>

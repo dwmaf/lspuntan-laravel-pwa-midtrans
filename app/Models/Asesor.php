@@ -26,6 +26,10 @@ class Asesor extends Model
     {
         return $this->belongsToMany(Sertification::class, 'asesor_sertification');
     }
+    public function asesis()
+    {
+        return $this->hasMany(Asesi::class);
+    }
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

@@ -24,6 +24,7 @@ defineEmits(['update:modelValue']);
     <div>
         <InputLabel v-if="label" :for="id" :value="label" :required="required"/>
         <input
+            :id="id"
             :type="type"
             :value="modelValue"
             @input="$emit('update:modelValue', $event.target.value)"

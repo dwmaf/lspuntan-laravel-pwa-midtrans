@@ -3,18 +3,17 @@
         class="inline-flex items-stretch border border-gray-300 dark:border-gray-600 divide-x-2 divide-gray-300 dark:divide-gray-600 rounded-lg overflow-hidden">
         <template v-for="(link, key) in links" :key="key">
             <template v-if="key === 0 && link.url">
-                <Link :href="link.url ?? '#'" :disabled="!link.url"
+                <Link :href="link.url ?? '#'" :disabled="!link.url" aria-label="Previous page"
                     class="px-2 py-2 text-sm font-bold flex items-center dark:text-gray-100 text-gray-700 justify-center"
                     :class="{
                         'cursor-not-allowed': !link.url,
                         'hover:bg-gray-100 dark:hover:bg-gray-700': link.url
                     }">
                 <ChevronLeft class="w-4 h-4 " />
-
                 </Link>
             </template>
             <template v-else-if="key === links.length - 1 && link.url">
-                <Link :href="link.url ?? '#'" :disabled="!link.url"
+                <Link :href="link.url ?? '#'" :disabled="!link.url" aria-label="Next page"
                     class="px-2 py-2 text-sm font-bold flex items-center dark:text-gray-100 text-gray-700 justify-center"
                     :class="{
                         'cursor-not-allowed': !link.url,

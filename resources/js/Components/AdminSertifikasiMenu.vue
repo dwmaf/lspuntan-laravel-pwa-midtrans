@@ -1,5 +1,5 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import {
     IconInfoCircle,
@@ -17,38 +17,48 @@ const props = defineProps({
     },
 });
 
-const menuItems = computed(() => [
-    {
-        label: 'Detail',
-        href: route('admin.kelolasertifikasi.show', props.sertificationId),
-        active: route().current('admin.kelolasertifikasi.show'),
-        icon: IconInfoCircle,
-    },
-    // {
-    //     label: 'Pembayaran',
-    //     href: route('admin.sertifikasi.payment-desc.index', props.sertificationId),
-    //     active: route().current('admin.sertifikasi.payment-desc.index'),
-    //     icon: IconReceipt,
-    // },
-    {
-        label: 'Pengumuman',
-        href: route('admin.sertifikasi.assessment-announcement.index', props.sertificationId),
-        active: route().current('admin.sertifikasi.assessment-announcement.index'),
-        icon: IconSpeakerphone,
-    },
-    {
-        label: 'Asesmen',
-        href: route('admin.sertifikasi.assessment.edit', props.sertificationId),
-        active: route().current('admin.sertifikasi.assessment.edit'),
-        icon: IconChecklist,
-    },
-    {
+const menuItems = computed(() => {
+    const pageProps = usePage().props;
+    const user = pageProps.auth?.user;
+    
+    // Asesor yang bersangkutan harus ada di dalam sertification.asesors
+    const sertification = pageProps.sertification;
+    const isAsesorAssigned = sertification && sertification.asesors && 
+        sertification.asesors.some(asesor => asesor.user_id === user?.id);
+
+    const items = [
+        {
+            label: 'Detail',
+            href: route('admin.kelolasertifikasi.show', props.sertificationId),
+            active: route().current('admin.kelolasertifikasi.show'),
+            icon: IconInfoCircle,
+        },
+        {
+            label: 'Pengumuman',
+            href: route('admin.sertifikasi.assessment-announcement.index', props.sertificationId),
+            active: route().current('admin.sertifikasi.assessment-announcement.index'),
+            icon: IconSpeakerphone,
+        },
+    ];
+
+    if (isAsesorAssigned) {
+        items.push({
+            label: 'Asesmen',
+            href: route('admin.sertifikasi.assessment.edit', props.sertificationId),
+            active: route().current('admin.sertifikasi.assessment.edit'),
+            icon: IconChecklist,
+        });
+    }
+
+    items.push({
         label: 'Peserta',
         href: route('admin.sertifikasi.pendaftar.index', props.sertificationId),
         active: route().current('admin.sertifikasi.pendaftar.*'),
         icon: IconUsers,
-    },
-]);
+    });
+
+    return items;
+});
 </script>
 
 <template>

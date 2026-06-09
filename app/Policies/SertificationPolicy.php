@@ -85,13 +85,20 @@ class SertificationPolicy
         return $user->hasRole('admin');
     }
 
-    /**
-     * Determine whether the user can manage assessment (create/update tasks) for the certification.
-     */
     public function manageAssessment(User $user, Sertification $sertification): bool
     {
-        // Re-use view logic: Admin allowed, Asesor allowed if assigned
-        return $this->view($user, $sertification);
+        // Hanya asesor yang bersangkutan dengan sertifikasi tersebut yang bisa akses
+        if ($user->hasRole('asesor')) {
+            $asesor = Asesor::where('user_id', $user->id)->first();
+            
+            if (!$asesor) {
+                return false;
+            }
+
+            return $sertification->asesors()->where('asesors.id', $asesor->id)->exists();
+        }
+
+        return false;
     }
 
     /**

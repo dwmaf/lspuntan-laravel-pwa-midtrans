@@ -75,15 +75,11 @@ Route::middleware('auth')->group(function () {
 //nanti harus dikasih middleware 'verified'
 Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard'); //admin.dashboard
-
     Route::prefix('kelolasertifikasi')->name('kelolasertifikasi.')->group(function () {
-        Route::get('/index', [KelolaSertifikasiController::class, 'index'])->name('index'); // admin.kelolasertifikasi.index
-        Route::post('/store', [KelolaSertifikasiController::class, 'store'])->name('store'); // admin.kelolasertifikasi.store
-        Route::get('/{sertification}/show', [KelolaSertifikasiController::class, 'show'])->name('show'); // admin.kelolasertifikasi.show
-        Route::patch('/{sertification}/update', [KelolaSertifikasiController::class, 'update'])->name('update'); // admin.kelolasertifikasi.update
-        Route::patch('/{sertification}/cancel', [KelolaSertifikasiController::class, 'cancel'])->name('cancel'); // admin.kelolasertifikasi.cancel
-        Route::get('/{sertification}/report/export-excel', [KelolaSertifikasiController::class, 'export_excel'])->name('report.export_excel');
+        Route::get('/index', [KelolaSertifikasiController::class, 'index'])->name('index'); 
+        Route::get('/{sertification}/show', [KelolaSertifikasiController::class, 'show'])->name('show');
     });
+    
     Route::prefix('sertifikasi/{sertification}')->name('sertifikasi.')->group(function () {
         // untuk munculin halaman edit asesmen dan updatenya
         Route::get('/assessment/edit', [AsesmenController::class, 'edit'])->name('assessment.edit'); // admin.sertifikasi.assessment.edit
@@ -97,25 +93,28 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
 
     Route::prefix('sertifikasi/{sertification}')->name('sertifikasi.')->group(function () {
         Route::get('/pendaftar/index', [PendaftarController::class, 'listAsesi'])->name('pendaftar.index'); // admin.sertifikasi.pendaftar.index
-        Route::get('/pendaftar/{asesi}/show', [PendaftarController::class, 'rincianDataAsesi'])->name('pendaftar.show'); // admin.sertifikasi.pendaftar.show
-        Route::patch('/pendaftar/status-berkas/bulk', [PendaftarController::class, 'updateStatusBerkasBulk'])->name('pendaftar.update-status-berkas-bulk');
-        Route::patch('/pendaftar/update-akses-asesmen/bulk', [PendaftarController::class, 'updateAksesAsesmenBulk'])->name('pendaftar.update-akses-asesmen-bulk');
+        Route::get('/pendaftar/{asesi}/show', [PendaftarController::class, 'rincianDataAsesi'])->name('pendaftar.show'); // admin.sertifikasi.pendaftar.show        
         Route::patch('/pendaftar/update-status-final-asesi/bulk', [PendaftarController::class, 'updateStatusFinalBulk'])->name('pendaftar.update-status-final-bulk');
-        Route::patch('/pendaftar/{asesi}/status-berkas', [PendaftarController::class, 'updateStatusBerkas'])->name('pendaftar.update-status-berkas'); // admin.sertifikasi.pendaftar.update-status-berkas-asesi
-        Route::patch('/pendaftar/{asesi}/update-akses-asesmen', [PendaftarController::class, 'updateAksesAsesmen'])->name('pendaftar.update-akses-asesmen'); // admin.sertifikasi.pendaftar.update-akses-menu-asesmen
         Route::patch('/pendaftar/{asesi}/update-status-final-asesi', [PendaftarController::class, 'updateStatusFinal'])->name('pendaftar.update-status-final'); // admin.sertifikasi.pendaftar.update-status-final-asesi
-        Route::patch('/pendaftar/{asesi}/update-certificate', [PendaftarController::class, 'updateCertificate'])->name('pendaftar.update-certificate'); // admin.sertifikasi.pendaftar.upload-certificate
-        Route::delete('/pendaftar/{asesi}/destroy-certificate', [PendaftarController::class, 'destroyCertificate'])->name('pendaftar.destroy-certificate'); // admin.sertifikasi.pendaftar.destroy-certificate
-    });
-    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
-    Route::prefix('users')->name('users.')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('index');
-        Route::patch('/{user}', [UserController::class, 'update'])->name('update');
-        Route::post('/{user}/ban', [UserController::class, 'ban'])->name('ban');
-    });
+    }); 
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('kelolasertifikasi')->name('kelolasertifikasi.')->group(function () {
+        Route::post('/store', [KelolaSertifikasiController::class, 'store'])->name('store'); // admin.kelolasertifikasi.store
+        Route::patch('/{sertification}/update', [KelolaSertifikasiController::class, 'update'])->name('update'); // admin.kelolasertifikasi.update
+        Route::patch('/{sertification}/cancel', [KelolaSertifikasiController::class, 'cancel'])->name('cancel'); // admin.kelolasertifikasi.cancel
+        Route::get('/{sertification}/report/export-excel', [KelolaSertifikasiController::class, 'export_excel'])->name('report.export_excel');
+    });
+    Route::prefix('sertifikasi/{sertification}')->name('sertifikasi.')->group(function () {
+        Route::patch('/pendaftar/status-berkas/bulk', [PendaftarController::class, 'updateStatusBerkasBulk'])->name('pendaftar.update-status-berkas-bulk');
+        Route::patch('/pendaftar/{asesi}/status-berkas', [PendaftarController::class, 'updateStatusBerkas'])->name('pendaftar.update-status-berkas'); // admin.sertifikasi.pendaftar.update-status-berkas-asesi
+        Route::patch('/pendaftar/{asesi}/assign-asesor', [PendaftarController::class, 'assignAsesor'])->name('pendaftar.assign-asesor'); // admin.sertifikasi.pendaftar.assign-asesor
+        Route::patch('/pendaftar/assign-asesor/bulk', [PendaftarController::class, 'assignAsesorBulk'])->name('pendaftar.assign-asesor-bulk'); // admin.sertifikasi.pendaftar.assign-asesor-bulk
+        Route::patch('/pendaftar/{asesi}/update-certificate', [PendaftarController::class, 'updateCertificate'])->name('pendaftar.update-certificate'); // admin.sertifikasi.pendaftar.upload-certificate
+        Route::delete('/pendaftar/{asesi}/destroy-certificate', [PendaftarController::class, 'destroyCertificate'])->name('pendaftar.destroy-certificate'); // admin.sertifikasi.pendaftar.destroy-certificate
+    });
+
     Route::prefix('skema')->name('skema.')->group(function () {
         Route::get('/', [SkemaController::class, 'create'])->name('create'); // admin.skema.create
         Route::post('/', [SkemaController::class, 'store'])->name('store'); // admin.skema.store
@@ -172,14 +171,14 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
 //         'sertification' => Sertification::find(1)
 //     ]);
 // });
-Route::get('/debug-firebase', function () { //will be commented on production
-    try {
-        $messaging = app('firebase.messaging');
-        dd('Koneksi ke Firebase Messaging BERHASIL! Driver seharusnya sudah terdaftar. Masalah ada di tempat lain.');
-    } catch (\Throwable $e) {
-        dd($e);
-    }
-});
+// Route::get('/debug-firebase', function () { //will be commented on production
+//     try {
+//         $messaging = app('firebase.messaging');
+//         dd('Koneksi ke Firebase Messaging BERHASIL! Driver seharusnya sudah terdaftar. Masalah ada di tempat lain.');
+//     } catch (\Throwable $e) {
+//         dd($e);
+//     }
+// });
 // Route::prefix('dev')->name('dev.')->group(function () {
 //     Route::get('/list/sertifications', [DevelopmentController::class, 'index'])->name('list.sertifications'); // dev.list.sertifications
 //     Route::prefix('sertification')->name('sertification.')->group(function () {

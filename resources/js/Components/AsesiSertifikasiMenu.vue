@@ -16,7 +16,7 @@ const props = defineProps({
 
 const isDetailEnabled = !!props.asesi;
 const isPengumumanEnabled = !!props.asesi;
-const isAsesmenEnabled = props.asesi && props.asesi.status_akses_asesmen === 'diberikan';
+const isAsesmenEnabled = props.asesi && props.asesi.status_berkas === 'sudah_lengkap';
 
 const routeActive = (name) => route().current(name);
 </script>
@@ -74,7 +74,8 @@ const routeActive = (name) => route().current(name);
                         class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
                 </template>
                 <template v-else>
-                    <div class="flex items-center gap-2 px-4 py-3 rounded-t-md ">
+                    <div class="flex items-center gap-2 px-4 py-3 rounded-t-md "
+                     title="Berkas Anda belum dinyatakan lengkap">
                         <Lock class="shrink-0 w-5 text-gray-500 dark:text-gray-200" />
                         <span class="font-semibold text-sm dark:text-gray-200 text-slate-400">
                             Asesmen

@@ -18,7 +18,6 @@ import Checkbox from "@/Components/Input/Checkbox.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import Modal from "@/Components/Modal.vue";
 import { useForm, usePage, Link, router } from "@inertiajs/vue3";
-import { FileText, CheckCircle, Download, Edit, AlertTriangle, Clock } from 'lucide-vue-next';
 import { ref, computed, onMounted } from 'vue';
 import { useFormat } from "@/Composables/useFormat";
 
