@@ -63,4 +63,10 @@ class SkemaPolicy
     {
         return $user->hasRole('admin');
     }
+
+    public function downloadFile(User $user, Skema $skema)
+    {
+        // Selama objek $user ada (artinya dia sudah login), izinkan download
+        return true; 
+    }
 }

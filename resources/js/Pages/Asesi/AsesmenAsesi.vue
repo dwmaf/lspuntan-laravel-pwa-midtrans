@@ -23,7 +23,7 @@ const isDeadlinePassed = computed(() => {
 });
 
 const isStatusFinalLocked = computed (() => {
-    return props.asesi.status_final !== 'belum_ditentukan';
+    return props.asesi.status_final !== 'belum_ditetapkan';
 });
 
 const cannotSubmit = computed(() => {
@@ -108,7 +108,7 @@ const showViewMode = () => {
             <div class="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <div v-if="props.sertification.asesmen">
                     <div class="flex items-center gap-3 mb-4">
-                        <CreatorInfo :name="sertification.asesmen?.name" :created-at="sertification.asesmen?.created_at"
+                        <CreatorInfo :name="sertification.asesmen?.user?.name" :created-at="sertification.asesmen?.created_at"
                             :updated-at="sertification.asesmen?.updated_at" v-if="sertification.asesmen" class="mb-4" />
                     </div>
 
@@ -132,7 +132,7 @@ const showViewMode = () => {
                     <!-- Lampiran Tambahan dari Asesor -->
                     <div v-if="sertification.asesmen?.path_file" class="mt-4">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Lampiran Tambahan:</h4>
-                        <a :href="`/storage/${sertification.asesmen.path_file}`" target="_blank"
+                        <a :href="`/download/asesmens/${sertification.asesmen.id}/path_file`" target="_blank"
                             class="text-sm flex items-center gap-2 group min-w-0">
                             <FileIcon :path="sertification.asesmen.path_file" />
                             <span
@@ -143,10 +143,11 @@ const showViewMode = () => {
                     </div>
 
                     <!-- Form Pengumpulan Tugas Asesi -->
-                    <div v-if="isDeadlinePassed && !asesi.path_file_asesmen"
+                    <div v-if="cannotSubmit && !asesi.path_file_asesmen"
                         class="mt-8 text-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-                        <p class="text-gray-500 dark:text-gray-400">Anda tidak dapat mengumpulkan tugas karena batas
+                        <p v-if="isDeadlinePassed" class="text-gray-500 dark:text-gray-400">Anda tidak dapat mengumpulkan tugas karena batas
                             waktu telah berakhir.</p>
+                        <p v-else-if="isStatusFinalLocked" class="text-gray-500 dark:text-gray-400">Anda tidak dapat mengumpulkan tugas karena status final Anda telah ditetapkan.</p>
                     </div>
 
                     <div v-else class="mt-8 border-t dark:border-gray-700 pt-6">
@@ -157,19 +158,19 @@ const showViewMode = () => {
                             </h4>
                         </div>
                         <FileCard v-if="submissionMode === 'view' && asesi.path_file_asesmen"
-                            :title="asesi.path_file_asesmen" :href="`/storage/${asesi.path_file_asesmen}`"
-                            status="Sudah Dikumpulkan" :editable="!isDeadlinePassed" @edit="showEditMode" />
+                            :title="asesi.path_file_asesmen" :href="`/download/asesi/${asesi.id}/path_file_asesmen`"
+                            status="Sudah Dikumpulkan" :editable="!cannotSubmit" @edit="showEditMode" />
 
                         <form v-if="submissionMode === 'submit'" @submit.prevent="submit"
                             class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
                             <SingleFileInput v-model="form.path_file_asesmen" id="path_file_asesmen"
                                 v-model:deleteList="form.delete_files_asesi" delete-identifier="path_file_asesmen"
                                 label="File asesmen anda"
-                                :existing-file-url="asesi?.path_file_asesmen ? `/storage/${asesi.path_file_asesmen}` : null"
+                                :existing-file-url="asesi?.path_file_asesmen ? `/download/asesis/${asesi.id}/path_file_asesmen` : null"
                                 :is-marked-for-deletion="form.delete_files_asesi.includes('path_file_asesmen')"
                                 :error="form.errors.path_file_asesmen"
                                 :required="!asesi?.path_file_asesmen || form.delete_files_asesi.includes('path_file_asesmen')"
-                                :template-url="sertification.skema.format_asesmen ? `/storage/${sertification.skema.format_asesmen}` : null"
+                                :template-url="sertification.skema.format_asesmen ? `/download/asesis/${sertification.skema.id}/format_asesmen` : null"
                                 :disabled="submissionMode === 'view'" accept=".zip,.rar,.docx," />
                             <div class="flex items-center gap-4 mt-6">
                                 <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">

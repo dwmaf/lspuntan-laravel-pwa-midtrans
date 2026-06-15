@@ -2,21 +2,17 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
-import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import TextareaInput from "@/Components/Input/TextareaInput.vue";
-import InputError from "@/Components/Input/InputError.vue";
-import InputLabel from "@/Components/Input/InputLabel.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
-import { useForm, Link, router, InfiniteScroll } from "@inertiajs/vue3";
+import { useForm, router, InfiniteScroll } from "@inertiajs/vue3";
 import { ref, computed } from 'vue';
 import AddButton from "@/Components/Button/AddButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
 import DeleteButton from "@/Components/Button/DeleteButton.vue";
 import FileIcon from '@/Components/FileIcon.vue';
 import Modal from "@/Components/Modal.vue";
-import ToggleSwitch from "@/Components/ToggleSwitch.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import CreatorInfo from "@/Components/CreatorInfo.vue";
 
@@ -146,7 +142,7 @@ const headerTitle = computed(() => {
                 <div class="">
                     <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                         delete-identifier="path_file" label="Lampiran Tambahan"
-                        :existing-file-url="pengumumans.data.find(p => p.id === editingPengumumanId)?.path_file ? `/storage/${pengumumans.data.find(p => p.id === editingPengumumanId).path_file}` : null"
+                        :existing-file-url="pengumumans.data.find(p => p.id === editingPengumumanId)?.path_file ? `/download/news/${editingPengumumanId}/path_file` : null"
                         :is-marked-for-deletion="form.delete_files.includes('path_file')"
                         accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
                 </div>
@@ -216,7 +212,7 @@ const headerTitle = computed(() => {
                     </h6>
 
                     <div v-if="pengumuman.path_file" class="mt-2">
-                        <a :href="`/storage/${pengumuman.path_file}`" target="_blank"
+                        <a :href="`/download/news/${pengumuman.id}/path_file`" target="_blank"
                             class="text-sm flex items-center gap-2 group min-w-0">
                             <FileIcon :path="pengumuman.path_file" />
                             <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">

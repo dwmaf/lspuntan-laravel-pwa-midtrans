@@ -27,10 +27,26 @@ class PendaftarController extends Controller
         // Authorization: Admin bisa lihat semua, Asesor hanya asesi yang mereka ampu
         Gate::authorize('view', $sertification);
 
-        $sertification->load('skema', 'asesis.student.user', 'asesis.asesor.user', 'asesors.user');
+        $sertification->load('skema', 'asesors.user');
+        $user = $request->user();
+        $unassignedCount = 0;
+
+        if ($user->hasRole('admin')) {
+            $sertification->load('asesis.student.user', 'asesis.asesor.user');
+        } else if ($user->hasRole('asesor')) {
+            $asesorId = $user->asesor?->id;
+            $sertification->load(['asesis' => function ($query) use ($asesorId) {
+                $query->where('asesor_id', $asesorId);
+            }, 'asesis.student.user', 'asesis.asesor.user']);
+
+            $unassignedCount = Asesi::where('sertification_id', $sertification->id)
+                ->whereNull('asesor_id')
+                ->count();
+        }
 
         return Inertia::render('Admin/PendaftarList', [
             'sertification' => $sertification,
+            'unassignedCount' => $unassignedCount,
         ]);
     }
 
@@ -145,8 +161,8 @@ class PendaftarController extends Controller
         }
 
         $asesis = Asesi::whereIn('id', $request->asesi_ids)->get();
+        $this->authorizeBulk('assignAsesor', $asesis);
         foreach ($asesis as $asesi) {
-            Gate::authorize('assignAsesor', $asesi);
             if ($asesi->status_berkas->value !== StatusBerkasAdministrasi::SUDAH_LENGKAP->value) {
                 return redirect()->back()->with('error', 'Gagal: Salah satu asesi belum memiliki berkas yang lengkap.');
             }
@@ -169,10 +185,8 @@ class PendaftarController extends Controller
 
         // Authorization: Cek apakah user bisa update semua asesi yang dipilih
         $asesis = Asesi::with(['student.user', 'asesor', 'sertifikat'])->whereIn('id', $request->asesi_ids)->get();
+        $this->authorizeBulk('updateStatusFinal', $asesis);
         foreach ($asesis as $asesi) {
-            // Panggil policy yang sudah kita buat sebelumnya untuk menolak admin / asesor lain
-            Gate::authorize('updateStatusFinal', $asesi);
-
             if ($asesi->sertifikat) {
                 return redirect()->back()->with('error', 'Gagal: Salah satu asesi sudah diterbitkan sertifikatnya.');
             }

@@ -2,7 +2,7 @@
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
 import CustomHeader from "@/Components/CustomHeader.vue";
-import PendaftarDetailDataStatis from "@/Pages/Admin/PendaftarDetailDataStatis.vue"; // Kita bisa pakai ulang komponen ini
+import PendaftarDetailDataStatis from "@/Pages/Admin/PendaftarDetailDataStatis.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
@@ -16,7 +16,6 @@ import { useFormat } from "@/Composables/useFormat";
 import Alert from "@/Components/Alert.vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import { ref, computed, onMounted } from 'vue';
-import { X } from 'lucide-vue-next';
 const props = defineProps({
     sertification: Object,
     student: Object,
@@ -48,8 +47,11 @@ onMounted(() => {
     }
 });
 
-const isEditing = ref(false);
+const canEdit = computed(() => {
+    return props.asesi?.status_berkas !== 'sudah_lengkap';
+});
 
+const isEditing = ref(false);
 
 const form = useForm({
     _method: 'patch',
@@ -100,9 +102,6 @@ const update = () => {
     });
 };
 
-const addMakul = () => form.makulNilais.push({ nama_makul: '', nilai_makul: '' });
-const removeMakul = (index) => form.makulNilais.splice(index, 1);
-
 const getStatusBerkasAdministrasi = (status) => {
     const data = {
         'menunggu_verifikasi_admin': {
@@ -151,7 +150,12 @@ const getStatusFinalAsesi = (status) => {
 
 const getFiles = (collection, type) => {
     if (!collection) return [];
-    return collection.filter(file => file.type === type);
+    return collection
+    .filter(file => file.type === type)
+    .map(file => ({
+        ...file,
+        downloadUrl: `/download/asesifiles/${file.id}/path_file`
+    }));
 };
 
 const suratMagangFiles = computed(() => getFiles(props.asesi.asesifiles, 'surat_ket_magang'));
@@ -237,91 +241,49 @@ const { formatCurrency, formatDateTime } = useFormat();
                         <SingleFileInput id="bukti_bayar" v-model="form.bukti_bayar" label="Bukti Pembayaran"
                             v-model:deleteList="form.delete_files_asesi" is-label-required accept=".jpg,.png,.jpeg,.pdf"
                             :error="form.errors.bukti_bayar"
-                            :existing-file-url="asesi?.bukti_bayar ? `/storage/${asesi.bukti_bayar}` : null"
+                            :existing-file-url="asesi?.bukti_bayar ? `/download/asesis/${asesi.id}/bukti_bayar` : null"
                             :is-marked-for-deletion="form.delete_files_asesi.includes('bukti_bayar')"
                             delete-identifier="bukti_bayar"
                             :required="!asesi?.bukti_bayar || form.delete_files_asesi.includes('bukti_bayar')" />
                     </div>
-                    <!-- Mata Kuliah Dinamis -->
-                    <!-- <div>
-                        <InputLabel value="Mata Kuliah terkait Skema Sertifikasi dan Nilai" required />
-                        <div class="mt-1 space-y-3">
-                            <div v-for="(makul, index) in form.makulNilais" :key="index"
-                                class="flex flex-col sm:flex-row items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                                <div class="w-full sm:grow">
-                                    <InputLabel :for="`makul_nama_${index}`" value="Nama Mata Kuliah" class="text-xs" />
-                                    <TextInput :id="`makul_nama_${index}`" v-model="makul.nama_makul"
-                                        placeholder="Contoh: Struktur Data Algoritma" required />
-                                </div>
-                                <div class="w-full sm:w-24 shrink-0">
-                                    <InputLabel :for="`makul_nilai_${index}`" value="Nilai" class="text-xs" />
-                                    <TextInput :id="`makul_nilai_${index}`" v-model="makul.nilai_makul"
-                                        placeholder="e.g., A" required />
-                                </div>
-                                <div class="w-full sm:w-auto pt-2 sm:pt-5">
-                                    <button @click="removeMakul(index)" type="button"
-                                        v-show="form.makulNilais.length > 1"
-                                        class="w-auto px-3 py-1 rounded-md sm:w-8 sm:h-8 shrink-0 sm:flex sm:items-center sm:justify-center sm:rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-200">
-                                        <span class="hidden sm:block">
-                                            <X class="w-4 mx-1" />
-                                        </span>
-                                        <span class="sm:hidden font-medium text-sm">Hapus</span>
-                                    </button>
-
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" @click="addMakul"
-                            class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            Tambah Mata Kuliah
-                        </button>
-
-                    </div> -->
-
                     <!-- Bukti Kelengkapan -->
                     <h3 class="dark:text-gray-300 font-semibold pt-4">D. Bukti Kelengkapan</h3>
                     <SingleFileInput id="apl_1" v-model="form.apl_1" v-model:deleteList="form.delete_files_asesi"
                         delete-identifier="apl_1" label="Form APL.01" is-label-required
-                        :template-url="`/storage/${sertification.skema.format_apl_1}`"
-                        :existing-file-url="asesi?.apl_1 ? `/storage/${asesi.apl_1}` : null"
+                        :template-url="`/download/skemas/${sertification.skema.id}/format_apl_1`"
+                        :existing-file-url="asesi?.apl_1 ? `/download/asesis/${asesi.id}/apl_1` : null"
                         :is-marked-for-deletion="form.delete_files_asesi.includes('apl_1')" accept=".doc,.docx"
                         :error="form.errors.apl_1"
                         :required="!asesi?.apl_1 || form.delete_files_asesi.includes('apl_1')" />
                     <SingleFileInput v-model="form.apl_2" v-model:deleteList="form.delete_files_asesi"
                         delete-identifier="apl_2" label="Form APL.02" is-label-required
-                        :template-url="`/storage/${sertification.skema.format_apl_2}`"
-                        :existing-file-url="asesi?.apl_2 ? `/storage/${asesi.apl_2}` : null"
+                        :template-url="`/download/skemas/${sertification.skema.id}/format_apl_2`"
+                        :existing-file-url="asesi?.apl_2 ? `/download/asesis/${asesi.id}/apl_2` : null"
                         :is-marked-for-deletion="form.delete_files_asesi.includes('apl_2')" accept=".doc,.docx"
                         :error="form.errors.apl_2"
                         :required="!asesi?.apl_2 || form.delete_files_asesi.includes('apl_2')" />
                     <SingleFileInput v-model="form.foto_ktp" v-model:deleteList="form.delete_files_student"
                         delete-identifier="foto_ktp" label="Scan KTP" is-label-required
-                        :existing-file-url="student?.foto_ktp ? `/storage/${student.foto_ktp}` : null"
+                        :existing-file-url="student?.foto_ktp ? `/download/students/${student.id}/foto_ktp` : null"
                         :is-marked-for-deletion="form.delete_files_student.includes('foto_ktp')"
                         accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.foto_ktp"
                         :required="!student?.foto_ktp || form.delete_files_student.includes('foto_ktp')" />
                     <SingleFileInput v-model="form.pas_foto" v-model:deleteList="form.delete_files_student"
                         delete-identifier="pas_foto"
                         label="Pasfoto terbaru dengan latar belakang merah, berukuran 4x6 (ukuran file maksimal 1 MB)"
-                        is-label-required :existing-file-url="student?.pas_foto ? `/storage/${student.pas_foto}` : null"
+                        is-label-required :existing-file-url="student?.pas_foto ? `/download/students/${student.id}/pas_foto` : null"
                         :is-marked-for-deletion="form.delete_files_student.includes('pas_foto')"
                         accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.pas_foto"
                         :required="!student?.pas_foto || form.delete_files_student.includes('pas_foto')" />
                     <SingleFileInput v-model="form.foto_ktm" v-model:deleteList="form.delete_files_asesi"
                         delete-identifier="foto_ktm" label="Scan KTM (ukuran file maksimal 1 MB)" is-label-required
-                        :existing-file-url="asesi?.foto_ktm ? `/storage/${asesi.foto_ktm}` : null"
+                        :existing-file-url="asesi?.foto_ktm ? `/download/asesis/${asesi.id}/foto_ktm` : null"
                         :is-marked-for-deletion="form.delete_files_asesi.includes('foto_ktm')"
                         accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.foto_ktm"
                         :required="!asesi?.foto_ktm || form.delete_files_asesi.includes('foto_ktm')" />
                     <SingleFileInput v-model="form.transkrip_nilai" v-model:deleteList="form.delete_files_asesi"
                         delete-identifier="transkrip_nilai" label="Transkrip Nilai Terbaru" is-label-required
-                        :existing-file-url="asesi?.transkrip_nilai ? `/storage/${asesi.transkrip_nilai}` : null"
+                        :existing-file-url="asesi?.transkrip_nilai ? `/download/asesis/${asesi.id}/transkrip_nilai` : null"
                         :is-marked-for-deletion="form.delete_files_asesi.includes('transkrip_nilai')"
                         accept=".doc,.docx" :error="form.errors.transkrip_nilai"
                         :required="!asesi?.transkrip_nilai || form.delete_files_asesi.includes('transkrip_nilai')" />
@@ -348,7 +310,7 @@ const { formatCurrency, formatDateTime } = useFormat();
 
             <!-- Mode Tampilan -->
             <div v-else class="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                <div class="flex justify-end mb-4">
+                <div v-if="canEdit" class="flex justify-end mb-4">
                     <EditButton @click="enterEditMode">Edit Data</EditButton>
                 </div>
 
@@ -390,15 +352,13 @@ const { formatCurrency, formatDateTime } = useFormat();
                     </div>
                 </div>
 
-
                 <div v-if="props.asesi.sertifikat">
                     <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">F.
                         Sertifikat
                     </h3>
-
                     <div class="mt-4">
                         <FileCard v-if="asesi.status_final === 'kompeten' && asesi.sertifikat" :title="asesi.sertifikat.file_path"
-                                    :href="`/storage/${asesi.sertifikat.file_path}`" icon="award"
+                                    :href="`/download/sertifikat/${asesi.sertifikat.id}/file_path`" icon="award"
                                     status="Telah Terbit" />
                     </div>
                 </div>

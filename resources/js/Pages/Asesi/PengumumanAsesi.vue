@@ -88,7 +88,7 @@ onMounted(() => {
                 <div v-html="selectedNews.content.replace(/\n/g, '<br>')"
                     class="prose dark:prose-invert max-w-none font-medium text-sm text-gray-800 dark:text-gray-100"></div>
                 <div v-if="selectedNews.path_file" class="mt-4 pt-4 dark:border-gray-700">
-                    <a :href="`/storage/${selectedNews.path_file}`" target="_blank"
+                    <a :href="`/download/news/${selectedNews.id}/path_file`" target="_blank"
                         class="text-sm flex items-center gap-2 group min-w-0">
                         <FileIcon :path="selectedNews.path_file" />
                         <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">

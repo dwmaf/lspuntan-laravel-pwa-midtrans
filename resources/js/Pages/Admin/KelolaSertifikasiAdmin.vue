@@ -164,8 +164,6 @@ const submit = () => {
             </div>
         </nav>
         <hr class="border-gray-200 dark:border-gray-700 mb-4" />
-
-
         <div>
             <div v-show="tab === 'berlangsung'">
                 <SertifikasiTable :sertifications="sertifications_berlangsung"

@@ -121,4 +121,18 @@ class AsesiPolicy
         // Hanya admin yang bisa manage sertifikat
         return $user->hasRole('admin');
     }
+
+    public function downloadFile(User $user, Asesi $asesi)
+    {
+        if ($user->role === 'admin')
+            return true;
+        if ($user->role === 'asesi' && $user->id === $asesi->student->user_id)
+            return true;
+
+        if ($user->role === 'asesor') {
+            $asesor = $user->asesor;
+            return $asesor && $asesor->id === $asesi->asesor_id;
+        }
+        return false;
+    }
 }

@@ -1,3 +1,4 @@
+//file/fitur ini tidak jadi digunakan
 <script setup>
 import AsesiLayout from "@/Layouts/AsesiLayout.vue";
 import AsesiSertifikasiMenu from "@/Components/AsesiSertifikasiMenu.vue";
@@ -125,7 +126,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleString('id-ID', 
                             <SingleFileInput v-model="form.bukti_bayar" v-model:deleteList="form.delete_files"
                                 delete-identifier="bukti_bayar" label="Unggah Bukti Pembayaran" is-label-required
                                 :is-marked-for-deletion="form.delete_files.includes('bukti_bayar')"
-                                :existing-file-url="asesi.latest_transaction ? `/storage/${asesi.latest_transaction.bukti_bayar}` : null"
+                                :existing-file-url="asesi.latest_transaction ? `/download/asesi/${asesi.id}/bukti_bayar` : null"
                                 accept=".pdf,.jpg,.jpeg,.png" :error="form.errors.bukti_bayar" required />
                         </div>
                         <div class="flex items-center gap-4 pt-2">

@@ -60,7 +60,7 @@ const getSertifikasiStatus = (sert) => {
     <AsesiLayout>
         <CustomHeader judul="Daftar Sertifikasi" />
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <nav class="flex flex-wrap space-x-4 mt-1" aria-label="Tabs">
                 <div>
                     <button @click="activeTab = 'tersedia'"

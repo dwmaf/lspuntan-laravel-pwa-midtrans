@@ -102,14 +102,14 @@ const submit = () => {
                 </div>
                 <SingleFileInput v-model="form.foto_ktp" v-model:deleteList="form.delete_files"
                     delete-identifier="foto_ktp" label="Foto KTP" is-label-required
-                    :existing-file-url="student?.foto_ktp ? `/storage/${student.foto_ktp}` : null"
+                    :existing-file-url="student?.foto_ktp ? `/download/students/${student.id}/foto_ktp` : null"
                     :is-marked-for-deletion="form.delete_files.includes('foto_ktp')" accept=".jpg,.png,.jpeg,.pdf"
                     :error="form.errors.foto_ktp" @remove="removeFile('foto_ktp')"
                     :required="!student?.foto_ktp || form.delete_files.includes('foto_ktp')" />
                 <SingleFileInput v-model="form.pas_foto" v-model:deleteList="form.delete_files"
                     delete-identifier="pas_foto"
                     label="Pasfoto terbaru dengan latar belakang merah, berukuran 4x6 (ukuran file maksimal 1 MB)"
-                    is-label-required :existing-file-url="student?.pas_foto ? `/storage/${student.pas_foto}` : null"
+                    is-label-required :existing-file-url="student?.pas_foto ? `/download/students/${student.id}/pas_foto` : null"
                     :is-marked-for-deletion="form.delete_files.includes('pas_foto')" accept=".jpg,.png,.jpeg,.pdf"
                     :error="form.errors.pas_foto" @remove="removeFile('pas_foto')"
                     :required="!student?.pas_foto || form.delete_files.includes('pas_foto')" />
@@ -195,12 +195,12 @@ const submit = () => {
 
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <div v-for="file in [
-                    { label: 'Scan KTP', path: student?.foto_ktp },
-                    { label: 'Pasfoto', path: student?.pas_foto },
+                    { label: 'Scan KTP', path: student?.foto_ktp, column: 'foto_ktp' },
+                    { label: 'Pasfoto', path: student?.pas_foto, column: 'pas_foto' },
                 ]" :key="file.label">
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">{{ file.label }}</dt>
                     <dd class="mt-1 text-sm min-w-0">
-                        <a v-if="file.path" :href="`/storage/${file.path}`" target="_blank"
+                        <a v-if="file.path" :href="`/download/students/${student.id}/${file.column}`" target="_blank"
                             class="flex items-center gap-2 group min-w-0">
                             <FileIcon :path="file.path" />
                             <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">{{

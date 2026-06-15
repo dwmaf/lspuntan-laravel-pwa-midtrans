@@ -7,7 +7,6 @@ import Modal from "@/Components/Modal.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
-import SecondaryLinkButton from "@/Components/SecondaryLinkButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
 import SeeButton from "@/Components/Button/SeeButton.vue";
 import LoadingSpinner from "@/Components/LoadingSpinner.vue";
@@ -15,12 +14,10 @@ import StatusBadge from "@/Components/StatusBadge.vue";
 import TextInput from "@/Components/Input/TextInput.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import TextareaInput from "@/Components/Input/TextareaInput.vue";
-import FileIcon from "@/Components/FileIcon.vue";
 import BackButton from "@/Components/Button/BackButton.vue";
 import FileCard from "@/Components/FileCard.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
-import { Award } from 'lucide-vue-next';
-import { useForm, usePage, Link, router } from "@inertiajs/vue3";
+import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed } from 'vue';
 
 const props = defineProps({
@@ -285,7 +282,7 @@ const getStatusFinalAsesi = (status) => {
                     </div>
 
                     <FileCard v-else-if="props.asesi.sertifikat" :title="props.asesi.sertifikat.file_path"
-                        :href="`/storage/${props.asesi.sertifikat.file_path}`" icon="award" status="Telah Terbit"
+                        :href="`/download/sertifikats/${asesi.sertifikat.id}/file_path`" icon="award" status="Telah Terbit"
                         editable @edit="isEditingCertificate = true">
                     </FileCard>
                 </div>
@@ -313,7 +310,7 @@ const getStatusFinalAsesi = (status) => {
                     type="date" required :error="certificateForm.errors.berlaku_hingga" />
                 <SingleFileInput v-model="certificateForm.file_path" v-model:deleteList="certificateForm.delete_files"
                     delete-identifier="file_path" label="File Sertifikat" is-label-required
-                    :existing-file-url="asesi?.sertifikat?.file_path ? `/storage/${asesi.sertifikat.file_path}` : null"
+                    :existing-file-url="asesi?.sertifikat?.file_path ? `/download/sertifikats/${asesi.sertifikat.id}/file_path` : null"
                     :is-marked-for-deletion="certificateForm.delete_files.includes('file_path')"
                     accept=".pdf,.jpg,.jpeg,.png" :error="certificateForm.errors.file_path"
                     :required="!asesi?.sertifikat?.file_path || certificateForm.delete_files.includes('file_path')" />

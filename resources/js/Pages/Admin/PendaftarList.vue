@@ -17,12 +17,17 @@ import { useForm, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     sertification: Object,
+    unassignedCount: {
+        type: Number,
+        default: 0
+    }
 });
 
 const selectedAsesis = ref([]);
 
 const roles = computed(() => (usePage().props.auth.roles ?? []).map(r => typeof r === 'string' ? r : r.name));
 const isAdmin = computed(() => roles.value.includes('admin'));
+const isAsesor = computed(() => roles.value.includes('asesor'));
 
 const canBulkUpdateBerkas = computed(() => {
     if (selectedAsesis.value.length === 0) return false;
@@ -347,8 +352,13 @@ const submitBulk = () => {
                             </td>
                         </tr>
                         <tr v-else>
-                            <td colspan="4" class="px-2 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                                Tidak ada data pendaftar untuk skema ini.
+                            <td colspan="7" class="px-2 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                                <template v-if="isAsesor">
+                                    Belum ada asesi yang ditugaskan kepada Anda. Terdapat <span class="font-bold text-blue-600 dark:text-blue-400">{{ props.unassignedCount }}</span> asesi yang belum diassign ke asesor pada sertifikasi ini.
+                                </template>
+                                <template v-else>
+                                    Tidak ada data pendaftar untuk skema ini.
+                                </template>
                             </td>
                         </tr>
                     </tbody>

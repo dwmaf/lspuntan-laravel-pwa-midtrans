@@ -194,19 +194,19 @@ const { formatDateTime } = useFormat();
                         delete-identifier="bukti_bayar" required />
                 </div>
                 <SingleFileInput v-model="form.apl_1" label="Form APL.01" is-label-required
-                    :template-url="`/storage/${sertification.skema.format_apl_1}`" accept=".docx"
+                    :template-url="`/download/skema/${sertification.skema.id}/format_apl_1`" accept=".docx"
                     :error="form.errors.apl_1" delete-identifier="apl_1" required />
                 <SingleFileInput v-model="form.apl_2" label="Form APL.02" is-label-required
-                    :template-url="`/storage/${sertification.skema.format_apl_2}`" accept=".docx"
+                    :template-url="`/download/skema/${sertification.skema.id}/format_apl_2`" accept=".docx"
                     :error="form.errors.apl_2" delete-identifier="apl_2" required />
                 <SingleFileInput v-model="form.foto_ktp" label="Scan KTP" is-label-required
-                    :existing-file-url="student?.foto_ktp ? `/storage/${student.foto_ktp}` : null"
+                    :existing-file-url="student?.foto_ktp ? `/download/students/${student.id}/foto_ktp` : null"
                     :is-marked-for-deletion="form.delete_files.includes('foto_ktp')" accept=".jpg,.png,.jpeg,.pdf"
                     :error="form.errors.foto_ktp" v-model:deleteList="form.delete_files" delete-identifier="foto_ktp"
                     :required="!student?.foto_ktp || form.delete_files.includes('foto_ktp')" />
                 <SingleFileInput v-model="form.pas_foto"
                     label="Pasfoto terbaru dengan latar belakang merah, berukuran 4x6 (ukuran file maksimal 1 MB)"
-                    is-label-required :existing-file-url="student?.pas_foto ? `/storage/${student.pas_foto}` : null"
+                    is-label-required :existing-file-url="student?.pas_foto ? `/download/students/${student.id}/pas_foto` : null"
                     :is-marked-for-deletion="form.delete_files.includes('pas_foto')" accept=".jpg,.png,.jpeg,.pdf"
                     :error="form.errors.pas_foto" v-model:deleteList="form.delete_files" delete-identifier="pas_foto"
                     :required="!student?.pas_foto || form.delete_files.includes('pas_foto')" />

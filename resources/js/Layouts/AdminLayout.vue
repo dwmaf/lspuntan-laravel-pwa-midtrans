@@ -1,12 +1,10 @@
 <script setup>
 import Navigation from "@/Components/Navigation.vue";
 import NotificationBell from "@/Components/NotificationBell.vue";
+import UserInfo from "@/Components/UserInfo.vue";
 import { ref, computed, watch, onMounted } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import { UserCircle } from 'lucide-vue-next';
-import { IconLayoutSidebar, IconUserCircle } from '@tabler/icons-vue';
-import Dropdown from "@/Components/Dropdown.vue";
-import DropdownLink from "@/Components/DropdownLink.vue";
+import { IconLayoutSidebar } from '@tabler/icons-vue';
 
 const page = usePage();
 const user = computed(() => page.props?.auth?.user);
@@ -105,20 +103,7 @@ onMounted(() => {
                         :size="20" stroke-width="2" aria-label="Buka Menu" />
                     <div class="flex items-center">
                         <NotificationBell />
-                        <div class="ml-4 hidden sm:flex items-center gap-1">
-                            <div class="flex items-center shrink-0">
-                                <IconUserCircle stroke-width="1.5" class="w-9 h-9 text-gray-500" />
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-sm font-medium text-gray-900 dark:text-gray-200 leading-tight uppercase">
-                                    {{ namaUser }}
-                                </span>
-                                <span
-                                    class="text-[10px] text-blue-600 dark:text-blue-400 font-bold tracking-widest mt-0.5 capitalize">
-                                    {{ userRole }}
-                                </span>
-                            </div>
-                        </div>
+                        <UserInfo :namaUser="namaUser" :userRole="userRole" />
                     </div>
                 </header>
                 <main class="p-2">

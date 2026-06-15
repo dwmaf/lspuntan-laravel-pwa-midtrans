@@ -18,12 +18,16 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function markAllRead(Request $request): JsonResponse
+    public function markAllRead(Request $request)
     {
         $user = $request->user();
         $user->notificationLogs()->whereNull('read_at')->update(['read_at' => now()]);
 
-        return response()->json(['status' => 'ok']);
+        if ($request->wantsJson()) {
+            return response()->json(['status' => 'ok']);
+        }
+
+        return redirect()->back()->with('message', 'Semua notifikasi ditandai dibaca.');
     }
 
     public static function markAsRead(Request $request)

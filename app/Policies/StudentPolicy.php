@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Student;
 use App\Models\User;
+use App\Models\Asesi;
 use Illuminate\Auth\Access\Response;
 
 class StudentPolicy
@@ -62,5 +63,21 @@ class StudentPolicy
     public function forceDelete(User $user, Student $student): bool
     {
         return $user->hasRole('admin');
+    }
+
+    public function downloadFile(User $user, Student $student)
+    {
+        if ($user->role === 'admin')
+            return true;
+        if ($user->role === 'asesi' && $user->id === $student->user_id)
+            return true;
+
+        if ($user->role === 'asesor') {
+            $asesor = $user->asesor;
+            return $asesor && Asesi::where('student_id', $student->id)
+                ->where('asesor_id', $asesor->id)
+                ->exists();
+        }
+        return false;
     }
 }

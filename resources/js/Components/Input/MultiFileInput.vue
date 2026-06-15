@@ -106,9 +106,8 @@ function getDownloadUrl(file) {
     if (file.isNew && file.fileObject) {
         return URL.createObjectURL(file.fileObject);
     }
-    if (!file.isNew && file.path_file) {
-        // Asumsi path relatif ke storage, atau bisa jadi full URL
-        return file.path_file.startsWith('http') ? file.path_file : `/storage/${file.path_file}`;
+    if (!file.isNew) {
+        return file.downloadUrl || '#';
     }
     return '#';
 }

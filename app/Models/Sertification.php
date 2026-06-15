@@ -37,7 +37,7 @@ class Sertification extends Model
 
     public function asesmen()
     {
-        return $this->hasOne(Asesmen::class);
+        return $this->hasMany(Asesmen::class);
     }
 
     public function getActivitylogOptions(): LogOptions

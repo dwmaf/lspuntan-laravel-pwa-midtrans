@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Sertifikasi;
 
 use App\Http\Controllers\Controller;
 use App\Traits\SendsPushNotifications;
+use App\Http\Controllers\NotificationController;
 use App\Traits\AuthorizesAsesor;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
@@ -22,10 +23,10 @@ class AsesmenController extends Controller
     {
         // dd($id);
         Gate::authorize('manageAssessment', $sertification);
+        NotificationController::markAsRead($request);
         $sertification->load([
             'asesis.student.user',
             'asesis',
-            'asesmen',
             'skema',
             'asesors.user'
         ]);
@@ -35,6 +36,9 @@ class AsesmenController extends Controller
             ->where('status_berkas', 'sudah_lengkap')
             ->where('asesor_id', $asesorId)
             ->values();
+
+        $asesmen = $sertification->asesmen()->where('user_id', $request->user()->id)->with('user')->first();
+        $sertification->setRelation('asesmen', $asesmen);
 
         return Inertia::render('Admin/AsesmenAdmin', [
             'sertification' => $sertification,
@@ -56,7 +60,9 @@ class AsesmenController extends Controller
         ]);
         
         $sertification->load('skema');
-        $asesmen = $sertification->asesmen()->firstOrNew([]);
+        $asesmen = $sertification->asesmen()->firstOrNew([
+            'user_id' => $request->user()->id,
+        ]);
         $asesmen->fill([
             'content' => $validatedData['content'],
             'deadline' => $validatedData['deadline'],
@@ -66,9 +72,10 @@ class AsesmenController extends Controller
         FileHelper::handleSingleFileUploads($asesmen, ['path_file'], $request, 'sert_files');
         $asesmen->save();
         if ($request->boolean('send_notification')) {
+            $asesorId = $request->user()->asesor?->id;
             $asesis = Asesi::with(['student.user'])
                 ->where('sertification_id', $sertification->id)
-                ->where('status_akses_asesmen', 'diberikan')
+                ->where('asesor_id', $asesorId)
                 ->get();
             if ($asesis->isNotEmpty()) {
                 $title = 'Update Tugas Asesmen';
@@ -84,12 +91,13 @@ class AsesmenController extends Controller
         return redirect()->back()->with('message', 'Data berhasil disimpan!');
     }
 
-    public function destroy(Sertification $sertification)
+    public function destroy(Sertification $sertification, Request $request)
     {
         Gate::authorize('manageAssessment', $sertification);
-        if ($sertification->asesmen) {
-            FileHelper::handleSingleFileDeletes($sertification->asesmen, ['path_file']);
-            $sertification->asesmen->delete();
+        $asesmen = $sertification->asesmen()->where('user_id', $request->user()->id)->first();
+        if ($asesmen) {
+            FileHelper::handleSingleFileDeletes($asesmen, ['path_file']);
+            $asesmen->delete();
         }
 
         return redirect()->back()->with('message', 'Tugas Asesmen berhasil dihapus!');

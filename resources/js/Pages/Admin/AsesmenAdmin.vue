@@ -120,7 +120,7 @@ const { formatDateTime } = useFormat();
             </div>
             <div v-else class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <div class="flex justify-between items-center mb-2">
-                    <CreatorInfo :name="sertification.asesmen?.name" :created-at="sertification.asesmen?.created_at"
+                    <CreatorInfo :name="sertification.asesmen?.user?.name" :created-at="sertification.asesmen?.created_at"
                         :updated-at="sertification.asesmen?.updated_at" v-if="sertification.asesmen" class="mb-4" />
                     <div>
                         <div class="flex items-center gap-3">
@@ -139,7 +139,7 @@ const { formatDateTime } = useFormat();
                     </dd>
                 </div>
                 <div v-if="sertification.asesmen?.path_file">
-                    <a :href="`/storage/${sertification.asesmen.path_file}`" target="_blank"
+                    <a :href="`/download/asesmens/${sertification.asesmen.id}/path_file`" target="_blank"
                         class="text-sm flex items-center gap-2 group min-w-0">
                         <FileIcon :path="sertification.asesmen.path_file" />
                         <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">
@@ -165,7 +165,7 @@ const { formatDateTime } = useFormat();
                     :error="form.errors.deadline" />
                 <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                     delete-identifier="path_file" label="Lampiran Tambahan"
-                    :existing-file-url="sertification.asesmen?.path_file ? `/storage/${sertification.asesmen.path_file}` : null"
+                    :existing-file-url="sertification.asesmen?.path_file ? `/download/asesmens/${sertification.asesmen.id}/path_file` : null"
                     :is-marked-for-deletion="form.delete_files.includes('path_file')"
                     accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
                 <div class="flex items-center justify-between">
@@ -254,7 +254,7 @@ const { formatDateTime } = useFormat();
             <div v-if="selectedAsesi.path_file_asesmen">
                 <FileCard 
                     :title="selectedAsesi.path_file_asesmen"
-                    :href="`/storage/${selectedAsesi.path_file_asesmen}`"
+                    :href="`/download/asesis/${selectedAsesi.id}/path_file_asesmen`"
                     icon="file"
                     status="Sudah Dikumpulkan"
                 />

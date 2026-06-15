@@ -195,8 +195,13 @@ class KelolaSertifikasiAsesiController extends Controller
     public function updateApplied(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
         // dd($request);
+        if ($asesi->status_berkas === StatusBerkasAdministrasi::SUDAH_LENGKAP->value) {
+            abort(403, 'Data tidak dapat diubah karena berkas sudah diverifikasi dan dinyatakan lengkap.');
+        }
+
         Gate::authorize('update', $asesi);
         $asesi->load('student.user', 'asesifiles');
+        
         $student = $asesi->student;
         $user = $student->user;
         $request->validate([
@@ -351,5 +356,4 @@ class KelolaSertifikasiAsesiController extends Controller
         }
         return redirect()->back()->with('message', 'Berhasil update data sertifikasi');
     }
-
 }

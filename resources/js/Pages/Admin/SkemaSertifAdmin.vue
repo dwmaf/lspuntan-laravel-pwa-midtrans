@@ -148,7 +148,7 @@ const destroy = () => {
 
                 <Checkbox id="is_active_skema_create" v-model:checked="form.is_active" label="Skema Aktif" :description="form.is_active
                     ? 'Asesor aktif dan dapat dipilih untuk sertifikasi baru.'
-                    : 'Asesor nonaktif (disembunyikan dari pilihan sertifikasi baru).'" />
+                    : 'Asesor nonaktif (disembunyikan dari pilihan sertifikasi baru).'" :error="form.errors.is_active" />
                 <div class="flex items-center gap-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                     </PrimaryButton>
@@ -168,18 +168,18 @@ const destroy = () => {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <SingleFileInput v-model="form.format_apl_1" label="Format FR. APL.01"
                         v-model:deleteList="form.delete_files" delete-identifier="format_apl_1"
-                        :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_apl_1 ? `/storage/${props.skemas.data.find(s => s.id === form.id)?.format_apl_1}` : null"
+                        :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_apl_1 ? `/download/skemas/${form.id}/format_apl_1` : null"
                         :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".docx"
                         :error="form.errors.format_apl_1" />
                     <SingleFileInput v-model="form.format_apl_2" label="Format FR. APL.02"
                         v-model:deleteList="form.delete_files" delete-identifier="format_apl_2"
-                        :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_apl_2 ? `/storage/${props.skemas.data.find(s => s.id === form.id)?.format_apl_2}` : null"
+                        :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_apl_2 ? `/download/skemas/${form.id}/format_apl_2` : null"
                         :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".docx"
                         :error="form.errors.format_apl_2" />
                     <div class="md:col-span-2">
                         <SingleFileInput v-model="form.format_asesmen" label="File Lampiran Asesmen"
                             v-model:deleteList="form.delete_files" delete-identifier="format_asesmen"
-                            :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_asesmen ? `/storage/${props.skemas.data.find(s => s.id === form.id)?.format_asesmen}` : null"
+                            :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_asesmen ? `/download/skemas/${form.id}/format_asesmen` : null"
                             :is-marked-for-deletion="form.delete_files.includes('format_asesmen')" accept=".zip,.rar"
                             :error="form.errors.format_asesmen" />
                     </div>
@@ -187,7 +187,7 @@ const destroy = () => {
 
                 <Checkbox id="is_active_skema_edit" v-model:checked="form.is_active" label="Skema Aktif" :description="form.is_active
                     ? 'Skema aktif dan dapat dipilih untuk sertifikasi baru.'
-                    : 'Skema nonaktif (disembunyikan dari pilihan sertifikasi baru).'" />
+                    : 'Skema nonaktif (disembunyikan dari pilihan sertifikasi baru).'" :error="form.errors.is_active" />
                 <div class="flex items-center gap-4">
                     <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                     </PrimaryButton>
@@ -237,7 +237,7 @@ const destroy = () => {
                             <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
                                 <div class="flex flex-wrap gap-1 ">
                                     <template v-for="field in docFields" :key="field.id">
-                                        <a v-if="skema[field.id]" :href="`/storage/${skema[field.id]}`" target="_blank"
+                                        <a v-if="skema[field.id]" :href="`/download/skemas/${skema.id}/${field.id}`" target="_blank"
                                             class="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded text-[10px] font-bold hover:bg-blue-100 transition-colors"
                                             :title="field.label">
                                             {{ field.label.replace('FR. ', '') }}

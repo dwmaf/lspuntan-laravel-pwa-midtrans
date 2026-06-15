@@ -129,16 +129,16 @@ const { formatDate } = useFormat();
             Kelengkapan</h3>
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
             <div v-for="file in [
-                { label: 'Bukti Pembayaran', path: asesi.bukti_bayar },
-                { label: 'Form APL.01', path: asesi.apl_1 },
-                { label: 'Form APL.02', path: asesi.apl_2 },
-                { label: 'Scan KTP', path: asesi.student?.foto_ktp },
-                { label: 'Scan KTM', path: asesi?.foto_ktm },
-                { label: 'Pasfoto', path: asesi.student?.pas_foto },
+                { label: 'Bukti Pembayaran', path: asesi.bukti_bayar, table: 'asesis', id: asesi.id, column: 'bukti_bayar' },
+                { label: 'Form APL.01', path: asesi.apl_1, table: 'asesis', id: asesi.id, column: 'apl_1' },
+                { label: 'Form APL.02', path: asesi.apl_2, table: 'asesis', id: asesi.id, column: 'apl_2' },
+                { label: 'Scan KTP', path: asesi.student?.foto_ktp, table: 'students', id: asesi.student?.id, column: 'foto_ktp' },
+                { label: 'Scan KTM', path: asesi?.foto_ktm, table: 'students', id: asesi.student?.id, column: 'foto_ktm' },
+                { label: 'Pasfoto', path: asesi.student?.pas_foto, table: 'students', id: asesi.student?.id, column: 'pas_foto' },
             ]" :key="file.label">
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">{{ file.label }}</dt>
                 <dd class="mt-1 text-sm min-w-0">
-                    <a v-if="file.path" :href="`/storage/${file.path}`" target="_blank" class="flex items-center gap-2 group min-w-0">
+                    <a v-if="file.path" :href="`/download/${file.table}/${file.id}/${file.column}`" target="_blank" class="flex items-center gap-2 group min-w-0">
                         <FileIcon :path="file.path" />
                         <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">{{
                             file.path.split('/').pop() }}</span>
@@ -156,7 +156,7 @@ const { formatDate } = useFormat();
                 <dd class="mt-1 text-sm min-w-0">
                     <ul v-if="fileGroup.files.length > 0" class="flex flex-col gap-2">
                         <li v-for="file in fileGroup.files" :key="file.id">
-                            <a v-if="file.path_file" target="_blank" :href="`/storage/${file.path_file}`"
+                            <a v-if="file.path_file" target="_blank" :href="`/download/asesi_files/${file.id}/path_file`"
                                 class="flex items-center gap-2 group min-w-0">
                                 <FileIcon :path="file.path_file" />
                                 <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">{{

@@ -1,5 +1,6 @@
 <script setup>
 import NotificationBell from "@/Components/NotificationBell.vue";
+import UserInfo from "@/Components/UserInfo.vue";
 import Navigation from "@/Components/Navigation.vue";
 import { ref, computed, watch, onMounted } from "vue";
 import { usePage } from "@inertiajs/vue3";
@@ -11,17 +12,6 @@ import DropdownLink from "@/Components/DropdownLink.vue";
 const page = usePage();
 const user = computed(() => page.props?.auth?.user)
 const namaUser = computed(() => user.value.name);
-
-const userInitials = computed(() => {
-    if (user.value && user.value.name) {
-        const parts = user.value.name.split(' ');
-        if (parts.length === 1) {
-            return parts[0][0].toUpperCase();
-        }
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return null;
-});
 
 const userRole = computed(() => {
     const roles = page.props.auth?.roles || [];
@@ -119,36 +109,7 @@ onMounted(() => {
                         :size="20" stroke-width="2" />
                     <div class="flex items-center">
                         <NotificationBell />
-                        <div class="ml-4">
-                            <Dropdown>
-                                <template #trigger>
-                                    <div class="cursor-pointer">
-                                        <div v-if="userInitials" :title="`${namaUser}`"
-                                            class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
-                                            {{ userInitials }}
-                                        </div>
-                                        <UserCircle stroke-width="1" v-else class="w-8 h-8 text-gray-500" />
-                                    </div>
-                                </template>
-
-                                <template #content>
-                                    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-600">
-                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">
-                                            {{ namaUser }}
-                                        </p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                            {{ userRole }}
-                                        </p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                            {{ user.email }}
-                                        </p>
-                                    </div>
-                                    <DropdownLink :href="route('profile_asesi.edit')"> Profile </DropdownLink>
-                                    <DropdownLink :href="route('logout')" method="post" as="button"> Log Out
-                                    </DropdownLink>
-                                </template>
-                            </Dropdown>
-                        </div>
+                        <UserInfo :namaUser="namaUser" :userRole="userRole" />
                     </div>
                 </header>
                 <main class="p-2">

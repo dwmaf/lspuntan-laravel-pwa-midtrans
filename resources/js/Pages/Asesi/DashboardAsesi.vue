@@ -3,7 +3,7 @@ import AsesiLayout from '@/Layouts/AsesiLayout.vue';
 import CustomHeader from '@/Components/CustomHeader.vue';
 import StatusBadge from "@/Components/StatusBadge.vue";
 import { Link } from "@inertiajs/vue3";
-import { Award, Activity, Bell, Clock } from 'lucide-vue-next';
+import { Award, Activity, Bell, Clock, FileText, UserCheck, GraduationCap } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
 import { computed } from 'vue';
 
@@ -114,19 +114,9 @@ const getStatusFinalAsesi = (status) => {
                 </div>
                 <Activity class="w-8 h-8 text-green-600" />
             </div>
-
-
-            <!-- <div
-                class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">something else</h3>
-                    <p class="mt-1 text-3xl font-semibold text-yellow-600"></p>
-                </div>
-                <Wallet class="w-8 h-8 text-yellow-600" />
-            </div> -->
         </div>
 
-        <!-- Content Grid -->
+        
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
             <!-- Active Certifications List -->
             <div
@@ -141,8 +131,6 @@ const getStatusFinalAsesi = (status) => {
                     <Link v-for="asesi in sertifikasiBerlangsung" :key="asesi.id"
                         :href="route('asesi.sertifikasi.applied.show', [asesi.sertification_id, asesi.id])"
                         class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm hover:shadow-md">
-
-                        <!-- Header Card -->
                         <div class="flex justify-between items-start mb-3">
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-200">
                                 {{ asesi.sertification.skema.nama_skema }}
@@ -154,7 +142,7 @@ const getStatusFinalAsesi = (status) => {
                         <div class="space-y-2">
                             <div class="flex items-center justify-between text-sm">
                                 <span class="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                                    📄 Administrasi
+                                    <FileText class="w-4 h-4" /> Administrasi
                                 </span>
                                 <StatusBadge :variant="getStatusBerkasAdministrasi(asesi.status_berkas).variant">
                                     {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
@@ -162,16 +150,19 @@ const getStatusFinalAsesi = (status) => {
                             </div>
                             <div class="flex items-center justify-between text-sm">
                                 <span class="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                                    📝 Akses Ujian
+                                    <UserCheck class="w-4 h-4" /> Asesor
                                 </span>
-                                <StatusBadge :variant="getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).variant">
-                                    {{ getStatusAksesMenuAsesmen(asesi.status_akses_asesmen).text }}
+                                <span v-if="asesi.asesor" class="font-medium text-gray-900 dark:text-gray-100 text-right truncate max-w-[200px]" :title="asesi.asesor.user?.name">
+                                    {{ asesi.asesor.user?.name }}
+                                </span>
+                                <StatusBadge v-else variant="neutral">
+                                    Belum Ditetapkan
                                 </StatusBadge>
                             </div>
                             <div
                                 class="flex items-center justify-between text-sm pt-2 border-t border-gray-100 dark:border-gray-700 mt-2">
-                                <span class="text-gray-700 dark:text-gray-300 font-medium">
-                                    🎓 Hasil Akhir
+                                <span class="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+                                    <GraduationCap class="w-4 h-4" /> Hasil Akhir
                                 </span>
                                 <StatusBadge :variant="getStatusFinalAsesi(asesi.status_final).variant">
                                     {{ getStatusFinalAsesi(asesi.status_final).text }}

@@ -30,6 +30,12 @@ const layout = computed(() => {
     <component :is="layout">
         <CustomHeader judul="Daftar Notifikasi" />
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 py-6">
+            <div v-if="allNotifications.data.length > 0" class="flex justify-end mb-4">
+                <Link :href="route('notifications.markAllRead')" method="post" as="button" type="button" 
+                    class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline">
+                    Tandai Semua Dibaca
+                </Link>
+            </div>
             <div
                 class="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
 

@@ -16,6 +16,7 @@ use App\Http\Controllers\Asesi\Sertifikasi\PengumumanAsesiController;
 use App\Http\Controllers\FcmController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\FileAccessController;
 use App\Http\Controllers\OfflineController;
 use App\Http\Controllers\CertificateVerificationController;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/fcm/token', [FcmController::class, 'saveToken'])->name('fcm.token');
     Route::delete('/fcm/token', [FcmController::class, 'removeToken'])->name('fcm.token.remove');
     Route::get('/notifications/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::get('/download/{table}/{id}/{column}', [FileAccessController::class, 'download'])->middleware('auth')->name('secure.download');
 });
 
 

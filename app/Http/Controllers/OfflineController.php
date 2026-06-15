@@ -11,9 +11,6 @@ class OfflineController extends Controller
      */
     public function __invoke(Request $request)
     {
-        
-
-        // Kirim nama layout yang benar ke view
         return view('vendor.laravelpwa.offline');
     }
 }

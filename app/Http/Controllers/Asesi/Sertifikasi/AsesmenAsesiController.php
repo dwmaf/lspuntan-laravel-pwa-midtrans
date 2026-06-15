@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Asesi\Sertifikasi;
 
+use App\Enums\StatusFinalAsesi;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
@@ -22,8 +23,14 @@ class AsesmenAsesiController extends Controller
         Gate::authorize('view', $asesi);
         // buat agar hanya bisa masuk jika status berkasnya sudah lengkap
         NotificationController::markAsRead($request);
+
+        $sertification->load('skema');
+        $asesi->load('asesor');
+        $asesmen = $asesi->asesor ? $sertification->asesmen()->where('user_id', $asesi->asesor->user_id)->with('user')->first() : null;
+        $sertification->setRelation('asesmen', $asesmen);
+
         return Inertia::render('Asesi/AsesmenAsesi', [
-            'sertification' => $sertification->load('skema', 'asesmen'), 
+            'sertification' => $sertification, 
             'asesi' => $asesi
         ]);
     }
@@ -31,7 +38,17 @@ class AsesmenAsesiController extends Controller
     public function update(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
     {
         Gate::authorize('update', $asesi);
-        // dd($request);
+
+        if ($asesi->status_final !== StatusFinalAsesi::BELUM_DITETAPKAN) {
+            return redirect()->back()->withErrors(['path_file_asesmen' => 'Tidak dapat mengubah tugas asesmen karena status final telah ditetapkan.']);
+        }
+
+        $asesi->load('asesor');
+        $asesmen = $asesi->asesor ? $sertification->asesmen()->where('user_id', $asesi->asesor->user_id)->first() : null;
+        if ($asesmen?->deadline && now()->greaterThan($asesmen->deadline)) {
+             return redirect()->back()->withErrors(['path_file_asesmen' => 'Batas waktu pengumpulan tugas telah berakhir.']);
+        }
+
         $request->validate([
             'delete_files_asesi' => 'nullable|array',
             'delete_files_asesi.*' => 'string',
@@ -49,21 +66,15 @@ class AsesmenAsesiController extends Controller
         FileHelper::handleSingleFileUploads($asesi, ['path_file_asesmen'], $request, 'asesi_files');
         $asesi->save();
         $asesi->load('student.user');
-        $sertification->load(['asesors.user', 'skema', 'asesmen']);
+        $sertification->load('skema');
 
-        // Validation: Check Deadline
-        if ($sertification->asesmen->deadline && now()->greaterThan($sertification->asesmen->deadline)) {
-             return redirect()->back()->withErrors(['path_file_asesmen' => 'Batas waktu pengumpulan tugas telah berakhir.']);
-        }
-        if ($sertification->asesors->isNotEmpty()) {
+        if ($asesi->asesor) {
             $title = 'Tugas Asesmen Dikumpulkan';
             $body = $asesi->student->user->name . ' mengunggah tugas asesmen untuk sertifikasi ' . $sertification->skema->nama_skema;
             $url = route('admin.sertifikasi.assessment.edit', [$sertification->id, 'asesi_id' => $asesi->id]);
-            foreach ($sertification->asesors as $asesor) {
-                $this->sendPushNotification(
-                    $messaging, $asesor->user, $title, $body, $url, 'TugasAsesmenDikumpulkan'
-                );
-            }
+            $this->sendPushNotification(
+                $messaging, $asesi->asesor->user, $title, $body, $url, 'TugasAsesmenDikumpulkan'
+            );
         }
 
         return redirect()->back()->with('message', 'Berhasil unggah file asesmen.');
