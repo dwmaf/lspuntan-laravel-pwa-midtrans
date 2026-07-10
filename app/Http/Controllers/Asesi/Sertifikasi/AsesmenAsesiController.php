@@ -12,7 +12,6 @@ use App\Models\Sertification;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
 use App\Traits\SendsPushNotifications;
-use Kreait\Firebase\Contract\Messaging;
 use Illuminate\Support\Facades\Gate;
 
 class AsesmenAsesiController extends Controller
@@ -20,8 +19,8 @@ class AsesmenAsesiController extends Controller
     use SendsPushNotifications;
     public function index(Sertification $sertification, Asesi $asesi, Request $request)
     {
-        Gate::authorize('view', $asesi);
         // buat agar hanya bisa masuk jika status berkasnya sudah lengkap
+        Gate::authorize('view', $asesi);
         NotificationController::markAsRead($request);
 
         $sertification->load('skema');
@@ -30,12 +29,12 @@ class AsesmenAsesiController extends Controller
         $sertification->setRelation('asesmen', $asesmen);
 
         return Inertia::render('Asesi/AsesmenAsesi', [
-            'sertification' => $sertification, 
+            'sertification' => $sertification,
             'asesi' => $asesi
         ]);
     }
 
-    public function update(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
+    public function update(Sertification $sertification, Asesi $asesi, Request $request)
     {
         Gate::authorize('update', $asesi);
 
@@ -46,7 +45,7 @@ class AsesmenAsesiController extends Controller
         $asesi->load('asesor');
         $asesmen = $asesi->asesor ? $sertification->asesmen()->where('user_id', $asesi->asesor->user_id)->first() : null;
         if ($asesmen?->deadline && now()->greaterThan($asesmen->deadline)) {
-             return redirect()->back()->withErrors(['path_file_asesmen' => 'Batas waktu pengumpulan tugas telah berakhir.']);
+            return redirect()->back()->withErrors(['path_file_asesmen' => 'Batas waktu pengumpulan tugas telah berakhir.']);
         }
 
         $request->validate([
@@ -68,13 +67,12 @@ class AsesmenAsesiController extends Controller
         $asesi->load('student.user');
         $sertification->load('skema');
 
+        // kirim push notif ke satu asesor yg ditugaskan ke asesi tersebut
         if ($asesi->asesor) {
             $title = 'Tugas Asesmen Dikumpulkan';
             $body = $asesi->student->user->name . ' mengunggah tugas asesmen untuk sertifikasi ' . $sertification->skema->nama_skema;
             $url = route('admin.sertifikasi.assessment.edit', [$sertification->id, 'asesi_id' => $asesi->id]);
-            $this->sendPushNotification(
-                $messaging, $asesi->asesor->user, $title, $body, $url, 'TugasAsesmenDikumpulkan'
-            );
+            $this->sendPushNotification($asesi->asesor->user, $title, $body, $url, 'TugasAsesmenDikumpulkan');
         }
 
         return redirect()->back()->with('message', 'Berhasil unggah file asesmen.');

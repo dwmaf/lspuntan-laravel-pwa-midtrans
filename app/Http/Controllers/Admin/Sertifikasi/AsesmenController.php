@@ -5,14 +5,12 @@ namespace App\Http\Controllers\Admin\Sertifikasi;
 use App\Http\Controllers\Controller;
 use App\Traits\SendsPushNotifications;
 use App\Http\Controllers\NotificationController;
-use App\Traits\AuthorizesAsesor;
 use Illuminate\Http\Request;
 use App\Models\Sertification;
 use App\Models\Asesi;
 use App\Models\Asesmenfile;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
-use Kreait\Firebase\Contract\Messaging;
 use Illuminate\Support\Facades\Gate;
 
 class AsesmenController extends Controller
@@ -47,7 +45,7 @@ class AsesmenController extends Controller
         ]);
     }
 
-    public function update_tugas_asesmen(Sertification $sertification, Request $request, Messaging $messaging)
+    public function update_tugas_asesmen(Sertification $sertification, Request $request)
     {
         // dd($request);
         Gate::authorize('manageAssessment', $sertification);
@@ -71,6 +69,7 @@ class AsesmenController extends Controller
         FileHelper::handleSingleFileDeletes($asesmen, $request->input('delete_files', []));
         FileHelper::handleSingleFileUploads($asesmen, ['path_file'], $request, 'sert_files');
         $asesmen->save();
+        // Kirim push notif ke semua asesi yg diampu oleh asesor yang membuat tugas asesmen
         if ($request->boolean('send_notification')) {
             $asesorId = $request->user()->asesor?->id;
             $asesis = Asesi::with(['student.user'])
@@ -83,7 +82,7 @@ class AsesmenController extends Controller
                 foreach ($asesis as $asesi) {
                     $user = $asesi->student->user ?? null;
                     $url = route('asesi.assessmen.index', [$sertification, $asesi]);
-                    $this->sendPushNotification($messaging, $user, $title, $body, $url, 'TugasAsesmenBaru');
+                    $this->sendPushNotification($user, $title, $body, $url, 'TugasAsesmenBaru');
                 }
             }
         }

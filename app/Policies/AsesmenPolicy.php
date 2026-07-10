@@ -11,11 +11,11 @@ class AsesmenPolicy
 {
     public function downloadFile(User $user, Asesmen $asesmen)
     {
-        if ($user->role === 'admin') {
+        if ($user->hasRole('admin')) {
             return true;
         }
         
-        if ($user->role === 'asesi') {
+        if ($user->hasRole('asesi')) {
             $student = $user->student;
             return $student && Asesi::where('student_id', $student->id)
                 ->where('sertification_id', $asesmen->sertification_id)
@@ -25,7 +25,7 @@ class AsesmenPolicy
                 ->exists();
         }
 
-        if ($user->role === 'asesor') {
+        if ($user->hasRole('asesor')) {
             return $user->id === $asesmen->user_id;
         }
 

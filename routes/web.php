@@ -105,8 +105,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::prefix('kelolasertifikasi')->name('kelolasertifikasi.')->group(function () {
         Route::post('/store', [KelolaSertifikasiController::class, 'store'])->name('store'); // admin.kelolasertifikasi.store
         Route::patch('/{sertification}/update', [KelolaSertifikasiController::class, 'update'])->name('update'); // admin.kelolasertifikasi.update
-        Route::patch('/{sertification}/cancel', [KelolaSertifikasiController::class, 'cancel'])->name('cancel'); // admin.kelolasertifikasi.cancel
-        Route::get('/{sertification}/report/export-excel', [KelolaSertifikasiController::class, 'export_excel'])->name('report.export_excel');
+        Route::get('/{sertification}/logs/index', [KelolaSertifikasiController::class, 'indexLog'])->name('logs.index'); // admin.kelolasertifikasi.logs.index
+        Route::get('/{sertification}/report/export-excel', [KelolaSertifikasiController::class, 'export_excel'])->name('report.export_excel'); //admin.kelolasertifikasi.report.export_excel
     });
     Route::prefix('sertifikasi/{sertification}')->name('sertifikasi.')->group(function () {
         Route::patch('/pendaftar/status-berkas/bulk', [PendaftarController::class, 'updateStatusBerkasBulk'])->name('pendaftar.update-status-berkas-bulk');

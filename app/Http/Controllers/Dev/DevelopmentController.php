@@ -14,7 +14,6 @@ use App\Models\User;
 use App\Traits\SendsPushNotifications;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Kreait\Firebase\Contract\Messaging;
 
 class DevelopmentController extends Controller
 {

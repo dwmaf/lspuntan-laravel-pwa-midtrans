@@ -11,18 +11,18 @@ class NewsPolicy
 {
     public function downloadFile(User $user, News $news)
     {
-        if ($user->role === 'admin') {
+        if ($user->hasRole('admin')) {
             return true;
         }
         
-        if ($user->role === 'asesi') {
+        if ($user->hasRole('asesi')) {
             $student = $user->student;
             return $student && Asesi::where('student_id', $student->id)
                 ->where('sertification_id', $news->sertification_id)
                 ->exists();
         }
 
-        if ($user->role === 'asesor') {
+        if ($user->hasRole('asesor')) {
             $asesor = $user->asesor;
             return $asesor && $asesor->sertifications()->where('sertifications.id', $news->sertification_id)->exists();
         }

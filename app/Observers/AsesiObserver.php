@@ -3,76 +3,91 @@
 namespace App\Observers;
 
 use App\Models\Asesi;
+use App\Models\Asesmen;
 use App\Models\News;
 use App\Models\NotificationLog;
-use App\Notifications\PengumumanBaru;
-use Illuminate\Support\Facades\Notification;
+use App\Traits\SendsPushNotifications;
 
 class AsesiObserver
 {
-    /**
-     * Handle the Asesi "created" event.
-     */
+    use SendsPushNotifications;
+
     public function created(Asesi $asesi): void
     {
-        //
+        // pas asesi daftar dan rupanya udh ada pengumuman yg dibuat sebelumnya, jadi masih kena notif kalau udh ada pengumuman
+        $user = $asesi->student?->user;
+        if (!$user) return;
+
+        $pengumumans = News::where('sertification_id', $asesi->sertification_id)->get();
+
+        foreach ($pengumumans as $pengumuman) {
+            $alreadyNotified = $user->notificationLogs()
+                ->where('type', 'PengumumanBaru')
+                ->where('link->news_id', $pengumuman->id)
+                ->exists();
+
+            if (!$alreadyNotified) {
+                $title = 'Pengumuman';
+                $body = $pengumuman->rincian;
+                $url = route('asesi.pengumuman.index', [$asesi->sertification_id, $asesi->id, 'news_id' => $pengumuman->id]);
+                $this->sendPushNotification($user, $title, $body, $url, 'PengumumanBaru');
+
+                NotificationLog::create([
+                    'user_id' => $user->id,
+                    'type' => 'PengumumanBaru',
+                    'message' => $body,
+                    'link' => $url,
+                ]);
+            }
+        }
     }
 
-    /**
-     * Handle the Asesi "updated" event.
-     */
     public function updated(Asesi $asesi): void
     {
-        if ($asesi->isDirty('status') && $asesi->status === 'dilanjutkan_asesmen') {
+        if ($asesi->isDirty('asesor_id') && $asesi->asesor_id) {
+            $asesor = $asesi->asesor;
+            if (!$asesor) return;
 
-            $user = $asesi->student->user ?? null;
+            $hasAsesmen = Asesmen::where('sertification_id', $asesi->sertification_id)
+                ->where('user_id', $asesor->user_id)
+                ->exists();
 
-            if ($user) {
-                $pengumumans = News::where('sertification_id', $asesi->sertification_id)->get();
+            if ($hasAsesmen) {
+                $user = $asesi->student->user ?? null;
+                if (!$user) return;
 
-                if ($pengumumans->isNotEmpty()) {
-                    foreach ($pengumumans as $pengumuman) {
-                        $alreadyNotified = $user->notificationLogs()
-                            ->where('type', PengumumanBaru::class)
-                            ->where('link->news_id', $pengumuman->id)
-                            ->exists();
+                $url = route('asesi.assessmen.index', [$asesi->sertification_id, $asesi]);
+                $alreadyNotified = $user->notificationLogs()
+                    ->where('type', 'TugasAsesmenBaru')
+                    ->where('link', $url)
+                    ->exists();
 
-                        //Hanya kirim notifikasi jika BELUM pernah dikirim.
-                        if (!$alreadyNotified) {
-                            $body = 'Pengumuman Updated: ' . $pengumuman->rincian;
-                            $url = route('asesi.pengumuman.index', [$asesi->sertification_id, $asesi->id, 'news_id' => $pengumuman->news_id]);
-                            NotificationLog::create([
-                                'user_id' => $user->id,
-                                'type' => 'PengumumanBaru',
-                                'message' => $body,
-                                'link' => $url,
-                            ]);
-                        }
-                    }
+                if (!$alreadyNotified) {
+                    $title = 'Tugas Asesmen';
+                    $body = 'Anda memiliki tugas asesmen dari asesor Anda.';
+                    $this->sendPushNotification($user, $title, $body, $url, 'TugasAsesmenBaru');
+
+                    NotificationLog::create([
+                        'user_id' => $user->id,
+                        'type' => 'TugasAsesmenBaru',
+                        'message' => $body,
+                        'link' => $url,
+                    ]);
                 }
             }
         }
     }
 
-    /**
-     * Handle the Asesi "deleted" event.
-     */
     public function deleted(Asesi $asesi): void
     {
         //
     }
 
-    /**
-     * Handle the Asesi "restored" event.
-     */
     public function restored(Asesi $asesi): void
     {
         //
     }
 
-    /**
-     * Handle the Asesi "force deleted" event.
-     */
     public function forceDeleted(Asesi $asesi): void
     {
         //

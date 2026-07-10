@@ -60,6 +60,63 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+> **Important:** When running in development mode (`pnpm dev` is active), do NOT run `pnpm build` after making changes. The Vite dev server handles hot-reloading automatically. Only run `pnpm build` if explicitly asked to prepare for production.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+---
+
+## Project Overview: LSP UNTAN
+
+**LSP UNTAN** (Lembaga Sertifikasi Profesi Universitas Tanjungpura) — sistem manajemen sertifikasi berbasis PWA, proyek skripsi.
+
+### Stack
+- **Backend:** Laravel 11, PHP 8.x
+- **Frontend:** Vue 3 + Inertia.js v2 (SPA-like monolith, no API)
+- **Styling:** Tailwind CSS v4, Tabler Icons, Lucide
+- **Database:** MySQL (`skripsi_pwa`)
+- **Build:** Vite 6, pnpm
+- **PWA:** Service Worker, manifest, offline fallback
+- **Notifikasi:** Firebase Cloud Messaging (FCM)
+- **Role/Permission:** Spatie laravel-permission — 3 roles: `admin`, `asesor`, `asesi`
+
+### Struktur Direktori
+```
+app/
+├── Http/Controllers/{Admin,Asesi,Auth,...}
+├── Models/          (11 models: User, Student, Asesi, Asesor, Skema, Sertification, Asesmen, Sertifikat, News, Asesifile, NotificationLog)
+├── Enums/           (StatusSertifikasi, StatusBerkasAdministrasi, StatusFinalAsesi)
+├── Policies/        (10 policies)
+├── Notifications/   (12 notifikasi FCM)
+├── Exports/         (Excel/PDF)
+├── Services/        (FakeMessagingService)
+resources/
+├── js/
+│   ├── Pages/{Admin,Asesi,Auth,Public}/
+│   ├── Layouts/     (AdminLayout, AsesiLayout, GuestLayout)
+│   └── Composables/ (useFormat, useNotification)
+routes/
+├── web.php          (~194 routes — admin/asesi)
+├── auth.php         (Laravel Breeze auth)
+```
+
+### Modul Utama
+1. **Skema Sertifikasi** — CRUD skema, upload template APL-1/APL-2/Asesmen
+2. **Jadwal Sertifikasi** — kelola pendaftaran, biaya, tanggal asesmen
+3. **Asesor** — CRUD, penugasan ke skema & sertifikasi
+4. **Pendaftaran & Verifikasi (Asesi)** — upload berkas, verifikasi admin, status kompetensi final
+5. **Asesmen** — tugas + submit file
+6. **Pengumuman** — posting & lihat per sertifikasi
+7. **Sertifikat** — upload admin, verifikasi publik via `/verify-certificate`
+8. **Pembayaran** — Midtrans Snap + webhook
+9. **Dashboard** — ApexCharts statistik
+10. **Notifikasi Push** — FCM, tersimpan di `notification_logs`
+
+### Alur Bisnis
+1. Asesi daftar → isi profil → daftar sertifikasi → upload berkas
+2. Admin verifikasi berkas (lengkap/revisi/pending)
+3. Asesor ditugaskan → lakukan asesmen
+4. Admin tentukan hasil final (kompeten/belum_kompeten/diskualifikasi)
+5. Admin upload sertifikat untuk yang kompeten

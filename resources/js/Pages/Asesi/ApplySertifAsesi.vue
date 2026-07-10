@@ -165,7 +165,8 @@ const { formatDateTime } = useFormat();
                     </div>
                 </div> -->
                 <TextareaInput id="rekap_nilai" label="Mata kuliah dan nilai" v-model="form.rekap_nilai" :error="form.errors.rekap_nilai" rows="4"
-                    required />
+                placeholder="Dasar Pemrograman: A, Struktur Data Algoritma: A, Stretegi Algoritma: A."
+                    required info="Mata kuliah yang perlu diinputkan dapat dilihat di template APL 1." />
 
                 <!-- Bukti Kelengkapan -->
                 <h3 class="dark:text-gray-300 font-semibold pt-4">D. Bukti Kelengkapan</h3>
@@ -194,10 +195,10 @@ const { formatDateTime } = useFormat();
                         delete-identifier="bukti_bayar" required />
                 </div>
                 <SingleFileInput v-model="form.apl_1" label="Form APL.01" is-label-required
-                    :template-url="`/download/skema/${sertification.skema.id}/format_apl_1`" accept=".docx"
+                    :template-url="`/download/skemas/${sertification.skema.id}/format_apl_1`" accept=".docx"
                     :error="form.errors.apl_1" delete-identifier="apl_1" required />
                 <SingleFileInput v-model="form.apl_2" label="Form APL.02" is-label-required
-                    :template-url="`/download/skema/${sertification.skema.id}/format_apl_2`" accept=".docx"
+                    :template-url="`/download/skemas/${sertification.skema.id}/format_apl_2`" accept=".docx"
                     :error="form.errors.apl_2" delete-identifier="apl_2" required />
                 <SingleFileInput v-model="form.foto_ktp" label="Scan KTP" is-label-required
                     :existing-file-url="student?.foto_ktp ? `/download/students/${student.id}/foto_ktp` : null"

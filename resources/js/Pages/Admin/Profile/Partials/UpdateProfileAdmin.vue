@@ -5,7 +5,7 @@ import TextInput from '@/Components/Input/TextInput.vue';
 import EditButton from "@/Components/Button/EditButton.vue";
 import { useFormat } from "@/Composables/useFormat";
 import { Link, useForm, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 defineProps({
     mustVerifyEmail: {
@@ -16,28 +16,31 @@ defineProps({
     },
 });
 
-const user = usePage().props.auth.user;
+const user = computed(() => usePage().props.auth.user);
 
 const isEditing = ref(false);
 const form = useForm({
-    name: user.name,
-    email: user.email,
+    name: user.value.name,
+    email: user.value.email,
+    _method: 'PATCH',
 });
 
 const enterEditMode = () => {
+    form.name = user.value.name;
+    form.email = user.value.email;
     isEditing.value = true;
 };
 
 const cancelEdit = () => {
     isEditing.value = false;
-    form.reset();
     form.clearErrors();
 };
 
 const submit = () => {
     form.patch(route('profile.update'), {
+        preserveState: true,
         onSuccess: () => {
-            isEditing.value = false;
+            cancelEdit();
         },
     });
 };
@@ -113,8 +116,6 @@ const { formatDate } = useFormat();
                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mt-3">
                     Informasi Asesor (Read-Only)
                 </h2>
-                
-
                 <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">No. Registrasi MET</dt>

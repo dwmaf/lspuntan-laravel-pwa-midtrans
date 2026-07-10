@@ -24,6 +24,7 @@ class Sertifikat extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->logOnly([
+                'asesi_id',
                 'nomor_seri',
                 'nomor_sertifikat',
                 'nomor_registrasi',

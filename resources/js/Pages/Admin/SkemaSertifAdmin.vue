@@ -238,7 +238,7 @@ const destroy = () => {
                                 <div class="flex flex-wrap gap-1 ">
                                     <template v-for="field in docFields" :key="field.id">
                                         <a v-if="skema[field.id]" :href="`/download/skemas/${skema.id}/${field.id}`" target="_blank"
-                                            class="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded text-[10px] font-bold hover:bg-blue-100 transition-colors"
+                                            class="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:text-blue-700 border border-blue-200 dark:border-blue-800 rounded text-[10px] font-bold hover:bg-blue-100 transition-colors"
                                             :title="field.label">
                                             {{ field.label.replace('FR. ', '') }}
                                         </a>

@@ -18,9 +18,6 @@ class SkemaFactory extends Factory
     {
         return [
             'nama_skema' => 'Skema Sertifikasi ' . fake()->unique()->words(3, true),
-            'format_apl_1' => 'seed/format_apl.pdf', // Contoh path file, bisa null jika diinginkan
-            'format_apl_2' => 'seed/format_apl.pdf', // Contoh path file, bisa null jika diinginkan
-            'format_asesmen' => 'seed/format_asesmen.zip',
         ];
     }
 }

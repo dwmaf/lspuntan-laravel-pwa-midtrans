@@ -16,6 +16,8 @@ class Sertification extends Model
         
     ];
     protected $casts = [
+        // karena dijadiin casts, maka jika melakukan if harus pakai value, misalnya
+        // if ($sertification->status->value === StatusSertifikasi::SELESAI->value)
         'status' => StatusSertifikasi::class, // Supaya jadi Enum Object
     ];
     public function asesors()

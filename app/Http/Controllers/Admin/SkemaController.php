@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class SkemaController extends Controller
 {
@@ -33,7 +34,7 @@ class SkemaController extends Controller
     {
         Gate::authorize('create', Skema::class);
         $validatedData = $request->validate([
-            'nama_skema' => ['required', 'string', 'max:255'],
+            'nama_skema' => ['required', 'string', 'max:255', Rule::unique('skemas')],
             'is_active' => ['nullable', 'boolean'],
             'format_apl_1' => 'nullable|file|mimes:docx|max:2048',
             'format_apl_2' => 'nullable|file|mimes:docx|max:2048',
@@ -52,7 +53,7 @@ class SkemaController extends Controller
     {
         Gate::authorize('update', $skema);
         $request->validate([
-            'nama_skema' => ['required', 'string', 'max:255'],
+            'nama_skema' => ['required', 'string', 'max:255', Rule::unique('skemas')->ignore($skema->id)],
             'is_active' => ['nullable', 'boolean'],
             'delete_files' => 'nullable|array',
             'format_apl_1' => 'nullable|file|mimes:doc,docx,pdf|max:2048',

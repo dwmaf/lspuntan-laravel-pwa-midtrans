@@ -97,7 +97,7 @@ const cancelEdit = () => {
 };
 
 const update = () => {
-    form.post(route('asesi.sertifikasi.applied.update', { sert_id: props.sertification.id, asesi_id: props.asesi.id }), {
+    form.post(route('asesi.sertifikasi.applied.update', { sertification: props.sertification, asesi: props.asesi }), {
         onSuccess: () => cancelEdit(),
     });
 };
@@ -151,11 +151,11 @@ const getStatusFinalAsesi = (status) => {
 const getFiles = (collection, type) => {
     if (!collection) return [];
     return collection
-    .filter(file => file.type === type)
-    .map(file => ({
-        ...file,
-        downloadUrl: `/download/asesifiles/${file.id}/path_file`
-    }));
+        .filter(file => file.type === type)
+        .map(file => ({
+            ...file,
+            downloadUrl: `/download/asesifiles/${file.id}/path_file`
+        }));
 };
 
 const suratMagangFiles = computed(() => getFiles(props.asesi.asesifiles, 'surat_ket_magang'));
@@ -271,7 +271,8 @@ const { formatCurrency, formatDateTime } = useFormat();
                     <SingleFileInput v-model="form.pas_foto" v-model:deleteList="form.delete_files_student"
                         delete-identifier="pas_foto"
                         label="Pasfoto terbaru dengan latar belakang merah, berukuran 4x6 (ukuran file maksimal 1 MB)"
-                        is-label-required :existing-file-url="student?.pas_foto ? `/download/students/${student.id}/pas_foto` : null"
+                        is-label-required
+                        :existing-file-url="student?.pas_foto ? `/download/students/${student.id}/pas_foto` : null"
                         :is-marked-for-deletion="form.delete_files_student.includes('pas_foto')"
                         accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.pas_foto"
                         :required="!student?.pas_foto || form.delete_files_student.includes('pas_foto')" />
@@ -341,7 +342,20 @@ const { formatCurrency, formatDateTime } = useFormat();
                             </StatusBadge>
                         </dd>
                     </div>
-                    
+
+                    <div>
+                        <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                            Asesor</dt>
+                        <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
+                            <span v-if="asesi.asesor" class="font-medium text-gray-900 dark:text-gray-100">
+                                {{ asesi.asesor.user?.name }}
+                            </span>
+                            <StatusBadge v-else variant="neutral">
+                                Belum Ditetapkan
+                            </StatusBadge>
+                        </dd>
+                    </div>
+
                     <div>
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Status Akhir Asesi</dt>
                         <dd class="mt-1 text-sm flex flex-wrap items-center gap-2">
@@ -357,9 +371,10 @@ const { formatCurrency, formatDateTime } = useFormat();
                         Sertifikat
                     </h3>
                     <div class="mt-4">
-                        <FileCard v-if="asesi.status_final === 'kompeten' && asesi.sertifikat" :title="asesi.sertifikat.file_path"
-                                    :href="`/download/sertifikat/${asesi.sertifikat.id}/file_path`" icon="award"
-                                    status="Telah Terbit" />
+                        <FileCard v-if="asesi.status_final === 'kompeten' && asesi.sertifikat"
+                            :title="asesi.sertifikat.file_path"
+                            :href="`/download/sertifikats/${asesi.sertifikat.id}/file_path`" icon="award"
+                            status="Telah Terbit" />
                     </div>
                 </div>
             </div>

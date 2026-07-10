@@ -65,7 +65,7 @@ class Asesi extends Model
             ->dontSubmitEmptyLogs()
             ->logOnly([
                 'status_berkas',
-                'status_akses_asesmen',
+                'asesor_id',
                 'status_final'
             ]);
     }

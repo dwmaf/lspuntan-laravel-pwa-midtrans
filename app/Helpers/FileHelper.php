@@ -14,7 +14,7 @@ class FileHelper
     {
         $uniqueId = uniqid() . '-' . now()->timestamp;
         $newFilename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '_' . $uniqueId . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs($baseDirectory, $newFilename, 'public');
+        $path = $file->storeAs($baseDirectory, $newFilename, 'local');
         return ['path' => $path];
     }
 
@@ -53,8 +53,8 @@ class FileHelper
     {
         if (empty($fieldNames)) return;
         foreach ($fieldNames as $fieldName) {
-            if ($model->$fieldName && Storage::disk('public')->exists($model->$fieldName)) {
-                Storage::disk('public')->delete($model->$fieldName);
+            if ($model->$fieldName && Storage::disk('local')->exists($model->$fieldName)) {
+                Storage::disk('local')->delete($model->$fieldName);
                 $model->$fieldName = null;
             }
         }
@@ -68,8 +68,8 @@ class FileHelper
         if (empty($fileIds)) return;
         $filesToDelete = $relatedModelClass::whereIn('id', $fileIds)->get();
         foreach ($filesToDelete as $file) {
-            if (Storage::disk('public')->exists($file->path_file)) {
-                Storage::disk('public')->delete($file->path_file);
+            if (Storage::disk('local')->exists($file->path_file)) {
+                Storage::disk('local')->delete($file->path_file);
             }
             $file->delete();
         }

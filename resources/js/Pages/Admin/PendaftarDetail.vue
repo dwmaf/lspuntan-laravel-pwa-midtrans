@@ -19,6 +19,7 @@ import FileCard from "@/Components/FileCard.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed } from 'vue';
+import { Info } from 'lucide-vue-next';
 
 const props = defineProps({
     asesi: Object,
@@ -204,11 +205,11 @@ const getStatusFinalAsesi = (status) => {
                         </StatusBadge>
                         <EditButton v-if="asesi.status_final === 'belum_ditetapkan' && !asesi.asesor_id" @click="openModal('berkas')">Ubah
                             Status</EditButton>
-                        <span v-else-if="asesi.status_final !== 'belum_ditetapkan'" class="text-xs text-red-500 italic mt-0.5">
-                            *Terkunci karena status akhir telah ditetapkan
+                        <span v-else-if="asesi.status_final !== 'belum_ditetapkan'" class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Terkunci karena status akhir telah ditetapkan
                         </span>
-                        <span v-else class="text-xs text-red-500 italic mt-0.5">
-                            *Terkunci karena asesor telah ditetapkan
+                        <span v-else class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Terkunci karena asesor telah ditetapkan
                         </span>
                     </dd>
                 </div>
@@ -224,14 +225,14 @@ const getStatusFinalAsesi = (status) => {
                         <EditButton v-if="asesi.status_berkas === 'sudah_lengkap' && isAdmin && asesi.status_final === 'belum_ditetapkan'" @click="openModal('asesor')">
                             {{ asesi.asesor ? 'Ubah Asesor' : 'Tetapkan Asesor' }}
                         </EditButton>
-                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && asesi.status_final !== 'belum_ditetapkan'" class="text-xs text-red-500 italic mt-0.5">
-                            *Terkunci karena status akhir telah ditetapkan
+                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && asesi.status_final !== 'belum_ditetapkan'" class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Terkunci karena status akhir telah ditetapkan
                         </span>
-                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && !isAdmin" class="text-xs text-red-500 italic mt-0.5">
-                            *Hanya Admin yang berhak merubah asesor
+                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && !isAdmin" class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Hanya Admin yang berhak merubah asesor
                         </span>
-                        <span v-else class="text-xs text-red-500 italic mt-0.5">
-                            *Berkas harus diverifikasi lengkap terlebih dahulu
+                        <span v-else class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Berkas harus diverifikasi lengkap terlebih dahulu
                         </span>
                     </dd>
                 </div>
@@ -244,20 +245,20 @@ const getStatusFinalAsesi = (status) => {
                         <EditButton v-if="asesi.status_berkas === 'sudah_lengkap' && asesi.asesor && $page.props.auth.user.id === asesi.asesor.user_id && !asesi.sertifikat" @click="openModal('final')">Ubah
                             Status</EditButton>
                         <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && asesi.sertifikat" 
-                            class="text-xs text-red-500 italic mt-0.5">
-                            *Terkunci karena sertifikat telah diterbitkan
+                            class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Terkunci karena sertifikat telah diterbitkan
                         </span>
                         <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && !asesi.asesor" 
-                            class="text-xs text-red-500 italic mt-0.5">
-                            *Tetapkan asesor terlebih dahulu
+                            class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Tetapkan asesor terlebih dahulu
                         </span>
                         <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && asesi.asesor && 
                             $page.props.auth.user.id !== asesi.asesor.user_id"
-                            class="text-xs text-red-500 italic mt-0.5">
-                            *Hanya Asesor Penguji ({{ asesi.asesor.user?.name }}) yang berhak merubah status final.
+                            class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Hanya Asesor Penguji ({{ asesi.asesor.user?.name }}) yang berhak merubah status final.
                         </span>
-                        <span v-else class="text-xs text-red-500 italic mt-0.5">
-                            *Berkas harus diverifikasi lengkap terlebih dahulu
+                        <span v-else class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Berkas harus diverifikasi lengkap terlebih dahulu
                         </span>
                     </dd>
                 </div>
@@ -271,7 +272,8 @@ const getStatusFinalAsesi = (status) => {
                 </h3>
                 <div class="mt-4">
                     <p v-if="!asesi.sertifikat && props.asesi.status_final !== 'kompeten'"
-                        class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">
+                        class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                        <Info class="w-3.5 h-3.5 shrink-0" />
                         Sertifikat bisa diupload jika status akhir asesi adalah <strong>Kompeten</strong>.
                     </p>
                     <div v-else-if="!asesi.sertifikat && props.asesi.status_final === 'kompeten'">

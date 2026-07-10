@@ -27,13 +27,13 @@ class StudentFactory extends Factory
             'kebangsaan' => 'Indonesia',
             'no_tlp_rmh' => fake()->phoneNumber(),
             'no_tlp_kntr' => fake()->phoneNumber(),
-            'kualifikasi_pendidikan' => fake()->randomElement(['S1', 'D3', 'SMA/SMK']),
+            'kualifikasi_pendidikan' => fake()->randomElement(['S1', 'D3']),
             'nama_institusi' => fake()->company(),
             'jabatan' => fake()->jobTitle(),
             'alamat_kantor' => fake()->address(),
             'no_tlp_email_fax' => fake()->companyEmail(),
-            'foto_ktp' => 'seed/ktp.jpg',
-            'pas_foto' => 'seed/pas_foto.jpg',
+            'foto_ktp' => 'seed/ktp.jpeg',
+            'pas_foto' => 'seed/pas_foto.png',
         ];
     }
 }

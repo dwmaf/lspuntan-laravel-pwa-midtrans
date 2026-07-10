@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
 use App\Models\Asesifile;
-use Kreait\Firebase\Contract\Messaging;
 use Inertia\Inertia;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Gate;
@@ -77,7 +76,7 @@ class KelolaSertifikasiAsesiController extends Controller
         ]);
     }
 
-    public function submitForm(Student $student, Request $request, Messaging $messaging)
+    public function submitForm(Student $student, Request $request)
     {
         Gate::authorize('update', $student);
         // dd($request);
@@ -133,7 +132,7 @@ class KelolaSertifikasiAsesiController extends Controller
             return redirect()->route('asesi.sertifikasi.index')->with('error', 'Masa pendaftaran sertifikasi ini sudah berakhir.');
         }
 
-        $asesi = DB::transaction(function () use ($request, $student, $messaging) {
+        $asesi = DB::transaction(function () use ($request, $student) {
             $user = $student->user;
             $student->fill($request->only(['nik', 'tmpt_lhr', 'tgl_lhr', 'kelamin', 'kebangsaan', 'no_tlp_rmh', 'no_tlp_kntr', 'kualifikasi_pendidikan',]));
             $user->fill($request->only(['no_tlp_hp', 'name']));
@@ -153,21 +152,14 @@ class KelolaSertifikasiAsesiController extends Controller
         $sertification = $asesiForNotif->sertification;
         $user = $asesiForNotif->student->user;
 
+        // Kirim push notif ke Semua Admin
         $recipients = User::role('admin')->get();
-        $asesors = $sertification->asesors;
-        foreach ($asesors as $asesor) {
-            if ($asesor->user) {
-                $recipients->push($asesor->user);
-            }
-        }
-        $recipients = $recipients->unique('id');
-
         if ($recipients->isNotEmpty()) {
             $title = 'Pendaftar Baru';
             $body = $user->name . ' telah mendaftar sertifikasi ' . $sertification->skema->nama_skema;
             $url = route('admin.sertifikasi.pendaftar.show', [$sertification, $asesiForNotif]);
             foreach ($recipients as $recipient) {
-                $this->sendPushNotification($messaging, $recipient, $title, $body, $url, 'PendaftarBaru');
+                $this->sendPushNotification($recipient, $title, $body, $url, 'PendaftarBaru');
             }
         }
         return redirect(route('asesi.sertifikasi.applied.show', [$asesi->sertification_id, $asesi]))->with('message', 'Berhasil daftar sertifikasi');
@@ -180,6 +172,7 @@ class KelolaSertifikasiAsesiController extends Controller
         $asesi->load([
             'student.user',
             'asesifiles',
+            'asesor.user',
             'sertifikat'
         ]);
         $student = $asesi->student;
@@ -192,7 +185,7 @@ class KelolaSertifikasiAsesiController extends Controller
         ]);
     }
 
-    public function updateApplied(Sertification $sertification, Asesi $asesi, Request $request, Messaging $messaging)
+    public function updateApplied(Sertification $sertification, Asesi $asesi, Request $request)
     {
         // dd($request);
         if ($asesi->status_berkas === StatusBerkasAdministrasi::SUDAH_LENGKAP->value) {
@@ -307,8 +300,8 @@ class KelolaSertifikasiAsesiController extends Controller
         ]);
         $shoulSendNotif = false;
         DB::transaction(function () use ($request, $student, $asesi, $user, &$shoulSendNotif) {
-            $initialStatus = $asesi->status;
-            $student->fill($request->only(['nik', 'tmpt_lhr', 'tgl_lhr', 'kelamin', 'kebangsaan', 'no_tlp_rmh', 'no_tlp_kntr', 'no_tlp_hp', 'kualifikasi_pendidikan',]));
+            $initialStatus = $asesi->status_berkas;
+            $student->fill($request->only(['nik', 'tmpt_lhr', 'tgl_lhr', 'kelamin', 'kebangsaan', 'no_tlp_rmh', 'no_tlp_kntr', 'kualifikasi_pendidikan',]));
             $user->fill($request->only(['no_tlp_hp', 'name']));
             $asesi->fill($request->only(['tujuan_sert', 'rekap_nilai']));
             FileHelper::handleSingleFileDeletes($student, $request->input('delete_files_student', []));
@@ -321,10 +314,8 @@ class KelolaSertifikasiAsesiController extends Controller
 
             FileHelper::saveIfDirty([$student, $user, $asesi]);
 
-
-
-            if ($initialStatus === 'perlu_perbaikan_berkas') {
-                $asesi->status = 'daftar';
+            if ($initialStatus === StatusBerkasAdministrasi::PERLU_PERBAIKAN_BERKAS) {
+                $asesi->status_berkas = StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN;
                 $asesi->catatan_perbaikan = null;
                 $asesi->save();
                 $shoulSendNotif = true;
@@ -336,13 +327,15 @@ class KelolaSertifikasiAsesiController extends Controller
             $sertification = $asesi->sertification;
             $user = $asesi->student->user;
 
+            // Kirim notif ke Admin kalau status awalnya adalah perlu_perbaikan_berkas
             $recipients = User::role('admin')->get();
-            foreach ($sertification->asesors as $asesor) {
-                if ($asesor->user) {
-                    $recipients->push($asesor->user);
-                }
-            }
-            $recipients = $recipients->unique('id');
+            // // ambil asesor"
+            // foreach ($sertification->asesors as $asesor) {
+            //     if ($asesor->user) {
+            //         $recipients->push($asesor->user);
+            //     }
+            // }
+            // $recipients = $recipients->unique('id');
 
             if ($recipients->isNotEmpty()) {
                 $title = 'Berkas Diperbaiki';
@@ -350,7 +343,7 @@ class KelolaSertifikasiAsesiController extends Controller
                 $url = route('admin.sertifikasi.pendaftar.show', [$sertification, $asesi]);
 
                 foreach ($recipients as $recipient) {
-                    $this->sendPushNotification($messaging, $recipient, $title, $body, $url, 'BerkasDiperbaiki');
+                    $this->sendPushNotification($recipient, $title, $body, $url, 'BerkasDiperbaiki');
                 }
             }
         }

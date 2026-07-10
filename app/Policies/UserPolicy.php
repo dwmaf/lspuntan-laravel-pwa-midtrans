@@ -40,7 +40,7 @@ class UserPolicy
     }
 
     /**
-     * Determine whether the user can access/manage asesi profile.
+     * hanya asesi yg bisa ubah profilenya sendiri
      */
     public function manageAsesiProfile(User $user): bool
     {

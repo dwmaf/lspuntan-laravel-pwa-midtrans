@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Console\Scheduling\Schedule;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Inertia\Inertia;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -38,7 +40,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (HttpException $e) {
+            return Inertia::render('Error', ['status' => $e->getStatusCode()])
+                ->toResponse(request())
+                ->setStatusCode($e->getStatusCode());
+        });
     })
     ->withSchedule(function (Schedule $schedule) {
         // $schedule->command('reminders:payment')->dailyAt('08:00');

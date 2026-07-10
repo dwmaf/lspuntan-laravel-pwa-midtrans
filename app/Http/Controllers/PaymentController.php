@@ -13,6 +13,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\FileHelper;
+// fitur pembayaran tidak jadi dipakai
 class PaymentController extends Controller
 {
     protected $checkoutService;

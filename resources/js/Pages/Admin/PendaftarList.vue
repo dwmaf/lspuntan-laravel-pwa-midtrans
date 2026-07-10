@@ -19,7 +19,6 @@ const props = defineProps({
     sertification: Object,
     unassignedCount: {
         type: Number,
-        default: 0
     }
 });
 
@@ -27,7 +26,10 @@ const selectedAsesis = ref([]);
 
 const roles = computed(() => (usePage().props.auth.roles ?? []).map(r => typeof r === 'string' ? r : r.name));
 const isAdmin = computed(() => roles.value.includes('admin'));
-const isAsesor = computed(() => roles.value.includes('asesor'));
+const currentUserId = computed(() => usePage().props.auth.user?.id);
+const isAsesor = computed(() =>
+    props.sertification.asesors?.some(a => a.user_id === currentUserId.value)
+);
 
 const canBulkUpdateBerkas = computed(() => {
     if (selectedAsesis.value.length === 0) return false;
@@ -130,12 +132,24 @@ const statusFinalAsesiOptions = [
 const filtersForm = ref({
     statusBerkasAdministrasi: '',
     statusFinalAsesi: '',
+    asesor: '',
 });
 
 const activeFilters = ref({
     statusBerkasAdministrasi: '',
     statusFinalAsesi: '',
+    asesor: '',
 });
+
+const asesorFilterOptions = computed(() => [
+    { value: '', text: 'Semua Asesi' },
+    { value: 'assigned', text: 'Semua yang sudah ditetapkan' },
+    { value: 'unassigned', text: 'Belum ditetapkan' },
+    ...props.sertification.asesors.map(asesor => ({
+        value: String(asesor.id),
+        text: asesor.user.name,
+    })),
+]);
 
 const applyFilters = () => {
     activeFilters.value = { ...filtersForm.value };
@@ -143,9 +157,9 @@ const applyFilters = () => {
 };
 
 const resetFilters = () => {
-    filtersForm.value = { statusBerkasAdministrasi: '', statusFinalAsesi: '' };
-    activeFilters.value = { statusBerkasAdministrasi: '', statusFinalAsesi: '' };
-    showFilterModal.value = false; // Optional: close on reset or keep open
+    filtersForm.value = { statusBerkasAdministrasi: '', statusFinalAsesi: '', asesor: '' };
+    activeFilters.value = { statusBerkasAdministrasi: '', statusFinalAsesi: '', asesor: '' };
+    showFilterModal.value = false;
 };
 
 const closeFilterModal = () => {
@@ -169,6 +183,17 @@ const filteredAsesis = computed(() => {
     }
     if (activeFilters.value.statusFinalAsesi) {
         result = result.filter(asesi => asesi.status_final === activeFilters.value.statusFinalAsesi);
+    }
+
+    if (activeFilters.value.asesor) {
+        const filterVal = activeFilters.value.asesor;
+        if (filterVal === 'assigned') {
+            result = result.filter(asesi => asesi.asesor_id);
+        } else if (filterVal === 'unassigned') {
+            result = result.filter(asesi => !asesi.asesor_id);
+        } else {
+            result = result.filter(asesi => String(asesi.asesor_id) === filterVal);
+        }
     }
 
     return result;
@@ -229,7 +254,6 @@ const submitBulk = () => {
 <template>
     <AdminLayout>
         <CustomHeader :judul="`${sertification.skema.nama_skema}: Daftar Peserta`" />
-        
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
 
         <div class="p-3 sm:p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
@@ -270,7 +294,7 @@ const submitBulk = () => {
                         class="relative mt-1 inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-500 text-sm font-medium rounded-md text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
                         <FunnelIcon class="w-4" />
                         <span
-                            v-if="activeFilters.statusBerkasAdministrasi || activeFilters.statusAksesMenuAsesmen || activeFilters.statusFinalAsesi"
+                            v-if="activeFilters.statusBerkasAdministrasi || activeFilters.asesor || activeFilters.statusFinalAsesi"
                             class="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full"></span>
                     </button>
                 </div>
@@ -332,17 +356,22 @@ const submitBulk = () => {
                                 </StatusBadge>
                             </td>
                             <td class="px-2 py-4 whitespace-nowrap text-sm">
-                                <span v-if="asesi.asesor" class="font-medium text-gray-900 dark:text-gray-100">
+                                <span v-if="asesi.asesor" class="flex flex-col gap-1 font-medium text-gray-900 dark:text-gray-100">
                                     {{ asesi.asesor.user?.name }}
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ asesi.asesor.user?.email }}</div>
                                 </span>
                                 <StatusBadge v-else variant="neutral">
                                     Belum Ditetapkan
                                 </StatusBadge>
                             </td>
-                            <td class="px-2 py-4 whitespace-nowrap text-sm">
+                            <td class="px-2 py-4 whitespace-nowrap text-sm flex flex-col gap-1 items-start">
                                 <StatusBadge :variant="getStatusFinalAsesi(asesi.status_final).variant">
                                     {{ getStatusFinalAsesi(asesi.status_final).text }}
                                 </StatusBadge>
+                                <template v-if="isAdmin && asesi.status_final === 'kompeten'">
+                                    <span v-if="asesi.sertifikat" class="text-xs text-green-600 dark:text-green-400 font-medium">Sertifikat sudah terbit</span>
+                                    <span v-else class="text-xs text-yellow-600 dark:text-yellow-400 font-medium">Sertifikat belum terbit</span>
+                                </template>
                             </td>
                             <td class="px-2 py-4 whitespace-nowrap text-sm font-medium">
                                 <SeeButton
@@ -353,7 +382,10 @@ const submitBulk = () => {
                         </tr>
                         <tr v-else>
                             <td colspan="7" class="px-2 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                                <template v-if="isAsesor">
+                                <template v-if="activeFilters.statusBerkasAdministrasi || activeFilters.statusFinalAsesi || activeFilters.asesor">
+                                    Tidak ada data yang cocok dengan filter yang dipilih.
+                                </template>
+                                <template v-else-if="isAsesor">
                                     Belum ada asesi yang ditugaskan kepada Anda. Terdapat <span class="font-bold text-blue-600 dark:text-blue-400">{{ props.unassignedCount }}</span> asesi yang belum diassign ke asesor pada sertifikasi ini.
                                 </template>
                                 <template v-else>
@@ -378,6 +410,8 @@ const submitBulk = () => {
                         :options="[{ value: '', text: 'Semua' }, ...statusBerkasAdministrasiOptions]" />
                     <SelectInput id="statusFinalAsesi" label="Status Final Asesi" v-model="filtersForm.statusFinalAsesi"
                         :options="[{ value: '', text: 'Semua' }, ...statusFinalAsesiOptions]" />
+                    <SelectInput v-if="!isAsesor" id="asesor-filter" label="Asesor" v-model="filtersForm.asesor"
+                        :options="asesorFilterOptions" />
                 </div>
                 <div class="my-4 border-t border-gray-200 dark:border-gray-600"></div>
                 <div class=" flex gap-3">

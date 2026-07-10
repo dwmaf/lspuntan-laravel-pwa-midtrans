@@ -12,6 +12,10 @@ const props = defineProps({
     emptyMessage: {
         type: String,
         default: 'Tidak ada data sertifikasi.'
+    },
+    isAsesor: {
+        type: Boolean,
+        default: false,
     }
 });
 
@@ -51,7 +55,7 @@ const { formatCurrency, formatDate } = useFormat();
                         </th>
                         <th scope="col"
                             class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Asesi
+                            {{ isAsesor ? 'Asesi Anda' : 'Asesi' }}
                         </th>
                         <th scope="col"
                             class="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -105,7 +109,7 @@ const { formatCurrency, formatDate } = useFormat();
                             <span
                                 class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800 text-xs font-semibold">
                                 <Users class="w-3.5 h-3.5" />
-                                {{ sert.asesis_count }}
+                                {{ isAsesor ? (sert.asesis_asesor_count ?? 0) : sert.asesis_count }}
                             </span>
                         </td>
                         <td class="px-2 py-2 whitespace-nowrap text-sm font-medium">

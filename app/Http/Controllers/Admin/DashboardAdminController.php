@@ -41,35 +41,29 @@ class DashboardAdminController extends Controller
 
         // Hitung total asesi (filter untuk asesor)
         $totalAsesiCount = Asesi::when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
-            $query->whereHas('sertification.asesors', function ($subQuery) use ($asesorId) {
-                $subQuery->where('asesors.id', $asesorId);
-            });
+            $query->where('asesor_id', $asesorId);
         })->count();
 
         // Hitung asesi lulus (filter untuk asesor)
         $asesiLulusCount = Asesi::where('status_final', 'kompeten')
             ->when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
-                $query->whereHas('sertification.asesors', function ($subQuery) use ($asesorId) {
-                    $subQuery->where('asesors.id', $asesorId);
-                });
+                $query->where('asesor_id', $asesorId);
             })
             ->count();
 
         // Base Query untuk asesi yang sedang dalam sertifikasi berlangsung (filter untuk asesor)
-        $baseQuery = Asesi::whereHas('sertification', function ($query) use ($isOnlyAsesor, $asesorId) {
+        $baseQuery = Asesi::whereHas('sertification', function ($query) {
             $query->where('status', 'berlangsung');
-            if ($isOnlyAsesor && $asesorId) {
-                $query->whereHas('asesors', function ($subQuery) use ($asesorId) {
-                    $subQuery->where('asesors.id', $asesorId);
-                });
-            }
-        });
+        })
+            ->when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
+                $query->where('asesor_id', $asesorId);
+            });
 
         $pipelineStats = [
-            'verifikasi_berkas' => (clone $baseQuery)->where('status_berkas', 'menunggu_verifikasi_admin')->count(),
-            'revisi_asesi'      => (clone $baseQuery)->where('status_berkas', 'perlu_perbaikan_berkas')->count(),
-            'proses_asesmen'    => (clone $baseQuery)->where('status_berkas', 'sudah_lengkap')
-                                                   ->where('status_final', 'belum_ditetapkan')->count(),
+            'verifikasi_berkas'            => (clone $baseQuery)->where('status_berkas', 'menunggu_verifikasi_admin')->count(),
+            'revisi_asesi'                 => (clone $baseQuery)->where('status_berkas', 'perlu_perbaikan_berkas')->count(),
+            'berkas_lengkap_belum_asesor'  => (clone $baseQuery)->where('status_berkas', 'sudah_lengkap')->whereNull('asesor_id')->count(),
+            'ada_asesor_belum_ditetapkan'  => (clone $baseQuery)->whereNotNull('asesor_id')->where('status_final', 'belum_ditetapkan')->count(),
         ];
 
         $sertificationSelesaiCount = Sertification::where('status', 'selesai')

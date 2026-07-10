@@ -19,12 +19,13 @@ const props = defineProps({
 
 const menuItems = computed(() => {
     const pageProps = usePage().props;
+    const roles = computed(() => (pageProps.auth.roles ?? []).map(r => typeof r === 'string' ? r : r.name));
+    const isAdmin = computed(() => roles.value.includes('admin'));
+
     const user = pageProps.auth?.user;
-    
     // Asesor yang bersangkutan harus ada di dalam sertification.asesors
     const sertification = pageProps.sertification;
-    const isAsesorAssigned = sertification && sertification.asesors && 
-        sertification.asesors.some(asesor => asesor.user_id === user?.id);
+    const isAsesorAssigned = sertification?.asesors?.some(asesor => asesor.user_id === user?.id);
 
     const items = [
         {
@@ -57,6 +58,15 @@ const menuItems = computed(() => {
         icon: IconUsers,
     });
 
+    if (isAdmin.value) {
+        items.push({
+            label: 'Logs',
+            href: route('admin.kelolasertifikasi.logs.index', props.sertificationId),
+            active: route().current('admin.kelolasertifikasi.logs.index'),
+            icon: IconChecklist,
+        });
+    }
+
     return items;
 });
 </script>
@@ -67,9 +77,9 @@ const menuItems = computed(() => {
             <div v-for="item in menuItems" :key="item.href">
                 <Link :href="item.href"
                     class="flex items-center gap-2 px-4 py-3 font-semibold text-sm hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600">
-                <component v-if="item.icon" :is="item.icon" class="text-gray-700 dark:text-gray-200" :size="20"
-                    stroke-width="2" />
-                {{ item.label }}
+                    <component v-if="item.icon" :is="item.icon" class="text-gray-700 dark:text-gray-200" :size="20"
+                        stroke-width="2" />
+                    {{ item.label }}
                 </Link>
                 <div v-if="item.active" style="margin-top:-4px"
                     class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>

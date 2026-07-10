@@ -81,14 +81,38 @@ class AsesorController extends Controller
                 'password' => Hash::make(Str::random(16)),
             ]);
             $user->assignRole('asesor');
-            $asesor = Asesor::create([
+            $asesor = (new Asesor())->disableLogging();
+            $asesor->fill([
                 'user_id' => $user->id,
                 'no_reg_met' => $request->no_met,
                 'masa_berlaku_sertif_teknis' => $request->masa_berlaku_sertif_teknis,
                 'masa_berlaku_sertif_asesor' => $request->masa_berlaku_sertif_asesor,
                 'is_active' => $request->boolean('is_active', true)
             ]);
+            $asesor->save();
             $asesor->skemas()->attach($request->selectedSkemas);
+
+            $asesor->load('skemas');
+            $skemaIds = $asesor->skemas->pluck('id')->toArray();
+            $skemaNames = $asesor->skemas->pluck('nama_skema')->toArray();
+            activity()
+                ->performedOn($asesor)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'attributes' => array_merge(
+                        $asesor->only([
+                            'no_reg_met', 'masa_berlaku_sertif_teknis',
+                            'masa_berlaku_sertif_asesor', 'is_active',
+                        ]),
+                        $user->only(['email', 'no_tlp_hp']),
+                    ),
+                    'skema_ids' => $skemaIds,
+                    'skema_names' => $skemaNames,
+                    'asesor_user_name' => $asesor->user->name,
+                ])
+                ->event('created')
+                ->log("Data Asesor {$asesor->user->name} telah di-created");
+
             $user->markEmailAsVerified();
             // uncomment kalo udh ada mail host nya
             // $user->notify(new AsesorAccountCreated());
@@ -108,7 +132,7 @@ class AsesorController extends Controller
             'no_met' => 'required|string|max:255',
             'masa_berlaku_sertif_teknis' => 'required|date',
             'masa_berlaku_sertif_asesor' => 'required|date',
-            'password' => ['nullable'],
+            // 'password' => ['nullable'],
             'selectedSkemas' => ['required', 'array'],
             'selectedSkemas.*' => ['exists:skemas,id'],
             'is_active' => ['nullable', 'boolean'], // Tambahan status
@@ -148,6 +172,13 @@ class AsesorController extends Controller
         }
 
         DB::transaction(function () use ($request, $asesor, $user_asesor) {
+            $oldUserData = $user_asesor->only(['name', 'email', 'no_tlp_hp']);
+            $oldData = $asesor->only([
+                'no_reg_met', 'masa_berlaku_sertif_teknis',
+                'masa_berlaku_sertif_asesor', 'is_active',
+            ]);
+            $oldSkemaIds = $asesor->skemas->pluck('id')->toArray();
+
             $userData = [
                 'email' => $request->email,
                 'no_tlp_hp' => $request->no_tlp_hp,
@@ -158,13 +189,68 @@ class AsesorController extends Controller
             }
 
             $user_asesor->update($userData);
-            $asesor->update([
+
+            $asesor->disableLogging();
+            $asesor->fill([
                 'no_reg_met' => $request->no_met,
                 'masa_berlaku_sertif_teknis' => $request->masa_berlaku_sertif_teknis,
                 'masa_berlaku_sertif_asesor' => $request->masa_berlaku_sertif_asesor,
                 'is_active' => $request->boolean('is_active'),
-            ]);
+            ])->save();
             $asesor->skemas()->sync($request->selectedSkemas);
+
+            $asesor->load('skemas');
+            $afterIds = $asesor->skemas->pluck('id')->toArray();
+
+            $tracked = ['no_reg_met', 'masa_berlaku_sertif_teknis', 'masa_berlaku_sertif_asesor', 'is_active'];
+            $userTracked = ['name', 'email', 'no_tlp_hp'];
+            $old = [];
+            $attributes = [];
+            foreach ($tracked as $field) {
+                $newVal = $asesor->getAttribute($field);
+                if ($oldData[$field] != $newVal) {
+                    $old[$field] = $oldData[$field];
+                    $attributes[$field] = $newVal;
+                }
+            }
+            foreach ($userTracked as $field) {
+                $newVal = $asesor->user->getAttribute($field);
+                if ($oldUserData[$field] != $newVal) {
+                    $old[$field] = $oldUserData[$field];
+                    $attributes[$field] = $newVal;
+                }
+            }
+
+            $removedSkemaIds = array_diff($oldSkemaIds, $afterIds);
+            $addedSkemaIds = array_diff($afterIds, $oldSkemaIds);
+
+            $removedSkemaNames = Skema::whereIn('id', $removedSkemaIds)->pluck('nama_skema')->toArray();
+            $addedSkemaNames = Skema::whereIn('id', $addedSkemaIds)->pluck('nama_skema')->toArray();
+
+            $skemasChanged = !empty($removedSkemaIds) || !empty($addedSkemaIds);
+
+            if (!empty($old) || $skemasChanged) {
+                $properties = [
+                    'old' => $old,
+                    'attributes' => $attributes,
+                    'asesor_user_name' => $asesor->user->name,
+                ];
+                if (!empty($removedSkemaIds)) {
+                    $properties['removed_skema_ids'] = $removedSkemaIds;
+                    $properties['removed_skema_names'] = $removedSkemaNames;
+                }
+                if (!empty($addedSkemaIds)) {
+                    $properties['added_skema_ids'] = $addedSkemaIds;
+                    $properties['added_skema_names'] = $addedSkemaNames;
+                }
+
+                activity()
+                    ->performedOn($asesor)
+                    ->causedBy(Auth::user())
+                    ->withProperties($properties)
+                    ->event('updated')
+                    ->log("Data Asesor {$asesor->user->name} telah di-updated");
+            }
         });
 
         return redirect(route('admin.asesor.index'))->with('message', 'Data asesor berhasil diperbaharui');
@@ -185,11 +271,12 @@ class AsesorController extends Controller
         DB::transaction(function () use ($asesor, $user) {
             $asesor->skemas()->detach();
             $asesor->delete();
+
             if ($user) {
                 $user->delete();
             }
         });
-        return redirect(route('admin.asesor.index'))->with('message', 'Data asesor berhasil dinonaktifkan (User telah di-banned)');
+        return redirect(route('admin.asesor.index'))->with('message', 'Data asesor berhasil dihapus');
     }
 
     public function export()

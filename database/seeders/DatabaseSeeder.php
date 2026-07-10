@@ -4,9 +4,9 @@ namespace Database\Seeders;
 
 use App\Enums\StatusFinalAsesi;
 use App\Enums\StatusBerkasAdministrasi;
+use App\Enums\StatusSertifikasi;
 use App\Models\Asesi;
 use App\Models\Asesor;
-use App\Models\Makulnilai;
 use App\Models\Sertification;
 use App\Models\Skema;
 use App\Models\Student;
@@ -15,6 +15,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 
 class DatabaseSeeder extends Seeder
 {
@@ -23,6 +24,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        activity()->disableLogging();
         // Hapus data lama untuk memastikan kebersihan data (opsional, tapi direkomendasikan)
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Asesi::truncate();
@@ -43,21 +45,45 @@ class DatabaseSeeder extends Seeder
             'Skema Pendamping UMKM',
             'Skema Ahli K3 Umum',
             'Skema Teknisi Penginderaan Jauh',
-            'Penyuluh Kehutanan Fasilitator',
+            'Skema Penyuluh Kehutanan Fasilitator',
             'Skema Analis Sumber Daya Manusia (SDM)',
             'Skema Pengoperasian PLC (Programmable Logic Controller)',
             'Skema Penerapan K3-Laboratorium',
             'Skema Programmer',
         ];
+        $formatFileSkema = [
+            ['seed/FR_pendampingUMKM_apl_1.docx', 'seed/FR_pendampingUMKM_apl_2.docx', 'seed/FR_pendampingUMKM_asesmen.zip'],
+            ['seed/FR_K3_apl_1.docx', 'seed/FR_K3_apl_2.docx', 'seed/FR_K3_asesmen.zip'],
+            ['seed/FR_teknikPenginderaanJauh_apl_1.docx', 'seed/FR_teknikPenginderaanJauh_apl_2.docx', 'seed/FR_teknikPenginderaanJauh_asesmen.zip'],
+            ['seed/FR_penyuluhKehutananFasilitator_apl_1.docx', 'seed/FR_penyuluhKehutananFasilitator_apl_2.docx', 'seed/FR_penyuluhKehutananFasilitator_asesmen.zip'],
+            ['seed/FR_analisSDM_apl_1.docx', 'seed/FR_analisSDM_apl_2.docx', 'seed/FR_analisSDM_asesmen.zip'],
+            ['seed/FR_plc_apl_1.docx', 'seed/FR_plc_apl_2.docx', 'seed/FR_plc_asesmen.zip'],
+            ['seed/FR_K3Lab_apl_1.docx', 'seed/FR_K3Lab_apl_2.docx', 'seed/FR_K3Lab_asesmen.zip'],
+            ['seed/FR_programmer_apl_1.docx', 'seed/FR_programmer_apl_2.docx', 'seed/FR_programmer_asesmen.zip'],
+        ];
+        $asesiAPLFiles = [
+            ['seed/pendampingUMKM_apl_1.docx', 'seed/pendampingUMKM_apl_2.docx'],
+            ['seed/K3_apl_1.docx', 'seed/K3_apl_2.docx'],
+            ['seed/teknikPenginderaanJauh_apl_1.docx', 'seed/teknikPenginderaanJauh_apl_2.docx'],
+            ['seed/penyuluhKehutananFasilitator_apl_1.docx', 'seed/penyuluhKehutananFasilitator_apl_2.docx'],
+            ['seed/analisSDM_apl_1.docx', 'seed/analisSDM_apl_2.docx'],
+            ['seed/plc_apl_1.docx', 'seed/plc_apl_2.docx'],
+            ['seed/K3Lab_apl_1.docx', 'seed/K3Lab_apl_2.docx'],
+            ['seed/programmer_apl_1.docx', 'seed/programmer_apl_2.docx'],
+        ];
 
         $skemas = collect();
-        foreach ($namaSkemas as $nama) {
+        echo "Membuat 8 Skema Sertifikasi...\n";
+        activity()->enableLogging();
+        foreach ($namaSkemas as $i => $nama) {
             $skemas->push(Skema::factory()->create([
                 'nama_skema' => $nama,
+                'format_apl_1' => $formatFileSkema[$i][0],
+                'format_apl_2' => $formatFileSkema[$i][1],
+                'format_asesmen' => $formatFileSkema[$i][2],
             ]));
         }
-
-        
+        activity()->disableLogging();
 
 
         /** @var \App\Models\User|null $admin */
@@ -86,9 +112,12 @@ class DatabaseSeeder extends Seeder
             $direktur->assignRole('admin', 'asesor');
             $direkturasesor = Asesor::factory()->create(['user_id' => $direktur->id]);
             $direkturasesor->skemas()->attach([5]);
-            Asesor::factory(24)->create()->each(function ($asesor) use ($skemas) {
+            Asesor::factory(24)->create()->each(function ($asesor, $index) use ($skemas) {
                 $asesor->user->assignRole('asesor');
-                $asesor->skemas()->attach($skemas->random(rand(1, 3))->pluck('id'));
+                $idSkemaWjib = $skemas->get($index % $skemas->count())->id;
+                $idsSkemaTambahan = $skemas->random(rand(1, 2))->pluck('id')->toArray();
+                $idsAllSkema = collect([$idSkemaWjib])->merge($idsSkemaTambahan)->unique();
+                $asesor->skemas()->attach($idsAllSkema);
             });
 
             $student = User::create([
@@ -105,10 +134,18 @@ class DatabaseSeeder extends Seeder
             });
         });
 
-        
-        echo "Membuat 12 sertifikasi yang sudah selesai...\n";
-        for ($i = 0; $i < 12; $i++) {
-            $selectedSkema = $skemas->random();
+        $daftarTuk = [
+            'Lab Komputer Gedung A lantai 2',
+            'Lab Multimedia Gedung C',
+            'Ruang Teori 05 Gedung Utama',
+            'Lab Rekayasa Perangkat Lunak',
+            'Aula Utama Kampus 1',
+            'Lab Jaringan Gedung Elektro',
+            'Lab Jaringan & Sistem Operasi',
+        ];
+        echo "Membuat 8 sertifikasi yang sudah selesai...\n";
+        for ($i = 0; $i < 8; $i++) {
+            $selectedSkema = $skemas->get($i);
             $tglSelesai = now()->subMonths($i);
 
             // Simpan tanggal ke dalam variabel agar bisa digunakan untuk tanggal daftar (created_at) Asesi
@@ -123,28 +160,45 @@ class DatabaseSeeder extends Seeder
                 'biaya' => rand(100, 200) * 1000,
                 'no_rek' => '7126357123',
                 'bank' => 'BSI',
+                'tuk' => Arr::random($daftarTuk),
                 'atas_nama_rek' => 'Empat Pilar Interactive',
             ]);
 
             $asesorTersedia = $selectedSkema->asesors;
+            $idsAsesorTerpilih = collect();
 
             if ($asesorTersedia->count() > 0) {
                 $jumlahAmbil = rand(1, min(3, $asesorTersedia->count()));
-                $sertification->asesors()->attach(
-                    $asesorTersedia->random($jumlahAmbil)->pluck('id')
-                );
+                $idsAsesorTerpilih = $asesorTersedia->random($jumlahAmbil)->pluck('id');
+                $sertification->asesors()->attach($idsAsesorTerpilih);
             }
 
-            $pendaftar = $asesiUsers->random(rand(10, 35));
+            $pendaftar = $asesiUsers->random(rand(10, 20));
             foreach ($pendaftar as $user) {
                 // Generate tanggal daftar acak di antara tgl dibuka dan ditutup
                 $tglDaftar = clone $tglDibuka;
                 $tglDaftar->addMinutes(rand(0, $tglDibuka->diffInMinutes($tglDitutup)));
-                $asesi = Asesi::factory()->create([
+                $skemaIndex = array_search($selectedSkema->nama_skema, $namaSkemas);
+                $randomAsesorId = $idsAsesorTerpilih->random();
+                if (rand(1, 100) <= 90) {
+                    $statusFinal = StatusFinalAsesi::KOMPETEN;
+                } else {
+                    // 10% Sisanya baru dibagi rata ke status zonk lainnya
+                    $statusFinal = Arr::random([
+                        StatusFinalAsesi::BELUM_DITETAPKAN,
+                        StatusFinalAsesi::DISKUALIFIKASI,
+                        StatusFinalAsesi::BELUM_KOMPETEN,
+                    ]);
+                }
+                Asesi::factory()->create([
                     'student_id' => $user->student->id,
                     'sertification_id' => $sertification->id,
-                    'status_final' => StatusFinalAsesi::KOMPETEN,
-                    'bukti_bayar' => 'seed/bukti_bayar.jpg',
+                    'status_berkas' => StatusBerkasAdministrasi::SUDAH_LENGKAP,
+                    'asesor_id' => $randomAsesorId,
+                    'status_final' => $statusFinal,
+                    'apl_1' => $asesiAPLFiles[$skemaIndex][0],
+                    'apl_2' => $asesiAPLFiles[$skemaIndex][1],
+                    'bukti_bayar' => 'seed/bukti_bayar.jpeg',
                     'created_at' => $tglDaftar,
                     'updated_at' => $tglDaftar,
                 ]);
@@ -152,9 +206,10 @@ class DatabaseSeeder extends Seeder
         }
 
 
-        echo "Membuat 4 sertifikasi yang sedang berlangsung...\n";
-        for ($i = 0; $i < 4; $i++) {
-            $selectedSkema = $skemas->random();
+        echo "Membuat 2 sertifikasi yang sedang berlangsung...\n";
+        for ($i = 0; $i < 2; $i++) {
+            $indeksSkemaTarget = [1, 7];
+            $selectedSkema = $skemas->get($indeksSkemaTarget[$i]);
             $tglBuka = now()->subDays(rand(5, 10));
             $tglTutup = $tglBuka->copy()->addWeeks(2);
 
@@ -167,37 +222,37 @@ class DatabaseSeeder extends Seeder
                 'biaya' => rand(100, 200) * 1000,
                 'no_rek' => '7126354612',
                 'bank' => 'BSI',
+                'tuk' => Arr::random($daftarTuk),
                 'atas_nama_rek' => 'Empat Pilar Interactive',
             ]);
 
             $asesorTersedia = $selectedSkema->asesors;
-
             if ($asesorTersedia->count() > 0) {
-                $jumlahAmbil = rand(1, min(3, $asesorTersedia->count()));
-
+                $jumlahAmbil = rand(1, min(2, $asesorTersedia->count()));
                 $sertification->asesors()->attach(
                     $asesorTersedia->random($jumlahAmbil)->pluck('id')
                 );
             }
 
-            $pendaftar = $asesiUsers->random(rand(20, 30));
+            $pendaftar = $asesiUsers->random(rand(10, 20));
             foreach ($pendaftar as $user) {
                 // Determine status logic if needed, but keeping simple
-                $batasAkhir = now()->min($tglTutup); 
-                $tglDaftar = clone $tglDibuka;
+                $batasAkhir = now()->min($tglTutup);
+                $tglDaftar = clone $tglBuka;
                 $tglDaftar->addMinutes(rand(0, $tglBuka->diffInMinutes($batasAkhir)));
-
-                $randomStatus = [
-                    StatusBerkasAdministrasi::SUDAH_LENGKAP,
-                    StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN,
-                    StatusBerkasAdministrasi::PERLU_PERBAIKAN_BERKAS,
-                ];
-                $asesi = Asesi::factory()->create([
+                $skemaIndex = array_search($selectedSkema->nama_skema, $namaSkemas);
+                Asesi::factory()->create([
                     'student_id' => $user->student->id,
                     'sertification_id' => $sertification->id,
-                    'status_berkas' => $randomStatus[array_rand($randomStatus)],
-                    'bukti_bayar' => 'seed/bukti_bayar.jpg',
-                    'created_at' => $tglDaftar, // Set created_at acak
+                    'status_berkas' => Arr::random([
+                        StatusBerkasAdministrasi::SUDAH_LENGKAP,
+                        StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN,
+                        StatusBerkasAdministrasi::PERLU_PERBAIKAN_BERKAS,
+                    ]),
+                    'apl_1' => $asesiAPLFiles[$skemaIndex][0],
+                    'apl_2' => $asesiAPLFiles[$skemaIndex][1],
+                    'bukti_bayar' => 'seed/bukti_bayar.jpeg',
+                    'created_at' => $tglDaftar,
                     'updated_at' => $tglDaftar,
                 ]);
             }
@@ -218,18 +273,50 @@ class DatabaseSeeder extends Seeder
                 $tglBukaBaru = Carbon::parse($sertifikasiBaru->tgl_apply_dibuka);
                 $tglTutupBaru = Carbon::parse($sertifikasiBaru->tgl_apply_ditutup);
                 $batasAkhirBaru = now()->min($tglTutupBaru);
-                
+
                 $tglDaftar = clone $tglBukaBaru;
                 $tglDaftar->addMinutes(rand(0, max(1, $tglBukaBaru->diffInMinutes($batasAkhirBaru))));
 
-                $asesi = Asesi::factory()->create([
+                $skemaIndex = array_search($sertifikasiBaru->skema->nama_skema, $namaSkemas);
+
+                $statusBerkas = null;
+                $statusFinal = null;
+                $asesorId = null;
+
+                if ($sertifikasiBaru->status->value === StatusSertifikasi::SELESAI->value) {
+                    $statusBerkas = StatusBerkasAdministrasi::SUDAH_LENGKAP;
+                    if (rand(1, 100) <= 90) {
+                        $statusFinal = StatusFinalAsesi::KOMPETEN;
+                    } else {
+                        $statusFinal = Arr::random([
+                            StatusFinalAsesi::BELUM_DITETAPKAN,
+                            StatusFinalAsesi::DISKUALIFIKASI,
+                            StatusFinalAsesi::BELUM_KOMPETEN,
+                        ]);
+                    }
+                    $asesorId = $sertifikasiBaru->asesors->random()->id;
+                } else {
+                    $statusBerkas = Arr::random([
+                        StatusBerkasAdministrasi::SUDAH_LENGKAP,
+                        StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN,
+                        StatusBerkasAdministrasi::PERLU_PERBAIKAN_BERKAS,
+                    ]);
+                    $statusFinal = StatusFinalAsesi::BELUM_DITETAPKAN;
+                }
+                Asesi::factory()->create([
                     'student_id' => $user->student->id,
                     'sertification_id' => $sertifikasiBaru->id,
-                    'bukti_bayar' => 'seed/bukti_bayar.jpg',
-                    'created_at' => $tglDaftar, // Set created_at acak
+                    'status_berkas' => $statusBerkas,
+                    'asesor_id' => $asesorId,
+                    'status_final' => $statusFinal,
+                    'apl_1' => $asesiAPLFiles[$skemaIndex][0],
+                    'apl_2' => $asesiAPLFiles[$skemaIndex][1],
+                    'bukti_bayar' => 'seed/bukti_bayar.jpeg',
+                    'created_at' => $tglDaftar,
                     'updated_at' => $tglDaftar,
                 ]);
             }
         }
+        activity()->enableLogging();
     }
 }

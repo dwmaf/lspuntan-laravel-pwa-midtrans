@@ -189,9 +189,8 @@ const headerTitle = computed(() => {
         <div v-if="formMode === 'list'" class="max-w-3xl mx-auto">
             <div class="flex flex-col gap-2 mb-2">
                 <AddButton class="self-end" @click="showCreateForm">Tambah Pengumuman</AddButton>
-                <div v-if="!pengumumans" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
-                    <p class="text-gray-500 dark:text-gray-400 font-semibold text-sm">Belum ada pengumuman untuk
-                        para asesi.</p>
+                <div v-if="!pengumumans.data || pengumumans.data.length === 0" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
+                    <p class="text-gray-500 dark:text-gray-400 font-semibold text-sm">Belum ada pengumuman untuk para asesi.</p>
                 </div>
             </div>
             <InfiniteScroll data="pengumumans" class="space-y-2">

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Asesor extends Model
@@ -30,6 +31,13 @@ class Asesor extends Model
     {
         return $this->hasMany(Asesi::class);
     }
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->properties = $activity->properties->merge([
+            'asesor_user_name' => $this->user->name,
+        ]);
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -40,7 +48,8 @@ class Asesor extends Model
             ->logOnly([                
                 'no_reg_met',
                 'masa_berlaku_sertif_teknis',
-                'masa_berlaku_sertif_asesor'
+                'masa_berlaku_sertif_asesor',
+                'is_active',
             ]);
     }
 }

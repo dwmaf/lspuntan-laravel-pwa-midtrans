@@ -45,12 +45,14 @@ const closeFilterModal = () => {
     showFilterModal.value = false;
 };
 
-const asesorOptions = computed(() =>
-    props.asesors.map(asesor => ({ value: asesor.id, text: asesor.user.name }))
-);
-const skemaOptions = computed(() =>
-    props.skemas.map(skema => ({ value: skema.id, text: skema.nama_skema }))
-);
+const asesorOptions = computed(() => [
+    { value: '', text: 'Semua Asesor' },
+    ...props.asesors.map(asesor => ({ value: asesor.id, text: asesor.user.name })),
+]);
+const skemaOptions = computed(() => [
+    { value: '', text: 'Semua Skema' },
+    ...props.skemas.map(skema => ({ value: skema.id, text: skema.nama_skema })),
+]);
 const activeSkemaOptions = computed(() =>
     props.activeSkemas.map(skema => ({ value: skema.id, text: skema.nama_skema }))
 );
@@ -66,8 +68,12 @@ const applyFilters = () => {
     router.get(route('admin.kelolasertifikasi.index'), { ...filtersForm, tab: tab.value }, {
         preserveState: true,
         replace: true,
+        onFinish: () => {
+            if (Object.keys(usePage().props.errors).length === 0) {
+                closeFilterModal();
+            }
+        },
     });
-    closeFilterModal();
 };
 const resetFilters = () => {
     Object.keys(filtersForm).forEach(key => filtersForm[key] = '');
@@ -116,7 +122,25 @@ const formattedHarga = computed(() => {
     return formatCurrency(form.biaya);
 });
 
+const conflictingSertification = computed(() => {
+    if (!form.skema_id) return null;
+    return props.sertifications_berlangsung.find(s => s.skema_id == form.skema_id);
+});
+
+const showConfirmModal = ref(false);
+
 const submit = () => {
+    if (conflictingSertification.value) {
+        showConfirmModal.value = true;
+        return;
+    }
+    form.post(route("admin.kelolasertifikasi.store"), {
+        onSuccess: () => form.reset(),
+    });
+};
+
+const proceedSubmit = () => {
+    showConfirmModal.value = false;
     form.post(route("admin.kelolasertifikasi.store"), {
         onSuccess: () => form.reset(),
     });
@@ -166,13 +190,13 @@ const submit = () => {
         <hr class="border-gray-200 dark:border-gray-700 mb-4" />
         <div>
             <div v-show="tab === 'berlangsung'">
-                <SertifikasiTable :sertifications="sertifications_berlangsung"
+                <SertifikasiTable :sertifications="sertifications_berlangsung" :isAsesor="isAsesor"
                     empty-message="Tidak ada sertifikasi yang sedang berlangsung." />
             </div>
 
             <div v-show="tab === 'selesai'">
 
-                <SertifikasiTable :sertifications="sertifications_selesai.data"
+                <SertifikasiTable :sertifications="sertifications_selesai.data" :isAsesor="isAsesor"
                     empty-message="Tidak ada riwayat sertifikasi untuk filter yang dipilih.">
                     <template #filter>
                         <div class="flex justify-end items-center gap-2 mb-4">
@@ -250,6 +274,21 @@ const submit = () => {
         </div>
 
     </AdminLayout>
+    <Modal :show="showConfirmModal" @close="showConfirmModal = false">
+        <div class="p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                Apakah Anda yakin akan memulai sertifikasi?
+            </h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Skema <span class="font-bold">{{ conflictingSertification?.skema?.nama_skema }}</span>
+                sudah memiliki sertifikasi yang statusnya <span class="font-bold">berlangsung</span>.
+            </p>
+            <div class="mt-6 flex justify-end gap-3">
+                <SecondaryButton @click="showConfirmModal = false"> Batal </SecondaryButton>
+                <PrimaryButton @click="proceedSubmit"> Ya, Mulai </PrimaryButton>
+            </div>
+        </div>
+    </Modal>
     <Modal :show="showFilterModal" @close="showFilterModal = false">
         <div class="flex justify-end p-2">
             <button @click="closeFilterModal" aria-label="Tutup filter">
@@ -260,8 +299,8 @@ const submit = () => {
             <div>
                 <InputLabel value="Rentang Waktu" />
                 <div class="flex flex-col">
-                    <TextInput id="date_from" label="Dari" v-model="filtersForm.date_from" type="date" class="w-full" />
-                    <TextInput id="date_to" label="Ke" v-model="filtersForm.date_to" type="date" class="w-full" />
+                    <TextInput id="date_from" label="Dari" v-model="filtersForm.date_from" type="date" class="w-full" :error="$page.props.errors.date_from" />
+                    <TextInput id="date_to" label="Ke" v-model="filtersForm.date_to" type="date" class="w-full" :error="$page.props.errors.date_to" />
                 </div>
             </div>
             <SelectInput id="skema-filter" label="Skema" v-model="filtersForm.skema" :options="skemaOptions" />

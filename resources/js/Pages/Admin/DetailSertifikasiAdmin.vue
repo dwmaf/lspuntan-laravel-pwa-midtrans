@@ -17,7 +17,7 @@ import Multiselect from '@/Components/Input/MultiSelect.vue';
 import { useFormat } from "@/Composables/useFormat";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed, watch, nextTick } from "vue";
-import { Users, FileText, CheckCircle, XCircle, AlertTriangle, UserCheck } from 'lucide-vue-next';
+import { Users, FileText, CheckCircle, XCircle, AlertTriangle, UserCheck, Clock } from 'lucide-vue-next';
 const props = defineProps({
     sertification: Object,
     asesors: Array,
@@ -121,80 +121,119 @@ const formattedHarga = computed(() => {
 
         <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
         <div class="max-w-7xl mx-auto gap-3 flex flex-col">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                <!-- Box 1: Status Tahapan Pipeline -->
-                <div class="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow-md">
-                    <h4
-                        class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase mb-4 flex items-center gap-2">
-                        <FileText class="w-4 h-4 text-blue-500" /> Tahapan Sertifikasi Asesi
-                    </h4>
-                    <ul class="space-y-3">
-                        <li class="flex justify-between items-center text-sm">
-                            <span class="text-gray-600 dark:text-gray-400">1. Menunggu Verifikasi Admin</span>
-                            <span
-                                class="font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 py-0.5 px-2.5 rounded-full">{{
-                                    props.sertification.asesis_menunggu_verifikasi_count }}</span>
-                        </li>
-                        <li class="flex justify-between items-center text-sm">
-                            <span class="text-gray-600 dark:text-gray-400">2. Perlu Perbaikan Berkas (Oleh Asesi)</span>
-                            <span
-                                class="font-bold bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 py-0.5 px-2.5 rounded-full">{{
-                                    props.sertification.asesis_perlu_perbaikan_count }}</span>
-                        </li>
-                        <li class="flex justify-between items-center text-sm">
-                            <span class="text-gray-600 dark:text-gray-400">3. Berkas sudah lengkap tapi belum diberikan
-                                keputusan akhir</span>
-                            <span
-                                class="font-bold bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 py-0.5 px-2.5 rounded-full">{{
-                                    props.sertification.asesis_proses_asesmen_count }}</span>
-                        </li>
-                    </ul>
+            <template v-if="isAsesor">
+                <!-- Asesor: Stat Cards 2 Kolom -->
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+                        <UserCheck class="w-5 h-5 text-green-500" />
+                        Hasil Kelulusan Akhir — Asesi Anda
+                    </h3>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
+                            <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">Kompeten</p>
+                            <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{{ sertification.asesis_asesor_kompeten_count }}</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
+                            <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">Belum Kompeten</p>
+                            <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{{ sertification.asesis_asesor_belum_kompeten_count }}</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
+                            <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">Diskualifikasi</p>
+                            <p class="text-2xl font-bold text-gray-600 dark:text-gray-400 mt-1">{{ sertification.asesis_asesor_diskualifikasi_count }}</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
+                            <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">Belum Ditetapkan</p>
+                            <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">{{ sertification.asesis_asesor_belum_ditetapkan_count }}</p>
+                        </div>
+                    </div>
                 </div>
+            </template>
+            <template v-else-if="!isEditing">
+                <!-- Admin: Box 1 + Box 2 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                    <div class="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow-md">
+                        <h4
+                            class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase mb-4 flex items-center gap-2">
+                            <FileText class="w-4 h-4 text-blue-500" /> Tahapan Sertifikasi Asesi
+                        </h4>
+                        <ul class="space-y-3">
+                            <li class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">1. Menunggu Verifikasi Admin</span>
+                                <span
+                                    class="font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 py-0.5 px-2.5 rounded-full">{{
+                                        props.sertification.asesis_menunggu_verifikasi_count }}</span>
+                            </li>
+                            <li class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">2. Perlu Perbaikan Berkas (Oleh Asesi)</span>
+                                <span
+                                    class="font-bold bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 py-0.5 px-2.5 rounded-full">{{
+                                        props.sertification.asesis_perlu_perbaikan_count }}</span>
+                            </li>
+                            <li class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">3. Berkas sudah lengkap tapi belum punya
+                                    asesor</span>
+                                <span
+                                    class="font-bold bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 py-0.5 px-2.5 rounded-full">{{
+                                        props.sertification.asesis_berkas_lengkap_count }}</span>
+                            </li>
+                            <li class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">4. Asesor sudah ada tapi status final belum ditetapkan</span>
+                                <span
+                                    class="font-bold bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 py-0.5 px-2.5 rounded-full">{{
+                                        props.sertification.asesis_proses_asesmen_count }}</span>
+                            </li>
+                        </ul>
+                    </div>
 
-                <!-- Box 2: Hasil Kelulusan (Kompetensi) -->
-                <div class="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow-md">
-                    <h4
-                        class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase mb-4 flex items-center gap-2">
-                        <UserCheck class="w-4 h-4 text-green-500" /> Hasil Kelulusan Akhir
-                    </h4>
-                    <ul class="space-y-3">
-                        <li class="flex justify-between items-center text-sm">
-                            <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                                <CheckCircle class="w-4 h-4 text-green-500" /> Kompeten
-                            </div>
-                            <span
-                                class="font-bold bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 py-0.5 px-2.5 rounded-full">{{
-                                    props.sertification.asesis_kompeten_count }}</span>
-                        </li>
-                        <li class="flex justify-between items-center text-sm">
-                            <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                                <XCircle class="w-4 h-4 text-red-500" /> Belum Kompeten
-                            </div>
-                            <span
-                                class="font-bold bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 py-0.5 px-2.5 rounded-full">{{
-                                    props.sertification.asesis_belum_kompeten_count }}</span>
-                        </li>
-                        <li class="flex justify-between items-center text-sm">
-                            <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                                <AlertTriangle class="w-4 h-4 text-gray-500" /> Diskualifikasi
-                            </div>
-                            <span
-                                class="font-bold bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 py-0.5 px-2.5 rounded-full">{{
-                                    props.sertification.asesis_diskualifikasi_count }}</span>
-                        </li>
-                    </ul>
+                    <div class="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow-md">
+                        <h4
+                            class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase mb-4 flex items-center gap-2">
+                            <UserCheck class="w-4 h-4 text-green-500" /> Hasil Kelulusan Akhir
+                        </h4>
+                        <ul class="space-y-3">
+                            <li class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <CheckCircle class="w-4 h-4 text-green-500" /> Kompeten (bersertifikat)
+                                </div>
+                                <span
+                                    class="font-bold bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 py-0.5 px-2.5 rounded-full">
+                                    {{ sertification.asesis_kompeten_count - sertification.asesis_kompeten_belum_sertifikat_count }}</span>
+                            </li>
+                            <li class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <CheckCircle class="w-4 h-4 text-yellow-500" /> Kompeten (sertifikat belum terbit)
+                                </div>
+                                <span
+                                    class="font-bold bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 py-0.5 px-2.5 rounded-full">
+                                    {{ sertification.asesis_kompeten_belum_sertifikat_count }}</span>
+                            </li>
+                            <li class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <XCircle class="w-4 h-4 text-red-500" /> Belum Kompeten
+                                </div>
+                                <span
+                                    class="font-bold bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 py-0.5 px-2.5 rounded-full">{{
+                                        sertification.asesis_belum_kompeten_count }}</span>
+                            </li>
+                            <li class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <AlertTriangle class="w-4 h-4 text-gray-500" /> Diskualifikasi
+                                </div>
+                                <span
+                                    class="font-bold bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 py-0.5 px-2.5 rounded-full">{{
+                                        sertification.asesis_diskualifikasi_count }}</span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
+            </template>
 
             <div v-if="isEditing" class="p-4 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <form @submit.prevent="submit" class="space-y-6">
                     <SelectInput id="skema_id" label="Pilih Skema Sertifikasi:" v-model="form.skema_id"
                         :options="skemaOptions" :error="form.errors.skema_id" disabled
-                        class="bg-gray-100 cursor-not-allowed opacity-75" />
-                    <p class="mt-1 text-xs text-red-500 italic">
-                        *Skema sertifikasi tidak dapat diubah setelah jadwal dibuat untuk menjaga integritas data
-                        pendaftar.
-                    </p>
+                        class="bg-gray-100 cursor-not-allowed opacity-75"
+                        hint="*Skema sertifikasi tidak dapat diubah setelah jadwal dibuat untuk menjaga integritas data pendaftar." />
                     <Multiselect v-if="form.skema_id" id="asesor_ids" label="Pilih Asesor (bisa lebih dari satu):"
                         v-model="form.asesor_ids" :options="availableAsesors" :multiple="true"
                         placeholder="Cari atau pilih asesor" label-prop="name" value-prop="id"
@@ -212,7 +251,7 @@ const formattedHarga = computed(() => {
                             label="Tanggal Asesmen Selesai" v-model="form.tgl_asesmen_selesai" type="date"
                             :error="form.errors.tgl_asesmen_selesai" />
                         <TextInput id="tuk" label="Tempat Uji Sertifikasi" v-model="form.tuk" type="text"
-                            :error="form.errors.tuk" required />
+                            :error="form.errors.tuk" />
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <NumberInput id="biaya" label="Biaya Sertifikasi" v-model="form.biaya" min="0"
@@ -260,13 +299,10 @@ const formattedHarga = computed(() => {
 
             <div v-if="!isEditing" class="p-4 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-
-
                     <div class="flex items-center space-x-3">
                         <EditButton v-if="!isAsesor" @click="edit">Edit</EditButton>
                         <ExportLink :href="route('admin.kelolasertifikasi.report.export_excel', props.sertification.id)"
                             target="_blank">Export</ExportLink>
-
                     </div>
                 </div>
 
@@ -323,14 +359,14 @@ const formattedHarga = computed(() => {
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Asesi</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ isAsesor ? 'Asesi Anda' : 'Jumlah Asesi' }}</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ sertification.asesis_count }} terdaftar</dd>
+                            {{ isAsesor ? sertification.asesis_asesor_count : sertification.asesis_count }} terdaftar</dd>
                     </div>
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">TUK</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ sertification.tuk }}</dd>
+                        <dd :class="['mt-1 text-sm', sertification.tuk ? 'text-gray-900 dark:text-gray-100' : 'italic text-gray-500 dark:text-gray-400']">
+                            {{ sertification.tuk ?? '-' }}</dd>
                     </div>
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>

@@ -85,6 +85,8 @@ class User extends Authenticatable
     //     return $this->no_tlp_hp; 
     // }
 
+    protected static $recordEvents = ['updated'];
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

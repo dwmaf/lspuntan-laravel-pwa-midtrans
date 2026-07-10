@@ -11,7 +11,6 @@ use App\Models\News;
 use App\Traits\SendsPushNotifications;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Kreait\Firebase\Contract\Messaging;
 use Illuminate\Support\Facades\Gate;
 
 class PengumumanController extends Controller
@@ -38,7 +37,7 @@ class PengumumanController extends Controller
         ]);
     }
 
-    public function store_pengumuman_asesmen(Sertification $sertification, Request $request, Messaging $messaging)
+    public function store_pengumuman_asesmen(Sertification $sertification, Request $request)
     {
         Gate::authorize('manageAnnouncement', $sertification);
 
@@ -48,12 +47,12 @@ class PengumumanController extends Controller
             'path_file' => 'nullable|file|mimes:zip,rar,txt,docx,pdf,pptx,xlsx|max:5120',
             'send_notification' => 'boolean',
         ]);
-
-        $news = News::create([
+        $news = new News([
             'user_id' => $request->user()->id,
             'sertification_id' => $sertification->id,
             'content' => $validatedData['content'],
         ]);
+        
         FileHelper::handleSingleFileUploads($news, ['path_file'], $request, 'sert_files');
         $news->save();
 
@@ -67,7 +66,7 @@ class PengumumanController extends Controller
                 foreach ($asesis as $asesi) {
                     $user = $asesi->student->user ?? null;
                     $url = route('asesi.pengumuman.index', [$sertification, $asesi, 'news_id' => $news->id]);
-                    $this->sendPushNotification($messaging, $user, $title, $body, $url, 'PengumumanBaru');
+                    $this->sendPushNotification($user, $title, $body, $url, 'PengumumanBaru');
                 }
             }
         }
@@ -76,7 +75,7 @@ class PengumumanController extends Controller
     }
 
 
-    public function update_pengumuman_asesmen(Sertification $sertification, News $news, Request $request, Messaging $messaging)
+    public function update_pengumuman_asesmen(Sertification $sertification, News $news, Request $request)
     {
         Gate::authorize('manageAnnouncement', $sertification);
 
@@ -104,7 +103,7 @@ class PengumumanController extends Controller
                 foreach ($asesis as $asesi) {
                     $user = $asesi->student->user ?? null;
                     $url = route('asesi.pengumuman.index', [$sertification, $asesi, 'news_id' => $news->id]);
-                    $this->sendPushNotification($messaging, $user, $title, $body, $url, 'PengumumanUpdated');
+                    $this->sendPushNotification($user, $title, $body, $url, 'PengumumanUpdated');
                 }
             }
         }

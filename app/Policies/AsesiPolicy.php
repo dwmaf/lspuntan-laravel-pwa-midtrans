@@ -124,12 +124,12 @@ class AsesiPolicy
 
     public function downloadFile(User $user, Asesi $asesi)
     {
-        if ($user->role === 'admin')
+        if ($user->hasRole('admin'))
             return true;
-        if ($user->role === 'asesi' && $user->id === $asesi->student->user_id)
+        if ($user->hasRole('asesi') && $user->id === $asesi->student->user_id)
             return true;
 
-        if ($user->role === 'asesor') {
+        if ($user->hasRole('asesor')) {
             $asesor = $user->asesor;
             return $asesor && $asesor->id === $asesi->asesor_id;
         }

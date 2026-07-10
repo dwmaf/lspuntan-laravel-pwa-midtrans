@@ -133,8 +133,9 @@ const { formatDate } = useFormat();
                 { label: 'Form APL.01', path: asesi.apl_1, table: 'asesis', id: asesi.id, column: 'apl_1' },
                 { label: 'Form APL.02', path: asesi.apl_2, table: 'asesis', id: asesi.id, column: 'apl_2' },
                 { label: 'Scan KTP', path: asesi.student?.foto_ktp, table: 'students', id: asesi.student?.id, column: 'foto_ktp' },
-                { label: 'Scan KTM', path: asesi?.foto_ktm, table: 'students', id: asesi.student?.id, column: 'foto_ktm' },
+                { label: 'Scan KTM', path: asesi?.foto_ktm, table: 'asesis', id: asesi.id, column: 'foto_ktm' },
                 { label: 'Pasfoto', path: asesi.student?.pas_foto, table: 'students', id: asesi.student?.id, column: 'pas_foto' },
+                { label: 'Transkrip Nilai', path: asesi.transkrip_nilai, table: 'asesis', id: asesi.id, column: 'transkrip_nilai' },
             ]" :key="file.label">
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">{{ file.label }}</dt>
                 <dd class="mt-1 text-sm min-w-0">

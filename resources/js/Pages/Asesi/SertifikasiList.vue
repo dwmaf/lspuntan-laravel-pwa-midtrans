@@ -36,7 +36,7 @@ const getSertifikasiStatus = (sert) => {
         return {
             type: 'applied',
             text: 'Lihat Status',
-            class: 'bg-blue-500 hover:bg-blue-600 text-white',
+            class: 'bg-indigo-500 hover:bg-indigo-600 text-white',
             href: route('asesi.sertifikasi.applied.show', { sertification: sert.id, asesi: props.asesis[sert.id].id }),
         };
     }
@@ -49,7 +49,7 @@ const getSertifikasiStatus = (sert) => {
     return {
         type: 'open',
         text: 'Daftar',
-        class: 'bg-green-500 hover:bg-green-600 text-white',
+        class: 'bg-blue-500 hover:bg-blue-700 text-white',
         href: route('asesi.sertifikasi.apply.create', sert.id),
     };
 };
@@ -106,7 +106,8 @@ const getSertifikasiStatus = (sert) => {
 
                         <template #actions>
                             <PrimaryLinkButton v-if="getSertifikasiStatus(sert).href"
-                                :href="getSertifikasiStatus(sert).href">
+                                :href="getSertifikasiStatus(sert).href"
+                                :extraClass="getSertifikasiStatus(sert).class">
                                 {{ getSertifikasiStatus(sert).text }}
                             </PrimaryLinkButton>
                             <span v-else

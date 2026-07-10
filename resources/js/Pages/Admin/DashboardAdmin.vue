@@ -117,11 +117,19 @@ const competencyOptions = computed(() => {
     return {
         chart: { type: 'donut', fontFamily: 'Inter, sans-serif', background: 'transparent' },
         theme: { mode: isDark.value ? 'dark' : 'light' },
-        labels: props.charts?.competencyStats.map(s => s.status_final === 'kompeten' ? 'Kompeten' : 'Belum Kompeten') || [],
-        colors: ['#10b981', '#ef4444', '#f59e0b'],
+        labels: props.charts?.competencyStats.map(s => {
+            const map = { kompeten: 'Kompeten', belum_kompeten: 'Belum Kompeten', diskualifikasi: 'Diskualifikasi', belum_ditetapkan: 'Belum Ditentukan' };
+            return map[s.status_final] || s.status_final;
+        }) || [],
+        colors: ['#10b981', '#ef4444', '#6b7280', '#f59e0b'],
         legend: {
             position: 'bottom',
             labels: { colors: text }
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: (val) => val.toFixed(1) + '%',
+            style: { colors: ['#fff'], fontSize: '12px', fontWeight: 600 },
         },
         stroke: { show: true, colors: [border] },
         plotOptions: { pie: { donut: { size: '65%' } } }
@@ -170,18 +178,21 @@ const formatEventName = (event) => {
 const pipelinePercentages = computed(() => {
     const total = props.pipelineStats.verifikasi_berkas +
         props.pipelineStats.revisi_asesi +
-        props.pipelineStats.proses_asesmen;
+        props.pipelineStats.berkas_lengkap_belum_asesor +
+        props.pipelineStats.ada_asesor_belum_ditetapkan;
 
     if (total === 0) return {
         verifikasi_berkas: 0,
         revisi_asesi: 0,
-        proses_asesmen: 0
+        berkas_lengkap_belum_asesor: 0,
+        ada_asesor_belum_ditetapkan: 0,
     };
 
     return {
         verifikasi_berkas: Math.round((props.pipelineStats.verifikasi_berkas / total) * 100),
         revisi_asesi: Math.round((props.pipelineStats.revisi_asesi / total) * 100),
-        proses_asesmen: Math.round((props.pipelineStats.proses_asesmen / total) * 100)
+        berkas_lengkap_belum_asesor: Math.round((props.pipelineStats.berkas_lengkap_belum_asesor / total) * 100),
+        ada_asesor_belum_ditetapkan: Math.round((props.pipelineStats.ada_asesor_belum_ditetapkan / total) * 100),
     };
 });
 
@@ -213,7 +224,7 @@ const pipelinePercentages = computed(() => {
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
                 <div class="min-w-0">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Asesi</h3>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ isAsesor ? 'Asesi Anda' : 'Total Asesi' }}</h3>
                     <p class="mt-1 text-3xl font-semibold text-purple-600 dark:text-purple-300">{{ totalAsesiCount }}</p>
                 </div>
                 <Users class="w-8 h-8 text-purple-600 dark:text-purple-300 shrink-0 ml-3" />
@@ -221,7 +232,7 @@ const pipelinePercentages = computed(() => {
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
                 <div class="min-w-0">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Lulusan</h3>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ isAsesor ? 'Lulusan Anda' : 'Total Lulusan' }}</h3>
                     <p class="mt-1 text-3xl font-semibold text-fuchsia-600">{{ asesiLulusCount }}</p>
                 </div>
                 <GraduationCap class="w-8 h-8 text-fuchsia-600 shrink-0 ml-3" />
@@ -235,14 +246,14 @@ const pipelinePercentages = computed(() => {
                     <Activity class="shrink-0 w-5 h-5 text-gray-500" />
                     Status Pipeline Sertifikasi yang Berlangsung
                 </h3>
-                <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
                     <!-- Step 1 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
                         <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">1. Menunggu
                             Verifikasi Admin</p>
                         <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{
-                            pipelineStats.verifikasi_berkas }}</p>
+                            pipelineStats.verifikasi_berkas || '-' }}</p>
                         <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
                             <div class="bg-blue-500 h-1.5 rounded-full"
                                 :style="`width: ${pipelinePercentages.verifikasi_berkas}%`"></div>
@@ -263,14 +274,27 @@ const pipelinePercentages = computed(() => {
                     <!-- Step 3 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">4. Akses asesmen
-                            Diberikan tapi Status Final belum ditentukan
+                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">3. Berkas sudah lengkap tapi
+                            belum punya asesor
                         </p>
-                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ pipelineStats.proses_asesmen
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ pipelineStats.berkas_lengkap_belum_asesor
+                            || '-' }}</p>
+                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
+                            <div class="bg-orange-500 h-1.5 rounded-full"
+                                :style="`width: ${pipelinePercentages.berkas_lengkap_belum_asesor}%`"></div>
+                        </div>
+                    </div>
+                    <!-- Step 4 -->
+                    <div
+                        class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
+                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">4. Sudah ada asesor tapi
+                            status final belum ditetapkan
+                        </p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ pipelineStats.ada_asesor_belum_ditetapkan
                             || '-' }}</p>
                         <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
                             <div class="bg-green-500 h-1.5 rounded-full"
-                                :style="`width: ${pipelinePercentages.proses_asesmen}%`"></div>
+                                :style="`width: ${pipelinePercentages.ada_asesor_belum_ditetapkan}%`"></div>
                         </div>
                     </div>
                 </div>

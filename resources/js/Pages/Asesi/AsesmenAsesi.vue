@@ -170,7 +170,7 @@ const showViewMode = () => {
                                 :is-marked-for-deletion="form.delete_files_asesi.includes('path_file_asesmen')"
                                 :error="form.errors.path_file_asesmen"
                                 :required="!asesi?.path_file_asesmen || form.delete_files_asesi.includes('path_file_asesmen')"
-                                :template-url="sertification.skema.format_asesmen ? `/download/asesis/${sertification.skema.id}/format_asesmen` : null"
+                                :template-url="sertification.skema.format_asesmen ? `/download/skemas/${sertification.skema.id}/format_asesmen` : null"
                                 :disabled="submissionMode === 'view'" accept=".zip,.rar,.docx," />
                             <div class="flex items-center gap-4 mt-6">
                                 <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">

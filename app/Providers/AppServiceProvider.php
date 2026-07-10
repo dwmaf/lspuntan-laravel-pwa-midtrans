@@ -10,6 +10,8 @@ use App\Services\FakeMessagingService;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Activitylog\Models\Activity;
 use App\Policies\ActivityPolicy;
+use App\Models\Asesi;
+use App\Observers\AsesiObserver;
 use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
@@ -31,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Asesi::observe(AsesiObserver::class);
         Gate::policy(Activity::class, ActivityPolicy::class);
         // 2. Daftarkan event listener di sini
         // Event::listen(

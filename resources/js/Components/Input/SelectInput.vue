@@ -21,6 +21,7 @@ const props = defineProps({
         default: 'Pilih salah satu',
     },
     required: Boolean,
+    hint: String,
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -42,6 +43,7 @@ const updateValue = (event) => {
                 {{ option.text }}
             </option>
         </select>
+        <p v-if="hint" class="mt-1 text-xs text-red-500 italic">{{ hint }}</p>
         <InputError v-if="error" :message="error" />
     </div>
 </template>

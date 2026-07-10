@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Asesmen;
+use App\Models\Asesi;
+use App\Models\Asesor;
+use App\Models\News;
+use App\Models\Sertification;
+use App\Models\Sertifikat;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Spatie\Activitylog\Models\Activity;
@@ -14,7 +19,17 @@ class ActivityLogController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('viewAny', Activity::class);
-        $logs = Activity::with('causer')
+
+        $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+        ], [
+            'date_from.date' => 'Format tanggal awal tidak valid.',
+            'date_to.date' => 'Format tanggal akhir tidak valid.',
+            'date_to.after_or_equal' => 'Tanggal akhir tidak boleh lebih awal dari tanggal awal.',
+        ]);
+
+        $logs = Activity::with('causer.roles', 'subject')
             ->when($request->input('search'), function ($query, $search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->whereHas('causer', function ($causerQuery) use ($search) {
@@ -37,17 +52,37 @@ class ActivityLogController extends Controller
             ->when($request->input('event'), function ($query, $event) {
                 $query->where('event', $event);
             })
+            ->whereNotIn('subject_type', [
+                Sertification::class,
+                Asesi::class,
+                News::class,
+                Asesmen::class,
+                Sertifikat::class,
+            ])
             ->latest()
             ->paginate(15)
             ->onEachSide(0)
             ->withQueryString();
-        $subjects = Activity::query()->select('subject_type')->whereNotNull('subject_type')->distinct()->pluck('subject_type');
+
+        $logs->loadMissing('subject');
+        $logs->getCollection()->loadMorph('subject', [
+            Asesor::class => ['user'],
+        ]);
+
+        $subjects = Activity::query()->select('subject_type')->whereNotNull('subject_type')->whereNotIn('subject_type', [
+            Sertification::class,
+            Asesi::class,
+            News::class,
+            Asesmen::class,
+            Sertifikat::class,
+        ])->distinct()->pluck('subject_type');
         return Inertia::render('Admin/ActivityLog', [
             'logs' => $logs,
             'filters' => $request->only(['search', 'date_from', 'date_to', 'subject_type', 'event']),
             'filterOptions' => [
                 'subjects' => $subjects,
             ],
+            'skemaMap' => \App\Models\Skema::all()->mapWithKeys(fn($s) => [$s->id => $s->nama_skema]),
         ]);
     }
 }
