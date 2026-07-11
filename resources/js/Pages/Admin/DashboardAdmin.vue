@@ -6,6 +6,8 @@ import { Award, Activity, Users, GraduationCap, User2 } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
 import { computed, ref, onMounted, onUnmounted, watch, defineAsyncComponent } from 'vue';
 import { useDark } from '@vueuse/core';
+import { useActivityLog } from "@/Composables/useActivityLog";
+const { getRoleLabel, getUserLogMessage, getSkemaLogMessage, getAsesorLogMessage } = useActivityLog();
 const VueApexCharts = defineAsyncComponent(() => 
     import('vue3-apexcharts')
 );
@@ -167,6 +169,13 @@ const getActivityColor = (event) => {
         case 'deleted': return 'bg-red-500';
         default: return 'bg-purple-500';
     }
+};
+
+const getActivityMessage = (activity) => {
+    return getUserLogMessage(activity)
+        ?? getSkemaLogMessage(activity)
+        ?? getAsesorLogMessage(activity)
+        ?? activity.description;
 };
 
 const formatEventName = (event) => {
@@ -365,7 +374,7 @@ const pipelinePercentages = computed(() => {
                         <div :class="['w-2 h-2 rounded-full mt-1.5 shrink-0', getActivityColor(activity.event)]"></div>
                         <div>
                             <p class="text-sm dark:text-gray-300 font-medium">
-                                {{ activity.description }}
+                                {{ getActivityMessage(activity) }}
                             </p>
                             <p class="text-xs text-gray-500 mt-0.5">
                                 <span class="font-semibold text-gray-600 dark:text-gray-400">

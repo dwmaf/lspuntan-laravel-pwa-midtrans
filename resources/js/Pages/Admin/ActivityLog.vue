@@ -15,6 +15,8 @@ import Dropdown from '@/Components/Dropdown.vue';
 import InputLabel from '@/Components/Input/InputLabel.vue';
 import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
 import { useFormat } from "@/Composables/useFormat";
+import { useActivityLog } from "@/Composables/useActivityLog";
+const { getRoleLabel, getUserLogMessage, getSkemaLogMessage, getAsesorLogMessage } = useActivityLog();
 const props = defineProps({
     logs: Object,
     filters: Object,
@@ -90,7 +92,7 @@ const backToList = () => {
     viewMode.value = 'list';
 };
 
-const { formatDateTime } = useFormat();
+const { formatDateTime, formatDate } = useFormat();
 const subjectTypeLabels = {
     News: 'Pengumuman',
 };
@@ -102,80 +104,10 @@ const cleanSubjectType = (subject) => {
     return subjectTypeLabels[name] || name;
 };
 
-const getRoleLabel = (log) => {
-    if (!log || !log.causer || !log.causer.roles) {
-        return '';
-    }
-    const isAdmin = log.causer.roles.some(role => role.name === 'admin');
-    return isAdmin ? 'Admin ' : '';
-};
-
-const getUserLogMessage = (log) => {
-    if (log.event !== 'updated' || log.subject_type !== 'App\\Models\\User') return null;
-    const props = typeof log.properties === 'string' ? JSON.parse(log.properties) : (log.properties || {});
-    return props?.attributes?.banned_at ? ' memblokir akses login ' : ' memulihkan akses login ';
-};
-
 const getFileName = (path) => {
     if (!path) return null;
     const parts = String(path).split('/');
     return parts.pop();
-};
-
-const getSkemaLogMessage = (log) => {
-    if (log.subject_type !== 'App\\Models\\Skema') return null;
-    const props = typeof log.properties === 'string' ? JSON.parse(log.properties) : (log.properties || {});
-    const namaSkema = log.subject?.nama_skema ?? '';
-
-    if (log.event === 'created') return ' menambahkan ' + namaSkema;
-    if (log.event === 'deleted') return ' menghapus ' + namaSkema;
-
-    if (log.event === 'updated') {
-        const oldKeys = Object.keys(props.old || {});
-        const attrKeys = Object.keys(props.attributes || {});
-        const onlyIsActive = oldKeys.length === 1 && oldKeys[0] === 'is_active'
-            && attrKeys.length === 1 && attrKeys[0] === 'is_active';
-
-        if (onlyIsActive) {
-            return props.attributes.is_active == 0
-                ? ' menonaktifkan skema ' + namaSkema
-                : ' mengaktifkan skema ' + namaSkema;
-        }
-        return ' mengubah data ' + namaSkema;
-    }
-
-    return null;
-};
-
-const getAsesorLogMessage = (log) => {
-    if (log.subject_type !== 'App\\Models\\Asesor') return null;
-    const props = typeof log.properties === 'string' ? JSON.parse(log.properties) : (log.properties || {});
-    const namaAsesor = props.asesor_user_name ?? log.subject?.user?.name ?? '';
-
-    if (log.event === 'created') return ' menambahkan asesor ' + namaAsesor;
-    if (log.event === 'deleted') return ' menghapus akun asesor ' + namaAsesor;
-
-    if (log.event === 'updated') {
-        const oldKeys = Object.keys(props.old || {});
-        const attrKeys = Object.keys(props.attributes || {});
-        const onlyIsActive = oldKeys.length === 1 && oldKeys[0] === 'is_active'
-            && attrKeys.length === 1 && attrKeys[0] === 'is_active';
-
-        if (onlyIsActive) {
-            return props.attributes.is_active == 0
-                ? ' menonaktifkan asesor ' + namaAsesor
-                : ' mengaktifkan asesor ' + namaAsesor;
-        }
-        if ('is_active' in (props.old ?? {})) {
-            const suffix = props.attributes?.is_active == 0
-                ? ' dan menonaktifkannya'
-                : ' dan mengaktifkannya';
-            return ' mengubah data asesor ' + namaAsesor + suffix;
-        }
-        return ' mengubah data asesor ' + namaAsesor;
-    }
-
-    return null;
 };
 
 const canShowDetail = (log) => {
@@ -216,13 +148,14 @@ const getSkemaDetailItems = (log) => {
     const props = typeof log.properties === 'string' ? JSON.parse(log.properties) : (log.properties || {});
     const items = [];
 
+    const isDateField = (key) => key === 'masa_berlaku_sertif_teknis' || key === 'masa_berlaku_sertif_asesor';
+
     if (log.event === 'created') {
         for (const [key, value] of Object.entries(props.attributes || {})) {
             if (key === 'is_active') continue;
             let valNew = null;
             if (value !== null && value !== undefined && value !== '') {
-                // Ekstrak nama file khusus kolom format_...
-                valNew = key.startsWith('format_') ? getFileName(value) : formatValue(value);
+                valNew = key.startsWith('format_') ? getFileName(value) : isDateField(key) ? formatDate(value) : formatValue(value);
             }
             items.push({ label: key, newValue: valNew, oldValue: null, isDeletedFile: false });
         }
@@ -233,12 +166,12 @@ const getSkemaDetailItems = (log) => {
         for (const key of allKeys) {
             let valOld = null;
             if (old[key] !== null && old[key] !== undefined && old[key] !== '') {
-                valOld = key.startsWith('format_') ? getFileName(old[key]) : formatValue(old[key]);
+                valOld = key.startsWith('format_') ? getFileName(old[key]) : isDateField(key) ? formatDate(old[key]) : formatValue(old[key]);
             }
 
             let valNew = null;
             if (attrs[key] !== null && attrs[key] !== undefined && attrs[key] !== '') {
-                valNew = key.startsWith('format_') ? getFileName(attrs[key]) : formatValue(attrs[key]);
+                valNew = key.startsWith('format_') ? getFileName(attrs[key]) : isDateField(key) ? formatDate(attrs[key]) : formatValue(attrs[key]);
             }
 
             // Cek apakah ini file yang diupdate dan isinya dihapus
@@ -276,13 +209,15 @@ const getAsesorDetailItems = (log) => {
         for (const key of allKeys) {
             if (key === 'is_active') continue;
 
+            const isDateField = key === 'masa_berlaku_sertif_teknis' || key === 'masa_berlaku_sertif_asesor';
+
             let valOld = null;
             if (old[key] !== null && old[key] !== undefined && old[key] !== '') {
-                valOld = formatValue(old[key]);
+                valOld = isDateField ? formatDate(old[key]) : formatValue(old[key]);
             }
             let valNew = null;
             if (attrs[key] !== null && attrs[key] !== undefined && attrs[key] !== '') {
-                valNew = formatValue(attrs[key]);
+                valNew = isDateField ? formatDate(attrs[key]) : formatValue(attrs[key]);
             }
 
             items.push({ label: key, oldValue: valOld, newValue: valNew });
