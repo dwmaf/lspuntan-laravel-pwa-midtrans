@@ -2,14 +2,14 @@
 
 namespace App\Policies;
 
-use App\Models\Asesmen;
+use App\Models\Pengumuman;
 use App\Models\User;
 use App\Models\Asesi;
 use Illuminate\Auth\Access\Response;
 
-class AsesmenPolicy
+class PengumumanPolicy
 {
-    public function downloadFile(User $user, Asesmen $asesmen)
+    public function downloadFile(User $user, Pengumuman $pengumuman)
     {
         if ($user->hasRole('admin')) {
             return true;
@@ -18,15 +18,13 @@ class AsesmenPolicy
         if ($user->hasRole('asesi')) {
             $mahasiswa = $user->mahasiswa;
             return $mahasiswa && Asesi::where('mahasiswa_id', $mahasiswa->id)
-                ->where('sertifikasi_id', $asesmen->sertifikasi_id)
-                ->whereHas('asesor', function ($query) use ($asesmen) {
-                    $query->where('user_id', $asesmen->user_id);
-                })
+                ->where('sertifikasi_id', $pengumuman->sertifikasi_id)
                 ->exists();
         }
 
         if ($user->hasRole('asesor')) {
-            return $user->id === $asesmen->user_id;
+            $asesor = $user->asesor;
+            return $asesor && $asesor->sertifikasi()->where('sertifikasi.id', $pengumuman->sertifikasi_id)->exists();
         }
 
         return false;

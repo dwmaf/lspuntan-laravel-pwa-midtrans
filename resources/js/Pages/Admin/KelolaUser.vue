@@ -11,12 +11,12 @@ import InputError from '@/Components/Input/InputError.vue';
 import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
 import MultiSelect from '@/Components/Input/MultiSelect.vue';
 import SecondaryButton from '@/Components/Button/SecondaryButton.vue';
-import { Head, useForm, usePage, router } from '@inertiajs/vue3';
+import { useForm, usePage, router } from '@inertiajs/vue3';
 import { ref, computed, watch, reactive } from 'vue';
 import SuccessButton from '@/Components/Button/SuccessButton.vue';
 import Pagination from '@/Components/Pagination.vue';
 import SelectInput from '@/Components/Input/SelectInput.vue';
-import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
+import { FunnelIcon, X } from 'lucide-vue-next';
 import { useFormat } from "@/Composables/useFormat";
 
 const authUser = usePage().props.auth.user;

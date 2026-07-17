@@ -8,44 +8,43 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class Sertification extends Model
+class Sertifikasi extends Model
 {
     use LogsActivity, HasFactory;
     /** @use HasFactory<\Database\Factories\SertificationFactory> */
-    protected $guarded = [
-        
-    ];
+    protected $table = 'sertifikasi';
+    protected $guarded = [];
     protected $casts = [
         // karena dijadiin casts, maka jika melakukan if harus pakai value, misalnya
         // if ($sertification->status->value === StatusSertifikasi::SELESAI->value)
         'status' => StatusSertifikasi::class, // Supaya jadi Enum Object
     ];
-    public function asesors()
+    public function asesor()
     {
-        return $this->belongsToMany(Asesor::class, 'asesor_sertification');
+        return $this->belongsToMany(Asesor::class, 'asesor_sertifikasi', 'sertifikasi_id', 'asesor_id');
     }
     public function skema()
     {
-        return $this->belongsTo(Skema::class);
+        return $this->belongsTo(Skema::class, 'skema_id');
     }
-    public function asesis()
+    public function asesi()
     {
-        return $this->hasMany(Asesi::class);
+        return $this->hasMany(Asesi::class, 'sertifikasi_id');
     }
-    public function news()
+    public function pengumuman()
     {
-        return $this->hasMany(News::class);
+        return $this->hasMany(Pengumuman::class, 'sertifikasi_id');
     }
 
     public function asesmen()
     {
-        return $this->hasMany(Asesmen::class);
+        return $this->hasMany(Asesmen::class, 'sertifikasi_id');
     }
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->useLogName('Sertification')
+            ->useLogName('Sertifikasi')
             ->setDescriptionForEvent(fn(string $eventName) => "Jadwal Sertifikasi {$this->skema->nama_skema} telah di-{$eventName}")
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()

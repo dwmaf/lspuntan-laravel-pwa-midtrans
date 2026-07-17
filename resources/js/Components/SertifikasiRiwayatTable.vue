@@ -1,15 +1,14 @@
 <script setup>
-import { computed } from "vue";
 import PrimaryLinkButton from "@/Components/PrimaryLinkButton.vue";
 import StatusBadge from "@/Components/StatusBadge.vue";
 import { useFormat } from "@/Composables/useFormat";
 
 const props = defineProps({
-    sertifications: {
+    listSertifikasi: {
         type: Array,
         required: true
     },
-    asesis: {
+    listAsesi: {
         type: Object,
         default: () => ({})
     },
@@ -22,7 +21,7 @@ const props = defineProps({
 const { formatCurrency, formatDate } = useFormat();
 
 const getEnrollment = (sertId) => {
-    return props.asesis[sertId];
+    return props.listAsesi[sertId];
 };
 </script>
 

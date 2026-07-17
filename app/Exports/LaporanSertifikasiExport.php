@@ -3,7 +3,7 @@
 namespace App\Exports;
 
 use App\Helpers\DateHelper;
-use App\Models\Sertification;
+use App\Models\Sertifikasi;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -19,31 +19,31 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class LaporanSertifikasiExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths, WithEvents
 {
-    protected $sertification;
+    protected $sertifikasi;
 
-    public function __construct(Sertification $sertification)
+    public function __construct(Sertifikasi $sertifikasi)
     {
-        $this->sertification = $sertification;
+        $this->sertifikasi = $sertifikasi;
     }
 
     public function collection()
     {
-        return $this->sertification->asesis()->with('student.user')->get();
+        return $this->sertifikasi->asesis()->with('student.user')->get();
     }
 
     public function headings(): array
     {
         $rows = [
             ['LAPORAN HASIL SERTIFIKASI'],
-            ['Skema: ' . $this->sertification->skema->nama_skema],
+            ['Skema: ' . $this->sertifikasi->skema->nama_skema],
             [
-                'Tanggal Pendaftaran: ' . DateHelper::formatIdDate($this->sertification->tgl_apply_dibuka)
-                . ' - ' . DateHelper::formatIdDate($this->sertification->tgl_apply_ditutup),
+                'Tanggal Pendaftaran: ' . DateHelper::formatIdDate($this->sertifikasi->tgl_apply_dibuka)
+                . ' - ' . DateHelper::formatIdDate($this->sertifikasi->tgl_apply_ditutup),
             ],
         ];
 
-        $asesorCount = $this->sertification->asesors->count();
-        foreach ($this->sertification->asesors as $index => $asesor) {
+        $asesorCount = $this->sertifikasi->asesor->count();
+        foreach ($this->sertifikasi->asesor as $index => $asesor) {
             $noMet = $asesor->no_reg_met ? " [{$asesor->no_reg_met}]" : "";
             $label = $asesorCount > 1 ? 'Asesor ' . ($index + 1) : 'Asesor';
             $rows[] = [$label . ' : ' . ($asesor->user->name ?? '-') . $noMet];
@@ -74,8 +74,8 @@ class LaporanSertifikasiExport implements FromCollection, WithHeadings, WithMapp
 
         return [
             $no,
-            $asesi->student->user->name ?? '-',
-            $asesi->student->nim ?? '-',
+            $asesi->mahasiswa->user->name ?? '-',
+            $asesi->mahasiswa->nim ?? '-',
             $statusText,
         ];
     }
@@ -92,7 +92,7 @@ class LaporanSertifikasiExport implements FromCollection, WithHeadings, WithMapp
 
     public function styles(Worksheet $sheet)
     {
-        $asesorCount = $this->sertification->asesors->count();
+        $asesorCount = $this->sertifikasi->asesors->count();
         $headerRow = 5 + $asesorCount;
 
         $styles = [
@@ -118,7 +118,7 @@ class LaporanSertifikasiExport implements FromCollection, WithHeadings, WithMapp
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $asesorCount = $this->sertification->asesors->count();
+                $asesorCount = $this->sertifikasi->asesor->count();
                 $lastInfoRow = 3 + $asesorCount;
 
                 // Merge Judul (A1:D1)

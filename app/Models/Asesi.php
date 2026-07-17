@@ -14,6 +14,7 @@ class Asesi extends Model
 {
     use LogsActivity, HasFactory;
     /** @use HasFactory<\Database\Factories\AsesiFactory> */
+    protected $table = 'asesi';
     protected $guarded = [];
     protected $casts = [
         'status_berkas' => StatusBerkasAdministrasi::class,
@@ -23,6 +24,7 @@ class Asesi extends Model
         'status_berkas_label',
         'status_final_label',
     ];
+    // fungsi statusberkaslabel dan statusfinallabel mungkin nda dipakai
     protected function statusBerkasLabel(): Attribute
     {
         return Attribute::make(
@@ -36,31 +38,31 @@ class Asesi extends Model
             get: fn () => $this->status_final?->label(),
         );
     }
-    public function student()
+    public function mahasiswa()
     {
-        return $this->belongsTo(Student::class);
+        return $this->belongsTo(Mahasiswa::class, 'mahasiswa_id');
     }
-    public function sertification()
+    public function sertifikasi()
     {
-        return $this->belongsTo(Sertification::class);
+        return $this->belongsTo(Sertifikasi::class, 'sertifikasi_id');
     }
     public function asesor()
     {
-        return $this->belongsTo(Asesor::class);
+        return $this->belongsTo(Asesor::class, 'asesor_id');
     }
-    public function asesifiles()
+    public function berkasAsesi()
     {
-        return $this->hasMany(Asesifile::class);
+        return $this->hasMany(BerkasAsesi::class, 'asesi_id');
     }
     public function sertifikat()
     {
-        return $this->hasOne(Sertifikat::class);
+        return $this->hasOne(Sertifikat::class, 'asesi_id');
     }
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('Asesi')
-            ->setDescriptionForEvent(fn(string $eventName) => "Data asesi {$this->student->user->name} telah di-{$eventName}")
+            ->setDescriptionForEvent(fn(string $eventName) => "Data asesi {$this->mahasiswa->user->name} telah di-{$eventName}")
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->logOnly([

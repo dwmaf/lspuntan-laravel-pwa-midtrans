@@ -4,17 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
-use App\Models\Student;
-use App\Models\Studentfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Str;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
 use Illuminate\Validation\Rule;
@@ -31,7 +23,7 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
         if ($user->hasRole('asesor')) {
-            $user->load('asesor.skemas');
+            $user->load('asesor.skema');
         }
         return Inertia::render('Admin/Profile/ProfileAdmin', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
@@ -43,12 +35,12 @@ class ProfileController extends Controller
     public function edit_asesi(Request $request)
     {
         Gate::authorize('manageAsesiProfile', User::class);
-        $user = $request->user()->load('student');
+        $user = $request->user()->load('mahasiswa');
         return Inertia::render('Asesi/Profile/ProfileAsesi', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
             'user' => $user,
-            'student' => $user->student,
+            'mahasiswa' => $user->mahasiswa,
             'isSubscribed' => !is_null($request->user()->fcm_token),
         ]);
     }
@@ -70,8 +62,8 @@ class ProfileController extends Controller
     public function update_asesi(Request $request)
     {
         Gate::authorize('manageAsesiProfile', User::class);
-        $student = $request->user()->student;
-        $user = $student->user;
+        $mahasiswa = $request->user()->mahasiswa;
+        $user = $mahasiswa->user;
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -103,12 +95,12 @@ class ProfileController extends Controller
             'delete_files' => 'nullable|array',
         ]);
 
-        $student->fill($request->only(['nik', 'tmpt_lhr', 'tgl_lhr', 'kelamin', 'kebangsaan', 'no_tlp_rmh', 'no_tlp_kntr', 'kualifikasi_pendidikan',]));
+        $mahasiswa->fill($request->only(['nik', 'tmpt_lhr', 'tgl_lhr', 'kelamin', 'kebangsaan', 'no_tlp_rmh', 'no_tlp_kntr', 'kualifikasi_pendidikan',]));
         $user->fill($request->only(['no_tlp_hp', 'name',]));
         // dd($user);
-        FileHelper::handleSingleFileDeletes($student, $request->input('delete_files', []));
-        FileHelper::handleSingleFileUploads($student, ['pas_foto', 'foto_ktp'], $request, 'student_files');
-        FileHelper::saveIfDirty([$student, $user]);
+        FileHelper::handleSingleFileDeletes($mahasiswa, $request->input('delete_files', []));
+        FileHelper::handleSingleFileUploads($mahasiswa, ['pas_foto', 'foto_ktp'], $request, 'berkas_mahasiswa');
+        FileHelper::saveIfDirty([$mahasiswa, $user]);
 
         return back()->with('message', 'Profil berhasil diperbarui');
     }

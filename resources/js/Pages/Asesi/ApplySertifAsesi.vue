@@ -8,13 +8,12 @@ import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import MultiFileInput from "@/Components/Input/MultiFileInput.vue";
-import { useForm, Link } from "@inertiajs/vue3";
+import { useForm } from "@inertiajs/vue3";
 import { useFormat } from "@/Composables/useFormat";
-import { ref } from "vue";
 
 const props = defineProps({
-    sertification: Object,
-    student: Object,
+    sertifikasi: Object,
+    mahasiswa: Object,
     user: Object,
 });
 
@@ -31,22 +30,22 @@ const tujuanOptions = [
 ];
 
 const form = useForm({
-    sertification_id: props.sertification.id,
-    student_id: props.student.id,
+    sertifikasi_id: props.sertifikasi.id,
+    mahasiswa_id: props.mahasiswa.id,
     name: props.user?.name,
-    nik: props.student?.nik,
-    tmpt_lhr: props.student?.tmpt_lhr,
-    tgl_lhr: props.student?.tgl_lhr,
-    kelamin: props.student?.kelamin || '',
-    kebangsaan: props.student?.kebangsaan || 'Indonesia',
+    nik: props.mahasiswa?.nik,
+    tmpt_lhr: props.mahasiswa?.tmpt_lhr,
+    tgl_lhr: props.mahasiswa?.tgl_lhr,
+    kelamin: props.mahasiswa?.kelamin || '',
+    kebangsaan: props.mahasiswa?.kebangsaan || 'Indonesia',
     no_tlp_hp: props.user?.no_tlp_hp,
-    no_tlp_rmh: props.student?.no_tlp_rmh,
-    no_tlp_kntr: props.student?.no_tlp_kntr,
-    kualifikasi_pendidikan: props.student?.kualifikasi_pendidikan || 'SMA',
-    nama_institusi: props.student?.nama_institusi,
-    jabatan: props.student?.jabatan,
-    alamat_kantor: props.student?.alamat_kantor,
-    no_tlp_email_fax: props.student?.no_tlp_email_fax,
+    no_tlp_rmh: props.mahasiswa?.no_tlp_rmh,
+    no_tlp_kntr: props.mahasiswa?.no_tlp_kntr,
+    kualifikasi_pendidikan: props.mahasiswa?.kualifikasi_pendidikan || 'SMA',
+    nama_institusi: props.mahasiswa?.nama_institusi,
+    jabatan: props.mahasiswa?.jabatan,
+    alamat_kantor: props.mahasiswa?.alamat_kantor,
+    no_tlp_email_fax: props.mahasiswa?.no_tlp_email_fax,
     tujuan_sert: '',
     rekap_nilai: '',
     bukti_bayar: null,
@@ -63,7 +62,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('asesi.sertifikasi.apply.store', { student: props.student }));
+    form.post(route('asesi.sertifikasi.apply.store', { mahasiswa: props.mahasiswa }));
 };
 
 const { formatDateTime } = useFormat();
@@ -72,7 +71,7 @@ const { formatDateTime } = useFormat();
 <template>
     <AsesiLayout>
         
-        <CustomHeader :judul="`Pendaftaran Sertifikasi: ${sertification.skema.nama_skema}`" />
+        <CustomHeader :judul="`Pendaftaran Sertifikasi: ${sertifikasi.skema.nama_skema}`" />
 
         <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <form @submit.prevent="submit" class="mt-6 space-y-6">
@@ -173,44 +172,44 @@ const { formatDateTime } = useFormat();
                 <p class="text-sm text-gray-800 dark:text-gray-100">
                     Silahkan lakukan pembayaran sebesar
                     <span class="font-medium">
-                        Rp {{ new Intl.NumberFormat('id-ID').format(sertification.biaya) }}
+                        Rp {{ new Intl.NumberFormat('id-ID').format(sertifikasi.biaya) }}
                     </span>
                     ke nomor rekening
                     <span class="font-medium">
-                        {{ sertification.no_rek }}
-                        {{ sertification.bank }}
+                        {{ sertifikasi.no_rek }}
+                        {{ sertifikasi.bank }}
                     </span>
                     an.
                     <span class="font-medium">
-                        {{ sertification.atas_nama_rek }}.
+                        {{ sertifikasi.atas_nama_rek }}.
                     </span>
                     Submit bukti pembayaran paling lambat
                     <span class="font-medium">
-                        {{ formatDateTime(sertification.tgl_apply_ditutup) }}
+                        {{ formatDateTime(sertifikasi.tgl_apply_ditutup) }}
                     </span>
                 </p>
-                <div v-if="new Date() < new Date(sertification.tgl_apply_ditutup)">
+                <div v-if="new Date() < new Date(sertifikasi.tgl_apply_ditutup)">
                     <SingleFileInput id="bukti_bayar" v-model="form.bukti_bayar" label="Bukti Pembayaran"
                         is-label-required accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.bukti_bayar"
                         delete-identifier="bukti_bayar" required />
                 </div>
                 <SingleFileInput v-model="form.apl_1" label="Form APL.01" is-label-required
-                    :template-url="`/download/skemas/${sertification.skema.id}/format_apl_1`" accept=".docx"
+                    :template-url="`/download/skema/${sertifikasi.skema.id}/format_apl_1`" accept=".docx"
                     :error="form.errors.apl_1" delete-identifier="apl_1" required />
                 <SingleFileInput v-model="form.apl_2" label="Form APL.02" is-label-required
-                    :template-url="`/download/skemas/${sertification.skema.id}/format_apl_2`" accept=".docx"
+                    :template-url="`/download/skema/${sertifikasi.skema.id}/format_apl_2`" accept=".docx"
                     :error="form.errors.apl_2" delete-identifier="apl_2" required />
                 <SingleFileInput v-model="form.foto_ktp" label="Scan KTP" is-label-required
-                    :existing-file-url="student?.foto_ktp ? `/download/students/${student.id}/foto_ktp` : null"
+                    :existing-file-url="mahasiswa?.foto_ktp ? `/download/mahasiswa/${mahasiswa.id}/foto_ktp` : null"
                     :is-marked-for-deletion="form.delete_files.includes('foto_ktp')" accept=".jpg,.png,.jpeg,.pdf"
                     :error="form.errors.foto_ktp" v-model:deleteList="form.delete_files" delete-identifier="foto_ktp"
-                    :required="!student?.foto_ktp || form.delete_files.includes('foto_ktp')" />
+                    :required="!mahasiswa?.foto_ktp || form.delete_files.includes('foto_ktp')" />
                 <SingleFileInput v-model="form.pas_foto"
                     label="Pasfoto terbaru dengan latar belakang merah, berukuran 4x6 (ukuran file maksimal 1 MB)"
-                    is-label-required :existing-file-url="student?.pas_foto ? `/download/students/${student.id}/pas_foto` : null"
+                    is-label-required :existing-file-url="mahasiswa?.pas_foto ? `/download/mahasiswa/${mahasiswa.id}/pas_foto` : null"
                     :is-marked-for-deletion="form.delete_files.includes('pas_foto')" accept=".jpg,.png,.jpeg,.pdf"
                     :error="form.errors.pas_foto" v-model:deleteList="form.delete_files" delete-identifier="pas_foto"
-                    :required="!student?.pas_foto || form.delete_files.includes('pas_foto')" />
+                    :required="!mahasiswa?.pas_foto || form.delete_files.includes('pas_foto')" />
                 <SingleFileInput v-model="form.foto_ktm" label="Scan KTM (ukuran file maksimal 1 MB)" is-label-required
                     accept=".jpg,.png,.jpeg,.pdf" :error="form.errors.foto_ktm" delete-identifier="foto_ktm" required />
                 <SingleFileInput v-model="form.transkrip_nilai" label="Transkrip Nilai terbaru" is-label-required

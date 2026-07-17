@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Admin\Sertifikasi;
 
 use App\Http\Controllers\Controller;
-use App\Models\Asesi;
 use App\Exports\LaporanSertifikasiExport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Sertification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use App\Models\Sertifikasi;
+use App\Models\Asesi;
 use App\Models\Skema;
 use App\Models\Asesor;
 use App\Models\User;
-use App\Models\News;
+use App\Models\Pengumuman;
 use App\Models\Asesmen;
 use App\Models\Sertifikat;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\Traits\SendsPushNotifications;
 use Illuminate\Support\Facades\Gate;
@@ -49,24 +49,24 @@ class KelolaSertifikasiController extends Controller
         }
 
         // Query untuk sertifikasi berlangsung
-        $sertificationsBerlangsung = Sertification::with('skema', 'asesors.user')
-            ->withCount('asesis')
+        $sertifikasiBerlangsung = Sertifikasi::with('skema', 'asesor.user')
+            ->withCount('asesi')
             ->where('status', 'berlangsung')
             ->when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
-                $query->withCount(['asesis as asesis_asesor_count' => function ($q) use ($asesorId) {
+                $query->withCount(['asesi as asesi_asesor_count' => function ($q) use ($asesorId) {
                     $q->where('asesor_id', $asesorId);
-                }])->whereHas('asesors', function ($subQuery) use ($asesorId) {
-                    $subQuery->where('asesors.id', $asesorId);
+                }])->whereHas('asesor', function ($subQuery) use ($asesorId) {
+                    $subQuery->where('asesor.id', $asesorId);
                 });
             })
             ->orderBy('tgl_apply_dibuka', 'desc')
             ->get();
 
         // Query untuk sertifikasi selesai
-        $sertificationsSelesai = Sertification::with('skema', 'asesors.user')
-            ->withCount('asesis')
+        $sertifikasiSelesai = Sertifikasi::with('skema', 'asesor.user')
+            ->withCount('asesi')
             ->when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
-                $query->withCount(['asesis as asesis_asesor_count' => function ($q) use ($asesorId) {
+                $query->withCount(['asesi as asesi_asesor_count' => function ($q) use ($asesorId) {
                     $q->where('asesor_id', $asesorId);
                 }]);
             })
@@ -77,16 +77,16 @@ class KelolaSertifikasiController extends Controller
                 $query->whereDate('tgl_apply_ditutup', '<=', $dateTo);
             })
             ->when($request->input('asesor'), function ($query, $asesorId) {
-                $query->whereHas('asesors', function ($subQuery) use ($asesorId) {
-                    $subQuery->where('asesors.id', $asesorId);
+                $query->whereHas('asesor', function ($subQuery) use ($asesorId) {
+                    $subQuery->where('asesor.id', $asesorId);
                 });
             })
             ->when($request->input('skema'), function ($query, $skema) {
                 $query->whereHas('skema', fn($q) => $q->where('id', $skema));
             })
             ->when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
-                $query->whereHas('asesors', function ($subQuery) use ($asesorId) {
-                    $subQuery->where('asesors.id', $asesorId);
+                $query->whereHas('asesor', function ($subQuery) use ($asesorId) {
+                    $subQuery->where('asesor.id', $asesorId);
                 });
             })
             ->whereIn('status', ['selesai', 'dibatalkan'])
@@ -97,11 +97,11 @@ class KelolaSertifikasiController extends Controller
             ->withQueryString();
 
         return Inertia::render('Admin/KelolaSertifikasiAdmin', [
-            'sertifications_berlangsung' => $sertificationsBerlangsung,
-            'sertifications_selesai' => $sertificationsSelesai,
-            'asesors' => Asesor::with('skemas', 'user')->withCount('sertifications')->get(),
-            'skemas' => Skema::all(),
-            'activeSkemas' => Skema::where('is_active', true)->get(),
+            'sertifikasi_berlangsung' => $sertifikasiBerlangsung,
+            'sertifikasi_selesai' => $sertifikasiSelesai,
+            'listAsesor' => Asesor::with('skema', 'user')->withCount('sertifikasi')->get(),
+            'listSkema' => Skema::all(),
+            'activeSkema' => Skema::where('is_active', true)->get(),
             'filters' => $request->only(['date_from', 'date_to', 'asesor', 'skema', 'tab']),
             'isAsesor' => $isOnlyAsesor,
         ]);
@@ -113,7 +113,7 @@ class KelolaSertifikasiController extends Controller
         $validatedData = $request->validate([
             'skema_id' => 'required',
             'asesor_ids' => 'required|array',
-            'asesor_ids.*' => 'exists:asesors,id',
+            'asesor_ids.*' => 'exists:asesor,id',
             'tgl_apply_dibuka' => 'required|date',
             'tgl_apply_ditutup' => 'required|date|after_or_equal:tgl_apply_dibuka',
             'tgl_asesmen_mulai' => 'nullable|date',
@@ -125,10 +125,10 @@ class KelolaSertifikasiController extends Controller
             'atas_nama_rek' => 'required|string|max:255',
         ]);
 
-        $sertification = null;
+        $sertifikasi = null;
 
-        DB::transaction(function () use ($validatedData, $request, &$sertification) {
-            $sertification = Sertification::create([
+        DB::transaction(function () use ($validatedData, &$sertifikasi) {
+            $sertifikasi = Sertifikasi::create([
                 'skema_id' => $validatedData['skema_id'],
                 'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
                 'tgl_apply_ditutup' => $validatedData['tgl_apply_ditutup'],
@@ -143,16 +143,16 @@ class KelolaSertifikasiController extends Controller
             ]);
 
             if (!empty($validatedData['asesor_ids'])) {
-                $sertification->asesors()->attach($validatedData['asesor_ids']);
+                $sertifikasi->asesor()->attach($validatedData['asesor_ids']);
             }
         });
 
-        if ($sertification) {
+        if ($sertifikasi) {
             // Simpan ID asesor + nama ke activity log created (biar ga stale)
             $asesorIds = $validatedData['asesor_ids'] ?? [];
             if (!empty($asesorIds)) {
-                $activity = Activity::where('subject_type', Sertification::class)
-                    ->where('subject_id', $sertification->id)
+                $activity = Activity::where('subject_type', Sertifikasi::class)
+                    ->where('subject_id', $sertifikasi->id)
                     ->where('event', 'created')
                     ->latest()
                     ->first();
@@ -160,7 +160,7 @@ class KelolaSertifikasiController extends Controller
                     $asesorNames = Asesor::whereIn('id', $asesorIds)->with('user')->get()->pluck('user.name')->toArray();
                     $properties = $activity->properties;
                     $attributes = $properties->get('attributes', []);
-                    $attributes['asesors'] = $asesorIds;
+                    $attributes['asesor'] = $asesorIds;
                     $attributes['asesor_names'] = $asesorNames;
                     $properties->put('attributes', $attributes);
                     $activity->properties = $properties;
@@ -168,20 +168,28 @@ class KelolaSertifikasiController extends Controller
                 }
             }
 
-            $recipients = User::role('asesi')->get();
-            if ($recipients->isNotEmpty()) {
+            $asesiRecipients = User::role('asesi')->get();
+            if ($asesiRecipients->isNotEmpty()) {
                 $title = 'Sertifikasi Baru Dibuka!';
-                $body = "Sertifikasi baru untuk '{$sertification->skema->nama_skema}' telah dibuka. Cek sekarang!";
+                $body = "Sertifikasi baru untuk '{$sertifikasi->skema->nama_skema}' telah dibuka. Cek sekarang!";
                 $url = route('asesi.sertifikasi.index');
-                $this->sendMulticastNotification($recipients, $title, $body, $url, 'SertifikasiBaru');
+                $this->sendMulticastNotification($asesiRecipients, $title, $body, $url, 'SertifikasiBaru');
+            }
+
+            $asesorUsers = $sertifikasi->asesor->map->user;
+            if ($asesorUsers->isNotEmpty()) {
+                $title = 'Penugasan Sertifikasi Baru!';
+                $body = "Anda ditugaskan sebagai asesor untuk sertifikasi '{$sertifikasi->skema->nama_skema}'. Cek sekarang!";
+                $url = route('admin.kelolasertifikasi.show', $sertifikasi);
+                $this->sendMulticastNotification($asesorUsers, $title, $body, $url, 'PenugasanSertifikasi');
             }
         }
-        return redirect(route('admin.kelolasertifikasi.show', $sertification))->with('message', 'Sertifikasi berhasil dimulai!');
+        return redirect(route('admin.kelolasertifikasi.show', $sertifikasi))->with('message', 'Sertifikasi berhasil dimulai!');
     }
 
-    public function show(Sertification $sertification)
+    public function show(Sertifikasi $sertifikasi)
     {
-        Gate::authorize('view', $sertification);
+        Gate::authorize('view', $sertifikasi);
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -193,68 +201,68 @@ class KelolaSertifikasiController extends Controller
             $asesor = Asesor::where('user_id', $user->id)->first();
         }
 
-        $sertification->load('skema', 'asesors.user')->loadCount([
-            'asesis',
-            'asesis as asesis_menunggu_verifikasi_count' => function ($query) {
+        $sertifikasi->load('skema', 'asesor.user')->loadCount([
+            'asesi',
+            'asesi as asesi_menunggu_verifikasi_count' => function ($query) {
                 $query->where('status_berkas', 'menunggu_verifikasi_admin');
             },
-            'asesis as asesis_perlu_perbaikan_count' => function ($query) {
+            'asesi as asesi_perlu_perbaikan_count' => function ($query) {
                 $query->where('status_berkas', 'perlu_perbaikan_berkas');
             },
-            'asesis as asesis_berkas_lengkap_count' => function ($query) {
+            'asesi as asesi_berkas_lengkap_count' => function ($query) {
                 $query->where('status_berkas', 'sudah_lengkap')->whereNull('asesor_id');
             },
-            'asesis as asesis_proses_asesmen_count' => function ($query) {
+            'asesi as asesi_proses_asesmen_count' => function ($query) {
                 $query->whereNotNull('asesor_id')->where('status_final', 'belum_ditetapkan');
             },
-            'asesis as asesis_kompeten_count' => function ($query) {
+            'asesi as asesi_kompeten_count' => function ($query) {
                 $query->where('status_final', 'kompeten');
             },
-            'asesis as asesis_kompeten_belum_sertifikat_count' => function ($query) {
+            'asesi as asesi_kompeten_belum_sertifikat_count' => function ($query) {
                 $query->where('status_final', 'kompeten')->whereDoesntHave('sertifikat');
             },
-            'asesis as asesis_belum_kompeten_count' => function ($query) {
+            'asesi as asesi_belum_kompeten_count' => function ($query) {
                 $query->where('status_final', 'belum_kompeten');
             },
-            'asesis as asesis_diskualifikasi_count' => function ($query) {
+            'asesi as asesi_diskualifikasi_count' => function ($query) {
                 $query->where('status_final', 'diskualifikasi');
             },
             ...($asesor ? [
-                'asesis as asesis_asesor_count' => function ($query) use ($asesor) {
+                'asesi as asesi_asesor_count' => function ($query) use ($asesor) {
                     $query->where('asesor_id', $asesor->id);
                 },
-                'asesis as asesis_asesor_kompeten_count' => function ($query) use ($asesor) {
+                'asesi as asesi_asesor_kompeten_count' => function ($query) use ($asesor) {
                     $query->where('asesor_id', $asesor->id)->where('status_final', 'kompeten');
                 },
-                'asesis as asesis_asesor_kompeten_belum_sertifikat_count' => function ($query) use ($asesor) {
+                'asesi as asesi_asesor_kompeten_belum_sertifikat_count' => function ($query) use ($asesor) {
                     $query->where('asesor_id', $asesor->id)->where('status_final', 'kompeten')->whereDoesntHave('sertifikat');
                 },
-                'asesis as asesis_asesor_belum_kompeten_count' => function ($query) use ($asesor) {
+                'asesi as asesi_asesor_belum_kompeten_count' => function ($query) use ($asesor) {
                     $query->where('asesor_id', $asesor->id)->where('status_final', 'belum_kompeten');
                 },
-                'asesis as asesis_asesor_diskualifikasi_count' => function ($query) use ($asesor) {
+                'asesi as asesi_asesor_diskualifikasi_count' => function ($query) use ($asesor) {
                     $query->where('asesor_id', $asesor->id)->where('status_final', 'diskualifikasi');
                 },
-                'asesis as asesis_asesor_belum_ditetapkan_count' => function ($query) use ($asesor) {
+                'asesi as asesi_asesor_belum_ditetapkan_count' => function ($query) use ($asesor) {
                     $query->where('asesor_id', $asesor->id)->where('status_final', 'belum_ditetapkan');
                 },
             ] : []),
         ]);
         return Inertia::render('Admin/DetailSertifikasiAdmin', [
-            'sertification' => $sertification,
-            'asesors' => Asesor::with('skemas', 'user')->get(),
-            'skemas' => Skema::all(),
+            'sertifikasi' => $sertifikasi,
+            'listAsesor' => Asesor::with('skema', 'user')->get(),
+            'listSkema' => Skema::all(),
             'activeSkemas' => Skema::where('is_active', true)->get(),
             'isAsesor' => $isOnlyAsesor,
         ]);
     }
 
-    public function update(Sertification $sertification, Request $request)
+    public function update(Sertifikasi $sertifikasi, Request $request)
     {
         // dd($request);
         $validatedData = $request->validate([
             'asesor_ids' => 'required|array',
-            'asesor_ids.*' => 'exists:asesors,id',
+            'asesor_ids.*' => 'exists:asesor,id',
             'tgl_apply_dibuka' => 'required|date',
             'tgl_apply_ditutup' => 'required|date|after_or_equal:tgl_apply_dibuka',
             'tgl_asesmen_mulai' => 'nullable|date',
@@ -267,15 +275,15 @@ class KelolaSertifikasiController extends Controller
             'status' => 'required|in:berlangsung,selesai,dibatalkan',
         ]);
 
-        $sertification->load('asesors.user', 'asesis', 'skema');
+        $sertifikasi->load('asesor.user', 'asesi', 'skema');
 
-        $oldAsesorIds = $sertification->asesors->pluck('id')->toArray();
+        $oldAsesorIds = $sertifikasi->asesor->pluck('id')->toArray();
 
-        $removedAsesors = $sertification->asesors->whereNotIn('id', $validatedData['asesor_ids'] ?? []);
+        $removedAsesors = $sertifikasi->asesor->whereNotIn('id', $validatedData['asesor_ids'] ?? []);
 
         $blockedAsesorNames = [];
         foreach ($removedAsesors as $asesor) {
-            $hasAssigned = $sertification->asesis->contains('asesor_id', $asesor->id);
+            $hasAssigned = $sertifikasi->asesi->contains('asesor_id', $asesor->id);
             if ($hasAssigned) {
                 $blockedAsesorNames[] = $asesor->user->name;
             }
@@ -284,12 +292,12 @@ class KelolaSertifikasiController extends Controller
         if (!empty($blockedAsesorNames)) {
             $names = implode(', ', $blockedAsesorNames);
             return back()->withErrors([
-                'asesor_ids' => "Asesor {$names} tidak bisa dihapus dari sertifikasi {$sertification->skema->nama_skema}, karena sudah diassign ke asesi."
+                'asesor_ids' => "Asesor {$names} tidak bisa dihapus dari sertifikasi {$sertifikasi->skema->nama_skema}, karena sudah diassign ke asesi."
             ]);
         }
 
-        DB::transaction(function () use ($validatedData, $sertification, $request) {
-            $sertification->update([
+        DB::transaction(function () use ($validatedData, $sertifikasi, $request) {
+            $sertifikasi->update([
                 'tgl_apply_dibuka' => $validatedData['tgl_apply_dibuka'],
                 'tgl_apply_ditutup' => $validatedData['tgl_apply_ditutup'],
                 'tgl_asesmen_mulai' => $validatedData['tgl_asesmen_mulai'] ?? null,
@@ -302,15 +310,15 @@ class KelolaSertifikasiController extends Controller
                 'status' => $validatedData['status'],
             ]);
             if (isset($validatedData['asesor_ids'])) {
-                $sertification->asesors()->sync($validatedData['asesor_ids']);
+                $sertifikasi->asesor()->sync($validatedData['asesor_ids']);
             } else {
-                $sertification->asesors()->sync([]);
+                $sertifikasi->asesor()->sync([]);
             }
         });
 
         // Log asesor changes manually (pivot sync tidak otomatis di-log)
-        $sertification->load('asesors.user');
-        $newAsesorIds = $sertification->asesors->pluck('id')->toArray();
+        $sertifikasi->load('asesor.user');
+        $newAsesorIds = $sertifikasi->asesor->pluck('id')->toArray();
         $addedIds = array_diff($newAsesorIds, $oldAsesorIds);
         $removedIds = array_diff($oldAsesorIds, $newAsesorIds);
 
@@ -330,8 +338,8 @@ class KelolaSertifikasiController extends Controller
                 $parts[] = 'menghapus asesor ' . implode(', ', $names);
             }
 
-            activity('Sertification')
-                ->performedOn($sertification)
+            activity('Sertifikasi')
+                ->performedOn($sertifikasi)
                 ->causedBy(Auth::user())
                 ->withProperties($properties)
                 ->tap(function ($activity) use ($parts) {
@@ -343,14 +351,14 @@ class KelolaSertifikasiController extends Controller
         return redirect()->back()->with('message', 'Data Sertifikasi berhasil diupdate');
     }
 
-    public function export_excel(Sertification $sertification)
+    public function export_excel(Sertifikasi $sertifikasi)
     {
-        $sertification->load('skema', 'asesis.student.user', 'asesors.user');
-        $fileName = 'Laporan_Sertifikasi_' . Str::slug($sertification->skema->nama_skema) . '.xlsx';
-        return Excel::download(new LaporanSertifikasiExport($sertification), $fileName);
+        $sertifikasi->load('skema', 'asesi.mahasiswa.user', 'asesor.user');
+        $fileName = 'Laporan_Sertifikasi_' . Str::slug($sertifikasi->skema->nama_skema) . '.xlsx';
+        return Excel::download(new LaporanSertifikasiExport($sertifikasi), $fileName);
     }
 
-    public function indexLog(Sertification $sertification, Request $request)
+    public function indexLog(Sertifikasi $sertifikasi, Request $request)
     {
         $request->validate([
             'date_from' => 'nullable|date',
@@ -361,23 +369,23 @@ class KelolaSertifikasiController extends Controller
             'date_to.after_or_equal' => 'Tanggal akhir tidak boleh lebih awal dari tanggal awal.',
         ]);
 
-        $sertification->load('skema', 'asesis.student.user', 'asesors.user');
+        $sertifikasi->load('skema', 'asesi.mahasiswa.user', 'asesor.user');
 
-        $existingNewsIds = $sertification->news()->pluck('id');
-        $deletedNewsIds = Activity::where('subject_type', News::class)
-            ->where('properties->attributes->sertification_id', $sertification->id)
+        $existingNewsIds = $sertifikasi->pengumuman()->pluck('id');
+        $deletedNewsIds = Activity::where('subject_type', Pengumuman::class)
+            ->where('properties->attributes->sertifikasi_id', $sertifikasi->id)
             ->where('event', 'created')
             ->pluck('subject_id');
         $allNewsIds = $existingNewsIds->merge($deletedNewsIds)->unique()->values();
 
-        $existingAsesmenIds = $sertification->asesmen()->pluck('id');
+        $existingAsesmenIds = $sertifikasi->asesmen()->pluck('id');
         $deletedAsesmenIds = Activity::where('subject_type', Asesmen::class)
-            ->where('properties->attributes->sertification_id', $sertification->id)
+            ->where('properties->attributes->sertifikasi_id', $sertifikasi->id)
             ->where('event', 'created')
             ->pluck('subject_id');
         $allAsesmenIds = $existingAsesmenIds->merge($deletedAsesmenIds)->unique()->values();
 
-        $allAsesisIds = $sertification->asesis()->pluck('id');
+        $allAsesisIds = $sertifikasi->asesi()->pluck('id');
 
         $existingSertifikatIds = Sertifikat::whereIn('asesi_id', $allAsesisIds)->pluck('id');
         $deletedSertifikatIds = Activity::where('subject_type', Sertifikat::class)
@@ -403,12 +411,12 @@ class KelolaSertifikasiController extends Controller
             });
 
         $logs = Activity::with('causer.asesor', 'subject')
-            ->where(function ($query) use ($sertification, $allNewsIds, $allAsesmenIds, $allAsesisIds, $allSertifikatIds) {
+            ->where(function ($query) use ($sertifikasi, $allNewsIds, $allAsesmenIds, $allAsesisIds, $allSertifikatIds) {
                 $hasClauses = false;
 
                 if ($allNewsIds->isNotEmpty()) {
                     $query->where(function ($q) use ($allNewsIds) {
-                        $q->where('subject_type', News::class)
+                        $q->where('subject_type', Pengumuman::class)
                             ->whereIn('subject_id', $allNewsIds);
                     });
                     $hasClauses = true;
@@ -435,10 +443,10 @@ class KelolaSertifikasiController extends Controller
                     $hasClauses = true;
                 }
 
-                // Log Sertification (subject = sertification itu sendiri)
-                $query->orWhere(function ($q) use ($sertification) {
-                    $q->where('subject_type', Sertification::class)
-                        ->where('subject_id', $sertification->id);
+                // Log Sertifikasi (subject = sertifikasi itu sendiri)
+                $query->orWhere(function ($q) use ($sertifikasi) {
+                    $q->where('subject_type', Sertifikasi::class)
+                        ->where('subject_id', $sertifikasi->id);
                 });
                 $hasClauses = true;
 
@@ -464,15 +472,15 @@ class KelolaSertifikasiController extends Controller
 
         $logs->loadMissing('subject');
         $logs->loadMorph('subject', [
-            Sertifikat::class => ['asesi.student.user'],
+            Sertifikat::class => ['asesi.mahasiswa.user'],
         ]);
 
         return Inertia::render('Admin/LogSertifikasi', [
-            'sertification' => $sertification,
+            'sertifikasi' => $sertifikasi,
             'logs' => $logs,
             'filters' => $request->only(['search', 'date_from', 'date_to', 'subject_type', 'event']),
             'filterOptions' => [
-                'subjects' => [Sertification::class, News::class, Asesmen::class, Asesi::class, Sertifikat::class],
+                'subjects' => [Sertifikasi::class, Pengumuman::class, Asesmen::class, Asesi::class, Sertifikat::class],
             ],
             'sertifikatAsesiMap' => $sertifikatAsesiMap,
             'asesorMap' => Asesor::with('user')->get()->mapWithKeys(fn($a) => [$a->id => $a->user->name]),

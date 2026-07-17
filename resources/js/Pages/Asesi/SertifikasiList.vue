@@ -7,17 +7,17 @@ import SertifikasiRiwayatTable from "@/Components/SertifikasiRiwayatTable.vue";
 import { ref, computed } from "vue";
 
 const props = defineProps({
-    sertifications_tersedia: Array,
-    sertifications_saya: Array,
-    asesis: Object,
+    sertifikasi_tersedia: Array,
+    sertifikasi_saya: Array,
+    listAsesi: Object,
 });
 
 const activeTab = ref('tersedia');
 
-const displaySertifications = computed(() => {
+const displaySertifikasi = computed(() => {
     return activeTab.value === 'tersedia'
-        ? props.sertifications_tersedia
-        : props.sertifications_saya;
+        ? props.sertifikasi_tersedia
+        : props.sertifikasi_saya;
 });
 
 const isNew = (sert) => {
@@ -28,7 +28,7 @@ const isNew = (sert) => {
 }
 
 const getSertifikasiStatus = (sert) => {
-    const sudahDaftar = !!props.asesis[sert.id];
+    const sudahDaftar = !!props.listAsesi[sert.id];
     const pendaftaranDitutup = new Date() > new Date(sert.tgl_apply_ditutup);
     const pendaftaranDibuka = new Date() >= new Date(sert.tgl_apply_dibuka);
 
@@ -37,7 +37,7 @@ const getSertifikasiStatus = (sert) => {
             type: 'applied',
             text: 'Lihat Status',
             class: 'bg-indigo-500 hover:bg-indigo-600 text-white',
-            href: route('asesi.sertifikasi.applied.show', { sertification: sert.id, asesi: props.asesis[sert.id].id }),
+            href: route('asesi.sertifikasi.applied.show', { sertifikasi: sert.id, asesi: props.listAsesi[sert.id].id }),
         };
     }
     if (pendaftaranDitutup) {
@@ -83,7 +83,7 @@ const getSertifikasiStatus = (sert) => {
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <template v-if="activeTab === 'tersedia'">
-                    <SertifikasiCard v-for="sert in displaySertifications" :key="sert.id" :sert="sert">
+                    <SertifikasiCard v-for="sert in displaySertifikasi" :key="sert.id" :sert="sert">
                         <template #badges>
                             <span v-if="sert.status === 'selesai'"
                                 class="px-2 py-1 text-xs font-semibold rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
@@ -118,11 +118,10 @@ const getSertifikasiStatus = (sert) => {
                     </SertifikasiCard>
                 </template>
                 <div v-else class="col-span-1 md:col-span-2">
-                    <SertifikasiRiwayatTable :sertifications="displaySertifications" :asesis="asesis" />
+                    <SertifikasiRiwayatTable :list-sertifikasi="displaySertifikasi" :list-asesi="listAsesi" />
                 </div>
 
-
-                <div v-if="displaySertifications.length === 0 && activeTab === 'tersedia'"
+                <div v-if="displaySertifikasi.length === 0 && activeTab === 'tersedia'"
                     class="col-span-1 sm:col-span-2 text-center py-12 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
                     <p class="text-gray-500 dark:text-gray-400">
                         Saat ini belum ada sertifikasi yang dibuka.

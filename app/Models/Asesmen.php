@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\SerializesDatesWithoutConversion;
-use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Asesmen extends Model
 {
     use LogsActivity, SerializesDatesWithoutConversion;
+    protected $table = 'asesmen';
     protected $guarded = [];
 
     public function getActivitylogOptions(): LogOptions
@@ -23,18 +23,18 @@ class Asesmen extends Model
                 'deleted' => 'menghapus instruksi asesmen',
                 default => $eventName,
             })
-            ->logOnly(['content', 'deadline', 'sertification_id', 'path_file'])
+            ->logOnly(['content', 'deadline', 'sertifikasi_id', 'path_file'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 
-    public function sertification()
+    public function sertifikasi()
     {
-        return $this->belongsTo(Sertification::class);
+        return $this->belongsTo(Sertifikasi::class, 'sertifikasi_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

@@ -8,18 +8,18 @@ import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import CreatorInfo from "@/Components/CreatorInfo.vue";
 import FileIcon from '@/Components/FileIcon.vue';
 import FileCard from "@/Components/FileCard.vue";
-import { FileText, CheckCircle, Download, Edit, AlertTriangle, Clock } from 'lucide-vue-next';
-import { useForm, usePage, router } from "@inertiajs/vue3";
+import { CheckCircle, AlertTriangle, Clock } from 'lucide-vue-next';
+import { useForm } from "@inertiajs/vue3";
 import { computed, ref } from 'vue';
 
 const props = defineProps({
-    sertification: Object,
+    sertifikasi: Object,
     asesi: Object,
 });
 
 const isDeadlinePassed = computed(() => {
-    if (!props.sertification.asesmen?.deadline) return false;
-    return new Date() > new Date(props.sertification.asesmen.deadline);
+    if (!props.sertifikasi.asesmen?.deadline) return false;
+    return new Date() > new Date(props.sertifikasi.asesmen.deadline);
 });
 
 const isStatusFinalLocked = computed (() => {
@@ -32,7 +32,7 @@ const cannotSubmit = computed(() => {
 
 const deadlineStatus = computed(() => {
     const hasSubmitted = !!props.asesi.path_file_asesmen;
-    const deadline = props.sertification.asesmen?.deadline;
+    const deadline = props.sertifikasi.asesmen?.deadline;
 
     const format = (d) => new Date(d).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) + ' WIB';
     if (hasSubmitted) {
@@ -78,7 +78,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('asesi.assessmen.update', [props.sertification.id, props.asesi.id]), {
+    form.post(route('asesi.assessmen.update', [props.sertifikasi.id, props.asesi.id]), {
         forceFormData: true,
         onSuccess: () => {
             form.reset();
@@ -101,18 +101,18 @@ const showViewMode = () => {
 <template>
     <AsesiLayout>
 
-        <CustomHeader :judul="`Instruksi Asesmen: ${sertification.skema?.nama_skema ?? ''}`" />
-        <AsesiSertifikasiMenu :sertification="props.sertification" :asesi="props.asesi" />
+        <CustomHeader :judul="`Instruksi Asesmen: ${sertifikasi.skema?.nama_skema ?? ''}`" />
+        <AsesiSertifikasiMenu :sertifikasi="props.sertifikasi" :asesi="props.asesi" />
 
         <div class="max-w-3xl mx-auto">
             <div class="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
-                <div v-if="props.sertification.asesmen">
+                <div v-if="props.sertifikasi.asesmen">
                     <div class="flex items-center gap-3 mb-4">
-                        <CreatorInfo :name="sertification.asesmen?.user?.name" :created-at="sertification.asesmen?.created_at"
-                            :updated-at="sertification.asesmen?.updated_at" v-if="sertification.asesmen" class="mb-4" />
+                        <CreatorInfo :name="sertifikasi.asesmen?.user?.name" :created-at="sertifikasi.asesmen?.created_at"
+                            :updated-at="sertifikasi.asesmen?.updated_at" v-if="sertifikasi.asesmen" class="mb-4" />
                     </div>
 
-                    <div v-html="props.sertification.asesmen.content.replace(/\n/g, '<br>')"
+                    <div v-html="props.sertifikasi.asesmen.content.replace(/\n/g, '<br>')"
                         class="prose dark:prose-invert max-w-none font-medium text-sm text-gray-800 dark:text-gray-100"></div>
 
 
@@ -130,14 +130,14 @@ const showViewMode = () => {
                     </div>
 
                     <!-- Lampiran Tambahan dari Asesor -->
-                    <div v-if="sertification.asesmen?.path_file" class="mt-4">
+                    <div v-if="sertifikasi.asesmen?.path_file" class="mt-4">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Lampiran Tambahan:</h4>
-                        <a :href="`/download/asesmens/${sertification.asesmen.id}/path_file`" target="_blank"
+                        <a :href="`/download/asesmen/${sertifikasi.asesmen.id}/path_file`" target="_blank"
                             class="text-sm flex items-center gap-2 group min-w-0">
-                            <FileIcon :path="sertification.asesmen.path_file" />
+                            <FileIcon :path="sertifikasi.asesmen.path_file" />
                             <span
                                 class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">
-                                {{ sertification.asesmen.path_file.split('/').pop() }}
+                                {{ sertifikasi.asesmen.path_file.split('/').pop() }}
                             </span>
                         </a>
                     </div>
@@ -170,7 +170,7 @@ const showViewMode = () => {
                                 :is-marked-for-deletion="form.delete_files_asesi.includes('path_file_asesmen')"
                                 :error="form.errors.path_file_asesmen"
                                 :required="!asesi?.path_file_asesmen || form.delete_files_asesi.includes('path_file_asesmen')"
-                                :template-url="sertification.skema.format_asesmen ? `/download/skemas/${sertification.skema.id}/format_asesmen` : null"
+                                :template-url="sertifikasi.skema.format_asesmen ? `/download/skema/${sertifikasi.skema.id}/format_asesmen` : null"
                                 :disabled="submissionMode === 'view'" accept=".zip,.rar,.docx," />
                             <div class="flex items-center gap-4 mt-6">
                                 <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">

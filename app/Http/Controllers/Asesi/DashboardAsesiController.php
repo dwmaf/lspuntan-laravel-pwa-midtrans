@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Asesi;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asesi;
-use App\Models\News;
-use App\Models\Sertification;
+use App\Models\Pengumuman;
 use App\Enums\StatusSertifikasi;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,28 +14,20 @@ class DashboardAsesiController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $student = $user->student;
+        $mahasiswa = $user->mahasiswa;
 
-        // if (!$student) {
-        //     return Inertia::render('Asesi/DashboardAsesi', [
-        //         'sertifikasiBerlangsung' => [],
-        //         'sertifikasiSelesai' => [],
-        //         'pengumumanTerbaru' => [],
-        //     ]);
-        // }
-
-        $asesis = Asesi::with(['sertification.skema', 'sertification.asesors.user', 'asesor.user'])
-            ->where('student_id', $student->id)
+        $listAsesi = Asesi::with(['sertifikasi.skema', 'sertifikasi.asesor.user', 'asesor.user'])
+            ->where('mahasiswa_id', $mahasiswa->id)
             ->get();
 
         $pengumumanTerbaru = collect();
-        if ($asesis->isNotEmpty()) {
-            $pengumumanTerbaru = News::with('sertification.skema')
-                ->where(function ($query) use ($asesis) {
-                    foreach ($asesis as $index => $asesi) {
+        if ($listAsesi->isNotEmpty()) {
+            $pengumumanTerbaru = Pengumuman::with('sertifikasi.skema')
+                ->where(function ($query) use ($listAsesi) {
+                    foreach ($listAsesi as $index => $asesi) {
                         $clause = function ($q) use ($asesi) {
                             $asesorUserId = $asesi->asesor?->user_id;
-                            $q->where('sertification_id', $asesi->sertification_id)
+                            $q->where('sertifikasi_id', $asesi->sertifikasi_id)
                               ->where(function ($sub) use ($asesorUserId) {
                                   $sub->whereDoesntHave('user.asesor')
                                       ->when($asesorUserId, function ($sub2) use ($asesorUserId) {
@@ -57,7 +48,7 @@ class DashboardAsesiController extends Controller
                 ->map(function ($news) {
                     return [
                         'id' => $news->id,
-                        'judul' => "Info: " . ($news->sertification->skema->nama_skema ?? 'Umum'),
+                        'judul' => "Info: " . ($news->sertifikasi->skema->nama_skema ?? 'Umum'),
                         'pesan' => $news->content,
                         'tanggal' => $news->updated_at->diffForHumans(),
                         'tipe' => 'info',
@@ -66,12 +57,12 @@ class DashboardAsesiController extends Controller
                 });
         }
 
-        $sertifikasiBerlangsung = $asesis->filter(function ($asesi) {
-            return $asesi->sertification->status === StatusSertifikasi::BERLANGSUNG;
+        $sertifikasiBerlangsung = $listAsesi->filter(function ($asesi) {
+            return $asesi->sertifikasi->status === StatusSertifikasi::BERLANGSUNG;
         })->values();
 
-        $sertifikasiSelesai = $asesis->filter(function ($asesi) {
-            return in_array($asesi->sertification->status, [
+        $sertifikasiSelesai = $listAsesi->filter(function ($asesi) {
+            return in_array($asesi->sertifikasi->status, [
                 StatusSertifikasi::SELESAI,
                 StatusSertifikasi::DIBATALKAN
             ]);
@@ -82,7 +73,7 @@ class DashboardAsesiController extends Controller
             'sertifikasiSelesai' => $sertifikasiSelesai,
             'pengumumanTerbaru' => $pengumumanTerbaru,
             'user' => $user,
-            'student' => $student
+            'mahasiswa' => $mahasiswa
         ]);
     }
 }

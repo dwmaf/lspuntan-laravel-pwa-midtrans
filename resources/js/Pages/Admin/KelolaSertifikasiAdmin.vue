@@ -18,11 +18,11 @@ import { FunnelIcon, X } from "lucide-vue-next";
 import Multiselect from "@/Components/Input/MultiSelect.vue";
 
 const props = defineProps({
-    sertifications_berlangsung: Array,
-    sertifications_selesai: Object,
-    asesors: Array,
-    skemas: Array,
-    activeSkemas: Array,
+    sertifikasi_berlangsung: Array,
+    sertifikasi_selesai: Object,
+    listAsesor: Array,
+    listSkema: Array,
+    activeSkema: Array,
     filters: Object,
     errors: Object,
     isAsesor: Boolean,
@@ -47,14 +47,14 @@ const closeFilterModal = () => {
 
 const asesorOptions = computed(() => [
     { value: '', text: 'Semua Asesor' },
-    ...props.asesors.map(asesor => ({ value: asesor.id, text: asesor.user.name })),
+    ...props.listAsesor.map(asesor => ({ value: asesor.id, text: asesor.user.name })),
 ]);
 const skemaOptions = computed(() => [
     { value: '', text: 'Semua Skema' },
-    ...props.skemas.map(skema => ({ value: skema.id, text: skema.nama_skema })),
+    ...props.listSkema.map(skema => ({ value: skema.id, text: skema.nama_skema })),
 ]);
 const activeSkemaOptions = computed(() =>
-    props.activeSkemas.map(skema => ({ value: skema.id, text: skema.nama_skema }))
+    props.activeSkema.map(skema => ({ value: skema.id, text: skema.nama_skema }))
 );
 const tab = ref(props.filters.tab || "berlangsung");
 
@@ -103,14 +103,14 @@ const availableAsesors = computed(() => {
     if (!form.skema_id) {
         return [];
     }
-    const filtered = props.asesors.filter(asesor =>
+    const filtered = props.listAsesor.filter(asesor =>
         asesor.is_active === 1 &&
-        asesor.skemas.some(skema => skema.id == form.skema_id)
+        asesor.skema.some(skema => skema.id == form.skema_id)
     );
 
     return filtered.map(asesor => ({
         id: asesor.id,
-        name: `${asesor.user.name} (Telah mensertifikasi ${asesor.sertifications_count} kali)`
+        name: `${asesor.user.name} (Telah mensertifikasi ${asesor.sertifikasi_count} kali)`
     }));
 });
 watch(() => form.skema_id, (newSkemaId) => {
@@ -122,15 +122,15 @@ const formattedHarga = computed(() => {
     return formatCurrency(form.biaya);
 });
 
-const conflictingSertification = computed(() => {
+const conflictingCertification = computed(() => {
     if (!form.skema_id) return null;
-    return props.sertifications_berlangsung.find(s => s.skema_id == form.skema_id);
+    return props.sertifikasi_berlangsung.find(s => s.skema_id == form.skema_id);
 });
 
 const showConfirmModal = ref(false);
 
 const submit = () => {
-    if (conflictingSertification.value) {
+    if (conflictingCertification.value) {
         showConfirmModal.value = true;
         return;
     }
@@ -166,9 +166,7 @@ const proceedSubmit = () => {
                     <span>
                         Sertifikasi Berlangsung
                     </span>
-                    <!-- <span class="bg-gray-300 dark:bg-gray-700 rounded-full px-2">
-                        {{ props.sertifications_berlangsung.length }}
-                    </span> -->
+                   
                 </button>
                 <div style="margin-top: -4px" v-show="tab === 'berlangsung'"
                     class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
@@ -179,9 +177,7 @@ const proceedSubmit = () => {
                     <span>
                         Riwayat Sertifikasi
                     </span>
-                    <!-- <span class="bg-gray-300 dark:bg-gray-700 rounded-full px-2">
-                        {{ filteredSertificationsSelesai.length }}
-                    </span> -->
+                   
                 </button>
                 <div style="margin-top: -4px" v-show="tab === 'selesai'"
                     class="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-t-md"></div>
@@ -190,13 +186,13 @@ const proceedSubmit = () => {
         <hr class="border-gray-200 dark:border-gray-700 mb-4" />
         <div>
             <div v-show="tab === 'berlangsung'">
-                <SertifikasiTable :sertifications="sertifications_berlangsung" :isAsesor="isAsesor"
+                <SertifikasiTable :listSertifikasi="sertifikasi_berlangsung" :isAsesor="isAsesor"
                     empty-message="Tidak ada sertifikasi yang sedang berlangsung." />
             </div>
 
             <div v-show="tab === 'selesai'">
 
-                <SertifikasiTable :sertifications="sertifications_selesai.data" :isAsesor="isAsesor"
+                <SertifikasiTable :listSertifikasi="sertifikasi_selesai.data" :isAsesor="isAsesor"
                     empty-message="Tidak ada riwayat sertifikasi untuk filter yang dipilih.">
                     <template #filter>
                         <div class="flex justify-end items-center gap-2 mb-4">
@@ -210,14 +206,14 @@ const proceedSubmit = () => {
                     </template>
                     <template #pagination>
                         <div class="mt-4 flex justify-between items-center">
-                            <span v-if="sertifications_selesai.total > 0"
+                            <span v-if="sertifikasi_selesai.total > 0"
                                 class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
-                                Menampilkan {{ sertifications_selesai.from }} sampai {{ sertifications_selesai.to }}
+                                Menampilkan {{ sertifikasi_selesai.from }} sampai {{ sertifikasi_selesai.to }}
                                 dari {{
-                                    sertifications_selesai.total }} hasil
+                                    sertifikasi_selesai.total }} hasil
                             </span>
                             <span v-else></span>
-                            <Pagination :links="sertifications_selesai.links" />
+                            <Pagination :links="sertifikasi_selesai.links" />
                         </div>
                     </template>
                 </SertifikasiTable>
@@ -280,7 +276,7 @@ const proceedSubmit = () => {
                 Apakah Anda yakin akan memulai sertifikasi?
             </h2>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Skema <span class="font-bold">{{ conflictingSertification?.skema?.nama_skema }}</span>
+                Skema <span class="font-bold">{{ conflictingCertification?.skema?.nama_skema }}</span>
                 sudah memiliki sertifikasi yang statusnya <span class="font-bold">berlangsung</span>.
             </p>
             <div class="mt-6 flex justify-end gap-3">

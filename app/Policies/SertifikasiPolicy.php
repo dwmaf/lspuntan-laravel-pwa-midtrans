@@ -3,13 +3,13 @@
 namespace App\Policies;
 
 use App\Models\Asesor;
-use App\Models\Sertification;
+use App\Models\Sertifikasi;
 use App\Models\Sertifikat;
 use App\Models\User;
-use App\Models\News;
+use App\Models\Pengumuman;
 use Illuminate\Auth\Access\Response;
 
-class SertificationPolicy
+class SertifikasiPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -23,7 +23,7 @@ class SertificationPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Sertification $sertification): bool
+    public function view(User $user, Sertifikasi $sertifikasi): bool
     {
         // Admin bisa lihat semua sertifikasi
         if ($user->hasRole('admin')) {
@@ -38,7 +38,7 @@ class SertificationPolicy
                 return false;
             }
 
-            return $sertification->asesors()->where('asesors.id', $asesor->id)->exists();
+            return $sertifikasi->asesor()->where('asesor.id', $asesor->id)->exists();
         }
 
         return false;
@@ -56,7 +56,7 @@ class SertificationPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Sertification $sertification): bool
+    public function update(User $user, Sertifikasi $sertifikasi): bool
     {
         // Hanya admin yang bisa update sertifikasi
         return $user->hasRole('admin');
@@ -65,7 +65,7 @@ class SertificationPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Sertification $sertification): bool
+    public function delete(User $user, Sertifikasi $sertifikasi): bool
     {
         // Hanya admin yang bisa delete sertifikasi
         return $user->hasRole('admin');
@@ -74,7 +74,7 @@ class SertificationPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Sertification $sertification): bool
+    public function restore(User $user, Sertifikasi $Sertifikasi): bool
     {
         return $user->hasRole('admin');
     }
@@ -82,12 +82,12 @@ class SertificationPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Sertification $sertification): bool
+    public function forceDelete(User $user, Sertifikasi $Sertifikasi): bool
     {
         return $user->hasRole('admin');
     }
 
-    public function manageAssessment(User $user, Sertification $sertification): bool
+    public function manageAssessment(User $user, Sertifikasi $Sertifikasi): bool
     {
         // Hanya asesor yang bersangkutan dengan sertifikasi tersebut yang bisa akses
         if ($user->hasRole('asesor')) {
@@ -97,7 +97,7 @@ class SertificationPolicy
                 return false;
             }
 
-            return $sertification->asesors()->where('asesors.id', $asesor->id)->exists();
+            return $Sertifikasi->asesor()->where('asesor.id', $asesor->id)->exists();
         }
 
         return false;
@@ -106,8 +106,8 @@ class SertificationPolicy
     /**
      * Determine whether the user can manage announcements for the certification.
      */
-    public function manageAnnouncement(User $user, Sertification $sertification): bool
+    public function manageAnnouncement(User $user, Sertifikasi $Sertifikasi): bool
     {
-        return $this->view($user, $sertification);
+        return $this->view($user, $Sertifikasi);
     }
 }

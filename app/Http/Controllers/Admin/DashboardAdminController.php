@@ -9,7 +9,7 @@ use App\Models\Asesor;
 use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Sertification;
+use App\Models\Sertifikasi;
 use Inertia\Inertia;
 
 class DashboardAdminController extends Controller
@@ -29,12 +29,12 @@ class DashboardAdminController extends Controller
         }
 
         // Query sertifikasi berlangsung (filter untuk asesor)
-        $sertificationBerlangsung = Sertification::with('skema')
-            ->withCount('asesis')
+        $sertifikasiBerlangsung = Sertifikasi::with('skema')
+            ->withCount('asesi')
             ->where('status', 'berlangsung')
             ->when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
-                $query->whereHas('asesors', function ($subQuery) use ($asesorId) {
-                    $subQuery->where('asesors.id', $asesorId);
+                $query->whereHas('asesor', function ($subQuery) use ($asesorId) {
+                    $subQuery->where('asesor.id', $asesorId);
                 });
             })
             ->get();
@@ -52,7 +52,7 @@ class DashboardAdminController extends Controller
             ->count();
 
         // Base Query untuk asesi yang sedang dalam sertifikasi berlangsung (filter untuk asesor)
-        $baseQuery = Asesi::whereHas('sertification', function ($query) {
+        $baseQuery = Asesi::whereHas('sertifikasi', function ($query) {
             $query->where('status', 'berlangsung');
         })
             ->when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
@@ -66,10 +66,10 @@ class DashboardAdminController extends Controller
             'ada_asesor_belum_ditetapkan'  => (clone $baseQuery)->whereNotNull('asesor_id')->where('status_final', 'belum_ditetapkan')->count(),
         ];
 
-        $sertificationSelesaiCount = Sertification::where('status', 'selesai')
+        $sertifikasiSelesaiCount = Sertifikasi::where('status', 'selesai')
             ->when($isOnlyAsesor && $asesorId, function ($query) use ($asesorId) {
-                $query->whereHas('asesors', function ($subQuery) use ($asesorId) {
-                    $subQuery->where('asesors.id', $asesorId);
+                $query->whereHas('asesor', function ($subQuery) use ($asesorId) {
+                    $subQuery->where('asesor.id', $asesorId);
                 });
             })
             ->count();
@@ -78,6 +78,11 @@ class DashboardAdminController extends Controller
             ->latest()
             ->take(5)
             ->get();
+
+        $recentActivities->loadMissing('subject');
+        $recentActivities->loadMorph('subject', [
+            Asesor::class => ['user'],
+        ]);
 
         // Charts hanya untuk admin, asesor tidak perlu
         $charts = null;
@@ -99,11 +104,11 @@ class DashboardAdminController extends Controller
                 ->get();
 
             // Top schemes
-            $topSchemes = DB::table('asesis')
-                ->join('sertifications', 'asesis.sertification_id', '=', 'sertifications.id')
-                ->join('skemas', 'sertifications.skema_id', '=', 'skemas.id')
-                ->select('skemas.nama_skema', DB::raw('count(asesis.id) as total_pendaftar'))
-                ->groupBy('skemas.id', 'skemas.nama_skema')
+            $topSchemes = DB::table('asesi')
+                ->join('sertifikasi', 'asesi.sertifikasi_id', '=', 'sertifikasi.id')
+                ->join('skema', 'sertifikasi.skema_id', '=', 'skema.id')
+                ->select('skema.nama_skema', DB::raw('count(asesi.id) as total_pendaftar'))
+                ->groupBy('skema.id', 'skema.nama_skema')
                 ->orderByDesc('total_pendaftar')
                 ->limit(5)
                 ->get();
@@ -116,8 +121,8 @@ class DashboardAdminController extends Controller
         }
 
         return Inertia::render('Admin/DashboardAdmin', [
-            'sertificationBerlangsung' => $sertificationBerlangsung,
-            'sertificationSelesaiCount' => $sertificationSelesaiCount, 
+            'sertifikasiBerlangsung' => $sertifikasiBerlangsung,
+            'sertifikasiSelesaiCount' => $sertifikasiSelesaiCount, 
             'totalAsesiCount' => $totalAsesiCount, 
             'asesiLulusCount' => $asesiLulusCount, 
             'pipelineStats' => $pipelineStats,

@@ -1,9 +1,8 @@
 <script setup>
+// FILE INI SUDAH TIDAK TERPAKAI LAGI
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import AdminSertifikasiMenu from "@/Components/AdminSertifikasiMenu.vue";
 import CustomHeader from '@/Components/CustomHeader.vue';
-import InputError from "@/Components/Input/InputError.vue";
-import InputLabel from "@/Components/Input/InputLabel.vue";
 import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import AddButton from "@/Components/Button/AddButton.vue";
@@ -11,13 +10,12 @@ import EditButton from "@/Components/Button/EditButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import DateInput from "@/Components/Input/DateInput.vue";
 import Modal from "@/Components/Modal.vue";
-// import Link from '@/Components/Link.vue';
 import CreatorInfo from '@/Components/CreatorInfo.vue';
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import NumberInput from "@/Components/Input/NumberInput.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
-import { useForm, usePage, router } from "@inertiajs/vue3";
-import { ref, computed, onMounted } from "vue";
+import { useForm, router } from "@inertiajs/vue3";
+import { ref, computed } from "vue";
 const props = defineProps({
     sertification: Object,
 });
@@ -70,39 +68,6 @@ const formattedHarga = computed(() => {
         minimumFractionDigits: 0,
     }).format(number);
 });
-
-const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const now = new Date();
-
-    const isToday = date.getDate() === now.getDate() &&
-        date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear();
-
-    const isSameYear = date.getFullYear() === now.getFullYear();
-
-    if (isToday) {
-        return new Intl.DateTimeFormat('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        }).format(date);
-    }
-
-    if (isSameYear) {
-        return new Intl.DateTimeFormat('id-ID', {
-            day: 'numeric',
-            month: 'long'
-        }).format(date);
-    }
-
-    return new Intl.DateTimeFormat('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }).format(date);
-};
 
 const formatDateTime = (dateString) => {
     if (!dateString) return "N/A";

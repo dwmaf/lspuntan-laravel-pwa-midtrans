@@ -18,8 +18,8 @@ class AsesorExport implements FromCollection, WithHeadings, WithMapping, ShouldA
     public function collection()
     {
         return Asesor::query()
-            ->with('user', 'skemas')
-            ->withCount('sertifications')
+            ->with(['user', 'skema'])
+            ->withCount('sertifikasi')
             ->get();
     }
 
@@ -40,17 +40,20 @@ class AsesorExport implements FromCollection, WithHeadings, WithMapping, ShouldA
 
     public function map($asesor): array
     {
-        $skemaList = $asesor->skemas->pluck('nama_skema')->implode(', ');
+        $user = $asesor->user;
+        $skemaList = $asesor->skema->pluck('nama_skema')->implode(', ');
+
+        $jumlahPenugasan = $asesor->sertifikasi_count > 0 ? $asesor->sertifikasi_count : '0';
 
         return [
             $asesor->id,
-            $asesor->user->name ?? '-',
-            $asesor->user->email ?? '-',
-            $asesor->user->no_tlp_hp ?? '-',
+            $user?->name ?? '-',
+            $user?->email ?? '-',
+            $user?->no_tlp_hp ?? '-',
             $asesor->no_reg_met ?? '-',
             $asesor->masa_berlaku_sertif_teknis ? DateHelper::formatIdDate($asesor->masa_berlaku_sertif_teknis) : '-',
             $asesor->masa_berlaku_sertif_asesor ? DateHelper::formatIdDate($asesor->masa_berlaku_sertif_asesor) : '-',
-            $asesor->sertifications_count ?? '0',
+            $jumlahPenugasan,
             $skemaList,
         ];
     }

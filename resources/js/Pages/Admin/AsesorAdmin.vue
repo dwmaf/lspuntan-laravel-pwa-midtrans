@@ -16,13 +16,13 @@ import Alert from "@/Components/Alert.vue";
 import ExportLink from "@/Components/Link/ExportLink.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import StatusBadge from "@/Components/StatusBadge.vue";
-import { useForm, usePage, router } from "@inertiajs/vue3";
-import { ref, computed, onMounted, onUnmounted, reactive, watch } from "vue";
-import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
+import { useForm, router } from "@inertiajs/vue3";
+import { ref, computed, reactive, watch } from "vue";
+import { FunnelIcon, X } from 'lucide-vue-next';
 
 const props = defineProps({
-    asesors: Object,
-    skemas: Array,
+    listAsesor: Object,
+    listSkema: Array,
     filters: Object,
 });
 const filtersForm = reactive({
@@ -54,11 +54,11 @@ watch(() => filtersForm.search, (newValue) => {
 });
 
 const skemaOptions = computed(() =>
-    [{ value: '', text: 'Semua' }, ...props.skemas.map(skema => ({ value: skema.id, text: skema.nama_skema }))]
+    [{ value: '', text: 'Semua' }, ...props.listSkema.map(skema => ({ value: skema.id, text: skema.nama_skema }))]
 );
 
 const skemaMultiselectOptions = computed(() =>
-    props.skemas.map(skema => ({ id: skema.id, name: skema.nama_skema }))
+    props.listSkema.map(skema => ({ id: skema.id, name: skema.nama_skema }))
 );
 
 const statusOptions = [
@@ -112,7 +112,7 @@ const showEditForm = (asesor) => {
     form.masa_berlaku_sertif_teknis = asesor.masa_berlaku_sertif_teknis;
     form.masa_berlaku_sertif_asesor = asesor.masa_berlaku_sertif_asesor;
     form.no_tlp_hp = asesor.user.no_tlp_hp;
-    form.selectedSkemas = asesor.skemas.map(s => s.id);
+    form.selectedSkemas = asesor.skema.map(s => s.id);
     form.is_active = !!asesor.is_active;
     form._method = 'PATCH';
     formMode.value = 'edit';
@@ -251,10 +251,10 @@ const destroy = () => {
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr v-for="(asesor, index) in asesors.data" :key="asesor.id"
+                            <tr v-for="(asesor, index) in listAsesor.data" :key="asesor.id"
                                 >
                                 <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200 pl-3">
-                                    {{ index + asesors.from }}
+                                    {{ index + listAsesor.from }}
                                 </td>
                                 <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
                                     <div class="font-medium">{{ asesor.user.name }}</div>
@@ -262,13 +262,13 @@ const destroy = () => {
                                 </td>
                                 <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
                                     <div class="flex flex-wrap gap-1">
-                                        <span v-for="skema in asesor.skemas" :key="skema.id"
+                                        <span v-for="skema in asesor.skema" :key="skema.id"
                                             class="inline-block rounded bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium whitespace-nowrap">{{
                                                 skema.nama_skema }}</span>
                                     </div>
                                 </td>
                                 <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
-                                    <div class="font-medium">{{ asesor.sertifications_count }} kali</div>
+                                    <div class="font-medium">{{ asesor.sertifikasi_count }} kali</div>
                                 </td>
                                 <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                     <StatusBadge v-if="asesor.is_active" variant="success">
@@ -285,7 +285,7 @@ const destroy = () => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="asesors.data.length === 0">
+                            <tr v-if="listAsesor.data.length === 0">
                                 <td colspan="4" class="px-6 py-4 text-center">Tidak ada data asesor yang cocok dengan
                                     filter.</td>
                             </tr>
@@ -293,11 +293,11 @@ const destroy = () => {
                     </table>
                 </div>
                 <div class="mt-4 flex justify-between items-center">
-                    <span v-if="asesors.total > 0" class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
-                        Menampilkan {{ asesors.from }} sampai {{ asesors.to }} dari {{ asesors.total }} hasil
+                    <span v-if="listAsesor.total > 0" class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
+                        Menampilkan {{ listAsesor.from }} sampai {{ listAsesor.to }} dari {{ listAsesor.total }} hasil
                     </span>
                     <span v-else></span>
-                    <Pagination :links="asesors.links" />
+                    <Pagination :links="listAsesor.links" />
                 </div>
             </div>
         </div>

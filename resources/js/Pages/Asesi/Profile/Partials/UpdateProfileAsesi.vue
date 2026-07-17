@@ -13,7 +13,7 @@ import { ref, computed } from 'vue';
 
 const props = defineProps({
     user: Object,
-    student: Object,
+    mahasiswa: Object,
     mustVerifyEmail: {
         type: Boolean,
     },
@@ -30,29 +30,29 @@ const genderOptions = [
 const { formatDate } = useFormat();
 const isProfileIncomplete = computed(() => {
     return !props.user?.name ||
-        !props.student?.nik ||
-        !props.student?.tmpt_lhr ||
-        !props.student?.tgl_lhr ||
-        !props.student?.kelamin ||
-        !props.student?.kebangsaan ||
+        !props.mahasiswa?.nik ||
+        !props.mahasiswa?.tmpt_lhr ||
+        !props.mahasiswa?.tgl_lhr ||
+        !props.mahasiswa?.kelamin ||
+        !props.mahasiswa?.kebangsaan ||
         !props.user?.no_tlp_hp ||
-        !props.student?.kualifikasi_pendidikan ||
-        !props.student?.foto_ktp ||
-        !props.student?.pas_foto;
+        !props.mahasiswa?.kualifikasi_pendidikan ||
+        !props.mahasiswa?.foto_ktp ||
+        !props.mahasiswa?.pas_foto;
 });
 
 const isEditing = ref(false);
 const form = useForm({
     _method: 'patch',
-    id: props.student?.id,
+    id: props.mahasiswa?.id,
     name: props.user?.name,
-    nik: props.student?.nik,
-    tmpt_lhr: props.student?.tmpt_lhr,
-    tgl_lhr: props.student?.tgl_lhr,
-    kelamin: props.student?.kelamin || '',
-    kebangsaan: props.student?.kebangsaan || 'Indonesia',
+    nik: props.mahasiswa?.nik,
+    tmpt_lhr: props.mahasiswa?.tmpt_lhr,
+    tgl_lhr: props.mahasiswa?.tgl_lhr,
+    kelamin: props.mahasiswa?.kelamin || '',
+    kebangsaan: props.mahasiswa?.kebangsaan || 'Indonesia',
     no_tlp_hp: props.user?.no_tlp_hp,
-    kualifikasi_pendidikan: props.student?.kualifikasi_pendidikan || 'SMA',
+    kualifikasi_pendidikan: props.mahasiswa?.kualifikasi_pendidikan || 'SMA',
     foto_ktp: null,
     pas_foto: null,
     delete_files: [],
@@ -102,17 +102,17 @@ const submit = () => {
                 </div>
                 <SingleFileInput v-model="form.foto_ktp" v-model:deleteList="form.delete_files"
                     delete-identifier="foto_ktp" label="Foto KTP" is-label-required
-                    :existing-file-url="student?.foto_ktp ? `/download/students/${student.id}/foto_ktp` : null"
+                    :existing-file-url="mahasiswa?.foto_ktp ? `/download/mahasiswa/${mahasiswa.id}/foto_ktp` : null"
                     :is-marked-for-deletion="form.delete_files.includes('foto_ktp')" accept=".jpg,.png,.jpeg,.pdf"
                     :error="form.errors.foto_ktp" @remove="removeFile('foto_ktp')"
-                    :required="!student?.foto_ktp || form.delete_files.includes('foto_ktp')" />
+                    :required="!mahasiswa?.foto_ktp || form.delete_files.includes('foto_ktp')" />
                 <SingleFileInput v-model="form.pas_foto" v-model:deleteList="form.delete_files"
                     delete-identifier="pas_foto"
                     label="Pasfoto terbaru dengan latar belakang merah, berukuran 4x6 (ukuran file maksimal 1 MB)"
-                    is-label-required :existing-file-url="student?.pas_foto ? `/download/students/${student.id}/pas_foto` : null"
+                    is-label-required :existing-file-url="mahasiswa?.pas_foto ? `/download/mahasiswa/${mahasiswa.id}/pas_foto` : null"
                     :is-marked-for-deletion="form.delete_files.includes('pas_foto')" accept=".jpg,.png,.jpeg,.pdf"
                     :error="form.errors.pas_foto" @remove="removeFile('pas_foto')"
-                    :required="!student?.pas_foto || form.delete_files.includes('pas_foto')" />
+                    :required="!mahasiswa?.pas_foto || form.delete_files.includes('pas_foto')" />
                 <div class="flex items-center gap-4">
                     <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
                     <SecondaryButton type="button" @click="cancelEdit">Batal</SecondaryButton>
@@ -152,22 +152,22 @@ const submit = () => {
                 <div>
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">No. KTP</dt>
                     <dd class="mt-1 text-sm"
-                        :class="student?.nik ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
-                        {{ student?.nik || 'Belum diisi' }}
+                        :class="mahasiswa?.nik ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
+                        {{ mahasiswa?.nik || 'Belum diisi' }}
                     </dd>
                 </div>
                 <div>
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Tempat, Tanggal Lahir</dt>
                     <dd class="mt-1 text-sm"
-                        :class="student?.tmpt_lhr && student?.tgl_lhr ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
-                        {{ student?.tmpt_lhr || 'Belum diisi' }}, {{ formatDate(student?.tgl_lhr) }}
+                        :class="mahasiswa?.tmpt_lhr && mahasiswa?.tgl_lhr ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
+                        {{ mahasiswa?.tmpt_lhr || 'Belum diisi' }}, {{ formatDate(mahasiswa?.tgl_lhr) }}
                     </dd>
                 </div>
                 <div>
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Jenis Kelamin</dt>
                     <dd class="mt-1 text-sm"
-                        :class="student?.kelamin ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
-                        {{ student?.kelamin || 'Belum diisi' }}
+                        :class="mahasiswa?.kelamin ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
+                        {{ mahasiswa?.kelamin || 'Belum diisi' }}
                     </dd>
                 </div>
                 <div>
@@ -180,27 +180,27 @@ const submit = () => {
                 <div>
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Kebangsaan</dt>
                     <dd class="mt-1 text-sm"
-                        :class="student?.kebangsaan ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
-                        {{ student?.kebangsaan || 'Belum diisi' }}
+                        :class="mahasiswa?.kebangsaan ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
+                        {{ mahasiswa?.kebangsaan || 'Belum diisi' }}
                     </dd>
                 </div>
                 <div>
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Pendidikan Terakhir</dt>
                     <dd class="mt-1 text-sm"
-                        :class="student?.kualifikasi_pendidikan ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
-                        {{ student?.kualifikasi_pendidikan || 'Belum diisi' }}
+                        :class="mahasiswa?.kualifikasi_pendidikan ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 italic'">
+                        {{ mahasiswa?.kualifikasi_pendidikan || 'Belum diisi' }}
                     </dd>
                 </div>
             </dl>
 
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <div v-for="file in [
-                    { label: 'Scan KTP', path: student?.foto_ktp, column: 'foto_ktp' },
-                    { label: 'Pasfoto', path: student?.pas_foto, column: 'pas_foto' },
+                    { label: 'Scan KTP', path: mahasiswa?.foto_ktp, column: 'foto_ktp' },
+                    { label: 'Pasfoto', path: mahasiswa?.pas_foto, column: 'pas_foto' },
                 ]" :key="file.label">
                     <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">{{ file.label }}</dt>
                     <dd class="mt-1 text-sm min-w-0">
-                        <a v-if="file.path" :href="`/download/students/${student.id}/${file.column}`" target="_blank"
+                        <a v-if="file.path" :href="`/download/mahasiswa/${mahasiswa.id}/${file.column}`" target="_blank"
                             class="flex items-center gap-2 group min-w-0">
                             <FileIcon :path="file.path" />
                             <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">{{

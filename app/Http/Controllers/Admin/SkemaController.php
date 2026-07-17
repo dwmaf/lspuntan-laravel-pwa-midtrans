@@ -15,7 +15,7 @@ class SkemaController extends Controller
     public function create(Request $request)
     {
         Gate::authorize('viewAny', Skema::class);
-        $skemas = Skema::query()
+        $listSkema = Skema::query()
             ->when($request->input('search'), function ($query, $search) {
                 $query->where('nama_skema', 'like', "%{$search}%");
             })
@@ -25,7 +25,7 @@ class SkemaController extends Controller
             ->withQueryString();
 
         return Inertia::render('Admin/SkemaSertifAdmin', [
-            'skemas' => $skemas,
+            'listSkema' => $listSkema,
             'filters' => $request->only(['search']),
         ]);
     }
@@ -34,7 +34,7 @@ class SkemaController extends Controller
     {
         Gate::authorize('create', Skema::class);
         $validatedData = $request->validate([
-            'nama_skema' => ['required', 'string', 'max:255', Rule::unique('skemas')],
+            'nama_skema' => ['required', 'string', 'max:255', Rule::unique('skema')],
             'is_active' => ['nullable', 'boolean'],
             'format_apl_1' => 'nullable|file|mimes:docx|max:2048',
             'format_apl_2' => 'nullable|file|mimes:docx|max:2048',
@@ -53,7 +53,7 @@ class SkemaController extends Controller
     {
         Gate::authorize('update', $skema);
         $request->validate([
-            'nama_skema' => ['required', 'string', 'max:255', Rule::unique('skemas')->ignore($skema->id)],
+            'nama_skema' => ['required', 'string', 'max:255', Rule::unique('skema')->ignore($skema->id)],
             'is_active' => ['nullable', 'boolean'],
             'delete_files' => 'nullable|array',
             'format_apl_1' => 'nullable|file|mimes:doc,docx,pdf|max:2048',

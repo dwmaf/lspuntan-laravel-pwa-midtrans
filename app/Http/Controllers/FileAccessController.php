@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Skema;
-use App\Models\Student;
+use App\Models\Mahasiswa;
 use App\Models\Asesi;
-use App\Models\Asesifile;
+use App\Models\BerkasAsesi;
 use App\Models\Sertifikat;
-use App\Models\News;
+use App\Models\Pengumuman;
 use App\Models\Asesmen;
 
 class FileAccessController extends Controller
@@ -19,13 +19,13 @@ class FileAccessController extends Controller
      * Key = nama tabel, Value = FQCN Model.
      */
     private const TABLE_MODELS = [
-        'skemas'      => Skema::class,
-        'students'    => Student::class,
-        'asesis'      => Asesi::class,
-        'asesi_files' => AsesiFile::class,
-        'sertifikats' => Sertifikat::class,
-        'news'        => News::class,
-        'asesmens'    => Asesmen::class,
+        'skema'        => Skema::class,
+        'mahasiswa'    => Mahasiswa::class,
+        'asesi'        => Asesi::class,
+        'berkas_asesi' => BerkasAsesi::class,
+        'sertifikat'   => Sertifikat::class,
+        'pengumuman'   => Pengumuman::class,
+        'asesmen'      => Asesmen::class,
     ];
 
     /**

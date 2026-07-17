@@ -6,9 +6,9 @@ use App\Models\Skema;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Sertification>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Sertifikasi>
  */
-class SertificationFactory extends Factory
+class SertifikasiFactory extends Factory
 {
     public function definition(): array
     {

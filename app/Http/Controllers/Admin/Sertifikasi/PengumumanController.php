@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Admin\Sertifikasi;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Sertification;
+use App\Models\Sertifikasi;
 use App\Models\Asesi;
 use App\Helpers\FileHelper;
-use App\Models\News;
+use App\Models\Pengumuman;
 use App\Traits\SendsPushNotifications;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -17,29 +17,24 @@ class PengumumanController extends Controller
 {
     use SendsPushNotifications;
 
-    public function index_pengumuman_asesmen(Sertification $sertification, Request $request)
+    public function index(Sertifikasi $sertifikasi)
     {
-        Gate::authorize('manageAnnouncement', $sertification);
-
-        $sertification->load(['skema', 'asesors.user']);
-        $totalAsesis = Asesi::where('sertification_id', $sertification->id)
-            ->count();
-
+        Gate::authorize('manageAnnouncement', $sertifikasi);
+        $sertifikasi->load(['skema', 'asesor.user']);
         return Inertia::render('Admin/PengumumanAdmin', [
-            'pengumumans' => Inertia::scroll(
-                News::where('sertification_id', $sertification->id)
+            'listPengumuman' => Inertia::scroll(
+                Pengumuman::where('sertifikasi_id', $sertifikasi->id)
                     ->with('user.asesor')
                     ->latest()
                     ->paginate(10)
             ),
-            'sertification' => $sertification,
-            'totalAsesis' => $totalAsesis,
+            'sertifikasi' => $sertifikasi,
         ]);
     }
 
-    public function store_pengumuman_asesmen(Sertification $sertification, Request $request)
+    public function store(Sertifikasi $sertifikasi, Request $request)
     {
-        Gate::authorize('manageAnnouncement', $sertification);
+        Gate::authorize('manageAnnouncement', $sertifikasi);
 
         // dd($request);
         $validatedData = $request->validate([
@@ -47,37 +42,37 @@ class PengumumanController extends Controller
             'path_file' => 'nullable|file|mimes:zip,rar,txt,docx,pdf,pptx,xlsx|max:5120',
             'send_notification' => 'boolean',
         ]);
-        $news = new News([
+        $pengumuman = new Pengumuman([
             'user_id' => $request->user()->id,
-            'sertification_id' => $sertification->id,
+            'sertifikasi_id' => $sertifikasi->id,
             'content' => $validatedData['content'],
         ]);
         
-        FileHelper::handleSingleFileUploads($news, ['path_file'], $request, 'sert_files');
-        $news->save();
+        FileHelper::handleSingleFileUploads($pengumuman, ['path_file'], $request, 'sert_files');
+        $pengumuman->save();
 
         if ($request->boolean('send_notification')) {
-            $asesis = Asesi::with(['student.user'])
-                ->where('sertification_id', $sertification->id)
+            $asesis = Asesi::with(['mahasiswa.user'])
+                ->where('sertifikasi_id', $sertifikasi->id)
                 ->get();
             if ($asesis->isNotEmpty()) {
                 $title = 'Pengumuman Baru';
-                $body = 'Pengumuman baru: ' . Str::limit($news->content, 100);
+                $body = 'Pengumuman baru: ' . Str::limit($pengumuman->content, 100);
                 foreach ($asesis as $asesi) {
-                    $user = $asesi->student->user ?? null;
-                    $url = route('asesi.pengumuman.index', [$sertification, $asesi, 'news_id' => $news->id]);
+                    $user = $asesi->mahasiswa->user ?? null;
+                    $url = route('asesi.pengumuman.index', [$sertifikasi, $asesi, 'pengumuman_id' => $pengumuman->id]);
                     $this->sendPushNotification($user, $title, $body, $url, 'PengumumanBaru');
                 }
             }
         }
 
-        return redirect(route('admin.sertifikasi.assessment-announcement.index', $sertification))->with('message', 'Berhasil membuat pengumuman');
+        return redirect(route('admin.sertifikasi.pengumuman.index', $sertifikasi))->with('message', 'Berhasil membuat pengumuman');
     }
 
 
-    public function update_pengumuman_asesmen(Sertification $sertification, News $news, Request $request)
+    public function update(Sertifikasi $sertifikasi, Pengumuman $pengumuman, Request $request)
     {
-        Gate::authorize('manageAnnouncement', $sertification);
+        Gate::authorize('manageAnnouncement', $sertifikasi);
 
         // dd($request);
         $validatedData = $request->validate([
@@ -87,36 +82,36 @@ class PengumumanController extends Controller
             'send_notification' => 'boolean',
         ]);
 
-        $news->content = $validatedData['content'];
-        FileHelper::handleSingleFileDeletes($news, $request->input('delete_files', []));
-        FileHelper::handleSingleFileUploads($news, ['path_file'], $request, 'sert_files');
-        $news->save();
+        $pengumuman->content = $validatedData['content'];
+        FileHelper::handleSingleFileDeletes($pengumuman, $request->input('delete_files', []));
+        FileHelper::handleSingleFileUploads($pengumuman, ['path_file'], $request, 'sert_files');
+        $pengumuman->save();
 
         if ($request->boolean('send_notification')) {
-            $asesis = Asesi::with(['student.user'])
-                ->where('sertification_id', $sertification->id)
+            $asesis = Asesi::with(['mahasiswa.user'])
+                ->where('sertifikasi_id', $sertifikasi->id)
                 ->get();
 
             if ($asesis->isNotEmpty()) {
                 $title = 'Pengumuman Diperbarui';
-                $body = 'Pengumuman diperbarui: ' . Str::limit($news->content, 100);
+                $body = 'Pengumuman diperbarui: ' . Str::limit($pengumuman->content, 100);
                 foreach ($asesis as $asesi) {
-                    $user = $asesi->student->user ?? null;
-                    $url = route('asesi.pengumuman.index', [$sertification, $asesi, 'news_id' => $news->id]);
+                    $user = $asesi->mahasiswa->user ?? null;
+                    $url = route('asesi.pengumuman.index', [$sertifikasi, $asesi, 'news_id' => $pengumuman->id]);
                     $this->sendPushNotification($user, $title, $body, $url, 'PengumumanUpdated');
                 }
             }
         }
 
-        return redirect(route('admin.sertifikasi.assessment-announcement.index', $sertification))->with('message', 'Pengumuman berhasil diupdate');
+        return redirect(route('admin.sertifikasi.pengumuman.index', $sertifikasi))->with('message', 'Pengumuman berhasil diupdate');
     }
 
-    public function destroy_pengumuman_asesmen(Sertification $sertification, News $news, Request $request)
+    public function destroy(Sertifikasi $sertifikasi, Pengumuman $pengumuman)
     {
-        Gate::authorize('manageAnnouncement', $sertification);
+        Gate::authorize('manageAnnouncement', $sertifikasi);
 
-        FileHelper::handleSingleFileDeletes($news, ['path_file']);
-        $news->delete();
-        return redirect(route('admin.sertifikasi.assessment-announcement.index', $sertification))->with('message', 'Berhasil menghapus pengumuman');
+        FileHelper::handleSingleFileDeletes($pengumuman, ['path_file']);
+        $pengumuman->delete();
+        return redirect(route('admin.sertifikasi.pengumuman.index', $sertifikasi))->with('message', 'Berhasil menghapus pengumuman');
     }
 }

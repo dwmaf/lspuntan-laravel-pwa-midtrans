@@ -2,19 +2,19 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CustomHeader from '@/Components/CustomHeader.vue';
 import { Link } from "@inertiajs/vue3";
-import { Award, Activity, Users, GraduationCap, User2 } from 'lucide-vue-next';
+import { Award, Activity, Users, GraduationCap } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
-import { computed, ref, onMounted, onUnmounted, watch, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { useDark } from '@vueuse/core';
 import { useActivityLog } from "@/Composables/useActivityLog";
-const { getRoleLabel, getUserLogMessage, getSkemaLogMessage, getAsesorLogMessage } = useActivityLog();
-const VueApexCharts = defineAsyncComponent(() => 
+const { getUserLogMessage, getSkemaLogMessage, getAsesorLogMessage } = useActivityLog();
+const VueApexCharts = defineAsyncComponent(() =>
     import('vue3-apexcharts')
 );
 
 const props = defineProps({
-    sertificationBerlangsung: Array,
-    sertificationSelesaiCount: Number,
+    sertifikasiBerlangsung: Array,
+    sertifikasiSelesaiCount: Number,
     totalAsesiCount: Number,
     asesiLulusCount: Number,
     pipelineStats: Object,
@@ -29,7 +29,7 @@ const isDark = useDark();
 // });
 // Chart 1: Trend Pendaftaran (Line/Area)
 const trendOptions = computed(() => {
-    
+
     const text = isDark.value ? '#cbd5e1' : '#64748b'; // Slate-300 (Dark) / Slate-500 (Light)
     const grid = isDark.value ? '#374151' : '#e2e8f0'; // Gray-700 (Dark) / Gray-200 (Light)
 
@@ -44,7 +44,7 @@ const trendOptions = computed(() => {
             axisBorder: { show: false },
             axisTicks: { show: false }
         },
-        
+
         yaxis: { labels: { style: { colors: text } } },
         grid: { borderColor: grid, strokeDashArray: 4 },
         tooltip: { theme: isDark.value ? 'dark' : 'light', x: { format: 'MM/yy' } },
@@ -178,11 +178,6 @@ const getActivityMessage = (activity) => {
         ?? activity.description;
 };
 
-const formatEventName = (event) => {
-    const map = { created: 'Dibuat', updated: 'Diperbarui', deleted: 'Dihapus' };
-    return map[event] || event;
-}
-
 // Calculate total asesi in pipeline and percentage for each stage
 const pipelinePercentages = computed(() => {
     const total = props.pipelineStats.verifikasi_berkas +
@@ -217,7 +212,7 @@ const pipelinePercentages = computed(() => {
                     <h3 title="Sertifikasi Berlangsung"
                         class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Sertifikasi Berlangsung
                     </h3>
-                    <p class="mt-1 text-3xl font-semibold text-blue-600">{{ sertificationBerlangsung.length }}</p>
+                    <p class="mt-1 text-3xl font-semibold text-blue-600">{{ sertifikasiBerlangsung.length }}</p>
                 </div>
                 <Award class="w-8 h-8 text-blue-600 shrink-0 ml-3" />
             </Link>
@@ -226,22 +221,25 @@ const pipelinePercentages = computed(() => {
                 <div class="min-w-0">
                     <h3 title="Sertifikasi Berlangsung"
                         class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Sertifikasi Selesai</h3>
-                    <p class="mt-1 text-3xl font-semibold text-green-600">{{ sertificationSelesaiCount }}</p>
+                    <p class="mt-1 text-3xl font-semibold text-green-600">{{ sertifikasiSelesaiCount }}</p>
                 </div>
                 <Activity class="w-8 h-8 text-green-600 shrink-0 ml-3" />
             </Link>
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
                 <div class="min-w-0">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ isAsesor ? 'Asesi Anda' : 'Total Asesi' }}</h3>
-                    <p class="mt-1 text-3xl font-semibold text-purple-600 dark:text-purple-300">{{ totalAsesiCount }}</p>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ isAsesor ? 'Asesi Anda'
+                        : 'Total Asesi' }}</h3>
+                    <p class="mt-1 text-3xl font-semibold text-purple-600 dark:text-purple-300">{{ totalAsesiCount }}
+                    </p>
                 </div>
                 <Users class="w-8 h-8 text-purple-600 dark:text-purple-300 shrink-0 ml-3" />
             </div>
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
                 <div class="min-w-0">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ isAsesor ? 'Lulusan Anda' : 'Total Lulusan' }}</h3>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ isAsesor ? 
+                    'Lulusan Anda' : 'Total Lulusan' }}</h3>
                     <p class="mt-1 text-3xl font-semibold text-fuchsia-600">{{ asesiLulusCount }}</p>
                 </div>
                 <GraduationCap class="w-8 h-8 text-fuchsia-600 shrink-0 ml-3" />
@@ -261,8 +259,8 @@ const pipelinePercentages = computed(() => {
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
                         <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">1. Menunggu
                             Verifikasi Admin</p>
-                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{
-                            pipelineStats.verifikasi_berkas || '-' }}</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                            {{ pipelineStats.verifikasi_berkas ?? 0 }}</p>
                         <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
                             <div class="bg-blue-500 h-1.5 rounded-full"
                                 :style="`width: ${pipelinePercentages.verifikasi_berkas}%`"></div>
@@ -273,8 +271,8 @@ const pipelinePercentages = computed(() => {
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
                         <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">2. Asesi Harus
                             Lengkapi Berkas</p>
-                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ pipelineStats.revisi_asesi
-                            || '-' }}</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                            {{ pipelineStats.revisi_asesi ?? 0 }}</p>
                         <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
                             <div class="bg-yellow-500 h-1.5 rounded-full"
                                 :style="`width: ${pipelinePercentages.revisi_asesi}%`"></div>
@@ -283,11 +281,12 @@ const pipelinePercentages = computed(() => {
                     <!-- Step 3 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">3. Berkas sudah lengkap tapi
+                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">3. Berkas sudah
+                            lengkap tapi
                             belum punya asesor
                         </p>
-                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ pipelineStats.berkas_lengkap_belum_asesor
-                            || '-' }}</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                            {{ pipelineStats.berkas_lengkap_belum_asesor ?? 0 }}</p>
                         <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
                             <div class="bg-orange-500 h-1.5 rounded-full"
                                 :style="`width: ${pipelinePercentages.berkas_lengkap_belum_asesor}%`"></div>
@@ -296,11 +295,12 @@ const pipelinePercentages = computed(() => {
                     <!-- Step 4 -->
                     <div
                         class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">4. Sudah ada asesor tapi
+                        <p class="text-xs text-gray-500 dark:text-gray-200 uppercase font-semibold">4. Sudah ada asesor
+                            tapi
                             status final belum ditetapkan
                         </p>
-                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ pipelineStats.ada_asesor_belum_ditetapkan
-                            || '-' }}</p>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                            {{ pipelineStats.ada_asesor_belum_ditetapkan ?? 0 }}</p>
                         <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2 dark:bg-gray-700">
                             <div class="bg-green-500 h-1.5 rounded-full"
                                 :style="`width: ${pipelinePercentages.ada_asesor_belum_ditetapkan}%`"></div>
@@ -316,19 +316,19 @@ const pipelinePercentages = computed(() => {
                 class="bg-white dark:bg-gray-800 p-2 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm lg:col-span-2">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Trend Pendaftaran (12 Bulan
                     Terakhir)</h3>
-                    <div class="overflow-x-auto pb-2">
-                        <div class="min-w-125">
+                <div class="overflow-x-auto pb-2">
+                    <div class="min-w-125">
                         <VueApexCharts type="area" height="320" :options="trendOptions" :series="trendSeries" />
                     </div>
                 </div>
             </div>
 
             <!-- Competency Chart - 1/3 on Desktop -->
-            <div class="bg-white dark:bg-gray-800 p-2 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div
+                class="bg-white dark:bg-gray-800 p-2 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Rasio Kelulusan</h3>
                 <div class="flex items-center justify-center h-[300px]">
-                    <VueApexCharts type="donut" width="100%" :options="competencyOptions"
-                        :series="competencySeries" />
+                    <VueApexCharts type="donut" width="100%" :options="competencyOptions" :series="competencySeries" />
                 </div>
             </div>
 
@@ -339,8 +339,7 @@ const pipelinePercentages = computed(() => {
                     Diminati</h3>
                 <div class="overflow-x-auto">
                     <div class="min-w-150">
-                        <VueApexCharts type="bar" height="300" :options="schemeOptions"
-                            :series="schemeSeries" />
+                        <VueApexCharts type="bar" height="300" :options="schemeOptions" :series="schemeSeries" />
                     </div>
                 </div>
             </div>
@@ -353,10 +352,10 @@ const pipelinePercentages = computed(() => {
                 <p class="text-sm font-normal text-gray-600 dark:text-gray-500">Kelola sertifikasi yang berlangsung</p>
                 <Link :href="route('admin.kelolasertifikasi.show', sert.id)"
                     class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg justify-between"
-                    v-for="sert in sertificationBerlangsung">
+                    v-for="sert in sertifikasiBerlangsung">
                     <div class="">
                         <h3 class="font-medium text-gray-900 dark:text-gray-300">{{ sert.skema.nama_skema }}</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-500">{{ sert.asesis_count }} asesi terdaftar</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-500">{{ sert.asesi_count }} asesi terdaftar</p>
                     </div>
                     <div class="text-xs bg-green-100 px-2 py-1 rounded-full text-green-800">
                         {{ sert.status }}
@@ -374,14 +373,12 @@ const pipelinePercentages = computed(() => {
                         <div :class="['w-2 h-2 rounded-full mt-1.5 shrink-0', getActivityColor(activity.event)]"></div>
                         <div>
                             <p class="text-sm dark:text-gray-300 font-medium">
+                                {{ activity.causer ? activity.causer.name : 'Sistem' }} 
                                 {{ getActivityMessage(activity) }}
-                            </p>
-                            <p class="text-xs text-gray-500 mt-0.5">
-                                <span class="font-semibold text-gray-600 dark:text-gray-400">
-                                    {{ activity.causer ? activity.causer.name : 'Sistem' }}
-                                </span>
-                                <span class="mx-1">&bull;</span>
-                                <span class="capitalize">{{ formatEventName(activity.event) }}</span>
+                                <!-- <span v-if="activity.subject_id"
+                                    class="font-mono text-xs text-gray-400 dark:text-gray-500 ml-1">
+                                    (ID: {{ activity.subject_id }})
+                                </span> -->
                             </p>
                             <p class="text-xs text-gray-400 mt-0.5">
                                 {{ timeAgo(activity.created_at) }}

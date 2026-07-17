@@ -17,7 +17,7 @@ import { MoveRight, FunnelIcon, X } from 'lucide-vue-next';
 import { useFormat } from "@/Composables/useFormat";
 
 const props = defineProps({
-    sertification: Object,
+    sertifikasi: Object,
     logs: Object,
     filters: Object,
     filterOptions: Object,
@@ -73,8 +73,8 @@ const resetFilters = () => {
 };
 
 const subjectTypeLabels = {
-    Sertification: 'Sertifikasi',
-    News: 'Pengumuman',
+    Sertifikasi: 'Sertifikasi',
+    Pengumuman: 'Pengumuman',
 };
 
 const cleanSubjectType = (subject) => {
@@ -114,7 +114,7 @@ const backToList = () => {
 
 const getRoleLabel = (log) => {
     if (log.subject_type === 'App\\Models\\Asesmen') return 'Asesor ';
-    const isAssignedAsesor = props.sertification.asesors?.some(
+    const isAssignedAsesor = props.sertifikasi.asesor?.some(
         asesor => asesor.user_id === log.causer?.id
     );
     return isAssignedAsesor ? 'Asesor ' : 'Admin ';
@@ -144,7 +144,7 @@ const getParsedProperties = (log) => {
 };
 
 const getContentPreview = (log) => {
-    if (log.subject_type !== 'App\\Models\\News' && log.subject_type !== 'App\\Models\\Asesmen') return null;
+    if (log.subject_type !== 'App\\Models\\Pengumuman' && log.subject_type !== 'App\\Models\\Asesmen') return null;
     const props = getParsedProperties(log);
     let content = null;
     if (log.event === 'deleted') {
@@ -163,12 +163,12 @@ const getFileName = (path) => {
 };
 
 const getAsesiName = (subjectId) => {
-    const asesi = props.sertification.asesis?.find(a => a.id === subjectId);
-    return asesi?.student?.user?.name ?? 'Asesi';
+    const asesi = props.sertifikasi.asesi?.find(a => a.id === subjectId);
+    return asesi?.mahasiswa?.user?.name ?? 'Asesi';
 };
 
 const getAsesorName = (asesorId) => {
-    const asesor = props.sertification.asesors?.find(a => a.id === asesorId);
+    const asesor = props.sertifikasi.asesor?.find(a => a.id === asesorId);
     if (asesor?.user?.name) return asesor.user.name;
     return props.asesorMap?.[asesorId] ?? `Asesor #${asesorId}`;
 };
@@ -264,7 +264,7 @@ const getPengumumanDetailItems = (log) => {
         const attrs = props.attributes || {};
         const allKeys = [...new Set([...Object.keys(old), ...Object.keys(attrs)])];
         for (const key of allKeys) {
-            if (key === 'sertification_id') continue;
+            if (key === 'sertifikasi_id') continue;
             if (key === 'content') {
                 items.push({ label: 'Konten Pengumuman', oldValue: formatValue(old[key]), newValue: formatValue(attrs[key]) });
             } else if (key === 'path_file') {
@@ -296,7 +296,7 @@ const getAsesmenDetailItems = (log) => {
         const attrs = props.attributes || {};
         const allKeys = [...new Set([...Object.keys(old), ...Object.keys(attrs)])];
         for (const key of allKeys) {
-            if (key === 'sertification_id') continue;
+            if (key === 'sertifikasi_id') continue;
             const label = key === 'content' ? 'Instruksi Tugas'
                 : key === 'deadline' ? 'Tenggat Waktu'
                     : key === 'path_file' ? (old[key] && !attrs[key] ? 'File Lampiran (dihapus)' : 'File Lampiran')
@@ -319,20 +319,20 @@ const getAsesmenDetailItems = (log) => {
 };
 
 const getSertifikatAsesiName = (log) => {
-    if (log.subject?.asesi?.student?.user?.name) return log.subject.asesi.student.user.name;
+    if (log.subject?.asesi?.mahasiswa?.user?.name) return log.subject.asesi.mahasiswa.user.name;
 
     const asesiId = props.sertifikatAsesiMap?.[log.subject_id]
         ?? getParsedProperties(log).attributes?.asesi_id
         ?? getParsedProperties(log).old?.asesi_id;
     if (asesiId) {
-        const asesi = props.sertification.asesis?.find(a => a.id === asesiId);
-        if (asesi?.student?.user?.name) return asesi.student.user.name;
+        const asesi = props.sertifikasi.asesi?.find(a => a.id === asesiId);
+        if (asesi?.mahasiswa?.user?.name) return asesi.mahasiswa.user.name;
     }
 
     return 'Asesi';
 };
 
-const sertificationFieldLabels = {
+const sertifikasiFieldLabels = {
     tuk: 'TUK',
     biaya: 'Biaya',
     no_rek: 'No. Rekening',
@@ -345,7 +345,7 @@ const sertificationFieldLabels = {
     status: 'Status',
 };
 
-const formatSertificationValue = (key, val) => {
+const formatSertifikasiValue = (key, val) => {
     if (val === null || val === undefined) return null;
     if (['tgl_apply_dibuka', 'tgl_apply_ditutup', 'tgl_asesmen_mulai', 'tgl_asesmen_selesai'].includes(key)) return formatDate(val);
     if (key === 'biaya') return formatCurrency(val);
@@ -356,17 +356,17 @@ const formatSertificationValue = (key, val) => {
     return String(val);
 };
 
-const getSertificationActionText = (log) => {
-    const skemaName = props.sertification.skema?.nama_skema ?? 'Sertifikasi';
+const getSertifikasiActionText = (log) => {
+    const skemaName = props.sertifikasi.skema?.nama_skema ?? 'Sertifikasi';
     const propsData = getParsedProperties(log);
 
-    if (propsData.added_asesor_names || propsData.removed_asesor_names || propsData.attributes?.asesors || propsData.old?.asesors) {
+    if (log.event === 'created') return `memulai sertifikasi ${skemaName}`;
+
+    if (propsData.added_asesor_names || propsData.removed_asesor_names || propsData.attributes?.asesor || propsData.old?.asesor) {
         return `mengubah data sertifikasi ${skemaName}`;
     }
 
     if (propsData.asesi_ids) return log.description.replace(/_/g, ' ');
-
-    if (log.event === 'created') return `memulai sertifikasi ${skemaName}`;
     if (log.event === 'updated') {
         if (propsData.attributes?.status === 'selesai') {
             const otherKeys = Object.keys(propsData.attributes).filter(k => k !== 'status');
@@ -378,20 +378,20 @@ const getSertificationActionText = (log) => {
     return log.description;
 };
 
-const getSertificationDetailItems = (log) => {
+const getSertifikasiDetailItems = (log) => {
     const props = getParsedProperties(log);
     const items = [];
 
     // Asesor changes
-    if (props.added_asesor_names || props.removed_asesor_names || props.attributes?.asesors || props.old?.asesors) {
+    if (props.added_asesor_names || props.removed_asesor_names || props.attributes?.asesor || props.old?.asesor) {
         let oldValue = null;
         let newValue = null;
         if (props.added_asesor_names?.length || props.removed_asesor_names?.length) {
             if (props.removed_asesor_names?.length) oldValue = props.removed_asesor_names.join(', ');
             if (props.added_asesor_names?.length) newValue = props.added_asesor_names.join(', ');
         } else {
-            oldValue = resolveAsesorIds(props.old?.asesors).join(', ') || null;
-            newValue = resolveAsesorIds(props.attributes?.asesors).join(', ') || null;
+            oldValue = resolveAsesorIds(props.old?.asesor).join(', ') || null;
+            newValue = resolveAsesorIds(props.attributes?.asesor).join(', ') || null;
         }
         items.push({
             label: 'Asesor',
@@ -437,11 +437,11 @@ const getSertificationDetailItems = (log) => {
     const allKeys = [...new Set([...Object.keys(old), ...Object.keys(attrs)])];
 
     for (const key of allKeys) {
-        if (key === 'asesors' || key === 'asesor_names') continue;
-        const oldValue = formatSertificationValue(key, old[key]);
-        const newValue = formatSertificationValue(key, attrs[key]);
+        if (key === 'asesor' || key === 'asesor_names') continue;
+        const oldValue = formatSertifikasiValue(key, old[key]);
+        const newValue = formatSertifikasiValue(key, attrs[key]);
         if (oldValue === null && newValue === null) continue;
-        const label = sertificationFieldLabels[key] || key;
+        const label = sertifikasiFieldLabels[key] || key;
         items.push({
             label,
             oldValue,
@@ -505,8 +505,8 @@ const formatValue = (val) => {
 </script>
 <template>
     <AdminLayout>
-        <CustomHeader :judul="`Log Sertifikasi: ${sertification.skema.nama_skema}`" />
-        <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
+        <CustomHeader :judul="`Log Sertifikasi: ${sertifikasi.skema.nama_skema}`" />
+        <AdminSertifikasiMenu :sertifikasi-id="props.sertifikasi.id" />
         <div class="max-w-7xl mx-auto gap-3 flex flex-col">
             <div v-if="viewMode === 'list'" class="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <div class="flex justify-end items-center gap-2 mb-4">
@@ -556,13 +556,13 @@ const formatValue = (val) => {
                                             <span v-html="getSertifikatActionText(log)">
                                             </span>
                                         </template>
-                                        <template v-else-if="log.subject_type === 'App\\Models\\Sertification'">
-                                            {{ getSertificationActionText(log) }}
+                                        <template v-else-if="log.subject_type === 'App\\Models\\Sertifikasi'">
+                                            {{ getSertifikasiActionText(log) }}
                                         </template>
                                         <template v-else>
                                             {{ log.description }}
                                         </template>
-                                        <span v-if="log.subject_id && (log.subject_type === 'App\\Models\\News' || log.subject_type === 'App\\Models\\Asesmen')"
+                                        <span v-if="log.subject_id && (log.subject_type === 'App\\Models\\Pengumuman' || log.subject_type === 'App\\Models\\Asesmen')"
                                             class="font-mono text-xs text-gray-400 dark:text-gray-500">
                                             (ID: {{ log.subject_id }})
                                         </span>
@@ -602,7 +602,7 @@ const formatValue = (val) => {
                     <BackButton @click="backToList">Kembali</BackButton>
                 </div>
 
-                <template v-if="selectedLog.subject_type === 'App\\Models\\News'">
+                <template v-if="selectedLog.subject_type === 'App\\Models\\Pengumuman'">
                     <p class="text-base text-gray-900 dark:text-gray-200 mb-4">
                         <span class="font-medium">{{ getRoleLabel(selectedLog) }}</span>
                         <span class="font-semibold"> {{ selectedLog.causer?.name ?? 'Sistem' }}</span>
@@ -714,17 +714,17 @@ const formatValue = (val) => {
                     </div>
                 </template>
 
-                <template v-else-if="selectedLog.subject_type === 'App\\Models\\Sertification'">
+                <template v-else-if="selectedLog.subject_type === 'App\\Models\\Sertifikasi'">
                     <p class="text-base text-gray-900 dark:text-gray-200 mb-4">
                         <span class="font-medium">Admin </span>
                         <span class="font-semibold"> {{ selectedLog.causer?.name ?? 'Sistem' }}</span>
-                        <span>{{ ' ' + getSertificationActionText(selectedLog) }}</span>
+                        <span>{{ ' ' + getSertifikasiActionText(selectedLog) }}</span>
                         <span class="ml-1">pada {{ formatDateTime(selectedLog.created_at) }}</span>
-                        dengan rincian perubahan berikut.
+                        <span v-if="selectedLog.event === 'updated'">dengan rincian perubahan berikut.</span>
                     </p>
                     <div class="bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-1">
                         <dl class="divide-y divide-gray-200 dark:divide-gray-600">
-                            <div v-for="(item, i) in getSertificationDetailItems(selectedLog)" :key="i"
+                            <div v-for="(item, i) in getSertifikasiDetailItems(selectedLog)" :key="i"
                                 class="flex py-2 text-sm">
                                 <dt class="w-2/5 font-medium text-gray-500 dark:text-gray-400">{{ item.label }}</dt>
                                 <dd class="w-3/5 text-gray-900 dark:text-gray-200">

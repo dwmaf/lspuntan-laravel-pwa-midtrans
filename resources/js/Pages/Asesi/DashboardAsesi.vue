@@ -12,20 +12,20 @@ const props = defineProps({
     sertifikasiSelesai: Array,
     pengumumanTerbaru: Array,
     user: Object,
-    student: Object
+    mahasiswa: Object
 });
 
 const isProfileIncomplete = computed(() => {
     return !props.user?.name ||
-        !props.student?.nik ||
-        !props.student?.tmpt_lhr ||
-        !props.student?.tgl_lhr ||
-        !props.student?.kelamin ||
-        !props.student?.kebangsaan ||
+        !props.mahasiswa?.nik ||
+        !props.mahasiswa?.tmpt_lhr ||
+        !props.mahasiswa?.tgl_lhr ||
+        !props.mahasiswa?.kelamin ||
+        !props.mahasiswa?.kebangsaan ||
         !props.user?.no_tlp_hp ||
-        !props.student?.kualifikasi_pendidikan ||
-        !props.student?.foto_ktp ||
-        !props.student?.pas_foto;
+        !props.mahasiswa?.kualifikasi_pendidikan ||
+        !props.mahasiswa?.foto_ktp ||
+        !props.mahasiswa?.pas_foto;
 });
 
 const getStatusBerkasAdministrasi = (status) => {
@@ -41,23 +41,6 @@ const getStatusBerkasAdministrasi = (status) => {
         'sudah_lengkap': {
             variant: 'success',
             text: 'Sudah Lengkap'
-        },
-    };
-    return data[status] || {
-        variant: 'neutral',
-        text: status
-    };
-};
-
-const getStatusAksesMenuAsesmen = (status) => {
-    const data = {
-        'belum_diberikan': {
-            variant: 'warning',
-            text: 'Belum Diberikan'
-        },
-        'diberikan': {
-            variant: 'success',
-            text: 'Diberikan'
         },
     };
     return data[status] || {
@@ -129,11 +112,11 @@ const getStatusFinalAsesi = (status) => {
 
                 <div v-if="sertifikasiBerlangsung.length > 0" class="flex flex-col gap-4">
                     <Link v-for="asesi in sertifikasiBerlangsung" :key="asesi.id"
-                        :href="route('asesi.sertifikasi.applied.show', [asesi.sertification_id, asesi.id])"
+                        :href="route('asesi.sertifikasi.applied.show', [asesi.sertifikasi_id, asesi.id])"
                         class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm hover:shadow-md">
                         <div class="flex justify-between items-start mb-3">
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-200">
-                                {{ asesi.sertification.skema.nama_skema }}
+                                {{ asesi.sertifikasi.skema.nama_skema }}
                             </h3>
 
                         </div>
@@ -205,20 +188,20 @@ const getStatusFinalAsesi = (status) => {
                     </div>
     
                     <div v-if="pengumumanTerbaru && pengumumanTerbaru.length > 0" class="space-y-4">
-                        <div v-for="info in pengumumanTerbaru" :key="info.id"
+                        <div v-for="pengumuman in pengumumanTerbaru" :key="pengumuman.id"
                             class="relative pl-4 border-l-2 border-blue-200 dark:border-blue-800 hover:border-blue-500 transition-colors">
     
                             <div class="mb-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                 <Clock class="w-3 h-3" />
-                                {{ info.tanggal }}
+                                {{ pengumuman.tanggal }}
                             </div>
     
                             <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                {{ info.judul }}
+                                {{ pengumuman.judul }}
                             </h4>
     
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                                {{ info.pesan }}
+                                {{ pengumuman.pesan }}
                             </p>
                         </div>
                     </div>

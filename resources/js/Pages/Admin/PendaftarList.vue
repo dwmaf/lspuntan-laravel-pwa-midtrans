@@ -16,7 +16,7 @@ import Checkbox from '@/Components/Input/Checkbox.vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
-    sertification: Object,
+    sertifikasi: Object,
     unassignedCount: {
         type: Number,
     }
@@ -28,7 +28,7 @@ const roles = computed(() => (usePage().props.auth.roles ?? []).map(r => typeof 
 const isAdmin = computed(() => roles.value.includes('admin'));
 const currentUserId = computed(() => usePage().props.auth.user?.id);
 const isAsesor = computed(() =>
-    props.sertification.asesors?.some(a => a.user_id === currentUserId.value)
+    props.sertifikasi.asesor?.some(a => a.user_id === currentUserId.value)
 );
 
 const canBulkUpdateBerkas = computed(() => {
@@ -145,7 +145,7 @@ const asesorFilterOptions = computed(() => [
     { value: '', text: 'Semua Asesi' },
     { value: 'assigned', text: 'Semua yang sudah ditetapkan' },
     { value: 'unassigned', text: 'Belum ditetapkan' },
-    ...props.sertification.asesors.map(asesor => ({
+    ...props.sertifikasi.asesor.map(asesor => ({
         value: String(asesor.id),
         text: asesor.user.name,
     })),
@@ -168,13 +168,13 @@ const closeFilterModal = () => {
 };
 
 const filteredAsesis = computed(() => {
-    let result = props.sertification.asesis;
+    let result = props.sertifikasi.asesi;
 
     if (searchQuery.value) {
         const lower = searchQuery.value.toLowerCase();
         result = result.filter(asesi =>
-            (asesi.student?.user?.name?.toLowerCase() || '').includes(lower) ||
-            (asesi.student?.user?.email?.toLowerCase() || '').includes(lower)
+            (asesi.mahasiswa?.user?.name?.toLowerCase() || '').includes(lower) ||
+            (asesi.mahasiswa?.user?.email?.toLowerCase() || '').includes(lower)
         );
     }
 
@@ -221,7 +221,7 @@ const bulkForm = useForm({
 });
 
 const asesorOptions = computed(() => {
-    return props.sertification.asesors.map(asesor => ({
+    return props.sertifikasi.asesor.map(asesor => ({
         value: asesor.id,
         text: asesor.user.name
     }));
@@ -240,7 +240,7 @@ const submitBulk = () => {
     if (bulkType.value === 'final') routeName = 'admin.sertifikasi.pendaftar.update-status-final-bulk';
     if (bulkType.value === 'assign_asesor') routeName = 'admin.sertifikasi.pendaftar.assign-asesor-bulk';
 
-    bulkForm.patch(route(routeName, [props.sertification.id]), {
+    bulkForm.patch(route(routeName, [props.sertifikasi.id]), {
         onSuccess: () => {
             showBulkActionModal.value = false;
             selectedAsesis.value = [];
@@ -253,8 +253,8 @@ const submitBulk = () => {
 </script>
 <template>
     <AdminLayout>
-        <CustomHeader :judul="`${sertification.skema.nama_skema}: Daftar Peserta`" />
-        <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
+        <CustomHeader :judul="`${sertifikasi.skema.nama_skema}: Daftar Peserta`" />
+        <AdminSertifikasiMenu :sertifikasi-id="props.sertifikasi.id" />
 
         <div class="p-3 sm:p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg ">
             <div class="flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
@@ -345,9 +345,9 @@ const submitBulk = () => {
                             </td>
                             <td
                                 class="px-2 py-4 flex flex-col gap-1 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {{ asesi.student.user.name ?? 'Nama Tidak Tersedia' }}
+                                {{ asesi.mahasiswa.user.name ?? 'Nama Tidak Tersedia' }}
                                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                                    {{ asesi.student.user.email }}
+                                    {{ asesi.mahasiswa.user.email }}
                                 </div>
                             </td>
                             <td class="px-2 py-4 whitespace-nowrap text-sm">
@@ -364,18 +364,20 @@ const submitBulk = () => {
                                     Belum Ditetapkan
                                 </StatusBadge>
                             </td>
-                            <td class="px-2 py-4 whitespace-nowrap text-sm flex flex-col gap-1 items-start">
-                                <StatusBadge :variant="getStatusFinalAsesi(asesi.status_final).variant">
-                                    {{ getStatusFinalAsesi(asesi.status_final).text }}
-                                </StatusBadge>
-                                <template v-if="isAdmin && asesi.status_final === 'kompeten'">
-                                    <span v-if="asesi.sertifikat" class="text-xs text-green-600 dark:text-green-400 font-medium">Sertifikat sudah terbit</span>
-                                    <span v-else class="text-xs text-yellow-600 dark:text-yellow-400 font-medium">Sertifikat belum terbit</span>
-                                </template>
+                            <td class="px-2 py-4 whitespace-nowrap text-sm">
+                                <div class="flex flex-col gap-1 items-start">
+                                    <StatusBadge :variant="getStatusFinalAsesi(asesi.status_final).variant">
+                                        {{ getStatusFinalAsesi(asesi.status_final).text }}
+                                    </StatusBadge>
+                                    <template v-if="isAdmin && asesi.status_final === 'kompeten'">
+                                        <span v-if="asesi.sertifikat" class="text-xs text-green-600 dark:text-green-400 font-medium">Sertifikat sudah terbit</span>
+                                        <span v-else class="text-xs text-yellow-600 dark:text-yellow-400 font-medium">Sertifikat belum terbit</span>
+                                    </template>
+                                </div>
                             </td>
                             <td class="px-2 py-4 whitespace-nowrap text-sm font-medium">
                                 <SeeButton
-                                    :href="route('admin.sertifikasi.pendaftar.show', [props.sertification.id, asesi.id])">
+                                    :href="route('admin.sertifikasi.pendaftar.show', [props.sertifikasi.id, asesi.id])">
                                     Detail
                                 </SeeButton>
                             </td>

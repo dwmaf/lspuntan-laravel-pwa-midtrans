@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Sertification;
 use App\Models\Skema;
 use App\Models\Sertifikat;
 use Illuminate\Http\Request;
@@ -13,25 +12,27 @@ class CertificateVerificationController extends Controller
 {
     public function index(Request $request)
     {
-        $skemas = Skema::orderBy('nama_skema', 'asc')->get();
+        $listSkema = Skema::orderBy('nama_skema', 'asc')->get();
 
         $certificate = null;
+        $errors = [];
         if ($request->filled('nomor_sertifikat') && $request->filled('skema_id')) {
             $foundCertificate = Sertifikat::where('nomor_sertifikat', $request->nomor_sertifikat)
-                ->with(['asesi.student.user', 'asesi.sertification.skema'])
+                ->with(['asesi.mahasiswa.user', 'asesi.sertifikasi.skema'])
                 ->first();
 
-            if ($foundCertificate && $foundCertificate->asesi->sertification->skema_id == $request->skema_id) {
+            if ($foundCertificate && $foundCertificate->asesi->sertifikasi->skema_id == $request->skema_id) {
                 $certificate = $foundCertificate;
             } else {
-                return redirect()->back()->withErrors(['search' => 'Data sertifikat tidak ditemukan atau tidak cocok dengan skema yang dipilih.'])->withInput();
+                $errors = ['search' => 'Data sertifikat tidak ditemukan atau tidak cocok dengan skema yang dipilih.'];
             }
         }
 
         return Inertia::render('Public/VerifyCertificate', [
-            'skemas' => $skemas,
+            'listSkema' => $listSkema,
             'certificate' => $certificate,
             'input' => $request->only(['nomor_sertifikat', 'skema_id']),
+            'errors' => $errors,
         ]);
     }
 }

@@ -17,9 +17,8 @@ import Checkbox from "@/Components/Input/Checkbox.vue";
 import CreatorInfo from "@/Components/CreatorInfo.vue";
 
 const props = defineProps({
-    sertification: Object,
-    pengumumans: Object,
-    totalAsesis: Number,
+    sertifikasi: Object,
+    listPengumuman: Object,
 });
 
 const formMode = ref('list'); // 'list', 'create', 'edit'
@@ -64,15 +63,15 @@ const submit = () => {
         onSuccess: () => {
             cancelForm();
             router.reload({
-                only: ['pengumumans'],
-                reset: ['pengumumans'],
+                only: ['listPengumuman'],
+                reset: ['listPengumuman'],
             });
         },
     };
     if (formMode.value === 'create') {
-        form.post(route('admin.sertifikasi.announcement.store', { sertification: props.sertification.id }), options);
+        form.post(route('admin.sertifikasi.pengumuman.store', { sertifikasi: props.sertifikasi.id }), options);
     } else if (formMode.value === 'edit') {
-        form.post(route('admin.sertifikasi.assessment-announcement.update', { sertification: props.sertification.id, news: editingPengumumanId.value }), options);
+        form.post(route('admin.sertifikasi.pengumuman.update', { sertifikasi: props.sertifikasi.id, pengumuman: editingPengumumanId.value }), options);
     }
 };
 
@@ -89,31 +88,18 @@ const closeDeleteModal = () => {
     pengumumanToDelete.value = null;
 };
 
-// const deletePengumuman = (pengumumanId) => {
-//     if (confirm('Yakin ingin menghapus pengumuman ini?')) {
-//         router.delete(route('admin.sertifikasi.assessment-announcement.destroy', { sertification: props.sertification.id, news: pengumumanId }), {
-//             preserveScroll: true,
-//             onSuccess: () => {
-//                 router.reload({
-//                     only: ['pengumumans'],
-//                     reset: ['pengumumans'],
-//                 });
-//             }
-//         });
-//     }
-// };
 const deletePengumuman = () => {
     if (pengumumanToDelete.value) {
-        router.delete(route('admin.sertifikasi.assessment-announcement.destroy', {
-            sertification: props.sertification.id,
-            news: pengumumanToDelete.value
+        router.delete(route('admin.sertifikasi.pengumuman.destroy', {
+            sertifikasi: props.sertifikasi.id,
+            pengumuman: pengumumanToDelete.value
         }), {
             preserveScroll: true,
             onSuccess: () => {
                 closeDeleteModal(); // Tutup modal ketika sukses
                 router.reload({
-                    only: ['pengumumans'],
-                    reset: ['pengumumans'],
+                    only: ['listPengumuman'],
+                    reset: ['listPengumuman'],
                 });
             }
         });
@@ -125,14 +111,14 @@ const headerTitle = computed(() => {
     if (formMode.value === 'edit') action = 'Edit ';
     if (formMode.value === 'create') action = 'Tambah ';
 
-    return `${props.sertification.skema.nama_skema}: ${action}Pengumuman`;
+    return `${props.sertifikasi.skema.nama_skema}: ${action}Pengumuman`;
 });
 
 </script>
 <template>
     <AdminLayout>
         <CustomHeader :judul="headerTitle" />
-        <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
+        <AdminSertifikasiMenu :sertifikasi-id="props.sertifikasi.id" />
         <div v-if="formMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-3xl mx-auto">
             <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
                 <div class="">
@@ -142,7 +128,7 @@ const headerTitle = computed(() => {
                 <div class="">
                     <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                         delete-identifier="path_file" label="Lampiran Tambahan"
-                        :existing-file-url="pengumumans.data.find(p => p.id === editingPengumumanId)?.path_file ? `/download/news/${editingPengumumanId}/path_file` : null"
+                        :existing-file-url="listPengumuman.data.find(p => p.id === editingPengumumanId)?.path_file ? `/download/pengumuman/${editingPengumumanId}/path_file` : null"
                         :is-marked-for-deletion="form.delete_files.includes('path_file')"
                         accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
                 </div>
@@ -189,12 +175,12 @@ const headerTitle = computed(() => {
         <div v-if="formMode === 'list'" class="max-w-3xl mx-auto">
             <div class="flex flex-col gap-2 mb-2">
                 <AddButton class="self-end" @click="showCreateForm">Tambah Pengumuman</AddButton>
-                <div v-if="!pengumumans.data || pengumumans.data.length === 0" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
+                <div v-if="!listPengumuman.data || listPengumuman.data.length === 0" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                     <p class="text-gray-500 dark:text-gray-400 font-semibold text-sm">Belum ada pengumuman untuk para asesi.</p>
                 </div>
             </div>
-            <InfiniteScroll data="pengumumans" class="space-y-2">
-                <div v-if="pengumumans.data.length > 0" v-for="pengumuman in pengumumans.data" :key="pengumuman.id"
+            <InfiniteScroll data="listPengumuman" class="space-y-2">
+                <div v-if="listPengumuman.data.length > 0" v-for="pengumuman in listPengumuman.data" :key="pengumuman.id"
                     class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-2 gap-2">
                         <CreatorInfo :name="pengumuman.user?.asesor ? pengumuman.user?.name : 'Admin'"
@@ -211,7 +197,7 @@ const headerTitle = computed(() => {
                     </h6>
 
                     <div v-if="pengumuman.path_file" class="mt-2">
-                        <a :href="`/download/news/${pengumuman.id}/path_file`" target="_blank"
+                        <a :href="`/download/pengumuman/${pengumuman.id}/path_file`" target="_blank"
                             class="text-sm flex items-center gap-2 group min-w-0">
                             <FileIcon :path="pengumuman.path_file" />
                             <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">

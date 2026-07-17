@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sertifikats', function (Blueprint $table) {
+        Schema::create('sertifikat', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('asesi_id')->constrained();
+            $table->foreignId('asesi_id')->constrained('asesi');
             $table->string('nomor_seri')->unique()->nullable();
             $table->string('nomor_sertifikat')->unique()->nullable();
             $table->string('nomor_registrasi')->unique()->nullable();
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sertifikats');
+        Schema::dropIfExists('sertifikat');
     }
 };

@@ -45,7 +45,7 @@ const layout = computed(() => {
                             class="block p-2 sm:p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 relative group items-center"
                             :class="{ 'bg-blue-50/50 dark:bg-blue-900/10': !notif.read_at }">
                             <div class="flex gap-4 items-center">
-                                <div class="flex-shrink-0 mt-1">
+                                <div class="shrink-0 mt-1">
                                     <span v-if="!notif.read_at"
                                         class="inline-flex items-center justify-center p-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full">
                                         <Bell class="w-5 h-5" />
@@ -71,7 +71,7 @@ const layout = computed(() => {
                                         </div>
 
                                         <span
-                                            class="flex-shrink-0 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex items-center gap-1">
+                                            class="shrink-0 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex items-center gap-1">
                                             <Clock class="w-3 h-3" />
                                             {{ formatDateTime(notif.created_at, 'short') }}
                                         </span>

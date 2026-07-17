@@ -22,7 +22,7 @@ class AsesiPolicy
     public function view(User $user, Asesi $asesi): bool
     {
         // Asesi hanya bisa lihat datanya sendiri
-        if ($user->id === $asesi->student->user_id) {
+        if ($user->id === $asesi->mahasiswa->user_id) {
             return true;
         }
 
@@ -33,7 +33,7 @@ class AsesiPolicy
 
         // Asesor hanya bisa lihat asesi di sertifikasi yang dia tangani
         return $user->hasRole('asesor') &&
-            $asesi->sertification->asesors()->where('user_id', $user->id)->exists();
+            $asesi->sertifikasi->asesor()->where('user_id', $user->id)->exists();
     }
 
     /**
@@ -51,7 +51,7 @@ class AsesiPolicy
     public function update(User $user, Asesi $asesi): bool
     {
         // Asesi bisa update datanya sendiri
-        if ($user->id === $asesi->student->user_id) {
+        if ($user->id === $asesi->mahasiswa->user_id) {
             return true;
         }
 
@@ -87,17 +87,17 @@ class AsesiPolicy
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * belum terpakai
      */
     public function delete(User $user, Asesi $asesi): bool
     {
         // Hanya asesi pemilik data yang bisa membatalkan pendaftaran
         // Atau admin untuk kebutuhan audit/pembersihan
-        return $user->id === $asesi->student->user_id || $user->hasRole('admin');
+        return $user->id === $asesi->mahasiswa->user_id || $user->hasRole('admin');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * belum terpakai
      */
     public function restore(User $user, Asesi $asesi): bool
     {
@@ -105,7 +105,7 @@ class AsesiPolicy
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * belum terpakai
      */
     public function forceDelete(User $user, Asesi $asesi): bool
     {
@@ -126,7 +126,7 @@ class AsesiPolicy
     {
         if ($user->hasRole('admin'))
             return true;
-        if ($user->hasRole('asesi') && $user->id === $asesi->student->user_id)
+        if ($user->hasRole('asesi') && $user->id === $asesi->mahasiswa->user_id)
             return true;
 
         if ($user->hasRole('asesor')) {

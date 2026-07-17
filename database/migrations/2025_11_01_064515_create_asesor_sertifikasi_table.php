@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('asesors', function (Blueprint $table) {
+        Schema::create('asesor_sertifikasi', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
-            $table->string('no_reg_met')->nullable();
-            $table->date('masa_berlaku_sertif_teknis')->nullable();
-            $table->date('masa_berlaku_sertif_asesor')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->foreignId('sertifikasi_id')->constrained('sertifikasi')->onDelete('restrict');
+            $table->foreignId('asesor_id')->constrained('asesor')->onDelete('restrict');
             $table->timestamps();
         });
     }
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('asesors');
+        Schema::dropIfExists('asesor_sertifikasi');
     }
 };

@@ -29,53 +29,53 @@ const { formatDate } = useFormat();
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Nama Lengkap</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ asesi.student?.user?.name || 'Tidak diisi'
+                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ asesi.mahasiswa?.user?.name || 'Tidak diisi'
                 }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">No. KTP</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ asesi.student?.nik || 'Tidak diisi' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ asesi.mahasiswa?.nik || 'Tidak diisi' }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Tempat, Tanggal Lahir</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ asesi.student?.tmpt_lhr || 'N/A' }}, {{
-                    formatDate(asesi.student?.tgl_lhr) }}</dd>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ asesi.mahasiswa?.tmpt_lhr || 'N/A' }}, {{
+                    formatDate(asesi.mahasiswa?.tgl_lhr) }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Jenis Kelamin</dt>
-                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ asesi.student?.kelamin || 'Tidak diisi' }}
+                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ asesi.mahasiswa?.kelamin || 'Tidak diisi' }}
                 </dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Kebangsaan</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {{ asesi.student?.kebangsaan || 'Tidak diisi' }}</dd>
+                    {{ asesi.mahasiswa?.kebangsaan || 'Tidak diisi' }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">No. Tlp HP (WA)</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {{ asesi.student?.user.no_tlp_hp || 'Tidak diisi' }}</dd>
+                    {{ asesi.mahasiswa?.user.no_tlp_hp || 'Tidak diisi' }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">No. Tlp Rumah</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {{ asesi.student?.no_tlp_rmh || 'Tidak diisi' }}</dd>
+                    {{ asesi.mahasiswa?.no_tlp_rmh || 'Tidak diisi' }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">No. Tlp Kantor</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {{ asesi.student?.no_tlp_kntr || 'Tidak diisi' }}</dd>
+                    {{ asesi.mahasiswa?.no_tlp_kntr || 'Tidak diisi' }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Kualifikasi
                     Pendidikan</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {{ asesi.student?.kualifikasi_pendidikan || 'Tidak diisi' }}</dd>
+                    {{ asesi.mahasiswa?.kualifikasi_pendidikan || 'Tidak diisi' }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Email</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {{ asesi.student?.user?.email || 'Tidak ada' }}</dd>
+                    {{ asesi.mahasiswa?.user?.email || 'Tidak ada' }}</dd>
             </div>
         </dl>
 
@@ -87,24 +87,24 @@ const { formatDate } = useFormat();
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Nama
                     Institusi/Perusahaan</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {{ asesi.student?.nama_institusi || 'Tidak diisi' }}</dd>
+                    {{ asesi.mahasiswa?.nama_institusi || 'Tidak diisi' }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Jabatan</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {{ asesi.student?.jabatan || 'Tidak diisi' }}</dd>
+                    {{ asesi.mahasiswa?.jabatan || 'Tidak diisi' }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">Alamat Kantor</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {{ asesi.student?.alamat_kantor || 'Tidak diisi' }}</dd>
+                    {{ asesi.mahasiswa?.alamat_kantor || 'Tidak diisi' }}</dd>
             </div>
             <div>
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">No. Tlp/Email/Fax
                     Kantor
                 </dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {{ asesi.student?.no_tlp_email_fax || 'Tidak diisi' }}</dd>
+                    {{ asesi.mahasiswa?.no_tlp_email_fax || 'Tidak diisi' }}</dd>
             </div>
         </dl>
 
@@ -129,13 +129,13 @@ const { formatDate } = useFormat();
             Kelengkapan</h3>
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
             <div v-for="file in [
-                { label: 'Bukti Pembayaran', path: asesi.bukti_bayar, table: 'asesis', id: asesi.id, column: 'bukti_bayar' },
-                { label: 'Form APL.01', path: asesi.apl_1, table: 'asesis', id: asesi.id, column: 'apl_1' },
-                { label: 'Form APL.02', path: asesi.apl_2, table: 'asesis', id: asesi.id, column: 'apl_2' },
-                { label: 'Scan KTP', path: asesi.student?.foto_ktp, table: 'students', id: asesi.student?.id, column: 'foto_ktp' },
-                { label: 'Scan KTM', path: asesi?.foto_ktm, table: 'asesis', id: asesi.id, column: 'foto_ktm' },
-                { label: 'Pasfoto', path: asesi.student?.pas_foto, table: 'students', id: asesi.student?.id, column: 'pas_foto' },
-                { label: 'Transkrip Nilai', path: asesi.transkrip_nilai, table: 'asesis', id: asesi.id, column: 'transkrip_nilai' },
+                { label: 'Bukti Pembayaran', path: asesi.bukti_bayar, table: 'asesi', id: asesi.id, column: 'bukti_bayar' },
+                { label: 'Form APL.01', path: asesi.apl_1, table: 'asesi', id: asesi.id, column: 'apl_1' },
+                { label: 'Form APL.02', path: asesi.apl_2, table: 'asesi', id: asesi.id, column: 'apl_2' },
+                { label: 'Scan KTP', path: asesi.mahasiswa?.foto_ktp, table: 'mahasiswa', id: asesi.mahasiswa?.id, column: 'foto_ktp' },
+                { label: 'Scan KTM', path: asesi?.foto_ktm, table: 'asesi', id: asesi.id, column: 'foto_ktm' },
+                { label: 'Pasfoto', path: asesi.mahasiswa?.pas_foto, table: 'mahasiswa', id: asesi.mahasiswa?.id, column: 'pas_foto' },
+                { label: 'Transkrip Nilai', path: asesi.transkrip_nilai, table: 'asesi', id: asesi.id, column: 'transkrip_nilai' },
             ]" :key="file.label">
                 <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">{{ file.label }}</dt>
                 <dd class="mt-1 text-sm min-w-0">
@@ -157,7 +157,7 @@ const { formatDate } = useFormat();
                 <dd class="mt-1 text-sm min-w-0">
                     <ul v-if="fileGroup.files.length > 0" class="flex flex-col gap-2">
                         <li v-for="file in fileGroup.files" :key="file.id">
-                            <a v-if="file.path_file" target="_blank" :href="`/download/asesi_files/${file.id}/path_file`"
+                            <a v-if="file.path_file" target="_blank" :href="`/download/berkas_asesi/${file.id}/path_file`"
                                 class="flex items-center gap-2 group min-w-0">
                                 <FileIcon :path="file.path_file" />
                                 <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">{{

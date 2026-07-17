@@ -189,15 +189,6 @@ const getSkemaDetailItems = (log) => {
     return items;
 };
 
-const getAsesorToggleSuffix = (log) => {
-    if (log.event !== 'updated') return '';
-    const props = typeof log.properties === 'string' ? JSON.parse(log.properties) : (log.properties || {});
-    if ('is_active' in (props.old ?? {})) {
-        return props.attributes?.is_active == 0 ? ' dan menonaktifkan' : ' dan mengaktifkan';
-    }
-    return '';
-};
-
 const getAsesorDetailItems = (log) => {
     const props = typeof log.properties === 'string' ? JSON.parse(log.properties) : (log.properties || {});
     const items = [];
@@ -413,15 +404,11 @@ const formatValue = (val) => {
             <template v-else-if="selectedLog.subject_type === 'App\\Models\\Asesor'">
                 <p class="text-base text-gray-900 dark:text-gray-200 mb-4">
                     <span class="font-semibold">{{ selectedLog.causer?.name ?? 'Sistem' }}</span>
-                    <template v-if="selectedLog.event === 'created'"> menambahkan asesor </template>
-                    <template v-else> mengubah data asesor{{ getAsesorToggleSuffix(selectedLog) }} </template>
-                    <span class="font-semibold">{{ selectedLog.properties?.asesor_user_name ??
-                        selectedLog.subject?.user?.name ?? ''
-                    }}</span>
+                    {{ getAsesorLogMessage(selectedLog) }}
                     <span v-if="selectedLog.subject_id" class="font-mono text-xs text-gray-400 dark:text-gray-500 ml-1">
                         (ID = {{ selectedLog.subject_id }})
                     </span>
-                    {{ selectedLog.event === 'created' ? ' dengan skema yang diampu berikut.' : ' berikut.' }}
+                    {{ selectedLog.event === 'created' ? ' dengan skema yang diampu berikut.' : '' }}
                 </p>
                 <div class="bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-1">
                     <dl class="divide-y divide-gray-200 dark:divide-gray-600">

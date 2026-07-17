@@ -8,7 +8,7 @@ use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
-use App\Models\Sertification;
+use App\Models\Sertifikasi;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
 use App\Traits\SendsPushNotifications;
@@ -17,24 +17,24 @@ use Illuminate\Support\Facades\Gate;
 class AsesmenAsesiController extends Controller
 {
     use SendsPushNotifications;
-    public function index(Sertification $sertification, Asesi $asesi, Request $request)
+    public function index(Sertifikasi $sertifikasi, Asesi $asesi, Request $request)
     {
         // buat agar hanya bisa masuk jika status berkasnya sudah lengkap
         Gate::authorize('view', $asesi);
         NotificationController::markAsRead($request);
 
-        $sertification->load('skema');
+        $sertifikasi->load('skema');
         $asesi->load('asesor');
-        $asesmen = $asesi->asesor ? $sertification->asesmen()->where('user_id', $asesi->asesor->user_id)->with('user')->first() : null;
-        $sertification->setRelation('asesmen', $asesmen);
+        $asesmen = $asesi->asesor ? $sertifikasi->asesmen()->where('user_id', $asesi->asesor->user_id)->with('user')->first() : null;
+        $sertifikasi->setRelation('asesmen', $asesmen);
 
         return Inertia::render('Asesi/AsesmenAsesi', [
-            'sertification' => $sertification,
+            'sertifikasi' => $sertifikasi,
             'asesi' => $asesi
         ]);
     }
 
-    public function update(Sertification $sertification, Asesi $asesi, Request $request)
+    public function update(Sertifikasi $sertifikasi, Asesi $asesi, Request $request)
     {
         Gate::authorize('update', $asesi);
 
@@ -43,7 +43,7 @@ class AsesmenAsesiController extends Controller
         }
 
         $asesi->load('asesor');
-        $asesmen = $asesi->asesor ? $sertification->asesmen()->where('user_id', $asesi->asesor->user_id)->first() : null;
+        $asesmen = $asesi->asesor ? $sertifikasi->asesmen()->where('user_id', $asesi->asesor->user_id)->first() : null;
         if ($asesmen?->deadline && now()->greaterThan($asesmen->deadline)) {
             return redirect()->back()->withErrors(['path_file_asesmen' => 'Batas waktu pengumpulan tugas telah berakhir.']);
         }
@@ -62,16 +62,16 @@ class AsesmenAsesiController extends Controller
             ],
         ]);
         FileHelper::handleSingleFileDeletes($asesi, $request->input('delete_files_asesi', []));
-        FileHelper::handleSingleFileUploads($asesi, ['path_file_asesmen'], $request, 'asesi_files');
+        FileHelper::handleSingleFileUploads($asesi, ['path_file_asesmen'], $request, 'berkas_asesi');
         $asesi->save();
-        $asesi->load('student.user');
-        $sertification->load('skema');
+        $asesi->load('mahasiswa.user');
+        $sertifikasi->load('skema');
 
         // kirim push notif ke satu asesor yg ditugaskan ke asesi tersebut
         if ($asesi->asesor) {
             $title = 'Tugas Asesmen Dikumpulkan';
-            $body = $asesi->student->user->name . ' mengunggah tugas asesmen untuk sertifikasi ' . $sertification->skema->nama_skema;
-            $url = route('admin.sertifikasi.assessment.edit', [$sertification->id, 'asesi_id' => $asesi->id]);
+            $body = $asesi->mahasiswa->user->name . ' mengunggah tugas asesmen untuk sertifikasi ' . $sertifikasi->skema->nama_skema;
+            $url = route('admin.sertifikasi.assessment.edit', [$sertifikasi->id, 'asesi_id' => $asesi->id]);
             $this->sendPushNotification($asesi->asesor->user, $title, $body, $url, 'TugasAsesmenDikumpulkan');
         }
 

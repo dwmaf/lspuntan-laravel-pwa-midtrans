@@ -8,14 +8,14 @@ import BackButton from "@/Components/Button/BackButton.vue";
 import { ref, onMounted } from "vue";
 
 const props = defineProps({
-    sertification: Object,
+    sertifikasi: Object,
     asesi: Object,
-    pengumumans: Array,
-    initialNewsId: [String, Number],
+    listPengumuman: Array,
+    initialPengumumanId: [String, Number],
 });
-console.log(props.initialNewsId);
+// console.log(props.initialPengumumanId);
 const showMode = ref('list');
-const selectedNews = ref(null);
+const selectedPengumuman = ref(null);
 
 const truncateText = (html, length = 150) => {
     const text = html.replace(/<[^>]*>/g, '');
@@ -26,21 +26,21 @@ const truncateText = (html, length = 150) => {
 }
 
 const showDetail = (pengumuman) => {
-    selectedNews.value = pengumuman;
+    selectedPengumuman.value = pengumuman;
     showMode.value = 'show';
     showMode.value = 'show';
 }
 
 const showList = () => {
-    selectedNews.value = null;
+    selectedPengumuman.value = null;
     showMode.value = 'list';
 }
 
 onMounted(() => {
-    if (props.initialNewsId) {
-        const newsToOpen = props.pengumumans.find(p => p.id == props.initialNewsId);
+    if (props.initialPengumumanId) {
+        const newsToOpen = props.listPengumuman.find(p => p.id == props.initialPengumumanId);
         if (newsToOpen) {
-            console.log('pengumuman ditemukan, id pengumuman: ', newsToOpen.value)
+            // console.log('pengumuman ditemukan, id pengumuman: ', newsToOpen.value)
             showDetail(newsToOpen);
         }
     }
@@ -50,13 +50,13 @@ onMounted(() => {
 
 <template>
     <AsesiLayout>
-        <CustomHeader :judul="`Pengumuman: ${sertification.skema?.nama_skema ?? ''}`" />
-        <AsesiSertifikasiMenu :sertification="props.sertification" :asesi="props.asesi"
+        <CustomHeader :judul="`Pengumuman: ${sertifikasi.skema?.nama_skema ?? ''}`" />
+        <AsesiSertifikasiMenu :sertifikasi="props.sertifikasi" :asesi="props.asesi"
             :latest-transaction="props.asesi.latest_transaction" />
 
         <div class="max-w-3xl mx-auto" v-if="showMode === 'list'">
-            <div v-if="props.pengumumans.length > 0" class="space-y-4">
-                <div v-for="pengumuman in props.pengumumans" :key="pengumuman.id"
+            <div v-if="props.listPengumuman.length > 0" class="space-y-4">
+                <div v-for="pengumuman in props.listPengumuman" :key="pengumuman.id"
                     class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <CreatorInfo :name="pengumuman.user?.name || 'Admin'" :created-at="pengumuman.created_at"
                         :updated-at="pengumuman.updated_at" class="mb-4" />
@@ -75,24 +75,24 @@ onMounted(() => {
                 <p>Belum ada pengumuman apapun.</p>
             </div>
         </div>
-        <div class="max-w-3xl mx-auto" v-if="showMode === 'show' && selectedNews">
+        <div class="max-w-3xl mx-auto" v-if="showMode === 'show' && selectedPengumuman">
             <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <div class="flex justify-start items-center mb-4">
                     <BackButton @click="showList"
                         class="self-start sm:self-auto" />
                 </div>
-                <CreatorInfo :name="selectedNews.user?.name || 'Admin'" :created-at="selectedNews.created_at"
-                    :updated-at="selectedNews.updated_at" class="mb-4" />
+                <CreatorInfo :name="selectedPengumuman.user?.name || 'Admin'" :created-at="selectedPengumuman.created_at"
+                    :updated-at="selectedPengumuman.updated_at" class="mb-4" />
 
 
-                <div v-html="selectedNews.content.replace(/\n/g, '<br>')"
+                <div v-html="selectedPengumuman.content.replace(/\n/g, '<br>')"
                     class="prose dark:prose-invert max-w-none font-medium text-sm text-gray-800 dark:text-gray-100"></div>
-                <div v-if="selectedNews.path_file" class="mt-4 pt-4 dark:border-gray-700">
-                    <a :href="`/download/news/${selectedNews.id}/path_file`" target="_blank"
+                <div v-if="selectedPengumuman.path_file" class="mt-4 pt-4 dark:border-gray-700">
+                    <a :href="`/download/pengumuman/${selectedPengumuman.id}/path_file`" target="_blank"
                         class="text-sm flex items-center gap-2 group min-w-0">
-                        <FileIcon :path="selectedNews.path_file" />
+                        <FileIcon :path="selectedPengumuman.path_file" />
                         <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">
-                            {{ selectedNews.path_file.split('/').pop() }}
+                            {{ selectedPengumuman.path_file.split('/').pop() }}
                         </span>
 
                     </a>

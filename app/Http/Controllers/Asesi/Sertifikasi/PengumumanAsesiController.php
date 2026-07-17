@@ -6,24 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
 use Illuminate\Http\Request;
-use App\Models\Sertification;
-use App\Models\News;
+use App\Models\Sertifikasi;
+use App\Models\Pengumuman;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Gate;
 
 class PengumumanAsesiController extends Controller
 {
-    public function index(Sertification $sertification, Asesi $asesi, Request $request)
+    public function index(Sertifikasi $sertifikasi, Asesi $asesi, Request $request)
     {
         Gate::authorize('view', $asesi);
         // dd($request);
         NotificationController::markAsRead($request);
         
-        $sertification->load('skema');
+        $sertifikasi->load('skema');
         $asesi->load('asesor');
         $asesorUserId = $asesi->asesor?->user_id;
 
-        $pengumumans = News::where('sertification_id', $sertification->id)
+        $listPengumuman = Pengumuman::where('sertifikasi_id', $sertifikasi->id)
             ->where(function ($query) use ($asesorUserId) {
                 $query->whereDoesntHave('user.asesor')
                     ->when($asesorUserId, function ($q) use ($asesorUserId) {
@@ -34,10 +34,10 @@ class PengumumanAsesiController extends Controller
             ->get();
 
         return Inertia::render('Asesi/PengumumanAsesi', [
-            'pengumumans' => $pengumumans,
-            'sertification' => $sertification,
+            'listPengumuman' => $listPengumuman,
+            'sertifikasi' => $sertifikasi,
             'asesi' => $asesi,
-            'initialNewsId' => $request->query('news_id'),
+            'initialPengumumanId' => $request->query('pengumuman_id'),
         ]);
     }
 

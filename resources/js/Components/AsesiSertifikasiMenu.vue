@@ -10,7 +10,7 @@ import {
 } from '@tabler/icons-vue';
 
 const props = defineProps({
-    sertification: Object,
+    sertifikasi: Object,
     asesi: Object,
 });
 
@@ -26,7 +26,7 @@ const routeActive = (name) => route().current(name);
         <div class="flex flex-wrap gap-4 mt-1">
             <div>
                 <template v-if="isDetailEnabled">
-                    <Link :href="route('asesi.sertifikasi.applied.show', { sertification, asesi })"
+                    <Link :href="route('asesi.sertifikasi.applied.show', { sertifikasi, asesi })"
                         class="flex items-center gap-2 px-4 py-3 font-semibold text-sm hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600">
                         <IconInfoCircle class="shrink-0 w-5 " />
                         Detail
@@ -46,7 +46,7 @@ const routeActive = (name) => route().current(name);
             <!-- Pengumuman -->
             <div>
                 <template v-if="isPengumumanEnabled">
-                    <Link :href="route('asesi.pengumuman.index', { sertification, asesi })"
+                    <Link :href="route('asesi.pengumuman.index', { sertifikasi, asesi })"
                         class="flex items-center gap-2 px-4 py-3 font-semibold text-sm hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600">
                         <IconSpeakerphone class="shrink-0 w-5 " />
                         Pengumuman
@@ -65,7 +65,7 @@ const routeActive = (name) => route().current(name);
             <!-- Asesmen -->
             <div>
                 <template v-if="isAsesmenEnabled">
-                    <Link :href="route('asesi.assessmen.index', { sertification, asesi })"
+                    <Link :href="route('asesi.assessmen.index', { sertifikasi, asesi })"
                         class="flex items-center gap-2 px-4 py-3 font-semibold text-sm hover:bg-gray-300 hover:dark:bg-gray-700 rounded-t-md dark:text-white text-gray-600">
                         <IconChecklist class="shrink-0 w-5 " />
                         Asesmen

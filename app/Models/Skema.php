@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -12,16 +11,15 @@ class Skema extends Model
 {
     use HasFactory, LogsActivity;
     /** @use HasFactory<\Database\Factories\SkemaFactory> */
-    protected $guarded = [
-        
-    ];
-    public function asesors()
+    protected $table = 'skema';
+    protected $guarded = [];
+    public function asesor()
     {
-        return $this->belongsToMany(Asesor::class, 'asesor_skema');
+        return $this->belongsToMany(Asesor::class, 'asesor_skema', 'skema_id', 'asesor_id');
     }
-    public function sertifications()
+    public function sertifikasi()
     {
-        return $this->hasMany(Sertification::class);
+        return $this->hasMany(Sertifikasi::class, 'skema_id');
     }
     public function getActivitylogOptions(): LogOptions
     {

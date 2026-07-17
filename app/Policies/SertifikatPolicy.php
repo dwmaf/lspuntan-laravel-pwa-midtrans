@@ -14,7 +14,7 @@ class SertifikatPolicy
         }
 
         if ($user->hasRole('asesi')) {
-            return $user->id === $sertifikat->asesi->student->user_id;
+            return $user->id === $sertifikat->asesi->mahasiswa->user_id;
         }
 
         return false;

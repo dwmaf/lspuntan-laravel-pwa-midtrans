@@ -7,9 +7,10 @@ use App\Traits\SerializesDatesWithoutConversion;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class News extends Model
+class Pengumuman extends Model
 {
     use LogsActivity, SerializesDatesWithoutConversion;
+    protected $table = 'pengumuman';
     protected $guarded = [];
 
     public function getActivitylogOptions(): LogOptions
@@ -22,17 +23,17 @@ class News extends Model
                 'deleted' => 'menghapus pengumuman',
                 default => $eventName,
             })
-            ->logOnly(['content', 'path_file', 'sertification_id'])
+            ->logOnly(['content', 'path_file', 'sertifikasi_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 
-    public function sertification()
+    public function sertifikasi()
     {
-        return $this->belongsTo(Sertification::class);
+        return $this->belongsTo(Sertifikasi::class, 'sertifikasi_id');
     }
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

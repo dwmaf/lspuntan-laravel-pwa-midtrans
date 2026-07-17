@@ -24,16 +24,16 @@ class AsesorController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('viewAny', Asesor::class);
-        $asesors = Asesor::query()
-            ->with('skemas', 'user')
+        $listAsesor = Asesor::query()
+            ->with('skema', 'user')
             ->when($request->input('search'), function ($query, $search) {
                 $query->whereHas('user', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
                 });
             })
             ->when($request->input('skema'), function ($query, $skema) {
-                $query->whereHas('skemas', function ($q) use ($skema) {
-                    $q->where('skemas.id', $skema);
+                $query->whereHas('skema', function ($q) use ($skema) {
+                    $q->where('skema.id', $skema);
                 });
             })
             ->when($request->input('role'), function ($query, $role) {
@@ -46,14 +46,14 @@ class AsesorController extends Controller
                     $query->where('is_active', false);
                 }
             })
-            ->withCount('sertifications')
+            ->withCount('sertifikasi')
             ->latest()
             ->paginate(15)
             ->onEachSide(0)
             ->withQueryString();
         return Inertia::render('Admin/AsesorAdmin', [
-            'asesors' => $asesors,
-            'skemas' => Skema::all(),
+            'listAsesor' => $listAsesor,
+            'listSkema' => Skema::all(),
             'filters' => $request->only(['skema', 'search', 'status']),
         ]);
     }
@@ -70,7 +70,7 @@ class AsesorController extends Controller
             'masa_berlaku_sertif_teknis' => 'required|date',
             'masa_berlaku_sertif_asesor' => 'required|date',
             'selectedSkemas' => ['required', 'array'],
-            'selectedSkemas.*' => ['exists:skemas,id'],
+            'selectedSkemas.*' => ['exists:skema,id'],
             'is_active' => ['nullable', 'boolean'],
         ]);
         DB::transaction(function () use ($request) {
@@ -90,11 +90,11 @@ class AsesorController extends Controller
                 'is_active' => $request->boolean('is_active', true)
             ]);
             $asesor->save();
-            $asesor->skemas()->attach($request->selectedSkemas);
+            $asesor->skema()->attach($request->selectedSkemas);
 
-            $asesor->load('skemas');
-            $skemaIds = $asesor->skemas->pluck('id')->toArray();
-            $skemaNames = $asesor->skemas->pluck('nama_skema')->toArray();
+            $asesor->load('skema');
+            $skemaIds = $asesor->skema->pluck('id')->toArray();
+            $skemaNames = $asesor->skema->pluck('nama_skema')->toArray();
             activity()
                 ->performedOn($asesor)
                 ->causedBy(Auth::user())
@@ -134,18 +134,18 @@ class AsesorController extends Controller
             'masa_berlaku_sertif_asesor' => 'required|date',
             // 'password' => ['nullable'],
             'selectedSkemas' => ['required', 'array'],
-            'selectedSkemas.*' => ['exists:skemas,id'],
+            'selectedSkemas.*' => ['exists:skema,id'],
             'is_active' => ['nullable', 'boolean'], // Tambahan status
         ]);
 
         // Cek skema yang akan dihapus
-        $currentSkemas = $asesor->skemas->pluck('id')->toArray();
+        $currentSkemas = $asesor->skema->pluck('id')->toArray();
         $newSkemas = $request->selectedSkemas;
         $removedSkemas = array_diff($currentSkemas, $newSkemas);
 
         // Validasi: cek apakah ada sertifikasi dengan skema yang akan dihapus
         if (!empty($removedSkemas)) {
-            $activeSertifications = $asesor->sertifications()
+            $activeSertifications = $asesor->sertifikasi()
                 ->whereIn('skema_id', $removedSkemas)
                 ->whereIn('status', ['berlangsung'])
                 ->with('skema')
@@ -160,7 +160,7 @@ class AsesorController extends Controller
         }
 
         if ($asesor->is_active && $request->boolean('is_active') === false) {
-            $isBusy = $asesor->sertifications()
+            $isBusy = $asesor->sertifikasi()
                 ->where('status', 'berlangsung')
                 ->exists();
 
@@ -177,7 +177,7 @@ class AsesorController extends Controller
                 'no_reg_met', 'masa_berlaku_sertif_teknis',
                 'masa_berlaku_sertif_asesor', 'is_active',
             ]);
-            $oldSkemaIds = $asesor->skemas->pluck('id')->toArray();
+            $oldSkemaIds = $asesor->skema->pluck('id')->toArray();
 
             $userData = [
                 'email' => $request->email,
@@ -197,10 +197,10 @@ class AsesorController extends Controller
                 'masa_berlaku_sertif_asesor' => $request->masa_berlaku_sertif_asesor,
                 'is_active' => $request->boolean('is_active'),
             ])->save();
-            $asesor->skemas()->sync($request->selectedSkemas);
+            $asesor->skema()->sync($request->selectedSkemas);
 
-            $asesor->load('skemas');
-            $afterIds = $asesor->skemas->pluck('id')->toArray();
+            $asesor->load('skema');
+            $afterIds = $asesor->skema->pluck('id')->toArray();
 
             $tracked = ['no_reg_met', 'masa_berlaku_sertif_teknis', 'masa_berlaku_sertif_asesor', 'is_active'];
             $userTracked = ['name', 'email', 'no_tlp_hp'];
@@ -264,12 +264,12 @@ class AsesorController extends Controller
         if ($user && $user->id === Auth::id()) {
             return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
         }
-        if ($asesor->sertifications()->exists()) {
+        if ($asesor->sertifikasi()->exists()) {
             return redirect(route('admin.asesor.index'))->with('error', 'Asesor tidak bisa dihapus karena memiliki riwayat sertifikasi. Silakan non-aktifkan statusnya di menu Edit.');
         }
 
         DB::transaction(function () use ($asesor, $user) {
-            $asesor->skemas()->detach();
+            $asesor->skema()->detach();
             $asesor->delete();
 
             if ($user) {
@@ -282,6 +282,7 @@ class AsesorController extends Controller
     public function export()
     {
         Gate::authorize('viewAny', Asesor::class);
-        return Excel::download(new AsesorExport, 'Laporan_Asesor_LSP_Untan.xlsx');
+        $dateStr = now()->locale('id')->isoFormat('D MMMM Y') . ', ' . now()->format('H.i') . ' WIB';
+        return Excel::download(new AsesorExport, "Laporan_Asesor_LSP_Untan_{$dateStr}.xlsx");
     }
 }

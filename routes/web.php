@@ -79,21 +79,21 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
     Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard'); //admin.dashboard
     Route::prefix('kelolasertifikasi')->name('kelolasertifikasi.')->group(function () {
         Route::get('/index', [KelolaSertifikasiController::class, 'index'])->name('index'); 
-        Route::get('/{sertification}/show', [KelolaSertifikasiController::class, 'show'])->name('show');
+        Route::get('/{sertifikasi}/show', [KelolaSertifikasiController::class, 'show'])->name('show');
     });
     
-    Route::prefix('sertifikasi/{sertification}')->name('sertifikasi.')->group(function () {
+    Route::prefix('sertifikasi/{sertifikasi}')->name('sertifikasi.')->group(function () {
         // untuk munculin halaman edit asesmen dan updatenya
         Route::get('/assessment/edit', [AsesmenController::class, 'edit'])->name('assessment.edit'); // admin.sertifikasi.assessment.edit
         Route::patch('/assessment/update', [AsesmenController::class, 'update_tugas_asesmen'])->name('assessment.update'); // admin.sertifikasi.assessment.update
         Route::delete('/assessment/destroy', [AsesmenController::class, 'destroy'])->name('assessment.destroy'); // admin.sertifikasi.assessment.destroy
-        Route::get('/announcement/index', [PengumumanController::class, 'index_pengumuman_asesmen'])->name('assessment-announcement.index'); // admin.sertifikasi.assessment-announcement.index
-        Route::post('/announcement/store', [PengumumanController::class, 'store_pengumuman_asesmen'])->name('announcement.store'); // admin.sertifikasi.assessment-announcement.store
-        Route::patch('/announcement/update/{news}', [PengumumanController::class, 'update_pengumuman_asesmen'])->name('assessment-announcement.update'); // admin.sertifikasi.assessment-announcement.update
-        Route::delete('/announcement/destroy/{news}', [PengumumanController::class, 'destroy_pengumuman_asesmen'])->name('assessment-announcement.destroy'); // admin.sertifikasi.assessment-announcement.update
+        Route::get('/pengumuman/index', [PengumumanController::class, 'index'])->name('pengumuman.index'); // admin.sertifikasi.pengumuman.index
+        Route::post('/pengumuman/store', [PengumumanController::class, 'store'])->name('pengumuman.store'); // admin.sertifikasi.pengumuman.store
+        Route::patch('/pengumuman/update/{pengumuman}', [PengumumanController::class, 'update'])->name('pengumuman.update'); // admin.sertifikasi.pengumuman.update
+        Route::delete('/pengumuman/destroy/{pengumuman}', [PengumumanController::class, 'destroy'])->name('pengumuman.destroy'); // admin.sertifikasi.pengumuman.update
     });
 
-    Route::prefix('sertifikasi/{sertification}')->name('sertifikasi.')->group(function () {
+    Route::prefix('sertifikasi/{sertifikasi}')->name('sertifikasi.')->group(function () {
         Route::get('/pendaftar/index', [PendaftarController::class, 'listAsesi'])->name('pendaftar.index'); // admin.sertifikasi.pendaftar.index
         Route::get('/pendaftar/{asesi}/show', [PendaftarController::class, 'rincianDataAsesi'])->name('pendaftar.show'); // admin.sertifikasi.pendaftar.show        
         Route::patch('/pendaftar/update-status-final-asesi/bulk', [PendaftarController::class, 'updateStatusFinalBulk'])->name('pendaftar.update-status-final-bulk');
@@ -104,11 +104,11 @@ Route::middleware(['auth', 'role:admin|asesor'])->prefix('admin')->name('admin.'
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::prefix('kelolasertifikasi')->name('kelolasertifikasi.')->group(function () {
         Route::post('/store', [KelolaSertifikasiController::class, 'store'])->name('store'); // admin.kelolasertifikasi.store
-        Route::patch('/{sertification}/update', [KelolaSertifikasiController::class, 'update'])->name('update'); // admin.kelolasertifikasi.update
-        Route::get('/{sertification}/logs/index', [KelolaSertifikasiController::class, 'indexLog'])->name('logs.index'); // admin.kelolasertifikasi.logs.index
-        Route::get('/{sertification}/report/export-excel', [KelolaSertifikasiController::class, 'export_excel'])->name('report.export_excel'); //admin.kelolasertifikasi.report.export_excel
+        Route::patch('/{sertifikasi}/update', [KelolaSertifikasiController::class, 'update'])->name('update'); // admin.kelolasertifikasi.update
+        Route::get('/{sertifikasi}/logs/index', [KelolaSertifikasiController::class, 'indexLog'])->name('logs.index'); // admin.kelolasertifikasi.logs.index
+        Route::get('/{sertifikasi}/report/export-excel', [KelolaSertifikasiController::class, 'export_excel'])->name('report.export_excel'); //admin.kelolasertifikasi.report.export_excel
     });
-    Route::prefix('sertifikasi/{sertification}')->name('sertifikasi.')->group(function () {
+    Route::prefix('sertifikasi/{sertifikasi}')->name('sertifikasi.')->group(function () {
         Route::patch('/pendaftar/status-berkas/bulk', [PendaftarController::class, 'updateStatusBerkasBulk'])->name('pendaftar.update-status-berkas-bulk');
         Route::patch('/pendaftar/{asesi}/status-berkas', [PendaftarController::class, 'updateStatusBerkas'])->name('pendaftar.update-status-berkas'); // admin.sertifikasi.pendaftar.update-status-berkas-asesi
         Route::patch('/pendaftar/{asesi}/assign-asesor', [PendaftarController::class, 'assignAsesor'])->name('pendaftar.assign-asesor'); // admin.sertifikasi.pendaftar.assign-asesor
@@ -146,7 +146,7 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
     Route::get('/dashboard', [DashboardAsesiController::class, 'index'])->name('dashboard'); // asesi.dashboard
 
     // Grouping sertifikasi context for asesi
-    Route::prefix('sertifikasi/{sertification}/{asesi}')->group(function () {
+    Route::prefix('sertifikasi/{sertifikasi}/{asesi}')->group(function () {
         Route::get('/assessmen/index', [AsesmenAsesiController::class, 'index'])->name('assessmen.index');
         Route::post('/assessmen', [AsesmenAsesiController::class, 'update'])->name('assessmen.update');
         Route::get('/pengumuman/index', [PengumumanAsesiController::class, 'index'])->name('pengumuman.index');
@@ -154,11 +154,11 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
     });
 
     Route::prefix('sertifikasi')->name('sertifikasi.')->group(function () {
-        Route::get('/index', [KelolaSertifikasiAsesiController::class, 'listSertifications'])->name('index');
-        Route::get('/{sertification}/apply/create', [KelolaSertifikasiAsesiController::class, 'applyForm'])->name('apply.create');
-        Route::post('/{student}/apply/store', [KelolaSertifikasiAsesiController::class, 'submitForm'])->name('apply.store');
-        Route::get('/{sertification}/{asesi}/applied/show', [KelolaSertifikasiAsesiController::class, 'showApplied'])->name('applied.show');
-        Route::patch('/{sertification}/{asesi}/applied/update', [KelolaSertifikasiAsesiController::class, 'updateApplied'])->name('applied.update');
+        Route::get('/index', [KelolaSertifikasiAsesiController::class, 'listSertifikasi'])->name('index');
+        Route::get('/{sertifikasi}/apply/create', [KelolaSertifikasiAsesiController::class, 'applyForm'])->name('apply.create');
+        Route::post('/{mahasiswa}/apply/store', [KelolaSertifikasiAsesiController::class, 'submitForm'])->name('apply.store');
+        Route::get('/{sertifikasi}/{asesi}/applied/show', [KelolaSertifikasiAsesiController::class, 'showApplied'])->name('applied.show');
+        Route::patch('/{sertifikasi}/{asesi}/applied/update', [KelolaSertifikasiAsesiController::class, 'updateApplied'])->name('applied.update');
     });
 });
 
@@ -168,11 +168,6 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
 // Route::post('/filepond/process', [FilePondTestController::class, 'processFile'])->name('filepond.process');
 // Route::get('/filepond/load', [FilePondTestController::class, 'loadFile'])->name('filepond.load');
 // Route::delete('/filepond/revert', [FilePondTestController::class, 'revertFile'])->name('filepond.revert');
-// Route::get('/test', function () { //will be commented on production
-//     return view('dumpbladefiles.testing-file', [
-//         'sertification' => Sertification::find(1)
-//     ]);
-// });
 // Route::get('/debug-firebase', function () { //will be commented on production
 //     try {
 //         $messaging = app('firebase.messaging');
@@ -181,14 +176,5 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
 //         dd($e);
 //     }
 // });
-// Route::prefix('dev')->name('dev.')->group(function () {
-//     Route::get('/list/sertifications', [DevelopmentController::class, 'index'])->name('list.sertifications'); // dev.list.sertifications
-//     Route::prefix('sertification')->name('sertification.')->group(function () {
-//         Route::get('/{sert_id}/show', [DevelopmentController::class, 'detailSertification'])->name('show'); // dev.sertification.show
-//         Route::delete('/{sert_id}/destroy/asesmen', [DevelopmentController::class, 'destroyAsesmen'])->name('destroy.asesmen'); // dev.sertification.destroy.asesmen
-//         Route::post('/{sert_id}/store/news', [DevelopmentController::class, 'storeDummyNews'])->name('store.news'); // dev.sertification.store.news
-//         Route::delete('/{sert_id}/destroy/news', [DevelopmentController::class, 'destroyNews'])->name('destroy.news'); // dev.sertification.destroy.news
-//         Route::get('/{sert_id}/list/asesis', [DevelopmentController::class, 'listAsesis'])->name('list.asesis'); // dev.sertification.list.asesis
-//     });
-// });
+
 require __DIR__ . '/auth.php';

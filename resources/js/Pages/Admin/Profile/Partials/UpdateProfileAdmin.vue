@@ -145,8 +145,8 @@ const { formatDate } = useFormat();
                     <div class="md:col-span-2 mt-2">
                         <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Skema yang Diampu</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            <ul class="list-disc ml-5 w-fit" v-if="user.asesor.skemas && user.asesor.skemas.length > 0">
-                                <li v-for="skema in user.asesor.skemas" :key="skema.id" class="text-sm">
+                            <ul class="list-disc ml-5 w-fit" v-if="user.asesor.skema && user.asesor.skema.length > 0">
+                                <li v-for="skema in user.asesor.skema" :key="skema.id" class="text-sm">
                                     {{ skema.nama_skema }}
                                 </li>
                             </ul>

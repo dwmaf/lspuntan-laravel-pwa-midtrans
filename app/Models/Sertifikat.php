@@ -9,18 +9,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Sertifikat extends Model
 {
     use LogsActivity;
-    protected $guarded = [
-        
-    ];
+    protected $table = 'sertifikat';
+    protected $guarded = [];
     public function asesi()
     {
-        return $this->belongsTo(Asesi::class);
+        return $this->belongsTo(Asesi::class, 'asesi_id');
     }
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('Sertifikat')
-            ->setDescriptionForEvent(fn(string $eventName) => "Sertifikat milik {$this->asesi->student->user->name} telah di-{$eventName}")
+            ->setDescriptionForEvent(fn(string $eventName) => "Sertifikat milik {$this->asesi->mahasiswa->user->name} telah di-{$eventName}")
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->logOnly([

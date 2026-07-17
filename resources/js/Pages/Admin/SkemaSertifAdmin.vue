@@ -14,10 +14,10 @@ import Checkbox from "@/Components/Input/Checkbox.vue";
 import Alert from "@/Components/Alert.vue";
 import Modal from '@/Components/Modal.vue';
 import { useForm, usePage, router } from "@inertiajs/vue3";
-import { ref, computed, reactive, watch } from "vue";
+import { ref, reactive, watch } from "vue";
 
 const props = defineProps({
-    skemas: Object,
+    listSkema: Object,
     filters: Object,
 });
 
@@ -36,8 +36,6 @@ watch(() => filtersForm.search, (newValue) => {
 });
 
 const formMode = ref('list');
-const page = usePage();
-
 
 const form = useForm({
     id: null,
@@ -168,18 +166,18 @@ const destroy = () => {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <SingleFileInput v-model="form.format_apl_1" label="Format FR. APL.01"
                         v-model:deleteList="form.delete_files" delete-identifier="format_apl_1"
-                        :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_apl_1 ? `/download/skemas/${form.id}/format_apl_1` : null"
+                        :existing-file-url="props.listSkema.data.find(s => s.id === form.id)?.format_apl_1 ? `/download/skema/${form.id}/format_apl_1` : null"
                         :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".docx"
                         :error="form.errors.format_apl_1" />
                     <SingleFileInput v-model="form.format_apl_2" label="Format FR. APL.02"
                         v-model:deleteList="form.delete_files" delete-identifier="format_apl_2"
-                        :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_apl_2 ? `/download/skemas/${form.id}/format_apl_2` : null"
+                        :existing-file-url="props.listSkema.data.find(s => s.id === form.id)?.format_apl_2 ? `/download/skema/${form.id}/format_apl_2` : null"
                         :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".docx"
                         :error="form.errors.format_apl_2" />
                     <div class="md:col-span-2">
                         <SingleFileInput v-model="form.format_asesmen" label="File Lampiran Asesmen"
                             v-model:deleteList="form.delete_files" delete-identifier="format_asesmen"
-                            :existing-file-url="props.skemas.data.find(s => s.id === form.id)?.format_asesmen ? `/download/skemas/${form.id}/format_asesmen` : null"
+                            :existing-file-url="props.listSkema.data.find(s => s.id === form.id)?.format_asesmen ? `/download/skema/${form.id}/format_asesmen` : null"
                             :is-marked-for-deletion="form.delete_files.includes('format_asesmen')" accept=".zip,.rar"
                             :error="form.errors.format_asesmen" />
                     </div>
@@ -226,7 +224,7 @@ const destroy = () => {
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        <tr v-for="(skema, index) in skemas.data" :key="skema.id">
+                        <tr v-for="(skema, index) in listSkema.data" :key="skema.id">
                             <td
                                 class="pl-3 px-2 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {{ index + 1 }}
@@ -237,7 +235,7 @@ const destroy = () => {
                             <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
                                 <div class="flex flex-wrap gap-1 ">
                                     <template v-for="field in docFields" :key="field.id">
-                                        <a v-if="skema[field.id]" :href="`/download/skemas/${skema.id}/${field.id}`" target="_blank"
+                                        <a v-if="skema[field.id]" :href="`/download/skema/${skema.id}/${field.id}`" target="_blank"
                                             class="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:text-blue-700 border border-blue-200 dark:border-blue-800 rounded text-[10px] font-bold hover:bg-blue-100 transition-colors"
                                             :title="field.label">
                                             {{ field.label.replace('FR. ', '') }}
@@ -262,7 +260,7 @@ const destroy = () => {
                                 </div>
                             </td>
                         </tr>
-                        <tr v-if="skemas.data.length === 0">
+                        <tr v-if="listSkema.data.length === 0">
                             <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                 Belum ada skema sertifikasi.
                             </td>
@@ -271,11 +269,11 @@ const destroy = () => {
                 </table>
             </div>
             <div class="mt-4 flex justify-between items-center">
-                <span v-if="skemas.total > 0" class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
-                    Menampilkan {{ skemas.from }} sampai {{ skemas.to }} dari {{ skemas.total }} hasil
+                <span v-if="listSkema.total > 0" class="text-sm text-gray-700 dark:text-gray-400 hidden lg:flex">
+                    Menampilkan {{ listSkema.from }} sampai {{ listSkema.to }} dari {{ listSkema.total }} hasil
                 </span>
                 <span v-else></span>
-                <Pagination :links="skemas.links" />
+                <Pagination :links="listSkema.links" />
             </div>
 
         </div>

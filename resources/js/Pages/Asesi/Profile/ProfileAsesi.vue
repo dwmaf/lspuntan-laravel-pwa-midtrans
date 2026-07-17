@@ -5,18 +5,14 @@ import FCMPermission from '@/Components/FCMPermission.vue';
 import CustomHeader from '@/Components/CustomHeader.vue';
 import UpdatePassword from './Partials/UpdatePassword.vue';
 import UpdateProfileAsesi from './Partials/UpdateProfileAsesi.vue';
-import { usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
 
 const props = defineProps({
     mustVerifyEmail: Boolean,
     status: String,
     user: Object,
-    student: Object,
+    mahasiswa: Object,
     isSubscribed: Boolean,
 });
-
-
 
 </script>
 
@@ -27,7 +23,7 @@ const props = defineProps({
             <div class="bg-white p-4 rounded-lg dark:bg-gray-800">
                 <UpdateProfileAsesi
                     :user="props.user"
-                    :student="props.student"
+                    :mahasiswa="props.mahasiswa"
                 />
             </div>
             <div class="bg-white p-4 rounded-lg dark:bg-gray-800">

@@ -6,9 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Traits\SendsPushNotifications;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Http\Request;
-use App\Models\Sertification;
+use App\Models\Sertifikasi;
 use App\Models\Asesi;
-use App\Models\Asesmenfile;
 use App\Helpers\FileHelper;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Gate;
@@ -17,38 +16,38 @@ class AsesmenController extends Controller
 {
     use SendsPushNotifications;
 
-    public function edit(Sertification $sertification, Request $request)
+    public function edit(Sertifikasi $sertifikasi, Request $request)
     {
         // dd($id);
-        Gate::authorize('manageAssessment', $sertification);
+        Gate::authorize('manageAssessment', $sertifikasi);
         NotificationController::markAsRead($request);
-        $sertification->load([
-            'asesis.student.user',
-            'asesis',
+        $sertifikasi->load([
+            'asesi.mahasiswa.user',
+            'asesi',
             'skema',
-            'asesors.user'
+            'asesor.user'
         ]);
 
         $asesorId = $request->user()->asesor?->id;
-        $filteredAsesi = $sertification->asesis
+        $filteredAsesi = $sertifikasi->asesi
             ->where('status_berkas', 'sudah_lengkap')
             ->where('asesor_id', $asesorId)
             ->values();
 
-        $asesmen = $sertification->asesmen()->where('user_id', $request->user()->id)->with('user')->first();
-        $sertification->setRelation('asesmen', $asesmen);
+        $asesmen = $sertifikasi->asesmen()->where('user_id', $request->user()->id)->with('user')->first();
+        $sertifikasi->setRelation('asesmen', $asesmen);
 
         return Inertia::render('Admin/AsesmenAdmin', [
-            'sertification' => $sertification,
+            'sertifikasi' => $sertifikasi,
             'filteredAsesi' => $filteredAsesi,
             'initialAsesiId' => $request->query('asesi_id'),
         ]);
     }
 
-    public function update_tugas_asesmen(Sertification $sertification, Request $request)
+    public function update_tugas_asesmen(Sertifikasi $sertifikasi, Request $request)
     {
         // dd($request);
-        Gate::authorize('manageAssessment', $sertification);
+        Gate::authorize('manageAssessment', $sertifikasi);
         $validatedData = $request->validate([
             'content' => 'required|string',
             'deadline' => 'nullable|date',
@@ -57,8 +56,8 @@ class AsesmenController extends Controller
             'send_notification' => 'boolean',
         ]);
         
-        $sertification->load('skema');
-        $asesmen = $sertification->asesmen()->firstOrNew([
+        $sertifikasi->load('skema');
+        $asesmen = $sertifikasi->asesmen()->firstOrNew([
             'user_id' => $request->user()->id,
         ]);
         $asesmen->fill([
@@ -72,16 +71,16 @@ class AsesmenController extends Controller
         // Kirim push notif ke semua asesi yg diampu oleh asesor yang membuat tugas asesmen
         if ($request->boolean('send_notification')) {
             $asesorId = $request->user()->asesor?->id;
-            $asesis = Asesi::with(['student.user'])
-                ->where('sertification_id', $sertification->id)
+            $asesis = Asesi::with(['mahasiswa.user'])
+                ->where('sertifikasi_id', $sertifikasi->id)
                 ->where('asesor_id', $asesorId)
                 ->get();
             if ($asesis->isNotEmpty()) {
                 $title = 'Update Tugas Asesmen';
-                $body = 'Instruksi Tugas asesmen diperbaharui untuk sertifikasi ' . $sertification->skema->nama_skema;
+                $body = 'Instruksi Tugas asesmen diperbaharui untuk sertifikasi ' . $sertifikasi->skema->nama_skema;
                 foreach ($asesis as $asesi) {
-                    $user = $asesi->student->user ?? null;
-                    $url = route('asesi.assessmen.index', [$sertification, $asesi]);
+                    $user = $asesi->mahasiswa->user ?? null;
+                    $url = route('asesi.assessmen.index', [$sertifikasi, $asesi]);
                     $this->sendPushNotification($user, $title, $body, $url, 'TugasAsesmenBaru');
                 }
             }
@@ -90,10 +89,10 @@ class AsesmenController extends Controller
         return redirect()->back()->with('message', 'Data berhasil disimpan!');
     }
 
-    public function destroy(Sertification $sertification, Request $request)
+    public function destroy(Sertifikasi $sertifikasi, Request $request)
     {
-        Gate::authorize('manageAssessment', $sertification);
-        $asesmen = $sertification->asesmen()->where('user_id', $request->user()->id)->first();
+        Gate::authorize('manageAssessment', $sertifikasi);
+        $asesmen = $sertifikasi->asesmen()->where('user_id', $request->user()->id)->first();
         if ($asesmen) {
             FileHelper::handleSingleFileDeletes($asesmen, ['path_file']);
             $asesmen->delete();

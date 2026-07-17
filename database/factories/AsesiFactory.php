@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\AsesiStatus;
-use App\Models\Sertification;
-use App\Models\Student;
+use App\Models\Sertifikasi;
+use App\Models\Mahasiswa;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -15,8 +14,8 @@ class AsesiFactory extends Factory
     public function definition(): array
     {
         return [
-            'student_id' => Student::factory(),
-            'sertification_id' => Sertification::factory(),
+            'mahasiswa_id' => Mahasiswa::factory(),
+            'sertifikasi_id' => Sertifikasi::factory(),
             'tujuan_sert' => 'Sertifikasi',
             'foto_ktm' => 'seed/ktm.pdf',
             'transkrip_nilai' => 'seed/transkrip_nilai.pdf',

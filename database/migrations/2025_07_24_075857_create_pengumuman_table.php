@@ -6,14 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    // di sini tabel untuk nyimpan file" yg diattach mahasiswa ketika daftar sertifikasi
     public function up(): void
     {
-        Schema::create('asesifiles', function (Blueprint $table) {
+        Schema::create('pengumuman', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('asesi_id')->constrained();
+            $table->foreignId('sertifikasi_id')->constrained('sertifikasi');
+            $table->text('content');
             $table->string('path_file')->nullable();
-            $table->string('type')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();
         });
     }
@@ -23,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('asesiattachmentfiles');
+        Schema::dropIfExists('pengumuman');
     }
 };

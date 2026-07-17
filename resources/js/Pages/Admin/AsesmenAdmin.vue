@@ -22,7 +22,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useFormat } from "@/Composables/useFormat";
 
 const props = defineProps({
-    sertification: Object,
+    sertifikasi: Object,
     filteredAsesi: Array,
     initialAsesiId: [String, Number],
 });
@@ -53,9 +53,9 @@ const form = useForm({
 
 
 const enterEditMode = () => {
-    form.content = props.sertification.asesmen?.content || '';
-    form.deadline = props.sertification.asesmen?.deadline || '';
-    form.send_notification = !props.sertification.asesmen;
+    form.content = props.sertifikasi.asesmen?.content || '';
+    form.deadline = props.sertifikasi.asesmen?.deadline || '';
+    form.send_notification = !props.sertifikasi.asesmen;
     isEditing.value = true;
     viewMode.value = 'edit';
 };
@@ -78,7 +78,7 @@ onMounted(() => {
 });
 
 const submit = () => {
-    form.post(route('admin.sertifikasi.assessment.update', props.sertification.id), {
+    form.post(route('admin.sertifikasi.assessment.update', props.sertifikasi.id), {
         onSuccess: () => {
             cancelEdit();
         },
@@ -93,7 +93,7 @@ const closeDeleteModal = () => {
     showDeleteConfirmModal.value = false;
 };
 const deleteAsesmen = () => {
-    router.delete(route('admin.sertifikasi.assessment.destroy', props.sertification.id), {
+    router.delete(route('admin.sertifikasi.assessment.destroy', props.sertifikasi.id), {
         onSuccess: () => {
             closeDeleteModal();
             cancelEdit();
@@ -105,11 +105,11 @@ const { formatDateTime } = useFormat();
 </script>
 <template>
     <AdminLayout>
-        <CustomHeader :judul="`${sertification.skema.nama_skema}: Asesmen`" />
-        <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
+        <CustomHeader :judul="`${sertifikasi.skema.nama_skema}: Asesmen`" />
+        <AdminSertifikasiMenu :sertifikasi-id="props.sertifikasi.id" />
         <!-- Mode Tampilan -->
         <div id="view-asesmen" v-if="!isEditing" class="max-w-3xl mx-auto">
-            <div v-if="!sertification.asesmen" class="flex flex-col gap-2">
+            <div v-if="!sertifikasi.asesmen" class="flex flex-col gap-2">
                 <AddButton class="self-end" @click="enterEditMode">Buat Asesmen</AddButton>
                 <div class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">
@@ -120,8 +120,8 @@ const { formatDateTime } = useFormat();
             </div>
             <div v-else class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <div class="flex justify-between items-center mb-2">
-                    <CreatorInfo :name="sertification.asesmen?.user?.name" :created-at="sertification.asesmen?.created_at"
-                        :updated-at="sertification.asesmen?.updated_at" v-if="sertification.asesmen" class="mb-4" />
+                    <CreatorInfo :name="sertifikasi.asesmen?.user?.name" :created-at="sertifikasi.asesmen?.created_at"
+                        :updated-at="sertifikasi.asesmen?.updated_at" v-if="sertifikasi.asesmen" class="mb-4" />
                     <div>
                         <div class="flex items-center gap-3">
                             <EditButton @click="enterEditMode">Edit</EditButton>
@@ -129,21 +129,21 @@ const { formatDateTime } = useFormat();
                     </div>
                 </div>
 
-                <div v-html="sertification.asesmen.content.replace(/\n/g, '<br>')"
+                <div v-html="sertifikasi.asesmen.content.replace(/\n/g, '<br>')"
                     class="font-medium text-sm text-gray-800 dark:text-gray-100"></div>
                 <div class="flex my-1">
                     <dt class="text-sm font-medium text-gray-800 dark:text-gray-400 mr-1">Batas Akhir Pengumpulan :
                     </dt>
-                    <dd v-if="sertification.asesmen" class="text-sm text-gray-900 dark:text-gray-100">
-                        {{ sertification.asesmen.deadline ? formatDateTime(sertification.asesmen.deadline) : "-" }}
+                    <dd v-if="sertifikasi.asesmen" class="text-sm text-gray-900 dark:text-gray-100">
+                        {{ sertifikasi.asesmen.deadline ? formatDateTime(sertifikasi.asesmen.deadline) : "-" }}
                     </dd>
                 </div>
-                <div v-if="sertification.asesmen?.path_file">
-                    <a :href="`/download/asesmens/${sertification.asesmen.id}/path_file`" target="_blank"
+                <div v-if="sertifikasi.asesmen?.path_file">
+                    <a :href="`/download/asesmens/${sertifikasi.asesmen.id}/path_file`" target="_blank"
                         class="text-sm flex items-center gap-2 group min-w-0">
-                        <FileIcon :path="sertification.asesmen.path_file" />
+                        <FileIcon :path="sertifikasi.asesmen.path_file" />
                         <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">
-                            {{ sertification.asesmen.path_file.split('/').pop() }}
+                            {{ sertifikasi.asesmen.path_file.split('/').pop() }}
                         </span>
                     </a>
                 </div>
@@ -155,7 +155,7 @@ const { formatDateTime } = useFormat();
         <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-2 max-w-3xl mx-auto">
             <div class="flex justify-between items-center mb-2">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
-                    {{ sertification.asesmen ? "Edit Instruksi Asesmen" : "Buat Instruksi Asesmen" }}
+                    {{ sertifikasi.asesmen ? "Edit Instruksi Asesmen" : "Buat Instruksi Asesmen" }}
                 </h3>
             </div>
             <form @submit.prevent="submit" class="flex flex-col gap-4">
@@ -165,7 +165,7 @@ const { formatDateTime } = useFormat();
                     :error="form.errors.deadline" />
                 <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                     delete-identifier="path_file" label="Lampiran Tambahan"
-                    :existing-file-url="sertification.asesmen?.path_file ? `/download/asesmens/${sertification.asesmen.id}/path_file` : null"
+                    :existing-file-url="sertifikasi.asesmen?.path_file ? `/download/asesmens/${sertifikasi.asesmen.id}/path_file` : null"
                     :is-marked-for-deletion="form.delete_files.includes('path_file')"
                     accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
                 <div class="flex items-center justify-between">
@@ -174,7 +174,7 @@ const { formatDateTime } = useFormat();
                         </PrimaryButton>
                         <SecondaryButton type="button" @click="cancelEdit">Batal</SecondaryButton>
                     </div>
-                    <DangerButton v-if="props.sertification.asesmen" type="button" @click="confirmDelete">
+                    <DangerButton v-if="props.sertifikasi.asesmen" type="button" @click="confirmDelete">
                         Hapus Asesmen
                     </DangerButton>
                 </div>
@@ -218,7 +218,7 @@ const { formatDateTime } = useFormat();
                             </td>
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {{ asesi.student?.user?.name || 'N/A' }}
+                                {{ asesi.mahasiswa?.user?.name || 'N/A' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <span v-if="asesi.path_file_asesmen"
@@ -247,14 +247,14 @@ const { formatDateTime } = useFormat();
         <div v-if="viewMode === 'detail'" class="p-3 sm:p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2 max-w-3xl mx-auto">
             <div class="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                    Tugas Terkumpul - {{ selectedAsesi?.student?.user?.name }}
+                    Tugas Terkumpul - {{ selectedAsesi?.mahasiswa?.user?.name }}
                 </h3>
                 <BackButton @click="showListView" class="self-end sm:self-auto" />
             </div>
             <div v-if="selectedAsesi.path_file_asesmen">
                 <FileCard 
                     :title="selectedAsesi.path_file_asesmen"
-                    :href="`/download/asesis/${selectedAsesi.id}/path_file_asesmen`"
+                    :href="`/download/asesi/${selectedAsesi.id}/path_file_asesmen`"
                     icon="file"
                     status="Sudah Dikumpulkan"
                 />

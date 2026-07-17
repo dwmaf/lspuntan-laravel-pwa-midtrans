@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('asesis', function (Blueprint $table) {
+        Schema::create('asesi', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained();
-            $table->foreignId('sertification_id')->constrained();
-            $table->foreignId('asesor_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('mahasiswa_id')->constrained('mahasiswa');
+            $table->foreignId('sertifikasi_id')->constrained('sertifikasi');
+            $table->foreignId('asesor_id')->nullable()->constrained('asesor')->nullOnDelete();
             $table->string('status_berkas')->default(StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN->value);
             $table->string('status_final')->default(StatusFinalAsesi::BELUM_DITETAPKAN->value);
             $table->string('tujuan_sert');
@@ -38,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('asesis');
+        Schema::dropIfExists('asesi');
     }
 };

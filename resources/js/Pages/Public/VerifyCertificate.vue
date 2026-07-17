@@ -13,7 +13,7 @@ import { useFormat } from '@/Composables/useFormat.js';
 const { formatDate } = useFormat();
 
 const props = defineProps({
-    skemas: Array,
+    listSkema: Array,
     certificate: Object,
     input: Object,
     errors: Object,
@@ -47,7 +47,7 @@ const isExpired = computed(() => {
 });
 
 const skemaOptions = computed(() => {
-    return props.skemas.map(skema => ({
+    return props.listSkema.map(skema => ({
         value: skema.id,
         text: skema.nama_skema
     }));
@@ -79,8 +79,6 @@ const skemaOptions = computed(() => {
 
         <div
             class="w-full sm:max-w-xl px-2 sm:px-6 py-8 bg-white dark:bg-gray-800 shadow-xl overflow-hidden sm:rounded-lg border border-gray-100 dark:border-gray-700 mx-4">
-
-
             <form @submit.prevent="submit">
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 flex items-start gap-2">
                     Masukkan Nomor Sertifikat dan pilih Skema Sertifikasi untuk memverifikasi keaslian sertifikat
@@ -140,12 +138,12 @@ const skemaOptions = computed(() => {
                         <div class="flex justify-between">
                             <dt class="font-medium text-gray-500 dark:text-gray-400">Diberikan Kepada</dt>
                             <dd class="font-semibold text-gray-900 dark:text-white text-right">{{
-                                certificate.asesi.student.user.name }}</dd>
+                                certificate.asesi.mahasiswa.user.name }}</dd>
                         </div>
                         <div class="flex justify-between">
                             <dt class="font-medium text-gray-500 dark:text-gray-400">Skema Sertifikasi</dt>
                             <dd class="text-gray-700 dark:text-gray-300 text-right">{{
-                                certificate.asesi.sertification.skema.nama_skema }}</dd>
+                                certificate.asesi.sertifikasi.skema.nama_skema }}</dd>
                         </div>
                         <div class="flex justify-between">
                             <dt class="font-medium text-gray-500 dark:text-gray-400">Nomor Seri</dt>

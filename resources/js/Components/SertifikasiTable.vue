@@ -5,7 +5,7 @@ import StatusBadge from "@/Components/StatusBadge.vue";
 import { useFormat } from "@/Composables/useFormat";
 
 const props = defineProps({
-    sertifications: {
+    listSertifikasi: {
         type: Array,
         required: true
     },
@@ -64,7 +64,7 @@ const { formatCurrency, formatDate } = useFormat();
                     </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800">
-                    <tr v-if="sertifications.length > 0" v-for="sert in sertifications" :key="sert.id"
+                    <tr v-if="listSertifikasi.length > 0" v-for="sert in listSertifikasi" :key="sert.id"
                         class="
                         'hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-200 dark:border-gray-700 last:border-0'">
                         <td class=" px-2 py-2 text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -73,8 +73,8 @@ const { formatCurrency, formatDate } = useFormat();
                             </div>
                         </td>
                         <td class="px-2 py-2 text-sm text-gray-600 dark:text-gray-300">
-                            <div v-if="sert.asesors?.length" class="flex flex-wrap gap-1 max-w-[200px]">
-                                <div v-for="asesor in sert.asesors" :key="asesor.id"
+                            <div v-if="sert.asesor?.length" class="flex flex-wrap gap-1 max-w-[200px]">
+                                <div v-for="asesor in sert.asesor" :key="asesor.id"
                                     class="inline-block rounded bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium"
                                     :title="asesor.user.name">
                                     {{ asesor.user.name }}
@@ -109,7 +109,7 @@ const { formatCurrency, formatDate } = useFormat();
                             <span
                                 class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800 text-xs font-semibold">
                                 <Users class="w-3.5 h-3.5" />
-                                {{ isAsesor ? (sert.asesis_asesor_count ?? 0) : sert.asesis_count }}
+                                {{ isAsesor ? (sert.asesi_asesor_count ?? 0) : sert.asesi_count }}
                             </span>
                         </td>
                         <td class="px-2 py-2 whitespace-nowrap text-sm font-medium">

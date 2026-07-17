@@ -53,15 +53,15 @@ class User extends Authenticatable
     }
     public function asesor()
     {
-        return $this->hasOne(Asesor::class);
+        return $this->hasOne(Asesor::class, 'user_id');
     }
-    public function student()
+    public function mahasiswa()
     {
-        return $this->hasOne(Student::class);
+        return $this->hasOne(Mahasiswa::class, 'user_id');
     }
     public function notificationLogs()
     {
-        return $this->hasMany(NotificationLog::class);
+        return $this->hasMany(NotificationLog::class, 'user_id');
     }
     /**
      * Route notifications for the FCM channel.

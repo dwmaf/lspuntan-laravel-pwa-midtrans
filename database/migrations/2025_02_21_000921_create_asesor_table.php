@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('asesmens', function (Blueprint $table) {
+        Schema::create('asesor', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sertification_id')->constrained()->onDelete('cascade');
-            $table->text('content')->nullable();
-            $table->dateTime('deadline')->nullable();
-            $table->string('path_file')->nullable();
             $table->foreignId('user_id')->constrained();
+            $table->string('no_reg_met')->nullable();
+            $table->date('masa_berlaku_sertif_teknis')->nullable();
+            $table->date('masa_berlaku_sertif_asesor')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('asesmens');
+        Schema::dropIfExists('asesor');
     }
 };

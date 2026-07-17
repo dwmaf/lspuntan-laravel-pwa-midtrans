@@ -11,30 +11,28 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Asesor extends Model
 {
     use HasFactory, LogsActivity;
-
-    protected $guarded = [
-        
-    ];
-    public function skemas()
+    protected $table = 'asesor';
+    protected $guarded = [];
+    public function skema()
     {
-        return $this->belongsToMany(Skema::class, 'asesor_skema');
+        return $this->belongsToMany(Skema::class, 'asesor_skema', 'asesor_id', 'skema_id');
     }
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
-    public function sertifications()
+    public function sertifikasi()
     {
-        return $this->belongsToMany(Sertification::class, 'asesor_sertification');
+        return $this->belongsToMany(Sertifikasi::class, 'asesor_sertifikasi', 'asesor_id', 'sertifikasi_id');
     }
-    public function asesis()
+    public function asesi()
     {
-        return $this->hasMany(Asesi::class);
+        return $this->hasMany(Asesi::class, 'asesor_id');
     }
-    public function tapActivity(Activity $activity, string $eventName)
+    public function tapActivity(Activity $activity)
     {
         $activity->properties = $activity->properties->merge([
-            'asesor_user_name' => $this->user->name,
+            'asesor_user_name' => $this->user?->name,
         ]);
     }
 
@@ -42,7 +40,7 @@ class Asesor extends Model
     {
         return LogOptions::defaults()
             ->useLogName('Asesor')
-            ->setDescriptionForEvent(fn(string $eventName) => "Data Asesor {$this->user->name} telah di-{$eventName}")
+            ->setDescriptionForEvent(fn(string $eventName) => "Data Asesor {$this->user?->name} telah di-{$eventName}")
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->logOnly([                

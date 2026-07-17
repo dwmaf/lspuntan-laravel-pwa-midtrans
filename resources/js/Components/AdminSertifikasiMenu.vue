@@ -11,7 +11,7 @@ import {
 } from '@tabler/icons-vue';
 
 const props = defineProps({
-    sertificationId: {
+    sertifikasiId: {
         type: Number,
         required: true,
     },
@@ -23,21 +23,21 @@ const menuItems = computed(() => {
     const isAdmin = computed(() => roles.value.includes('admin'));
 
     const user = pageProps.auth?.user;
-    // Asesor yang bersangkutan harus ada di dalam sertification.asesors
-    const sertification = pageProps.sertification;
-    const isAsesorAssigned = sertification?.asesors?.some(asesor => asesor.user_id === user?.id);
+    // Asesor yang bersangkutan harus ada di dalam sertifikasi.asesor
+    const sertifikasi = pageProps.sertifikasi;
+    const isAsesorAssigned = sertifikasi?.asesor?.some(asesor => asesor.user_id === user?.id);
 
     const items = [
         {
             label: 'Detail',
-            href: route('admin.kelolasertifikasi.show', props.sertificationId),
+            href: route('admin.kelolasertifikasi.show', props.sertifikasiId),
             active: route().current('admin.kelolasertifikasi.show'),
             icon: IconInfoCircle,
         },
         {
             label: 'Pengumuman',
-            href: route('admin.sertifikasi.assessment-announcement.index', props.sertificationId),
-            active: route().current('admin.sertifikasi.assessment-announcement.index'),
+            href: route('admin.sertifikasi.pengumuman.index', props.sertifikasiId),
+            active: route().current('admin.sertifikasi.pengumuman.index'),
             icon: IconSpeakerphone,
         },
     ];
@@ -45,7 +45,7 @@ const menuItems = computed(() => {
     if (isAsesorAssigned) {
         items.push({
             label: 'Asesmen',
-            href: route('admin.sertifikasi.assessment.edit', props.sertificationId),
+            href: route('admin.sertifikasi.assessment.edit', props.sertifikasiId),
             active: route().current('admin.sertifikasi.assessment.edit'),
             icon: IconChecklist,
         });
@@ -53,7 +53,7 @@ const menuItems = computed(() => {
 
     items.push({
         label: 'Peserta',
-        href: route('admin.sertifikasi.pendaftar.index', props.sertificationId),
+        href: route('admin.sertifikasi.pendaftar.index', props.sertifikasiId),
         active: route().current('admin.sertifikasi.pendaftar.*'),
         icon: IconUsers,
     });
@@ -61,7 +61,7 @@ const menuItems = computed(() => {
     if (isAdmin.value) {
         items.push({
             label: 'Logs',
-            href: route('admin.kelolasertifikasi.logs.index', props.sertificationId),
+            href: route('admin.kelolasertifikasi.logs.index', props.sertifikasiId),
             active: route().current('admin.kelolasertifikasi.logs.index'),
             icon: IconChecklist,
         });

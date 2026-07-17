@@ -23,7 +23,7 @@ import { Info } from 'lucide-vue-next';
 
 const props = defineProps({
     asesi: Object,
-    sertification: Object,
+    sertifikasi: Object,
     statusBerkasAdministrasiOptions: Array,
     StatusFinalAsesiOptions: Array,
     canManageCertificate: Boolean,
@@ -45,7 +45,7 @@ const statusForm = useForm({
 });
 
 const asesorOptions = computed(() => {
-    return props.sertification.asesors.map(asesor => ({
+    return props.sertifikasi.asesor.map(asesor => ({
         value: asesor.id,
         text: asesor.user.name
     }));
@@ -88,13 +88,13 @@ const submitStatusUpdate = () => {
     if (modalType.value === 'final') routeName = 'admin.sertifikasi.pendaftar.update-status-final';
     if (modalType.value === 'asesor') routeName = 'admin.sertifikasi.pendaftar.assign-asesor';
 
-    statusForm.patch(route(routeName, { sertification: props.sertification.id, asesi: props.asesi.id }), {
+    statusForm.patch(route(routeName, { sertifikasi: props.sertifikasi.id, asesi: props.asesi.id }), {
         onSuccess: () => closeModal(),
     });
 };
 
 const submitCertificate = () => {
-    certificateForm.post(route('admin.sertifikasi.pendaftar.update-certificate', { sertification: props.sertification.id, asesi: props.asesi.id }), {
+    certificateForm.post(route('admin.sertifikasi.pendaftar.update-certificate', { sertifikasi: props.sertifikasi.id, asesi: props.asesi.id }), {
         onSuccess: () => isEditingCertificate.value = false,
     });
 };
@@ -110,7 +110,7 @@ const closeDeleteCertModal = () => {
 };
 const deleteCertificate = () => {
     router.delete(route('admin.sertifikasi.pendaftar.destroy-certificate', {
-        sertification: props.sertification.id,
+        sertifikasi: props.sertifikasi.id,
         asesi: props.asesi.id
     }), {
         onSuccess: () => {
@@ -183,13 +183,13 @@ const getStatusFinalAsesi = (status) => {
 
 <template>
     <AdminLayout>
-        <CustomHeader :judul="`${sertification.skema.nama_skema}: Detail Peserta`" />
-        <AdminSertifikasiMenu :sertification-id="props.sertification.id" />
+        <CustomHeader :judul="`${sertifikasi.skema.nama_skema}: Detail Peserta`" />
+        <AdminSertifikasiMenu :sertifikasi-id="props.sertifikasi.id" />
 
         <div v-show="!isEditingCertificate && !isEditingAsesi"
             class="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div class="flex justify-end items-center mb-4">
-                <BackButton :href="route('admin.sertifikasi.pendaftar.index', props.sertification.id)"
+                <BackButton :href="route('admin.sertifikasi.pendaftar.index', props.sertifikasi.id)"
                     class="self-end sm:self-auto" />
             </div>
             <PendaftarDetailDataStatis :asesi="props.asesi" />
@@ -284,7 +284,7 @@ const getStatusFinalAsesi = (status) => {
                     </div>
 
                     <FileCard v-else-if="props.asesi.sertifikat" :title="props.asesi.sertifikat.file_path"
-                        :href="`/download/sertifikats/${asesi.sertifikat.id}/file_path`" icon="award" status="Telah Terbit"
+                        :href="`/download/sertifikat/${asesi.sertifikat.id}/file_path`" icon="award" status="Telah Terbit"
                         editable @edit="isEditingCertificate = true">
                     </FileCard>
                 </div>
@@ -298,7 +298,7 @@ const getStatusFinalAsesi = (status) => {
                 {{ props.asesi.sertifikat ? 'Ubah Data Sertifikat' : 'Upload Sertifikat' }}
             </h3>
             <p class="my-1 text-sm text-gray-600 dark:text-gray-400">Untuk: <span class="font-semibold">{{
-                props.asesi.student.user.name }}</span></p>
+                props.asesi.mahasiswa.user.name }}</span></p>
             <form @submit.prevent="submitCertificate" class="grid md:grid-cols-2 gap-4 mt-4">
                 <TextInput id="nomor_seri" label="Nomor Seri" v-model="certificateForm.nomor_seri" type="text" required
                     :error="certificateForm.errors.nomor_seri" />
@@ -312,7 +312,7 @@ const getStatusFinalAsesi = (status) => {
                     type="date" required :error="certificateForm.errors.berlaku_hingga" />
                 <SingleFileInput v-model="certificateForm.file_path" v-model:deleteList="certificateForm.delete_files"
                     delete-identifier="file_path" label="File Sertifikat" is-label-required
-                    :existing-file-url="asesi?.sertifikat?.file_path ? `/download/sertifikats/${asesi.sertifikat.id}/file_path` : null"
+                    :existing-file-url="asesi?.sertifikat?.file_path ? `/download/sertifikat/${asesi.sertifikat.id}/file_path` : null"
                     :is-marked-for-deletion="certificateForm.delete_files.includes('file_path')"
                     accept=".pdf,.jpg,.jpeg,.png" :error="certificateForm.errors.file_path"
                     :required="!asesi?.sertifikat?.file_path || certificateForm.delete_files.includes('file_path')" />
@@ -369,7 +369,7 @@ const getStatusFinalAsesi = (status) => {
                 </h2>
 
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Sertifikat milik <span class="font-bold">{{ props.asesi.student.user.name }}</span> akan dihapus
+                    Sertifikat milik <span class="font-bold">{{ props.asesi.mahasiswa.user.name }}</span> akan dihapus
                     secara
                     permanen.
                     Tindakan ini tidak dapat dibatalkan.

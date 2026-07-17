@@ -7,9 +7,9 @@ use App\Enums\StatusBerkasAdministrasi;
 use App\Enums\StatusSertifikasi;
 use App\Models\Asesi;
 use App\Models\Asesor;
-use App\Models\Sertification;
+use App\Models\Sertifikasi;
 use App\Models\Skema;
-use App\Models\Student;
+use App\Models\Mahasiswa;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -28,11 +28,11 @@ class DatabaseSeeder extends Seeder
         // Hapus data lama untuk memastikan kebersihan data (opsional, tapi direkomendasikan)
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Asesi::truncate();
-        DB::table('asesor_sertification')->truncate();
+        DB::table('asesor_sertifikasi')->truncate();
         DB::table('asesor_skema')->truncate();
-        Sertification::truncate();
+        Sertifikasi::truncate();
         Asesor::truncate();
-        Student::truncate();
+        Mahasiswa::truncate();
         User::truncate();
         Skema::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
@@ -101,7 +101,7 @@ class DatabaseSeeder extends Seeder
             ]);
             $admin->assignRole('admin', 'asesor');
             $adminasesor = Asesor::factory()->create(['user_id' => $admin->id]);
-            $adminasesor->skemas()->attach([1]);
+            $adminasesor->skema()->attach([1]);
             $direktur = User::create([
                 'email' => 'bomo@asesor.c',
                 'name' => 'Bomo Wibowo',
@@ -111,26 +111,26 @@ class DatabaseSeeder extends Seeder
             ]);
             $direktur->assignRole('admin', 'asesor');
             $direkturasesor = Asesor::factory()->create(['user_id' => $direktur->id]);
-            $direkturasesor->skemas()->attach([5]);
+            $direkturasesor->skema()->attach([5]);
             Asesor::factory(24)->create()->each(function ($asesor, $index) use ($skemas) {
                 $asesor->user->assignRole('asesor');
                 $idSkemaWjib = $skemas->get($index % $skemas->count())->id;
                 $idsSkemaTambahan = $skemas->random(rand(1, 2))->pluck('id')->toArray();
                 $idsAllSkema = collect([$idSkemaWjib])->merge($idsSkemaTambahan)->unique();
-                $asesor->skemas()->attach($idsAllSkema);
+                $asesor->skema()->attach($idsAllSkema);
             });
 
-            $student = User::create([
+            $mahasiswa = User::create([
                 'email' => 'mahasiswa1@student.c',
                 'name' => 'Haningsih',
                 'password' => Hash::make('12345678'),
                 'email_verified_at' => now(),
             ]);
-            $student->assignRole('asesi');
-            Student::create(['user_id' => $student->id]);
+            $mahasiswa->assignRole('asesi');
+            Mahasiswa::create(['user_id' => $mahasiswa->id]);
             $asesiUsers = User::factory(300)->create()->each(function ($user) {
                 $user->assignRole('asesi');
-                Student::factory()->create(['user_id' => $user->id]);
+                Mahasiswa::factory()->create(['user_id' => $user->id]);
             });
         });
 
@@ -152,7 +152,7 @@ class DatabaseSeeder extends Seeder
             $tglDibuka = $tglSelesai->copy()->subWeeks(4);
             $tglDitutup = $tglSelesai->copy()->subWeek();
 
-            $sertification = Sertification::factory()->create([
+            $sertifikasi = Sertifikasi::factory()->create([
                 'skema_id' => $selectedSkema->id,
                 'status' => 'selesai',
                 'tgl_apply_dibuka' => $tglDibuka,
@@ -164,13 +164,13 @@ class DatabaseSeeder extends Seeder
                 'atas_nama_rek' => 'Empat Pilar Interactive',
             ]);
 
-            $asesorTersedia = $selectedSkema->asesors;
+            $asesorTersedia = $selectedSkema->asesor;
             $idsAsesorTerpilih = collect();
 
             if ($asesorTersedia->count() > 0) {
                 $jumlahAmbil = rand(1, min(3, $asesorTersedia->count()));
                 $idsAsesorTerpilih = $asesorTersedia->random($jumlahAmbil)->pluck('id');
-                $sertification->asesors()->attach($idsAsesorTerpilih);
+                $sertifikasi->asesor()->attach($idsAsesorTerpilih);
             }
 
             $pendaftar = $asesiUsers->random(rand(10, 20));
@@ -191,8 +191,8 @@ class DatabaseSeeder extends Seeder
                     ]);
                 }
                 Asesi::factory()->create([
-                    'student_id' => $user->student->id,
-                    'sertification_id' => $sertification->id,
+                    'mahasiswa_id' => $user->mahasiswa->id,
+                    'sertifikasi_id' => $sertifikasi->id,
                     'status_berkas' => StatusBerkasAdministrasi::SUDAH_LENGKAP,
                     'asesor_id' => $randomAsesorId,
                     'status_final' => $statusFinal,
@@ -213,7 +213,7 @@ class DatabaseSeeder extends Seeder
             $tglBuka = now()->subDays(rand(5, 10));
             $tglTutup = $tglBuka->copy()->addWeeks(2);
 
-            $sertification = Sertification::factory()->create([
+            $sertifikasi = Sertifikasi::factory()->create([
                 'skema_id' => $selectedSkema->id,
                 'status' => 'berlangsung',
                 'tgl_apply_dibuka' => $tglBuka,
@@ -226,10 +226,10 @@ class DatabaseSeeder extends Seeder
                 'atas_nama_rek' => 'Empat Pilar Interactive',
             ]);
 
-            $asesorTersedia = $selectedSkema->asesors;
+            $asesorTersedia = $selectedSkema->asesor;
             if ($asesorTersedia->count() > 0) {
                 $jumlahAmbil = rand(1, min(2, $asesorTersedia->count()));
-                $sertification->asesors()->attach(
+                $sertifikasi->asesor()->attach(
                     $asesorTersedia->random($jumlahAmbil)->pluck('id')
                 );
             }
@@ -242,8 +242,8 @@ class DatabaseSeeder extends Seeder
                 $tglDaftar->addMinutes(rand(0, $tglBuka->diffInMinutes($batasAkhir)));
                 $skemaIndex = array_search($selectedSkema->nama_skema, $namaSkemas);
                 Asesi::factory()->create([
-                    'student_id' => $user->student->id,
-                    'sertification_id' => $sertification->id,
+                    'mahasiswa_id' => $user->mahasiswa->id,
+                    'sertifikasi_id' => $sertifikasi->id,
                     'status_berkas' => Arr::random([
                         StatusBerkasAdministrasi::SUDAH_LENGKAP,
                         StatusBerkasAdministrasi::MENUNGGU_VERIFIKASI_ADMIN,
@@ -260,11 +260,11 @@ class DatabaseSeeder extends Seeder
 
 
         echo "Memastikan beberapa asesi mendaftar lebih dari satu sertifikasi...\n";
-        $sertifications = Sertification::all();
+        $sertifikasis = Sertifikasi::all();
         $asesiMultiDaftar = $asesiUsers->random(25);
         foreach ($asesiMultiDaftar as $user) {
-            $sertifikasiSudahDiikuti = Asesi::where('student_id', $user->student->id)->pluck('sertification_id');
-            $sertifikasiTersedia = $sertifications->whereNotIn('id', $sertifikasiSudahDiikuti);
+            $sertifikasiSudahDiikuti = Asesi::where('mahasiswa_id', $user->mahasiswa->id)->pluck('sertifikasi_id');
+            $sertifikasiTersedia = $sertifikasis->whereNotIn('id', $sertifikasiSudahDiikuti);
 
             if ($sertifikasiTersedia->isNotEmpty()) {
                 $sertifikasiBaru = $sertifikasiTersedia->random();
@@ -294,7 +294,7 @@ class DatabaseSeeder extends Seeder
                             StatusFinalAsesi::BELUM_KOMPETEN,
                         ]);
                     }
-                    $asesorId = $sertifikasiBaru->asesors->random()->id;
+                    $asesorId = $sertifikasiBaru->asesor->random()->id;
                 } else {
                     $statusBerkas = Arr::random([
                         StatusBerkasAdministrasi::SUDAH_LENGKAP,
@@ -304,8 +304,8 @@ class DatabaseSeeder extends Seeder
                     $statusFinal = StatusFinalAsesi::BELUM_DITETAPKAN;
                 }
                 Asesi::factory()->create([
-                    'student_id' => $user->student->id,
-                    'sertification_id' => $sertifikasiBaru->id,
+                    'mahasiswa_id' => $user->mahasiswa->id,
+                    'sertifikasi_id' => $sertifikasiBaru->id,
                     'status_berkas' => $statusBerkas,
                     'asesor_id' => $asesorId,
                     'status_final' => $statusFinal,

@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asesmen;
+use App\Models\Skema;
 use App\Models\Asesi;
 use App\Models\Asesor;
-use App\Models\News;
-use App\Models\Sertification;
+use App\Models\Pengumuman;
+use App\Models\Sertifikasi;
 use App\Models\Sertifikat;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -53,9 +54,9 @@ class ActivityLogController extends Controller
                 $query->where('event', $event);
             })
             ->whereNotIn('subject_type', [
-                Sertification::class,
+                Sertifikasi::class,
                 Asesi::class,
-                News::class,
+                Pengumuman::class,
                 Asesmen::class,
                 Sertifikat::class,
             ])
@@ -70,9 +71,9 @@ class ActivityLogController extends Controller
         ]);
 
         $subjects = Activity::query()->select('subject_type')->whereNotNull('subject_type')->whereNotIn('subject_type', [
-            Sertification::class,
+            Sertifikasi::class,
             Asesi::class,
-            News::class,
+            Pengumuman::class,
             Asesmen::class,
             Sertifikat::class,
         ])->distinct()->pluck('subject_type');
@@ -82,7 +83,7 @@ class ActivityLogController extends Controller
             'filterOptions' => [
                 'subjects' => $subjects,
             ],
-            'skemaMap' => \App\Models\Skema::all()->mapWithKeys(fn($s) => [$s->id => $s->nama_skema]),
+            'skemaMap' => Skema::all()->mapWithKeys(fn($s) => [$s->id => $s->nama_skema]),
         ]);
     }
 }
