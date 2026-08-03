@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('sertifikasi_id')->constrained('sertifikasi');
             $table->text('content');
             $table->string('path_file')->nullable();
+            $table->boolean('is_certif_news')->nullable();
             $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();
         });

@@ -62,7 +62,7 @@ class Asesi extends Model
     {
         return LogOptions::defaults()
             ->useLogName('Asesi')
-            ->setDescriptionForEvent(fn(string $eventName) => "Data asesi {$this->mahasiswa->user->name} telah di-{$eventName}")
+            ->setDescriptionForEvent(fn(string $eventName) => "meng-{$eventName} data asesi {$this->mahasiswa->user->name}")
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->logOnly([

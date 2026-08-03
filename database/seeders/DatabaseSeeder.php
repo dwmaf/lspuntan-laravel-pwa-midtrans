@@ -102,6 +102,14 @@ class DatabaseSeeder extends Seeder
             $admin->assignRole('admin', 'asesor');
             $adminasesor = Asesor::factory()->create(['user_id' => $admin->id]);
             $adminasesor->skema()->attach([1]);
+            $adminOnly = User::create([
+                'email' => 'adminonly@g.c',
+                'name' => 'Administrator',
+                'password' => Hash::make('12345678'),
+                'no_tlp_hp' => '081234567899',
+                'email_verified_at' => now(),
+            ]);
+            $adminOnly->assignRole('admin');
             $direktur = User::create([
                 'email' => 'bomo@asesor.c',
                 'name' => 'Bomo Wibowo',

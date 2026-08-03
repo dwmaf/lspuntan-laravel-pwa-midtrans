@@ -59,7 +59,7 @@ const getEnrollment = (sertId) => {
                     </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr v-if="sertifications.length > 0" v-for="sert in sertifications" :key="sert.id"
+                    <tr v-if="listSertifikasi.length > 0" v-for="sert in listSertifikasi" :key="sert.id"
                         class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                         <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                             {{ sert.skema?.nama_skema }}
@@ -86,7 +86,7 @@ const getEnrollment = (sertId) => {
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <PrimaryLinkButton v-if="getEnrollment(sert.id)"
-                                :href="route('asesi.sertifikasi.applied.show', { sertification: sert.id, asesi: getEnrollment(sert.id).id })"
+                                :href="route('asesi.sertifikasi.applied.show', { sertifikasi: sert.id, asesi: getEnrollment(sert.id).id })"
                                 class="w-full justify-center">
                                 Lihat Status
                             </PrimaryLinkButton>

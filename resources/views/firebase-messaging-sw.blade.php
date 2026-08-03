@@ -34,17 +34,12 @@ try {
     self.addEventListener('notificationclick', function (event) {
         console.log('[Service Worker] Notification click Received.');
 
-        
-        event.notification.close();
-
-        
+        event.notification.close();        
         let targetUrl = event.notification.data && event.notification.data.url ? event.notification.data.url : '/';
-        
         targetUrl = new URL(targetUrl, self.location.origin).href;
 
         console.log('Opening URL:', targetUrl);
 
-        
         event.waitUntil(
             clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (windowClients) {
                 

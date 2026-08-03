@@ -184,7 +184,7 @@ const formattedHarga = computed(() => {
                         <ul class="space-y-3">
                             <li class="flex justify-between items-center text-sm">
                                 <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                                    <CheckCircle class="w-4 h-4 text-green-500" /> Kompeten (bersertifikat)
+                                    <CheckCircle class="w-4 h-4 text-green-500" /> Kompeten (data sertifikat tercatat)
                                 </div>
                                 <span
                                     class="font-bold bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 py-0.5 px-2.5 rounded-full">
@@ -192,7 +192,7 @@ const formattedHarga = computed(() => {
                             </li>
                             <li class="flex justify-between items-center text-sm">
                                 <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                                    <CheckCircle class="w-4 h-4 text-yellow-500" /> Kompeten (sertifikat belum terbit)
+                                    <CheckCircle class="w-4 h-4 text-yellow-500" /> Kompeten (data sertifikat belum tercatat)
                                 </div>
                                 <span
                                     class="font-bold bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 py-0.5 px-2.5 rounded-full">

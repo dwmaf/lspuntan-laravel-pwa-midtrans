@@ -167,17 +167,20 @@ const destroy = () => {
                     <SingleFileInput v-model="form.format_apl_1" label="Format FR. APL.01"
                         v-model:deleteList="form.delete_files" delete-identifier="format_apl_1"
                         :existing-file-url="props.listSkema.data.find(s => s.id === form.id)?.format_apl_1 ? `/download/skema/${form.id}/format_apl_1` : null"
+                        :file-name="props.listSkema.data.find(s => s.id === form.id)?.format_apl_1 ? props.listSkema.data.find(s => s.id === form.id)?.format_apl_1.split('/').pop() : ''"
                         :is-marked-for-deletion="form.delete_files.includes('format_apl_1')" accept=".docx"
                         :error="form.errors.format_apl_1" />
                     <SingleFileInput v-model="form.format_apl_2" label="Format FR. APL.02"
                         v-model:deleteList="form.delete_files" delete-identifier="format_apl_2"
                         :existing-file-url="props.listSkema.data.find(s => s.id === form.id)?.format_apl_2 ? `/download/skema/${form.id}/format_apl_2` : null"
+                        :file-name="props.listSkema.data.find(s => s.id === form.id)?.format_apl_2 ? props.listSkema.data.find(s => s.id === form.id)?.format_apl_2.split('/').pop() : ''"
                         :is-marked-for-deletion="form.delete_files.includes('format_apl_2')" accept=".docx"
                         :error="form.errors.format_apl_2" />
                     <div class="md:col-span-2">
                         <SingleFileInput v-model="form.format_asesmen" label="File Lampiran Asesmen"
                             v-model:deleteList="form.delete_files" delete-identifier="format_asesmen"
                             :existing-file-url="props.listSkema.data.find(s => s.id === form.id)?.format_asesmen ? `/download/skema/${form.id}/format_asesmen` : null"
+                            :file-name="props.listSkema.data.find(s => s.id === form.id)?.format_asesmen ? props.listSkema.data.find(s => s.id === form.id)?.format_asesmen.split('/').pop() : ''"
                             :is-marked-for-deletion="form.delete_files.includes('format_asesmen')" accept=".zip,.rar"
                             :error="form.errors.format_asesmen" />
                     </div>

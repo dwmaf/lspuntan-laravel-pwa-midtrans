@@ -19,7 +19,7 @@ class Sertifikat extends Model
     {
         return LogOptions::defaults()
             ->useLogName('Sertifikat')
-            ->setDescriptionForEvent(fn(string $eventName) => "Sertifikat milik {$this->asesi->mahasiswa->user->name} telah di-{$eventName}")
+            ->setDescriptionForEvent(fn(string $eventName) => "meng-{$eventName} data sertifikat milik {$this->asesi->mahasiswa->user->name}")
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->logOnly([
@@ -29,7 +29,6 @@ class Sertifikat extends Model
                 'nomor_registrasi',
                 'tanggal_terbit',
                 'berlaku_hingga',
-                'file_path'
             ]);
     }
 }

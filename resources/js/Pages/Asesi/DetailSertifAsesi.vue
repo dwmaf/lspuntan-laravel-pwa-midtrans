@@ -64,9 +64,10 @@ const isUrlNotificationRelevant = computed(() => {
     if (asesiData.status_final === 'diskualifikasi' && msg.includes('Diskualifikasi')) return true;
     if (asesiData.status_final === 'belum_ditetapkan' && msg.includes('direset')) return true;
 
-    if (asesiData.asesor && msg.includes('ditetapkan sebagai Asesor')) return true;
+    if (msg.includes('ditetapkan sebagai Asesor') && asesiData.asesor && msg.includes(asesiData.asesor.user.name)) return true;
+    if (!asesiData.asesor && msg.includes('Asesor Anda direset')) return true;
 
-    if (asesiData.sertifikat && (msg.includes('download sertifikat') || msg.includes('download versi terbaru'))) return true;
+    // if (asesiData.sertifikat && (msg.includes('download sertifikat') || msg.includes('download versi terbaru'))) return true;
     if (asesiData.status_final === 'kompeten' && !asesiData.sertifikat && msg.includes('dihapus')) return true;
 
     return false;
@@ -77,7 +78,7 @@ const urlNotificationType = computed(() => {
     if (!msg) return 'success';
     if (msg.includes('lengkap') || (msg.includes('Kompeten') && !msg.includes('Belum Kompeten')) || msg.includes('download')) return 'success';
     if (msg.includes('Belum Kompeten') || msg.includes('Diskualifikasi') || msg.includes('dihapus')) return 'error';
-    if (msg.includes('direset')) return 'warning';
+    if (msg.includes('direset') || msg.includes('Asesor Anda direset')) return 'warning';
     return 'info';
 });
 
@@ -396,7 +397,7 @@ const { formatCurrency, formatDateTime } = useFormat();
                     </div>
                 </div>
 
-                <div v-if="props.asesi.sertifikat">
+                <!-- <div v-if="props.asesi.sertifikat">
                     <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">F.
                         Sertifikat
                     </h3>
@@ -406,7 +407,7 @@ const { formatCurrency, formatDateTime } = useFormat();
                             :href="`/download/sertifikat/${asesi.sertifikat.id}/file_path`" icon="award"
                             status="Telah Terbit" />
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </AsesiLayout>

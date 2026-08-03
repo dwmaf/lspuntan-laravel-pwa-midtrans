@@ -9,6 +9,19 @@ use Illuminate\Auth\Access\Response;
 
 class PengumumanPolicy
 {
+    public function update(User $user, Pengumuman $pengumuman): bool
+    {
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+        return $user->id === $pengumuman->user_id;
+    }
+
+    public function delete(User $user, Pengumuman $pengumuman): bool
+    {
+        return $this->update($user, $pengumuman);
+    }
+
     public function downloadFile(User $user, Pengumuman $pengumuman)
     {
         if ($user->hasRole('admin')) {

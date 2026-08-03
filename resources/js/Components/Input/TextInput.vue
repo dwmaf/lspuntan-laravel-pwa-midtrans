@@ -58,6 +58,8 @@ defineExpose({ focus: () => input.value.focus() });
                 v-if="type === 'password'"
                 type="button" 
                 @click="showPassword = !showPassword"
+                :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
+                :aria-pressed="showPassword"
                 class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer focus:outline-none"
                 tabindex="-1"
             >

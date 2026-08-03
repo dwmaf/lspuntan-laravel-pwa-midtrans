@@ -11,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Sertifikasi extends Model
 {
     use LogsActivity, HasFactory;
-    /** @use HasFactory<\Database\Factories\SertificationFactory> */
+    /** @use HasFactory<\Database\Factories\SertifikasiFactory> */
     protected $table = 'sertifikasi';
     protected $guarded = [];
     protected $casts = [

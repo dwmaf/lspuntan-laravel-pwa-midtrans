@@ -110,9 +110,8 @@ routes/
 5. **Asesmen** — tugas + submit file
 6. **Pengumuman** — posting & lihat per sertifikasi
 7. **Sertifikat** — upload admin, verifikasi publik via `/verify-certificate`
-8. **Pembayaran** — Midtrans Snap + webhook
-9. **Dashboard** — ApexCharts statistik
-10. **Notifikasi Push** — FCM, tersimpan di `notification_logs`
+8. **Dashboard** — Charts statistik
+9. **Notifikasi Push** — FCM, tersimpan di `notification_logs`
 
 ### Alur Bisnis
 1. Asesi daftar → isi profil → daftar sertifikasi → upload berkas

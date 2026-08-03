@@ -147,8 +147,8 @@ Route::middleware(['auth', 'role:asesi'])->prefix('asesi')->name('asesi.')->grou
 
     // Grouping sertifikasi context for asesi
     Route::prefix('sertifikasi/{sertifikasi}/{asesi}')->group(function () {
-        Route::get('/assessmen/index', [AsesmenAsesiController::class, 'index'])->name('assessmen.index');
-        Route::post('/assessmen', [AsesmenAsesiController::class, 'update'])->name('assessmen.update');
+        Route::get('/assessmen/index', [AsesmenAsesiController::class, 'indexAsesmen'])->name('assessmen.index');
+        Route::post('/assessmen', [AsesmenAsesiController::class, 'updateAsesmen'])->name('assessmen.update');
         Route::get('/pengumuman/index', [PengumumanAsesiController::class, 'index'])->name('pengumuman.index');
         Route::post('/pengumuman/{news}/read', [PengumumanAsesiController::class, 'markAsRead'])->name('pengumuman.mark-read');
     });

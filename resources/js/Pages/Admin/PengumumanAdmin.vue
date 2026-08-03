@@ -6,7 +6,7 @@ import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
 import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
-import { useForm, router, InfiniteScroll } from "@inertiajs/vue3";
+import { useForm, router, usePage, InfiniteScroll } from "@inertiajs/vue3";
 import { ref, computed } from 'vue';
 import AddButton from "@/Components/Button/AddButton.vue";
 import EditButton from "@/Components/Button/EditButton.vue";
@@ -15,11 +15,17 @@ import FileIcon from '@/Components/FileIcon.vue';
 import Modal from "@/Components/Modal.vue";
 import Checkbox from "@/Components/Input/Checkbox.vue";
 import CreatorInfo from "@/Components/CreatorInfo.vue";
+import StatusBadge from "@/Components/StatusBadge.vue";
 
 const props = defineProps({
     sertifikasi: Object,
     listPengumuman: Object,
 });
+
+const authUser = computed(() => usePage().props.auth.user);
+const isAdmin = computed(() => (usePage().props.auth.roles ?? []).includes('admin'));
+
+const canManage = (pengumuman) => isAdmin.value || (authUser.value?.id === pengumuman.user_id);
 
 const formMode = ref('list'); // 'list', 'create', 'edit'
 const editingPengumumanId = ref(null);
@@ -29,6 +35,7 @@ const form = useForm({
     path_file: null,
     delete_files: [],
     send_notification: true,
+    is_certif_news: false,
     _method: 'POST',
 });
 
@@ -45,6 +52,7 @@ const showEditForm = (pengumuman) => {
     form.path_file = null;
     form.delete_files = [];
     form.send_notification = !pengumuman.published_at;
+    form.is_certif_news = pengumuman.is_certif_news;
     form._method = 'PATCH';
     editingPengumumanId.value = pengumuman.id;
     formMode.value = 'edit';
@@ -119,8 +127,12 @@ const headerTitle = computed(() => {
     <AdminLayout>
         <CustomHeader :judul="headerTitle" />
         <AdminSertifikasiMenu :sertifikasi-id="props.sertifikasi.id" />
-        <div v-if="formMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-3xl mx-auto">
-            <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
+        <div v-if="formMode === 'edit'"
+            class="p-3 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-3xl mx-auto">
+            <StatusBadge v-if="form.is_certif_news" variant="success" class="mb-2">
+                Pengumuman Pengambilan Sertifikat
+            </StatusBadge>
+            <form @submit.prevent="submit" class=" flex flex-col gap-4">
                 <div class="">
                     <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required
                         :error="form.errors.content" />
@@ -133,6 +145,13 @@ const headerTitle = computed(() => {
                         accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
                 </div>
 
+                <div v-if="isAdmin" class="mt-2">
+                    <label class="flex items-center">
+                        <Checkbox id="is_certif_news" v-model:checked="form.is_certif_news" />
+                        <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">Pengumuman Pengambilan
+                            Sertifikat?</span>
+                    </label>
+                </div>
                 <div class="mt-2">
                     <label class="flex items-center">
                         <Checkbox id="send_notif" v-model:checked="form.send_notification" />
@@ -149,13 +168,24 @@ const headerTitle = computed(() => {
                 </div>
             </form>
         </div>
-        <div v-if="formMode === 'create'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-3xl mx-auto">
-            <form @submit.prevent="submit" class="mt-4 flex flex-col gap-4">
+        <div v-if="formMode === 'create'"
+            class="p-3 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-3xl mx-auto">
+            <StatusBadge v-if="form.is_certif_news" variant="success" class="mb-2">
+                Pengumuman Pengambilan Sertifikat
+            </StatusBadge>
+            <form @submit.prevent="submit" class="flex flex-col gap-4">
                 <TextareaInput id="content" label="Rincian" v-model="form.content" rows="8" required
                     :error="form.errors.content" />
                 <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                     delete-identifier="path_file" label="Lampiran Tambahan"
                     accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
+                <div v-if="isAdmin" class="mt-2">
+                    <label class="flex items-center">
+                        <Checkbox id="is_certif_news" v-model:checked="form.is_certif_news" />
+                        <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">Pengumuman Pengambilan
+                            Sertifikat?</span>
+                    </label>
+                </div>
                 <div class="mt-2">
                     <label class="flex items-center">
                         <Checkbox id="send_notif" v-model:checked="form.send_notification" />
@@ -175,22 +205,28 @@ const headerTitle = computed(() => {
         <div v-if="formMode === 'list'" class="max-w-3xl mx-auto">
             <div class="flex flex-col gap-2 mb-2">
                 <AddButton class="self-end" @click="showCreateForm">Tambah Pengumuman</AddButton>
-                <div v-if="!listPengumuman.data || listPengumuman.data.length === 0" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
-                    <p class="text-gray-500 dark:text-gray-400 font-semibold text-sm">Belum ada pengumuman untuk para asesi.</p>
+                <div v-if="!listPengumuman.data || listPengumuman.data.length === 0"
+                    class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
+                    <p class="text-gray-500 dark:text-gray-400 font-semibold text-sm">Belum ada pengumuman untuk para
+                        asesi.</p>
                 </div>
             </div>
             <InfiniteScroll data="listPengumuman" class="space-y-2">
-                <div v-if="listPengumuman.data.length > 0" v-for="pengumuman in listPengumuman.data" :key="pengumuman.id"
-                    class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                    <div class="flex flex-col md:flex-row md:justify-between md:items-start mb-2 gap-2">
+                <div v-if="listPengumuman.data.length > 0" v-for="pengumuman in listPengumuman.data"
+                    :key="pengumuman.id" class="py-3 px-5 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                    <div class="flex flex-wrap justify-between items-start mb-2 gap-2">
                         <CreatorInfo :name="pengumuman.user?.asesor ? pengumuman.user?.name : 'Admin'"
                             :created-at="pengumuman.created_at" :updated-at="pengumuman.updated_at" class="min-w-0" />
 
-                        <div class="mt-1 flex flex-wrap gap-2 md:justify-end w-full md:w-auto">
+                        <div v-if="canManage(pengumuman)" class="mt-1 flex flex-wrap gap-2 md:justify-end ">
                             <EditButton @click="showEditForm(pengumuman)">Edit</EditButton>
                             <DeleteButton @click="confirmDelete(pengumuman.id)">Hapus</DeleteButton>
                         </div>
                     </div>
+
+                    <StatusBadge v-if="pengumuman.is_certif_news" variant="success" class="mb-2">
+                        Pengumuman Pengambilan Sertifikat
+                    </StatusBadge>
 
                     <h6 v-html="pengumuman.content.replace(/\n/g, '<br>')"
                         class="font-medium text-sm text-gray-800 dark:text-gray-100">

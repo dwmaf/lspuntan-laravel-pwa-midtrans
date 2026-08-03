@@ -1,6 +1,6 @@
-@if ($isDebug === false) { { --importScripts('/firebase-messaging-sw.js'); --} }
+@if ($isDebug === false) {{-- importScripts('/firebase-messaging-sw.js'); --}}
 
-<? php
+<?php
 $version = md5_file(base_path('composer.lock'));
 $somethign = 45;
 $staticCacheName = 'pwa-v'.$version;
@@ -16,12 +16,13 @@ $filesToCache = array_merge(
         '/images/icons/icon-192x192.png',
         '/images/icons/icon-384x384.png',
         '/images/icons/icon-512x512.png',
+        '/logo-lsp-resized.avif',
     ]
 );
 ?>
 
 const staticCacheName = "<?php echo $staticCacheName; ?>";
-const filesToCache = <? php echo json_encode($filesToCache); ?>;
+const filesToCache = <?php echo json_encode($filesToCache); ?>;
 const offlineUrl = "<?php echo $offlineUrl; ?>";
 
 self.addEventListener("install", event => {

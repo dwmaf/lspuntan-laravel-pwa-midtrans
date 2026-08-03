@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Jobs\SendBatchNotificationJob;
 use App\Jobs\SendMulticastNotificationJob;
 use App\Jobs\SendPushNotificationJob;
 use App\Models\User;
@@ -45,6 +46,20 @@ trait SendsPushNotifications
             $title,
             $body,
             $url,
+            $type,
+        );
+    }
+
+    protected function sendBatchNotification(
+        array $notifications,
+        string $type
+    ): void {
+        if (empty($notifications)) {
+            return;
+        }
+
+        SendBatchNotificationJob::dispatch(
+            $notifications,
             $type,
         );
     }

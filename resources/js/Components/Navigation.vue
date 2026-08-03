@@ -75,7 +75,7 @@ const navLinks = computed(() => {
             <div class="flex" v-if="props.isOpen">
                 <div class="shrink-0 flex items-center">
                     <Link :href="route('admin.dashboard')">
-                        <img src="/logo-lsp-resized.png" alt="Logo LSP" class="block h-15 w-auto" width="75" height="60"/>
+                        <img src="/logo-lsp-resized.avif" alt="Logo LSP" class="block h-15 w-auto" width="75" height="60"/>
                     </Link>
                 </div>
             </div>

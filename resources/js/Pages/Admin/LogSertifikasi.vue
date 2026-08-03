@@ -114,14 +114,16 @@ const backToList = () => {
 
 const getRoleLabel = (log) => {
     if (log.subject_type === 'App\\Models\\Asesmen') return 'Asesor ';
-    const isAssignedAsesor = props.sertifikasi.asesor?.some(
-        asesor => asesor.user_id === log.causer?.id
-    );
-    return isAssignedAsesor ? 'Asesor ' : 'Admin ';
+    const causerRoles = log.causer?.roles?.map(r => r.name) || [];
+    if (causerRoles.includes('admin')) return 'Admin ';
+    if (causerRoles.includes('asesor')) return 'Asesor ';
+    if (causerRoles.includes('asesi')) return 'Asesi ';
+    return 'Admin ';
 };
 
 const canShowDetail = (log) => {
     if (log.event === 'deleted') return false;
+    if (log.event === 'created' && log.subject_type === 'App\\Models\\Asesi') return false;
     if (log.subject_type === 'App\\Models\\Asesi') {
         const propsData = getParsedProperties(log);
         const oldAsesor = propsData.old?.asesor_id;
@@ -131,7 +133,7 @@ const canShowDetail = (log) => {
             if (!oldAsesor) {
                 const hasOtherChanges = propsData.attributes?.status_berkas || propsData.attributes?.status_final;
                 if (!hasOtherChanges) {
-                    return false; // Sembunyikan tombol detail!
+                    return false;
                 }
             }
         }
@@ -187,6 +189,13 @@ const getAsesiActionText = (log) => {
     const rawAsesiName = getAsesiName(log.subject_id);
     const asesiName = `<strong class="font-semibold text-gray-900 dark:text-gray-100">${rawAsesiName}</strong>`;
 
+    const causerRoles = log.causer?.roles?.map(r => r.name) || [];
+    const isAsesi = causerRoles.includes('asesi');
+
+    const skemaName = props.sertifikasi.skema?.nama_skema ?? 'Sertifikasi';
+    if (log.event === 'created') return ` mendaftar sertifikasi ${skemaName}`;
+
+    if (isAsesi && propsData.old?.status_berkas === 'perlu_perbaikan_berkas' && newStatusBerkas === 'menunggu_verifikasi_admin') return ` memperbaiki berkasnya`;
     if (newStatusBerkas === 'sudah_lengkap') return ` menyatakan berkas ${asesiName} sudah lengkap`;
     if (newStatusBerkas === 'menunggu_verifikasi_admin') return ` menyatakan berkas ${asesiName} masih pending`;
     if (newStatusBerkas === 'perlu_perbaikan_berkas') return ` menyatakan berkas ${asesiName} perlu diperbaiki`;
@@ -198,7 +207,7 @@ const getAsesiActionText = (log) => {
     if (newAsesorId) {
         const rawAsesorName = getAsesorName(newAsesorId);
         const asesorName = `<strong class="font-semibold text-gray-900 dark:text-gray-100">${rawAsesorName}</strong>`;
-        return ` menetapkan Asesor ${asesorName} kepada ${asesiName}`;
+        return ` menetapkan Asesor ${asesorName} kepada asesi ${asesiName}`;
     }
 
     return `memperbarui data asesi ${asesiName}`;
@@ -454,8 +463,8 @@ const getSertifikasiDetailItems = (log) => {
 
 const getSertifikatActionText = (log) => {
     const asesiName = `<strong class="font-semibold text-gray-900 dark:text-gray-100">${getSertifikatAsesiName(log)}</strong>`;
-    if (log.event === 'created') return ` menerbitkan sertifikat asesi ${asesiName}`;
-    if (log.event === 'deleted') return ` menghapus sertifikat asesi ${asesiName}`;
+    if (log.event === 'created') return ` menambah data sertifikat asesi ${asesiName}`;
+    if (log.event === 'deleted') return ` menghapus data sertifikat asesi ${asesiName}`;
     return ` mengubah data sertifikat asesi ${asesiName}`;
 };
 
@@ -465,7 +474,6 @@ const sertifikatFieldLabels = {
     nomor_registrasi: 'Nomor Registrasi',
     tanggal_terbit: 'Tanggal Terbit',
     berlaku_hingga: 'Berlaku Hingga',
-    file_path: 'File Sertifikat',
 };
 
 const formatSertifikatValue = (key, val) => {
@@ -543,8 +551,8 @@ const formatValue = (val) => {
                                 <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200 pl-3">{{ logs.from + index
                                     }}</td>
                                 <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200">
-                                    <span class="font-medium text-gray-900 dark:text-gray-100">{{ getRoleLabel(log)
-                                        }}</span>
+                                    <span class="font-medium text-gray-900 dark:text-gray-100">
+                                        {{ getRoleLabel(log) }}</span>
                                     <span class="font-medium text-gray-900 dark:text-gray-100 mr-1"> {{ log.causer?.name
                                         ?? 'Sistem' }}</span>
                                     <span class="text-gray-500 dark:text-gray-400">
@@ -683,8 +691,8 @@ const formatValue = (val) => {
                         <span class="font-medium">Admin </span>
                         <span class="font-semibold"> {{ selectedLog.causer?.name ?? 'Sistem' }}</span>
                         <span>
-                            {{ selectedLog.event === 'created' ? ' menerbitkan sertifikat asesi '
-                                : selectedLog.event === 'deleted' ? ' menghapus sertifikat asesi ' : ' mengubah data sertifikat asesi ' }}
+                            {{ selectedLog.event === 'created' ? ' menambah data sertifikat asesi '
+                                : selectedLog.event === 'deleted' ? ' menghapus data sertifikat asesi ' : ' mengubah data sertifikat asesi ' }}
                         </span>
                         <strong class="font-semibold text-gray-900 dark:text-gray-100">{{ getSertifikatAsesiName(selectedLog) }}</strong>
                         <span class="ml-1">pada {{ formatDateTime(selectedLog.created_at) }}</span>
@@ -719,7 +727,7 @@ const formatValue = (val) => {
                         <span class="font-medium">Admin </span>
                         <span class="font-semibold"> {{ selectedLog.causer?.name ?? 'Sistem' }}</span>
                         <span>{{ ' ' + getSertifikasiActionText(selectedLog) }}</span>
-                        <span class="ml-1">pada {{ formatDateTime(selectedLog.created_at) }}</span>
+                        <span class="mx-1">pada {{ formatDateTime(selectedLog.created_at) }}</span>
                         <span v-if="selectedLog.event === 'updated'">dengan rincian perubahan berikut.</span>
                     </p>
                     <div class="bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-1">
@@ -752,10 +760,10 @@ const formatValue = (val) => {
                         <span class="font-medium">{{ getRoleLabel(selectedLog) }}</span>
                         <span class="font-semibold"> {{ selectedLog.causer?.name ?? 'Sistem' }}</span>
                         <span v-html="getAsesiActionText(selectedLog)"></span>
-                        <span class="ml-1">pada {{ formatDateTime(selectedLog.created_at) }}</span>
-                        dengan rincian perubahan berikut.
+                        <span class="mx-1">pada {{ formatDateTime(selectedLog.created_at) }}</span>
+                        <template v-if="selectedLog.event !== 'created'">dengan rincian perubahan berikut.</template>
                     </p>
-                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-1">
+                    <div v-if="selectedLog.event !== 'created'" class="bg-gray-50 dark:bg-gray-700 rounded-lg px-4 py-1">
                         <dl class="divide-y divide-gray-200 dark:divide-gray-600">
                             <div v-for="(item, i) in getAsesiDetailItems(selectedLog)" :key="i"
                                 class="flex py-2 text-sm">

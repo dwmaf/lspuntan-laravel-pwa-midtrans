@@ -60,17 +60,10 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'no_tlp_hp' => 'nullable|string|max:20',
-            'selectedRoles' => 'nullable|array',
-            'selectedRoles.*' => 'string|exists:roles,name',
             'is_verified' => 'boolean',
         ]);
 
         $user->update($request->only('name','no_tlp_hp'));
-        if ($request->has('selectedRoles')) {
-            $user->syncRoles($request->selectedRoles);
-        } else {
-            $user->syncRoles([]);
-        }
 
         if ($request->input('is_verified') && is_null($user->email_verified_at)) {
             $user->email_verified_at = now();

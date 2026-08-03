@@ -56,6 +56,6 @@ class FileAccessController extends Controller
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $storage */
         $storage = Storage::disk('local');
-        return $storage->response($filePath);
+        return $storage->download($filePath);
     }
 }

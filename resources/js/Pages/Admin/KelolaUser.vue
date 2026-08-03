@@ -9,7 +9,6 @@ import ToggleSwitch from '@/Components/ToggleSwitch.vue';
 import TextInput from '@/Components/Input/TextInput.vue';
 import InputError from '@/Components/Input/InputError.vue';
 import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
-import MultiSelect from '@/Components/Input/MultiSelect.vue';
 import SecondaryButton from '@/Components/Button/SecondaryButton.vue';
 import { useForm, usePage, router } from '@inertiajs/vue3';
 import { ref, computed, watch, reactive } from 'vue';
@@ -94,33 +93,12 @@ const banUser = () => {
 const form = useForm({
     _method: 'PATCH',
     name: '',
-    email: '',
     no_tlp_hp: '',
-    selectedRoles: [],
     is_verified: false,
 });
-const roleOptions = computed(() => {
-    if (!selectedUser.value) {
-        return [];
-    }
-    const isAsesi = selectedUser.value.roles.some(role => role.name === 'asesi');
-    if (isAsesi) {
-        return props.roles.filter(role => role === 'asesi')
-            .map(role => ({ value: role, text: role }));
-    } else {
-        return props.roles.filter(role => role !== 'asesi').map(role => ({ value: role, text: role }));
-    }
-});
-
-const isRoleEditingDisabled = computed(() => {
-    if (!selectedUser.value) return true;
-    return selectedUser.value.roles.some(role => role.name === 'asesi');
-})
 const enterEditMode = (user) => {
     form.name = user.name || '';
-    form.email = user.email;
     form.no_tlp_hp = user.no_tlp_hp;
-    form.selectedRoles = user.roles.map(role => role.name);
     form.is_verified = !!user.email_verified_at;
     selectedUser.value = user;
     viewMode.value = 'edit';
@@ -207,12 +185,8 @@ const save = () => {
                             </td>
                             <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <div v-if="user.roles.length > 0" class="flex flex-wrap gap-1">
-                                    <StatusBadge 
-                                        v-for="role in user.roles" 
-                                        :key="role.id" 
-                                        variant="primary"
-                                        class="capitalize"
-                                    >
+                                    <StatusBadge v-for="role in user.roles" :key="role.id" variant="primary"
+                                        class="capitalize">
                                         {{ role.name }}
                                     </StatusBadge>
                                 </div>
@@ -251,18 +225,32 @@ const save = () => {
                 <Pagination :links="users.links" />
             </div>
         </div>
-        <div v-if="viewMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2">
-            <form @submit.prevent="save" class="flex flex-col gap-4">
-                <div class="relative">
-                    <MultiSelect id="selectedRoles" label="Role/Peran" v-model="form.selectedRoles"
-                        placeholder="Pilih role user" :options="roleOptions" :disabled="isRoleEditingDisabled" required
-                        value-prop="id" :error="form.errors.selectedRoles" />
-                    <p v-if="isRoleEditingDisabled" class="text-xs text-gray-500 dark:text-gray-400 ">
-                        Peran untuk Asesi tidak dapat diubah.
-                    </p>
+        <div v-if="viewMode === 'edit'" class="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-2 max-w-3xl mx-auto">
+            <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                Edit Akun
+            </h2>
+            <form @submit.prevent="save" class="flex flex-col mt-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-600 dark:text-gray-400">Email</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                            {{ selectedUser.email || 'Tidak ada' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-600 dark:text-gray-400">Role</dt>
+                        <dd class="mt-1">
+                            <div v-if="selectedUser.roles.length > 0" class="flex flex-wrap gap-1">
+                                <StatusBadge v-for="role in selectedUser.roles" :key="role.id" variant="primary"
+                                    class="capitalize">
+                                    {{ role.name }}
+                                </StatusBadge>
+                            </div>
+                            <span v-else class="text-sm text-gray-500">Tidak ada role</span>
+                        </dd>
+                    </div>
                 </div>
                 <TextInput id="name" label="Nama" v-model="form.name" required :error="form.errors.name" />
-                <TextInput id="email" label="Email" v-model="form.email" required disabled :error="form.errors.email" />
+
                 <TextInput id="no_tlp_hp" label="No WA" v-model="form.no_tlp_hp" :error="form.errors.no_tlp_hp" />
 
                 <div v-if="!selectedUser.email_verified_at" class="border-t border-gray-200 dark:border-gray-700 pt-4">

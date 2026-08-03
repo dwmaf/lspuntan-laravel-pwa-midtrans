@@ -13,6 +13,10 @@ class Pengumuman extends Model
     protected $table = 'pengumuman';
     protected $guarded = [];
 
+    protected $casts = [
+        'is_certif_news' => 'boolean',
+    ];
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -23,7 +27,7 @@ class Pengumuman extends Model
                 'deleted' => 'menghapus pengumuman',
                 default => $eventName,
             })
-            ->logOnly(['content', 'path_file', 'sertifikasi_id'])
+            ->logOnly(['content', 'path_file', 'sertifikasi_id', 'is_certif_news'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

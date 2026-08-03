@@ -4,13 +4,11 @@ import CustomHeader from '@/Components/CustomHeader.vue';
 import { Link } from "@inertiajs/vue3";
 import { Award, Activity, Users, GraduationCap } from 'lucide-vue-next';
 import { route } from 'ziggy-js';
-import { computed, defineAsyncComponent } from 'vue';
+import { computed } from 'vue';
+import BaseChart from '@/Components/BaseChart.vue';
 import { useDark } from '@vueuse/core';
 import { useActivityLog } from "@/Composables/useActivityLog";
 const { getUserLogMessage, getSkemaLogMessage, getAsesorLogMessage } = useActivityLog();
-const VueApexCharts = defineAsyncComponent(() =>
-    import('vue3-apexcharts')
-);
 
 const props = defineProps({
     sertifikasiBerlangsung: Array,
@@ -27,118 +25,141 @@ const isDark = useDark();
 // watch(isDark, (val) => {
 //   console.log('Mode berubah jadi:', val ? 'Gelap' : 'Terang');
 // });
-// Chart 1: Trend Pendaftaran (Line/Area)
-const trendOptions = computed(() => {
 
-    const text = isDark.value ? '#cbd5e1' : '#64748b'; // Slate-300 (Dark) / Slate-500 (Light)
-    const grid = isDark.value ? '#374151' : '#e2e8f0'; // Gray-700 (Dark) / Gray-200 (Light)
+// ---------Chart.js--------
+
+const trendData = computed(() => ({
+    labels: props.charts?.monthlyStats.map(s => s.date) || [],
+    datasets: [{
+        label: 'Pendaftar Baru',
+        data: props.charts?.monthlyStats.map(s => s.count) || [],
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.3)',
+        fill: true,
+        borderWidth: 2,
+        pointRadius: 2,
+        tension: 0,
+    }],
+}));
+
+const trendOptions = computed(() => {
+    const text = isDark.value ? '#cbd5e1' : '#64748b';
+    const grid = isDark.value ? '#374151' : '#e2e8f0';
 
     return {
-        chart: { type: 'area', toolbar: { show: false }, fontFamily: 'Inter, sans-serif', background: 'transparent' },
-        theme: { mode: isDark.value ? 'dark' : 'light' }, // Beritahu engine chart
-        dataLabels: { enabled: false },
-        stroke: { curve: 'straight', width: 2 },
-        xaxis: {
-            categories: props.charts?.monthlyStats.map(s => s.date) || [],
-            labels: { style: { colors: text }, rotate: -45 },
-            axisBorder: { show: false },
-            axisTicks: { show: false }
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+            x: {
+                ticks: { color: text, maxRotation: -45 },
+                grid: { display: false },
+                border: { display: false },
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { color: text, precision: 0 },
+                grid: { color: grid },
+                border: { display: false },
+            },
         },
-
-        yaxis: { labels: { style: { colors: text } } },
-        grid: { borderColor: grid, strokeDashArray: 4 },
-        tooltip: { theme: isDark.value ? 'dark' : 'light', x: { format: 'MM/yy' } },
-        colors: ['#3b82f6'],
-        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } }
+        plugins: {
+            legend: { display: false },
+            tooltip: { backgroundColor: isDark.value ? '#1f2937' : 'fff' },
+        },
     };
 });
 
-const trendSeries = computed(() => [{
-    name: 'Pendaftar Baru',
-    data: props.charts?.monthlyStats.map(s => s.count) || []
-}]);
-
 // Chart 2: Top Skema (Bar Horizontal)
+const schemeData = computed(() => ({
+    labels: props.charts?.topSchemes.map(s => s.nama_skema) || [],
+    datasets: [{
+        label: 'Jumlah Pendaftar',
+        data: props.charts?.topSchemes.map(s => s.total_pendaftar) || [],
+        backgroundColor: ['#059669', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+        borderRadius: 4,
+        barThickness: 24,
+    }],
+}));
+
 const schemeOptions = computed(() => {
     const text = isDark.value ? '#cbd5e1' : '#64748b';
 
     return {
-        chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'Inter, sans-serif', background: 'transparent' },
-        theme: { mode: isDark.value ? 'dark' : 'light' },
-        plotOptions: {
-            bar: { borderRadius: 4, horizontal: true, barHeight: '70%', distributed: true }
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: { color: text, precision: 0 },
+                grid: { display: false },
+                border: { display: false },
+            },
+            y: {
+                ticks: { color: text },
+                grid: { display: false },
+                border: { display: false },
+            },
         },
-        dataLabels: { enabled: true, textAnchor: 'start', style: { colors: ['#fff'] }, offsetX: 0 },
-        xaxis: {
-            categories: props.charts?.topSchemes.map(s => s.nama_skema) || [],
-            labels: { show: true, style: { colors: text } }
+        plugins: {
+            legend: { display: false },
+            datalabels: {
+                display: true,
+                color: text,
+                font: { size: 12, weight: 'bold' },
+                formatter: (value) => value,
+            },
         },
-        yaxis: {
-            labels: { style: { colors: text }, maxWidth: 200 }
-        },
-        responsive: [
-            {
-                breakpoint: 768,
-                options: {
-                    yaxis: {
-                        labels: {
-                            style: { colors: text },
-                            maxWidth: 150,
-                            formatter: function (val) {
-                                if (val && val.length > 20) {
-                                    return val.substring(0, 20) + "...";
-                                }
-                                return val;
-                            }
-                        }
-                    },
-                    plotOptions: {
-                        bar: {
-                            barHeight: '85%'
-                        }
-                    }
-                }
-            }
-        ],
-        colors: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
-        legend: { show: false },
-        grid: { show: false }
     };
 });
-
-const schemeSeries = computed(() => [{
-    name: 'Jumlah Pendaftar',
-    data: props.charts?.topSchemes.map(s => s.total_pendaftar) || []
-}]);
 
 // Chart 3: Status Kompetensi (Donut)
+const competencyData = computed(() => ({
+    labels: props.charts?.competencyStats.map(s => {
+        const map = { kompeten: 'Kompeten', belum_kompeten: 'Belum Kompeten', diskualifikasi: 'Diskualifikasi', belum_ditetapkan: 'Belum Ditentukan' };
+        return map[s.status_final] || s.status_final;
+    }) || [],
+    datasets: [{
+        data: props.charts?.competencyStats.map(s => s.count) || [],
+        backgroundColor: ['#059669', '#ef4444', '#6b7280', '#f59e0b'],
+        borderColor: isDark.value ? '#1f2937' : '#ffffff',
+        borderWidth: 2,
+    }],
+}));
+
 const competencyOptions = computed(() => {
     const text = isDark.value ? '#cbd5e1' : '#64748b';
-    const border = isDark.value ? '#1f2937' : '#ffffff';
 
     return {
-        chart: { type: 'donut', fontFamily: 'Inter, sans-serif', background: 'transparent' },
-        theme: { mode: isDark.value ? 'dark' : 'light' },
-        labels: props.charts?.competencyStats.map(s => {
-            const map = { kompeten: 'Kompeten', belum_kompeten: 'Belum Kompeten', diskualifikasi: 'Diskualifikasi', belum_ditetapkan: 'Belum Ditentukan' };
-            return map[s.status_final] || s.status_final;
-        }) || [],
-        colors: ['#10b981', '#ef4444', '#6b7280', '#f59e0b'],
-        legend: {
-            position: 'bottom',
-            labels: { colors: text }
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+            legend: {position: 'bottom', labels: {color:text, usePointStyle: true}},
+            datalabels: {
+                display: true,
+                color: '#ffffff',
+                font: { size: 12, weight: 'bold' },
+                formatter: (value, ctx) => {
+                    if (!value) return null;
+                    const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                    const pct = total ? (value / total) * 100 : 0;
+                    return `${pct.toFixed(1)}%`;
+                },
+            },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => {
+                        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                        const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                        return `${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                    },
+                },
+            },
         },
-        dataLabels: {
-            enabled: true,
-            formatter: (val) => val.toFixed(1) + '%',
-            style: { colors: ['#fff'], fontSize: '12px', fontWeight: 600 },
-        },
-        stroke: { show: true, colors: [border] },
-        plotOptions: { pie: { donut: { size: '65%' } } }
     };
 });
-
-const competencySeries = computed(() => props.charts?.competencyStats.map(s => s.count) || []);
 
 const timeAgo = (dateParam) => {
     if (!dateParam) return null;
@@ -238,8 +259,8 @@ const pipelinePercentages = computed(() => {
             <div
                 class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 flex items-center justify-between">
                 <div class="min-w-0">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ isAsesor ? 
-                    'Lulusan Anda' : 'Total Lulusan' }}</h3>
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ isAsesor ?
+                        'Lulusan Anda' : 'Total Lulusan' }}</h3>
                     <p class="mt-1 text-3xl font-semibold text-fuchsia-600">{{ asesiLulusCount }}</p>
                 </div>
                 <GraduationCap class="w-8 h-8 text-fuchsia-600 shrink-0 ml-3" />
@@ -317,8 +338,8 @@ const pipelinePercentages = computed(() => {
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Trend Pendaftaran (12 Bulan
                     Terakhir)</h3>
                 <div class="overflow-x-auto pb-2">
-                    <div class="min-w-125">
-                        <VueApexCharts type="area" height="320" :options="trendOptions" :series="trendSeries" />
+                    <div class="min-w-125 h-80">
+                        <BaseChart type="line" :data="trendData" :options="trendOptions"/>
                     </div>
                 </div>
             </div>
@@ -327,8 +348,8 @@ const pipelinePercentages = computed(() => {
             <div
                 class="bg-white dark:bg-gray-800 p-2 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Rasio Kelulusan</h3>
-                <div class="flex items-center justify-center h-[300px]">
-                    <VueApexCharts type="donut" width="100%" :options="competencyOptions" :series="competencySeries" />
+                <div class="h-[300px]">
+                     <BaseChart type="doughnut" :data="competencyData" :options="competencyOptions"/>
                 </div>
             </div>
 
@@ -338,8 +359,8 @@ const pipelinePercentages = computed(() => {
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Top 5 Skema Sertifikasi Paling
                     Diminati</h3>
                 <div class="overflow-x-auto">
-                    <div class="min-w-150">
-                        <VueApexCharts type="bar" height="300" :options="schemeOptions" :series="schemeSeries" />
+                    <div class="min-w-150 h-[300px]">
+                        <BaseChart type="bar" :data="schemeData" :options="schemeOptions"/>
                     </div>
                 </div>
             </div>
@@ -373,7 +394,7 @@ const pipelinePercentages = computed(() => {
                         <div :class="['w-2 h-2 rounded-full mt-1.5 shrink-0', getActivityColor(activity.event)]"></div>
                         <div>
                             <p class="text-sm dark:text-gray-300 font-medium">
-                                {{ activity.causer ? activity.causer.name : 'Sistem' }} 
+                                {{ activity.causer ? activity.causer.name : 'Sistem' }}
                                 {{ getActivityMessage(activity) }}
                                 <!-- <span v-if="activity.subject_id"
                                     class="font-mono text-xs text-gray-400 dark:text-gray-500 ml-1">

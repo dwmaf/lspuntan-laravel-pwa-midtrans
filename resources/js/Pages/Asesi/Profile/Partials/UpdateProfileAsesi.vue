@@ -114,7 +114,7 @@ const submit = () => {
                     :error="form.errors.pas_foto" @remove="removeFile('pas_foto')"
                     :required="!mahasiswa?.pas_foto || form.delete_files.includes('pas_foto')" />
                 <div class="flex items-center gap-4">
-                    <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+                    <PrimaryButton :disabled="form.processing">Simpan</PrimaryButton>
                     <SecondaryButton type="button" @click="cancelEdit">Batal</SecondaryButton>
                 </div>
             </form>

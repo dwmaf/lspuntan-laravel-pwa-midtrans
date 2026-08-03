@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Asesi\Sertifikasi;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\NotificationController;
 use App\Models\Asesi;
+use App\Enums\StatusFinalAsesi;
 use Illuminate\Http\Request;
 use App\Models\Sertifikasi;
 use App\Models\Pengumuman;
@@ -25,12 +26,15 @@ class PengumumanAsesiController extends Controller
 
         $listPengumuman = Pengumuman::where('sertifikasi_id', $sertifikasi->id)
             ->where(function ($query) use ($asesorUserId) {
-                $query->whereDoesntHave('user.asesor')
-                    ->when($asesorUserId, function ($q) use ($asesorUserId) {
-                        $q->orWhere('user_id', $asesorUserId);
-                    });
+                $query->whereHas('user', fn($q) => $q->role('admin'))
+                    ->when($asesorUserId, fn($q) => $q->orWhere('user_id', $asesorUserId));
             })
+            ->when(
+                $asesi->status_final !== StatusFinalAsesi::KOMPETEN,
+                fn($q) => $q->where('is_certif_news', false)
+            )
             ->latest()
+            ->with('user.asesor')
             ->get();
 
         return Inertia::render('Asesi/PengumumanAsesi', [

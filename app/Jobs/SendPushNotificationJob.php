@@ -11,7 +11,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 use Kreait\Firebase\Exception\Messaging\NotFound;
 
 class SendPushNotificationJob implements ShouldQueue
@@ -50,8 +49,9 @@ class SendPushNotificationJob implements ShouldQueue
         $urlWithId = $this->url . $separator . 'notification_id=' . $notificationLog->id;
 
         $message = CloudMessage::new()
-            ->withNotification(FirebaseNotification::create($this->title, $this->body))
             ->withData([
+                'title' => $this->title,
+                'body' => $this->body,
                 'url' => $urlWithId,
             ]);
 

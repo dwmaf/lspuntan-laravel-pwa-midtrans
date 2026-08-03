@@ -14,12 +14,12 @@ dependencies:
   '@vueuse/core':
     specifier: ^14.2.1
     version: 14.2.1(vue@3.5.22)
-  apexcharts:
-    specifier: ^5.3.6
-    version: 5.3.6
   axios:
     specifier: 1.7.4
     version: 1.7.4
+  chart.js:
+    specifier: ^4.5.1
+    version: 4.5.1
   firebase:
     specifier: ^12.2.1
     version: 12.4.0
@@ -32,9 +32,6 @@ dependencies:
   vue:
     specifier: ^3.5.22
     version: 3.5.22
-  vue3-apexcharts:
-    specifier: ^1.10.0
-    version: 1.10.0(apexcharts@5.3.6)(vue@3.5.22)
   ziggy-js:
     specifier: ^2.6.0
     version: 2.6.0
@@ -992,6 +989,10 @@ packages:
       '@jridgewell/sourcemap-codec': 1.5.5
     dev: true
 
+  /@kurkle/color@0.3.4:
+    resolution: {integrity: sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w==}
+    dev: false
+
   /@protobufjs/aspromise@1.1.2:
     resolution: {integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==}
     dev: false
@@ -1214,45 +1215,6 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
-
-  /@svgdotjs/svg.draggable.js@3.0.6(@svgdotjs/svg.js@3.2.5):
-    resolution: {integrity: sha512-7iJFm9lL3C40HQcqzEfezK2l+dW2CpoVY3b77KQGqc8GXWa6LhhmX5Ckv7alQfUXBuZbjpICZ+Dvq1czlGx7gA==}
-    peerDependencies:
-      '@svgdotjs/svg.js': ^3.2.4
-    dependencies:
-      '@svgdotjs/svg.js': 3.2.5
-    dev: false
-
-  /@svgdotjs/svg.filter.js@3.0.9:
-    resolution: {integrity: sha512-/69XMRCDoam2HgC4ldHIaDgeQf1ViHIsa0Ld4uWgiXtZ+E24DWHe/9Ib6kbNiZ7WRIdlVokUDR1Fg0kjIpkfbw==}
-    engines: {node: '>= 0.8.0'}
-    dependencies:
-      '@svgdotjs/svg.js': 3.2.5
-    dev: false
-
-  /@svgdotjs/svg.js@3.2.5:
-    resolution: {integrity: sha512-/VNHWYhNu+BS7ktbYoVGrCmsXDh+chFMaONMwGNdIBcFHrWqk2jY8fNyr3DLdtQUIalvkPfM554ZSFa3dm3nxQ==}
-    dev: false
-
-  /@svgdotjs/svg.resize.js@2.0.5(@svgdotjs/svg.js@3.2.5)(@svgdotjs/svg.select.js@4.0.3):
-    resolution: {integrity: sha512-4heRW4B1QrJeENfi7326lUPYBCevj78FJs8kfeDxn5st0IYPIRXoTtOSYvTzFWgaWWXd3YCDE6ao4fmv91RthA==}
-    engines: {node: '>= 14.18'}
-    peerDependencies:
-      '@svgdotjs/svg.js': ^3.2.4
-      '@svgdotjs/svg.select.js': ^4.0.1
-    dependencies:
-      '@svgdotjs/svg.js': 3.2.5
-      '@svgdotjs/svg.select.js': 4.0.3(@svgdotjs/svg.js@3.2.5)
-    dev: false
-
-  /@svgdotjs/svg.select.js@4.0.3(@svgdotjs/svg.js@3.2.5):
-    resolution: {integrity: sha512-qkMgso1sd2hXKd1FZ1weO7ANq12sNmQJeGDjs46QwDVsxSRcHmvWKL2NDF7Yimpwf3sl5esOLkPqtV2bQ3v/Jg==}
-    engines: {node: '>= 14.18'}
-    peerDependencies:
-      '@svgdotjs/svg.js': ^3.2.4
-    dependencies:
-      '@svgdotjs/svg.js': 3.2.5
-    dev: false
 
   /@tabler/icons-vue@3.35.0(vue@3.5.22):
     resolution: {integrity: sha512-m5ugq8mWYfTzx0opMcX49ADFxr3xu0IhJaOddw8Djlhx30pBOPWwOiIUBMAqlgP9TFHAysdwqrq50hBw5DxPSQ==}
@@ -1557,10 +1519,6 @@ packages:
       vue: 3.5.22
     dev: false
 
-  /@yr/monotone-cubic-spline@1.0.3:
-    resolution: {integrity: sha512-FQXkOta0XBSUPHndIKON2Y9JeQz5ZeMqLYZVVK93FliNBFm7LNMIZmY6FrMEB9XPcDbE2bekMbZD6kzDkxwYjA==}
-    dev: false
-
   /acorn-jsx@5.3.2(acorn@8.15.0):
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
@@ -1593,17 +1551,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       color-convert: 2.0.1
-
-  /apexcharts@5.3.6:
-    resolution: {integrity: sha512-sVEPw+J0Gp0IHQabKu8cfdsxlfME0e36Wid7RIaPclGM2OUt+O7O4+6mfAmTUYhy5bDk8cNHzEhPfVtLCIXEJA==}
-    dependencies:
-      '@svgdotjs/svg.draggable.js': 3.0.6(@svgdotjs/svg.js@3.2.5)
-      '@svgdotjs/svg.filter.js': 3.0.9
-      '@svgdotjs/svg.js': 3.2.5
-      '@svgdotjs/svg.resize.js': 2.0.5(@svgdotjs/svg.js@3.2.5)(@svgdotjs/svg.select.js@4.0.3)
-      '@svgdotjs/svg.select.js': 4.0.3(@svgdotjs/svg.js@3.2.5)
-      '@yr/monotone-cubic-spline': 1.0.3
-    dev: false
 
   /argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
@@ -1676,6 +1623,13 @@ packages:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
     dev: true
+
+  /chart.js@4.5.1:
+    resolution: {integrity: sha512-GIjfiT9dbmHRiYi6Nl2yFCq7kkwdkp1W/lp2J99rX0yo9tgJGn3lKQATztIjb5tVtevcBtIdICNWqlq5+E8/Pw==}
+    engines: {pnpm: '>=8'}
+    dependencies:
+      '@kurkle/color': 0.3.4
+    dev: false
 
   /cliui@8.0.1:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
@@ -2875,16 +2829,6 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
-
-  /vue3-apexcharts@1.10.0(apexcharts@5.3.6)(vue@3.5.22):
-    resolution: {integrity: sha512-sBma2In4rU5n/JBrv8KVb8if+IoY019Dse2yRDD/eRU1WGZHK07zuy9erefKzbJ7T3wP9+Jsy9bH6Vdjy85HZg==}
-    peerDependencies:
-      apexcharts: '>=4.0.0'
-      vue: '>=3.0.0'
-    dependencies:
-      apexcharts: 5.3.6
-      vue: 3.5.22
-    dev: false
 
   /vue@3.5.22:
     resolution: {integrity: sha512-toaZjQ3a/G/mYaLSbV+QsQhIdMo9x5rrqIpYRObsJ6T/J+RyCSFwN2LHNVH9v8uIcljDNa3QzPVdv3Y6b9hAJQ==}

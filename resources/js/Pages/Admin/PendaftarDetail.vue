@@ -15,11 +15,10 @@ import TextInput from "@/Components/Input/TextInput.vue";
 import SelectInput from "@/Components/Input/SelectInput.vue";
 import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import BackButton from "@/Components/Button/BackButton.vue";
-import FileCard from "@/Components/FileCard.vue";
-import SingleFileInput from "@/Components/Input/SingleFileInput.vue";
+import { useFormat } from "@/Composables/useFormat";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { ref, computed } from 'vue';
-import { Info } from 'lucide-vue-next';
+import { Info, Edit } from 'lucide-vue-next';
 
 const props = defineProps({
     asesi: Object,
@@ -45,10 +44,19 @@ const statusForm = useForm({
 });
 
 const asesorOptions = computed(() => {
-    return props.sertifikasi.asesor.map(asesor => ({
+    const options = props.sertifikasi.asesor.map(asesor => ({
         value: asesor.id,
         text: asesor.user.name
     }));
+    if (props.asesi.asesor_id) {
+        options.unshift({ value: '', text: 'Reset jadi Belum Ditetapkan' });
+    }
+    return options;
+});
+
+const isCertificateExpired = computed(() => {
+    if (!props.asesi.sertifikat?.berlaku_hingga) return true;
+    return new Date(props.asesi.sertifikat.berlaku_hingga) < new Date();
 });
 
 const certificateForm = useForm({
@@ -58,8 +66,6 @@ const certificateForm = useForm({
     nomor_registrasi: props.asesi.sertifikat?.nomor_registrasi || '',
     tanggal_terbit: props.asesi.sertifikat?.tanggal_terbit || '',
     berlaku_hingga: props.asesi.sertifikat?.berlaku_hingga || '',
-    file_path: null,
-    delete_files: [],
 });
 
 const openModal = (type) => {
@@ -120,8 +126,6 @@ const deleteCertificate = () => {
                 nomor_registrasi: '',
                 tanggal_terbit: '',
                 berlaku_hingga: '',
-                file_path: null,
-                delete_files: [],
             });
             certificateForm.reset();
             isEditingCertificate.value = false;
@@ -179,6 +183,8 @@ const getStatusFinalAsesi = (status) => {
     };
 };
 
+const { formatDate } = useFormat();
+
 </script>
 
 <template>
@@ -203,9 +209,11 @@ const getStatusFinalAsesi = (status) => {
                         <StatusBadge :variant="getStatusBerkasAdministrasi(asesi.status_berkas).variant">
                             {{ getStatusBerkasAdministrasi(asesi.status_berkas).text }}
                         </StatusBadge>
-                        <EditButton v-if="asesi.status_final === 'belum_ditetapkan' && !asesi.asesor_id" @click="openModal('berkas')">Ubah
+                        <EditButton v-if="asesi.status_final === 'belum_ditetapkan' && !asesi.asesor_id"
+                            @click="openModal('berkas')">Ubah
                             Status</EditButton>
-                        <span v-else-if="asesi.status_final !== 'belum_ditetapkan'" class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                        <span v-else-if="asesi.status_final !== 'belum_ditetapkan'"
+                            class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
                             <Info class="w-3.5 h-3.5 shrink-0" /> Terkunci karena status akhir telah ditetapkan
                         </span>
                         <span v-else class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
@@ -222,13 +230,18 @@ const getStatusFinalAsesi = (status) => {
                         <StatusBadge v-else variant="neutral">
                             Belum Ditetapkan
                         </StatusBadge>
-                        <EditButton v-if="asesi.status_berkas === 'sudah_lengkap' && isAdmin && asesi.status_final === 'belum_ditetapkan'" @click="openModal('asesor')">
+                        <EditButton
+                            v-if="asesi.status_berkas === 'sudah_lengkap' && isAdmin && asesi.status_final === 'belum_ditetapkan'"
+                            @click="openModal('asesor')">
                             {{ asesi.asesor ? 'Ubah Asesor' : 'Tetapkan Asesor' }}
                         </EditButton>
-                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && asesi.status_final !== 'belum_ditetapkan'" class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                        <span
+                            v-else-if="asesi.status_berkas === 'sudah_lengkap' && asesi.status_final !== 'belum_ditetapkan'"
+                            class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
                             <Info class="w-3.5 h-3.5 shrink-0" /> Terkunci karena status akhir telah ditetapkan
                         </span>
-                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && !isAdmin" class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && !isAdmin"
+                            class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
                             <Info class="w-3.5 h-3.5 shrink-0" /> Hanya Admin yang berhak merubah asesor
                         </span>
                         <span v-else class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
@@ -242,20 +255,23 @@ const getStatusFinalAsesi = (status) => {
                         <StatusBadge :variant="getStatusFinalAsesi(asesi.status_final).variant">
                             {{ getStatusFinalAsesi(asesi.status_final).text }}
                         </StatusBadge>
-                        <EditButton v-if="asesi.status_berkas === 'sudah_lengkap' && asesi.asesor && $page.props.auth.user.id === asesi.asesor.user_id && !asesi.sertifikat" @click="openModal('final')">Ubah
+                        <EditButton
+                            v-if="asesi.status_berkas === 'sudah_lengkap' && asesi.asesor && $page.props.auth.user.id === asesi.asesor.user_id && !asesi.sertifikat"
+                            @click="openModal('final')">Ubah
                             Status</EditButton>
-                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && asesi.sertifikat" 
+                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && asesi.sertifikat"
                             class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
-                            <Info class="w-3.5 h-3.5 shrink-0" /> Terkunci karena sertifikat telah diterbitkan
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Terkunci karena data sertifikat sudah dicatat
                         </span>
-                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && !asesi.asesor" 
+                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && !asesi.asesor"
                             class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
                             <Info class="w-3.5 h-3.5 shrink-0" /> Tetapkan asesor terlebih dahulu
                         </span>
-                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && asesi.asesor && 
+                        <span v-else-if="asesi.status_berkas === 'sudah_lengkap' && asesi.asesor &&
                             $page.props.auth.user.id !== asesi.asesor.user_id"
                             class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
-                            <Info class="w-3.5 h-3.5 shrink-0" /> Hanya Asesor Penguji ({{ asesi.asesor.user?.name }}) yang berhak merubah status final.
+                            <Info class="w-3.5 h-3.5 shrink-0" /> Hanya Asesor Penguji ({{ asesi.asesor.user?.name }})
+                            yang berhak merubah status final.
                         </span>
                         <span v-else class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
                             <Info class="w-3.5 h-3.5 shrink-0" /> Berkas harus diverifikasi lengkap terlebih dahulu
@@ -267,26 +283,66 @@ const getStatusFinalAsesi = (status) => {
 
             <!-- F. Sertifikat - Hanya untuk Admin -->
             <div v-if="canManageCertificate">
-                <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">F.
-                    Sertifikat
+                <h3 class="text-md font-semibold dark:text-gray-300 mb-2 border-b pb-1 border-gray-700 mt-6">
+                    F. Data Sertifikat
                 </h3>
                 <div class="mt-4">
                     <p v-if="!asesi.sertifikat && props.asesi.status_final !== 'kompeten'"
                         class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-0.5">
                         <Info class="w-3.5 h-3.5 shrink-0" />
-                        Sertifikat bisa diupload jika status akhir asesi adalah <strong>Kompeten</strong>.
+                        Data Sertifikat bisa dicatat jika status akhir asesi adalah <strong>Kompeten</strong>.
                     </p>
                     <div v-else-if="!asesi.sertifikat && props.asesi.status_final === 'kompeten'">
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Belum ada sertifikat yang diunggah.</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Belum ada data sertifikat.</p>
                         <SeeButton @click="isEditingCertificate = true">
-                            Upload Sertifikat
+                            Catat Sertifikat
                         </SeeButton>
                     </div>
 
-                    <FileCard v-else-if="props.asesi.sertifikat" :title="props.asesi.sertifikat.file_path"
-                        :href="`/download/sertifikat/${asesi.sertifikat.id}/file_path`" icon="award" status="Telah Terbit"
-                        editable @edit="isEditingCertificate = true">
-                    </FileCard>
+                    <div v-else-if="props.asesi.sertifikat"
+                        class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                        <div class="flex justify-between mb-1">
+                            <StatusBadge :variant="isCertificateExpired ? 'danger' : 'success'">
+                                {{ isCertificateExpired ? 'Kadaluarsa' : 'Masih Berlaku' }}
+                            </StatusBadge>
+                            <EditButton @click="isEditingCertificate = true">
+                                Edit
+                            </EditButton>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                                    Nomor Sertifikat
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ asesi.sertifikat.nomor_sertifikat }}</dd>
+                            </div>
+                            <div>
+                                <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                                    Nomor Registrasi
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ asesi.sertifikat.nomor_registrasi }}</dd>
+                            </div>
+                            <div>
+                                <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                                    Tanggal Terbit
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ formatDate(asesi.sertifikat.tanggal_terbit) }}</dd>
+                            </div>
+                            <div>
+                                <dt class="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                                    Berlaku Hingga
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ formatDate(asesi.sertifikat.berlaku_hingga) }}</dd>
+                            </div>
+
+                        </div>
+                        
+                    </div>
                 </div>
             </div>
         </div>
@@ -295,33 +351,29 @@ const getStatusFinalAsesi = (status) => {
         <!-- Form Edit Sertifikat -->
         <div v-show="isEditingCertificate" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                {{ props.asesi.sertifikat ? 'Ubah Data Sertifikat' : 'Upload Sertifikat' }}
+                {{ props.asesi.sertifikat ? 'Ubah Data Sertifikat' : 'Catat Data Sertifikat' }}
             </h3>
             <p class="my-1 text-sm text-gray-600 dark:text-gray-400">Untuk: <span class="font-semibold">{{
                 props.asesi.mahasiswa.user.name }}</span></p>
-            <form @submit.prevent="submitCertificate" class="grid md:grid-cols-2 gap-4 mt-4">
-                <TextInput id="nomor_seri" label="Nomor Seri" v-model="certificateForm.nomor_seri" type="text" required
-                    :error="certificateForm.errors.nomor_seri" />
-                <TextInput id="nomor_sertifikat" label="Nomor Sertifikat" v-model="certificateForm.nomor_sertifikat"
-                    type="text" required :error="certificateForm.errors.nomor_sertifikat" />
-                <TextInput id="nomor_registrasi" label="Nomor Registrasi" v-model="certificateForm.nomor_registrasi"
-                    type="text" required :error="certificateForm.errors.nomor_registrasi" />
-                <TextInput id="tanggal_terbit" label="Tanggal Terbit" v-model="certificateForm.tanggal_terbit"
-                    type="date" required :error="certificateForm.errors.tanggal_terbit" />
-                <TextInput id="berlaku_hingga" label="Berlaku Hingga" v-model="certificateForm.berlaku_hingga"
-                    type="date" required :error="certificateForm.errors.berlaku_hingga" />
-                <SingleFileInput v-model="certificateForm.file_path" v-model:deleteList="certificateForm.delete_files"
-                    delete-identifier="file_path" label="File Sertifikat" is-label-required
-                    :existing-file-url="asesi?.sertifikat?.file_path ? `/download/sertifikat/${asesi.sertifikat.id}/file_path` : null"
-                    :is-marked-for-deletion="certificateForm.delete_files.includes('file_path')"
-                    accept=".pdf,.jpg,.jpeg,.png" :error="certificateForm.errors.file_path"
-                    :required="!asesi?.sertifikat?.file_path || certificateForm.delete_files.includes('file_path')" />
+            <form @submit.prevent="submitCertificate" class="space-y-4">
+                <div class="grid md:grid-cols-2 gap-4 mt-4">
+                    <TextInput id="nomor_seri" label="Nomor Seri" v-model="certificateForm.nomor_seri" type="text" required
+                        :error="certificateForm.errors.nomor_seri" />
+                    <TextInput id="nomor_sertifikat" label="Nomor Sertifikat" v-model="certificateForm.nomor_sertifikat"
+                        type="text" required :error="certificateForm.errors.nomor_sertifikat" />
+                    <TextInput id="nomor_registrasi" label="Nomor Registrasi" v-model="certificateForm.nomor_registrasi"
+                        type="text" required :error="certificateForm.errors.nomor_registrasi" />
+                    <TextInput id="tanggal_terbit" label="Tanggal Terbit" v-model="certificateForm.tanggal_terbit"
+                        type="date" required :error="certificateForm.errors.tanggal_terbit" />
+                    <TextInput id="berlaku_hingga" label="Berlaku Hingga" v-model="certificateForm.berlaku_hingga"
+                        type="date" required :error="certificateForm.errors.berlaku_hingga" />
+                </div>
                 <div class="flex gap-2 items-center">
                     <PrimaryButton :disabled="certificateForm.processing">Simpan</PrimaryButton>
                     <SecondaryButton type="button" @click="cancelEditCertificate">Batal</SecondaryButton>
                     <DangerButton v-if="props.asesi.sertifikat" type="button" @click="confirmDeleteCertificate"
                         :disabled="certificateForm.processing">
-                        Hapus Sertifikat
+                        Hapus Data Sertifikat
                     </DangerButton>
                 </div>
             </form>
@@ -350,7 +402,8 @@ const getStatusFinalAsesi = (status) => {
                     </template>
                     <template v-if="modalType === 'asesor'">
                         <SelectInput id="asesor_id" label="Asesor" v-model="statusForm.asesor_id"
-                            :options="asesorOptions" :error="statusForm.errors.asesor_id" required />
+                            :options="asesorOptions" :error="statusForm.errors.asesor_id"
+                            :required="!props.asesi.asesor_id" />
                     </template>
 
                     <div class="flex items-center gap-3 justify-end mt-4">
@@ -365,14 +418,12 @@ const getStatusFinalAsesi = (status) => {
         <Modal :show="showDeleteCertModal" @close="closeDeleteCertModal">
             <div class="p-6">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                    Apakah Anda yakin ingin menghapus sertifikat ini?
+                    Apakah Anda yakin ingin menghapus data sertifikat ini?
                 </h2>
 
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Sertifikat milik <span class="font-bold">{{ props.asesi.mahasiswa.user.name }}</span> akan dihapus
-                    secara
-                    permanen.
-                    Tindakan ini tidak dapat dibatalkan.
+                    Informasi Sertifikat milik <span class="font-bold">{{ props.asesi.mahasiswa.user.name }}</span> akan
+                    dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.
                 </p>
 
                 <div class="mt-6 flex justify-end">

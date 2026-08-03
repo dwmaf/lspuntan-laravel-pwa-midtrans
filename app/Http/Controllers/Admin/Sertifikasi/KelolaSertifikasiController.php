@@ -410,7 +410,7 @@ class KelolaSertifikasiController extends Controller
                 }
             });
 
-        $logs = Activity::with('causer.asesor', 'subject')
+        $logs = Activity::with('causer.roles', 'causer.mahasiswa', 'subject')
             ->where(function ($query) use ($sertifikasi, $allNewsIds, $allAsesmenIds, $allAsesisIds, $allSertifikatIds) {
                 $hasClauses = false;
 

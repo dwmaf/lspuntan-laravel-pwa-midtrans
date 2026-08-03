@@ -121,6 +121,21 @@ onMounted(() => {
     }
 });
 
+// ketika tab jadi visible, cek Notificcation.permission saat ini
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        const currentPerm = Notification.permission;
+        // kalau beda dgn permission.value, update
+        if (currentPerm !== permission.value) {
+            permission.value = currentPerm;
+            // kalau ternyata denied padahal subscribed nya trus, subscribed dijadiin false
+            if (currentPerm === 'denied' && subscribed.value) {
+                subscribed.value = false;
+            }
+        }
+    }
+});
+
 function handleToggleClick() {
     showFCMModal.value = true;
 }
@@ -143,7 +158,7 @@ function handleToggleClick() {
                     <div v-if="status.message" :class="{
                         'text-green-600 dark:text-green-400': status.type === 'success',
                         'text-red-600 dark:text-red-400': status.type === 'error'
-                    }" class="text-xs font-bold mb-1 animate-pulse">
+                    }" class="text-xs font-bold mb-1">
                         {{ status.message }}
                     </div>
                     <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Notifikasi Push</span>
@@ -167,7 +182,7 @@ function handleToggleClick() {
                 </span>
 
                 <button type="button" @click="handleToggleClick"
-                    :class="{ 'bg-indigo-600': subscribed, 'bg-gray-200 dark:bg-gray-600': !subscribed }"
+                    :class="{ 'bg-indigo-600': subscribed, 'bg-gray-400 dark:bg-gray-600': !subscribed }"
                     :disabled="permission === 'denied' || permission === 'unsupported' || isLoading"
                     class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     role="switch" :aria-checked="subscribed">

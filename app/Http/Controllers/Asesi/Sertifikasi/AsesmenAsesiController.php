@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Gate;
 class AsesmenAsesiController extends Controller
 {
     use SendsPushNotifications;
-    public function index(Sertifikasi $sertifikasi, Asesi $asesi, Request $request)
+    public function indexAsesmen(Sertifikasi $sertifikasi, Asesi $asesi, Request $request)
     {
         // buat agar hanya bisa masuk jika status berkasnya sudah lengkap
         Gate::authorize('view', $asesi);
@@ -34,7 +34,7 @@ class AsesmenAsesiController extends Controller
         ]);
     }
 
-    public function update(Sertifikasi $sertifikasi, Asesi $asesi, Request $request)
+    public function updateAsesmen(Sertifikasi $sertifikasi, Asesi $asesi, Request $request)
     {
         Gate::authorize('update', $asesi);
 

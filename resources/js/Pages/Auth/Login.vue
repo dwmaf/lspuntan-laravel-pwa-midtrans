@@ -29,13 +29,10 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-
         <CustomHeader judul="Log in" />
-
         <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
             {{ status }}
         </div>
-
         <form @submit.prevent="submit">
             <TextInput id="email" label="Email" type="email" v-model="form.email" required autofocus autocomplete="username" :error="form.errors.email"/>
             <TextInput id="password" label="Password" type="password" v-model="form.password" required

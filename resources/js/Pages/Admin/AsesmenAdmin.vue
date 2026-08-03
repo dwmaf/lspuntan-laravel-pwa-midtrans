@@ -152,7 +152,7 @@ const { formatDateTime } = useFormat();
         </div>
 
         <!-- Mode edit  -->
-        <div v-else class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-2 max-w-3xl mx-auto">
+        <div v-else class="p-3 md:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col gap-2 max-w-3xl mx-auto">
             <div class="flex justify-between items-center mb-2">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
                     {{ sertifikasi.asesmen ? "Edit Instruksi Asesmen" : "Buat Instruksi Asesmen" }}
@@ -165,10 +165,11 @@ const { formatDateTime } = useFormat();
                     :error="form.errors.deadline" />
                 <SingleFileInput v-model="form.path_file" v-model:deleteList="form.delete_files"
                     delete-identifier="path_file" label="Lampiran Tambahan"
-                    :existing-file-url="sertifikasi.asesmen?.path_file ? `/download/asesmens/${sertifikasi.asesmen.id}/path_file` : null"
+                    :existing-file-url="sertifikasi.asesmen?.path_file ? `/download/asesmen/${sertifikasi.asesmen.id}/path_file` : null"
+                    :file-name="sertifikasi.asesmen?.path_file ? sertifikasi.asesmen.path_file.split('/').pop() : ''"
                     :is-marked-for-deletion="form.delete_files.includes('path_file')"
                     accept=".zip,.rar,.docx,.xlsx,.pptx,.jpg,.png,.jpeg,.pdf" :error="form.errors.path_file" />
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
                         <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Simpan
                         </PrimaryButton>
@@ -193,19 +194,19 @@ const { formatDateTime } = useFormat();
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 No
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Nama Asesi
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Status Tugas
                             </th>
                             <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Aksi
                             </th>
                         </tr>
@@ -213,25 +214,25 @@ const { formatDateTime } = useFormat();
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         <tr v-for="(asesi, index) in filteredAsesi" :key="asesi.id"
                             class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td class="px-2 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ index + 1 }}
                             </td>
                             <td
-                                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                class="px-2 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {{ asesi.mahasiswa?.user?.name || 'N/A' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td class="px-2 py-3 whitespace-nowrap text-sm font-medium">
                                 <span v-if="asesi.path_file_asesmen"
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-100">Diserahkan</span>
                                 <span v-else
                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">Belum
                                     ada tugas dikumpulkan</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td class="px-2 py-3 whitespace-nowrap text-sm font-medium">
                                 <SeeButton v-if="asesi.path_file_asesmen" @click="showDetailView(asesi)">
                                     Lihat
                                 </SeeButton>
-                                <span v-else class="text-xs text-gray-500">Belum ada tugas dikumpulkan</span>
+                                <span v-else class="text-xs text-gray-500">-</span>
                             </td>
                         </tr>
 

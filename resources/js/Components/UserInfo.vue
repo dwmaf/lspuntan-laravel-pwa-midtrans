@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from 'vue';
 import { IconUserCircle } from '@tabler/icons-vue';
 
 const props = defineProps({

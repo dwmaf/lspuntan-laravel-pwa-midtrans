@@ -167,6 +167,12 @@ const destroy = () => {
 
 <template>
     <AdminLayout>
+        <CustomHeader judul="Manajemen Asesor">
+            <div class="flex gap-2" v-if="formMode === 'list'">
+                <ExportLink :href="route('admin.asesor.export')" target="_blank">Export</ExportLink>
+                <AddButton @click="showCreateForm">Tambah Asesor</AddButton>
+            </div>
+        </CustomHeader>
         <!-- Form Tambah/Edit -->
         <div v-if="formMode === 'create' || formMode === 'edit'"
             class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -180,8 +186,8 @@ const destroy = () => {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <TextInput id="name" label="Nama Lengkap" v-model="form.name" type="text" required
                         :error="form.errors.name" />
-                    <TextInput id="email" label="Email" v-model="form.email" type="email" required
-                        :error="form.errors.email" />
+                    <TextInput v-if="formMode === 'create'" id="email" label="Email" v-model="form.email" type="email"
+                        required :error="form.errors.email" />
                     <TextInput id="no_met" label="No. MET" v-model="form.no_met" type="text" required
                         :error="form.errors.no_met" />
                     <DateInput id="masa_berlaku_sertif_teknis" label="Masa Berlaku Sertifikat Teknis"
@@ -192,13 +198,13 @@ const destroy = () => {
                         :error="form.errors.masa_berlaku_sertif_asesor" />
                     <TextInput id="no_tlp_hp" label="No. HP/WA" v-model="form.no_tlp_hp" type="text" required
                         :error="form.errors.no_tlp_hp" />
-                    <Checkbox v-if="formMode === 'edit'" id="is_active_asesor" v-model:checked="form.is_active"
-                        label="Status Aktif" :description="form.is_active
-                            ? 'Asesor aktif dan dapat dipilih untuk sertifikasi baru.'
-                            : 'Asesor nonaktif (disembunyikan dari pilihan sertifikasi baru).'"
-                        :error="form.errors.is_active" />
 
                 </div>
+                <Checkbox v-if="formMode === 'edit'" id="is_active_asesor" v-model:checked="form.is_active"
+                    label="Status Aktif" :description="form.is_active
+                        ? 'Asesor aktif dan dapat dipilih untuk sertifikasi baru.'
+                        : 'Asesor nonaktif (disembunyikan dari pilihan sertifikasi baru).'"
+                    :error="form.errors.is_active" />
                 <div class="flex items-center gap-4">
                     <PrimaryButton :disabled="form.processing">Simpan</PrimaryButton>
                     <SecondaryButton type="button" @click="backToList">Batal</SecondaryButton>
@@ -208,12 +214,7 @@ const destroy = () => {
 
         <!-- Tampilan Daftar -->
         <div v-else class="flex flex-col">
-            <CustomHeader judul="Manajemen Asesor">
-                <div class="flex gap-2">
-                    <ExportLink :href="route('admin.asesor.export')" target="_blank">Export</ExportLink>
-                    <AddButton @click="showCreateForm">Tambah Asesor</AddButton>
-                </div>
-            </CustomHeader>
+
             <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <div class="flex justify-end items-center mb-6 gap-3">
                     <div class="w-[243px]">
@@ -251,8 +252,7 @@ const destroy = () => {
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr v-for="(asesor, index) in listAsesor.data" :key="asesor.id"
-                                >
+                            <tr v-for="(asesor, index) in listAsesor.data" :key="asesor.id">
                                 <td class="px-2 py-3 text-sm text-gray-700 dark:text-gray-200 pl-3">
                                     {{ index + listAsesor.from }}
                                 </td>
@@ -306,7 +306,7 @@ const destroy = () => {
                 <li>Asesor hanya bisa dihapus jika belum pernah terlibat dalam sertifikasi</li>
                 <li>Asesor tidak bisa dihapus jika telah pernah terlibat dalam sertifikasi demi kebutuhan akuntabilitas
                     data dan audit</li>
-                <li>Gunakan status Nonaktif pada menu Edit agar asesor tidak muncul pada pilihan untuk memulai jadwal
+                <li>Gunakan status Nonaktif pada menu Edit agar asesor tidak muncul pada pilihan ketika memulai jadwal
                     sertifikasi</li>
             </ul>
         </Alert>
@@ -334,8 +334,9 @@ const destroy = () => {
             </h2>
 
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Asesor <span class="font-bold">{{ asesorToDelete?.user?.name }}</span> akan dihapus. 
-                Tindakan ini tidak dapat dibatalkan. Jika asesor ini sudah terlibat dalam suatu sertifikasi, penghapusan akan gagal demi akuntabilitas data.
+                Asesor <span class="font-bold">{{ asesorToDelete?.user?.name }}</span> akan dihapus.
+                Tindakan ini tidak dapat dibatalkan. Jika asesor ini sudah terlibat dalam suatu sertifikasi, penghapusan
+                akan gagal demi akuntabilitas data.
             </p>
 
             <div class="mt-6 flex justify-end">

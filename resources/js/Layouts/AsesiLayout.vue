@@ -15,7 +15,7 @@ const namaUser = computed(() => user.value.name);
 
 const userRole = computed(() => {
     const roles = page.props.auth?.roles || [];
-    return roles.length > 0 ? roles.join(', ').toUpperCase() : 'USER';
+    return roles.length > 0 ? roles.join(', ') : 'USER';
 });
 const flashMessage = computed(() => page.props?.flash?.message);
 const flashError = computed(() => page.props?.flash?.error);

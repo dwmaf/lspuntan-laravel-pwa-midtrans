@@ -127,7 +127,6 @@ class AsesorController extends Controller
         $user_asesor = $asesor->user;
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class . ',email,' . $user_asesor->id],
             'no_tlp_hp' => 'required|string|max:255',
             'no_met' => 'required|string|max:255',
             'masa_berlaku_sertif_teknis' => 'required|date',
@@ -172,7 +171,7 @@ class AsesorController extends Controller
         }
 
         DB::transaction(function () use ($request, $asesor, $user_asesor) {
-            $oldUserData = $user_asesor->only(['name', 'email', 'no_tlp_hp']);
+            $oldUserData = $user_asesor->only(['name', 'no_tlp_hp']);
             $oldData = $asesor->only([
                 'no_reg_met', 'masa_berlaku_sertif_teknis',
                 'masa_berlaku_sertif_asesor', 'is_active',
@@ -180,7 +179,6 @@ class AsesorController extends Controller
             $oldSkemaIds = $asesor->skema->pluck('id')->toArray();
 
             $userData = [
-                'email' => $request->email,
                 'no_tlp_hp' => $request->no_tlp_hp,
                 'name' => $request->name
             ];
@@ -203,7 +201,7 @@ class AsesorController extends Controller
             $afterIds = $asesor->skema->pluck('id')->toArray();
 
             $tracked = ['no_reg_met', 'masa_berlaku_sertif_teknis', 'masa_berlaku_sertif_asesor', 'is_active'];
-            $userTracked = ['name', 'email', 'no_tlp_hp'];
+            $userTracked = ['name', 'no_tlp_hp'];
             $old = [];
             $attributes = [];
             foreach ($tracked as $field) {

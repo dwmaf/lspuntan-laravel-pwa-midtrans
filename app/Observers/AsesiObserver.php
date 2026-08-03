@@ -4,7 +4,7 @@ namespace App\Observers;
 
 use App\Models\Asesi;
 use App\Models\Asesmen;
-use App\Models\News;
+use App\Models\Pengumuman;
 use App\Models\NotificationLog;
 use App\Traits\SendsPushNotifications;
 
@@ -15,21 +15,21 @@ class AsesiObserver
     public function created(Asesi $asesi): void
     {
         // pas asesi daftar dan rupanya udh ada pengumuman yg dibuat sebelumnya, jadi masih kena notif kalau udh ada pengumuman
-        $user = $asesi->student?->user;
+        $user = $asesi->mahasiswa?->user;
         if (!$user) return;
 
-        $pengumumans = News::where('sertification_id', $asesi->sertification_id)->get();
+        $pengumumans = Pengumuman::where('sertifikasi_id', $asesi->sertifikasi_id)->get();
 
         foreach ($pengumumans as $pengumuman) {
             $alreadyNotified = $user->notificationLogs()
                 ->where('type', 'PengumumanBaru')
-                ->where('link->news_id', $pengumuman->id)
+                ->where('link->pengumuman_id', $pengumuman->id)
                 ->exists();
 
             if (!$alreadyNotified) {
                 $title = 'Pengumuman';
                 $body = $pengumuman->rincian;
-                $url = route('asesi.pengumuman.index', [$asesi->sertification_id, $asesi->id, 'news_id' => $pengumuman->id]);
+                $url = route('asesi.pengumuman.index', [$asesi->sertifikasi_id, $asesi->id, 'pengumuman_id' => $pengumuman->id]);
                 $this->sendPushNotification($user, $title, $body, $url, 'PengumumanBaru');
 
                 NotificationLog::create([
@@ -48,7 +48,7 @@ class AsesiObserver
             $asesor = $asesi->asesor;
             if (!$asesor) return;
 
-            $hasAsesmen = Asesmen::where('sertification_id', $asesi->sertification_id)
+            $hasAsesmen = Asesmen::where('sertifikasi_id', $asesi->sertifikasi_id)
                 ->where('user_id', $asesor->user_id)
                 ->exists();
 
@@ -56,7 +56,7 @@ class AsesiObserver
                 $user = $asesi->student->user ?? null;
                 if (!$user) return;
 
-                $url = route('asesi.assessmen.index', [$asesi->sertification_id, $asesi]);
+                $url = route('asesi.assessmen.index', [$asesi->sertifikasi_id, $asesi]);
                 $alreadyNotified = $user->notificationLogs()
                     ->where('type', 'TugasAsesmenBaru')
                     ->where('link', $url)
@@ -78,18 +78,18 @@ class AsesiObserver
         }
     }
 
-    public function deleted(Asesi $asesi): void
-    {
-        //
-    }
+    // public function deleted(Asesi $asesi): void
+    // {
+    //     //
+    // }
 
-    public function restored(Asesi $asesi): void
-    {
-        //
-    }
+    // public function restored(Asesi $asesi): void
+    // {
+    //     //
+    // }
 
-    public function forceDeleted(Asesi $asesi): void
-    {
-        //
-    }
+    // public function forceDeleted(Asesi $asesi): void
+    // {
+    //     //
+    // }
 }

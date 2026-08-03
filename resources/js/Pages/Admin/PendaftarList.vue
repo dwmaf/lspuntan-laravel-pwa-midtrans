@@ -7,6 +7,7 @@ import SeeButton from "@/Components/Button/SeeButton.vue";
 import StatusBadge from "@/Components/StatusBadge.vue";
 import { MoveRight, FunnelIcon, X, FileText, Lock, Award } from 'lucide-vue-next';
 import { ref, computed, watch, reactive } from 'vue';
+import TextareaInput from "@/Components/Input/TextareaInput.vue";
 import PrimaryButton from '@/Components/Button/PrimaryButton.vue';
 import SecondaryButton from '@/Components/Button/SecondaryButton.vue';
 import SelectInput from '@/Components/Input/SelectInput.vue';
@@ -19,7 +20,9 @@ const props = defineProps({
     sertifikasi: Object,
     unassignedCount: {
         type: Number,
-    }
+    },
+    statusBerkasAdministrasiOptions: Array,
+    statusFinalAsesiOptions: Array,
 });
 
 const selectedAsesis = ref([]);
@@ -44,7 +47,7 @@ const canBulkUpdateBerkas = computed(() => {
 const canBulkAssignAsesor = computed(() => {
     if (selectedAsesis.value.length === 0) return false;
     if (!isAdmin.value) return false;
-    
+
     const selected = filteredAsesis.value.filter(a => selectedAsesis.value.includes(a.id));
     return selected.every(a => {
         const berkasStatus = typeof a.status_berkas === 'object' ? a.status_berkas?.value : a.status_berkas;
@@ -60,11 +63,12 @@ const canBulkUpdateFinal = computed(() => {
     return selected.every(a => {
         const user = usePage().props.auth.user;
         const berkasStatus = typeof a.status_berkas === 'object' ? a.status_berkas?.value : a.status_berkas;
-        
-        return berkasStatus === 'sudah_lengkap' && 
-               a.asesor_id !== null &&
-               !isAdmin.value &&
-               user.id === a.asesor?.user_id;
+
+        return berkasStatus === 'sudah_lengkap' &&
+            a.asesor_id !== null &&
+            !isAdmin.value &&
+            user.id === a.asesor?.user_id &&
+            !a.sertifikat;
     });
 });
 
@@ -116,18 +120,6 @@ const getStatusFinalAsesi = (status) => {
 
 const searchQuery = ref('');
 const showFilterModal = ref(false);
-
-const statusBerkasAdministrasiOptions = [
-    { value: 'menunggu_verifikasi_admin', text: 'Menunggu Verifikasi Admin' },
-    { value: 'perlu_perbaikan_berkas', text: 'Perlu Perbaikan Berkas' },
-    { value: 'sudah_lengkap', text: 'Sudah Lengkap' },
-];
-
-const statusFinalAsesiOptions = [
-    { value: 'belum_ditentukan', text: 'Belum Ditentukan' },
-    { value: 'belum_kompeten', text: 'Belum Kompeten' },
-    { value: 'kompeten', text: 'Kompeten' },
-];
 
 const filtersForm = ref({
     statusBerkasAdministrasi: '',
@@ -221,10 +213,19 @@ const bulkForm = useForm({
 });
 
 const asesorOptions = computed(() => {
-    return props.sertifikasi.asesor.map(asesor => ({
+    const selectedAsesiData = props.sertifikasi.asesi.filter(a => selectedAsesis.value.includes(a.id));
+    const allHaveAsesor = selectedAsesiData.length > 0 && selectedAsesiData.every(a => a.asesor_id);
+
+    const options = props.sertifikasi.asesor.map(asesor => ({
         value: asesor.id,
         text: asesor.user.name
     }));
+
+    if (allHaveAsesor) {
+        options.unshift({ value: '', text: 'Reset jadi Belum Ditetapkan' });
+    }
+
+    return options;
 });
 
 const openBulkModal = (type) => {
@@ -262,25 +263,30 @@ const submitBulk = () => {
                     <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                         {{ selectedAsesis.length }} dipilih:
                     </span>
-                    <SecondaryButton v-if="canBulkUpdateBerkas" @click="openBulkModal('berkas')" class="py-2! px-3! normal-case!">
+                    <SecondaryButton v-if="canBulkUpdateBerkas" @click="openBulkModal('berkas')"
+                        class="py-2! px-3! normal-case!">
                         <FileText class="w-4 mr-1" />
                         Update Status Berkas
                     </SecondaryButton>
-                    <SecondaryButton v-if="canBulkAssignAsesor" @click="openBulkModal('assign_asesor')" class="py-2! px-3! normal-case!">
+                    <SecondaryButton v-if="canBulkAssignAsesor" @click="openBulkModal('assign_asesor')"
+                        class="py-2! px-3! normal-case!">
                         <FileText class="w-4 mr-1" />
                         Assign Asesor
                     </SecondaryButton>
-                    <SecondaryButton v-if="canBulkUpdateFinal" @click="openBulkModal('final')" class="py-2! px-3! normal-case!">
+                    <SecondaryButton v-if="canBulkUpdateFinal" @click="openBulkModal('final')"
+                        class="py-2! px-3! normal-case!">
                         <Award class="w-4 mr-1" />
                         Update Status Final
                     </SecondaryButton>
-                    <span v-if="!canBulkUpdateBerkas && !canBulkAssignAsesor && !canBulkUpdateFinal" 
-                          class="text-xs italic text-red-500 max-w-sm leading-tight inline-block">
-                        <template v-if="$page.props.auth.user.role === 'admin'">
-                            *Beberapa aksi tidak tersedia karena asesi yang dipilih memiliki status yang beragam, atau tidak memenuhi syarat (contoh: sudah memiliki asesor/status akhir).
+                    <span v-if="!canBulkUpdateBerkas && !canBulkAssignAsesor && !canBulkUpdateFinal"
+                        class="text-xs italic text-red-500 max-w-sm leading-tight inline-block">
+                        <template v-if="isAdmin">
+                            *Beberapa aksi tidak tersedia karena asesi yang dipilih memiliki status yang beragam, atau
+                            tidak memenuhi syarat (contoh: sudah memiliki asesor/status akhir).
                         </template>
                         <template v-else>
-                            *Beberapa aksi tidak tersedia. Pastikan berkas asesi telah dinyatakan lengkap oleh Admin dan ditugaskan kepada Anda.
+                            *Beberapa aksi tidak tersedia. Mungkin asesi tersebut sudah dicatat data sertifikatnya. Pastikan berkas asesi telah dinyatakan lengkap oleh Admin dan
+                            ditugaskan kepada Anda.
                         </template>
                     </span>
                 </div>
@@ -356,9 +362,11 @@ const submitBulk = () => {
                                 </StatusBadge>
                             </td>
                             <td class="px-2 py-4 whitespace-nowrap text-sm">
-                                <span v-if="asesi.asesor" class="flex flex-col gap-1 font-medium text-gray-900 dark:text-gray-100">
+                                <span v-if="asesi.asesor"
+                                    class="flex flex-col gap-1 font-medium text-gray-900 dark:text-gray-100">
                                     {{ asesi.asesor.user?.name }}
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ asesi.asesor.user?.email }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ asesi.asesor.user?.email }}
+                                    </div>
                                 </span>
                                 <StatusBadge v-else variant="neutral">
                                     Belum Ditetapkan
@@ -370,8 +378,12 @@ const submitBulk = () => {
                                         {{ getStatusFinalAsesi(asesi.status_final).text }}
                                     </StatusBadge>
                                     <template v-if="isAdmin && asesi.status_final === 'kompeten'">
-                                        <span v-if="asesi.sertifikat" class="text-xs text-green-600 dark:text-green-400 font-medium">Sertifikat sudah terbit</span>
-                                        <span v-else class="text-xs text-yellow-600 dark:text-yellow-400 font-medium">Sertifikat belum terbit</span>
+                                        <span v-if="asesi.sertifikat"
+                                            class="text-xs text-green-600 dark:text-green-400 font-medium">Data
+                                            sertifikat tercatat</span>
+                                        <span v-else
+                                            class="text-xs text-yellow-600 dark:text-yellow-400 font-medium">Data
+                                            sertifikat belum tercatat</span>
                                     </template>
                                 </div>
                             </td>
@@ -384,11 +396,14 @@ const submitBulk = () => {
                         </tr>
                         <tr v-else>
                             <td colspan="7" class="px-2 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                                <template v-if="activeFilters.statusBerkasAdministrasi || activeFilters.statusFinalAsesi || activeFilters.asesor">
+                                <template
+                                    v-if="activeFilters.statusBerkasAdministrasi || activeFilters.statusFinalAsesi || activeFilters.asesor">
                                     Tidak ada data yang cocok dengan filter yang dipilih.
                                 </template>
                                 <template v-else-if="isAsesor">
-                                    Belum ada asesi yang ditugaskan kepada Anda. Terdapat <span class="font-bold text-blue-600 dark:text-blue-400">{{ props.unassignedCount }}</span> asesi yang belum diassign ke asesor pada sertifikasi ini.
+                                    Belum ada asesi yang ditugaskan kepada Anda. Terdapat <span
+                                        class="font-bold text-blue-600 dark:text-blue-400">{{ props.unassignedCount
+                                        }}</span> asesi yang belum diassign ke asesor pada sertifikasi ini.
                                 </template>
                                 <template v-else>
                                     Tidak ada data pendaftar untuk skema ini.
@@ -439,11 +454,10 @@ const submitBulk = () => {
                         <template v-if="bulkType === 'berkas'">
                             <SelectInput label="Status Berkas Administrasi" v-model="bulkForm.status_berkas"
                                 :options="statusBerkasAdministrasiOptions" />
-                            <div v-if="bulkForm.status_berkas === 'perlu_perbaikan_berkas'">
-                                <InputLabel for="catatan_perbaikan_bulk" value="Catatan Perbaikan" />
-                                <TextInput id="catatan_perbaikan_bulk" class="mt-1 block w-full"
-                                    v-model="bulkForm.catatan_perbaikan" />
-                            </div>
+                            <TextareaInput v-if="bulkForm.status_berkas === 'perlu_perbaikan_berkas'"
+                                id="catatan_perbaikan_bulk" label="Catatan Perbaikan"
+                                v-model="bulkForm.catatan_perbaikan" required :error="bulkForm.errors.catatan_perbaikan"
+                                rows="3" />
                         </template>
                         <template v-if="bulkType === 'final'">
                             <SelectInput label="Status Final Asesi" v-model="bulkForm.status_final"

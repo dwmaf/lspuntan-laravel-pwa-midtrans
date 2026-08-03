@@ -22,7 +22,7 @@ const isDeadlinePassed = computed(() => {
     return new Date() > new Date(props.sertifikasi.asesmen.deadline);
 });
 
-const isStatusFinalLocked = computed (() => {
+const isStatusFinalLocked = computed(() => {
     return props.asesi.status_final !== 'belum_ditetapkan';
 });
 
@@ -108,12 +108,14 @@ const showViewMode = () => {
             <div class="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mb-2">
                 <div v-if="props.sertifikasi.asesmen">
                     <div class="flex items-center gap-3 mb-4">
-                        <CreatorInfo :name="sertifikasi.asesmen?.user?.name" :created-at="sertifikasi.asesmen?.created_at"
-                            :updated-at="sertifikasi.asesmen?.updated_at" v-if="sertifikasi.asesmen" class="mb-4" />
+                        <CreatorInfo :name="sertifikasi.asesmen?.user?.name"
+                            :created-at="sertifikasi.asesmen?.created_at" :updated-at="sertifikasi.asesmen?.updated_at"
+                            v-if="sertifikasi.asesmen" class="mb-4" />
                     </div>
 
                     <div v-html="props.sertifikasi.asesmen.content.replace(/\n/g, '<br>')"
-                        class="prose dark:prose-invert max-w-none font-medium text-sm text-gray-800 dark:text-gray-100"></div>
+                        class="prose dark:prose-invert max-w-none font-medium text-sm text-gray-800 dark:text-gray-100">
+                    </div>
 
 
                     <div class="mt-4 mb-4 p-3 rounded-md border" :class="deadlineStatus.colorClass">
@@ -135,8 +137,7 @@ const showViewMode = () => {
                         <a :href="`/download/asesmen/${sertifikasi.asesmen.id}/path_file`" target="_blank"
                             class="text-sm flex items-center gap-2 group min-w-0">
                             <FileIcon :path="sertifikasi.asesmen.path_file" />
-                            <span
-                                class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">
+                            <span class="text-blue-500 group-hover:text-blue-700 truncate group-hover:underline">
                                 {{ sertifikasi.asesmen.path_file.split('/').pop() }}
                             </span>
                         </a>
@@ -145,16 +146,19 @@ const showViewMode = () => {
                     <!-- Form Pengumpulan Tugas Asesi -->
                     <div v-if="cannotSubmit && !asesi.path_file_asesmen"
                         class="mt-8 text-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-                        <p v-if="isDeadlinePassed" class="text-gray-500 dark:text-gray-400">Anda tidak dapat mengumpulkan tugas karena batas
+                        <p v-if="isDeadlinePassed" class="text-gray-500 dark:text-gray-400">Anda tidak dapat
+                            mengumpulkan tugas karena batas
                             waktu telah berakhir.</p>
-                        <p v-else-if="isStatusFinalLocked" class="text-gray-500 dark:text-gray-400">Anda tidak dapat mengumpulkan tugas karena status final Anda telah ditetapkan.</p>
+                        <p v-else-if="isStatusFinalLocked" class="text-gray-500 dark:text-gray-400">Anda tidak dapat
+                            mengumpulkan tugas karena status final Anda telah ditetapkan.</p>
                     </div>
 
                     <div v-else class="mt-8 border-t dark:border-gray-700 pt-6">
                         <div class="flex items-center justify-between mb-4">
                             <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 tracking-wider uppercase">
                                 {{ submissionMode === 'view' && asesi.path_file_asesmen ? 'Status Pengumpulan' :
-                                    'Unggah Tugas Asesmen' }}
+                                    submissionMode === 'submit' && asesi.path_file_asesmen ? 'Edit Tugas Asesmen' :
+                                'Unggah Tugas Asesmen' }}
                             </h4>
                         </div>
                         <FileCard v-if="submissionMode === 'view' && asesi.path_file_asesmen"
@@ -167,6 +171,7 @@ const showViewMode = () => {
                                 v-model:deleteList="form.delete_files_asesi" delete-identifier="path_file_asesmen"
                                 label="File asesmen anda"
                                 :existing-file-url="asesi?.path_file_asesmen ? `/download/asesis/${asesi.id}/path_file_asesmen` : null"
+                                :file-name="asesi?.path_file_asesmen ? asesi.path_file_asesmen.split('/').pop() : ''"
                                 :is-marked-for-deletion="form.delete_files_asesi.includes('path_file_asesmen')"
                                 :error="form.errors.path_file_asesmen"
                                 :required="!asesi?.path_file_asesmen || form.delete_files_asesi.includes('path_file_asesmen')"

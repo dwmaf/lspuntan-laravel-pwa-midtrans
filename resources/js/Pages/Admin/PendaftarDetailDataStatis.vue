@@ -10,10 +10,10 @@ const getFiles = (collection, type) => {
     if (!collection) return [];
     return collection.filter(file => file.type === type);
 };
-
-const suratMagangFiles = computed(() => getFiles(props.asesi.asesifiles, 'surat_ket_magang'));
-const sertifPelatihanFiles = computed(() => getFiles(props.asesi.asesifiles, 'sertif_pelatihan'));
-const dokPendukungFiles = computed(() => getFiles(props.asesi.asesifiles, 'dok_pendukung_lain'));
+console.log(props.asesi);
+const suratMagangFiles = computed(() => getFiles(props.asesi.berkas_asesi, 'surat_ket_magang'));
+const sertifPelatihanFiles = computed(() => getFiles(props.asesi.berkas_asesi, 'sertif_pelatihan'));
+const dokPendukungFiles = computed(() => getFiles(props.asesi.berkas_asesi, 'dok_pendukung_lain'));
 
 const getFileName = (path) => {
     if (!path) return '';

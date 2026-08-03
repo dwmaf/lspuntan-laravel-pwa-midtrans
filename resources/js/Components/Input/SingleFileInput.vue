@@ -11,6 +11,7 @@ const props = defineProps({
     deleteList: Array,
     deleteIdentifier: String,
     existingFileUrl: String,
+    fileName: { type: String, default: ''},
     isMarkedForDeletion: Boolean,
     label: String,
     id: String,
@@ -29,6 +30,9 @@ const isDragActive = ref(false);
 const localValidationError = ref('');
 
 const existingFileName = computed(() => {
+    if (props.fileName) {
+        return props.fileName;
+    }
     if (!props.existingFileUrl) {
         return '';
     }

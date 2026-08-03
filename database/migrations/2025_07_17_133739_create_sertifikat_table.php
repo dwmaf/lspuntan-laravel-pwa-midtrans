@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('nomor_registrasi')->unique()->nullable();
             $table->date('tanggal_terbit');
             $table->date('berlaku_hingga');
-            $table->string('file_path');
             $table->timestamps();
         });
     }

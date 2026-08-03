@@ -78,11 +78,19 @@ class AsesmenController extends Controller
             if ($asesis->isNotEmpty()) {
                 $title = 'Update Tugas Asesmen';
                 $body = 'Instruksi Tugas asesmen diperbaharui untuk sertifikasi ' . $sertifikasi->skema->nama_skema;
+                $batchData = [];
                 foreach ($asesis as $asesi) {
                     $user = $asesi->mahasiswa->user ?? null;
-                    $url = route('asesi.assessmen.index', [$sertifikasi, $asesi]);
-                    $this->sendPushNotification($user, $title, $body, $url, 'TugasAsesmenBaru');
+                    if ($user) {
+                        $batchData[] = [
+                            'user_id' => $user->id,
+                            'title' => $title,
+                            'body' => $body,
+                            'url' => route('asesi.assessmen.index', [$sertifikasi, $asesi])
+                        ];
+                    }
                 }
+                $this->sendBatchNotification($batchData, 'TugasAsesmenBaru');
             }
         }
 

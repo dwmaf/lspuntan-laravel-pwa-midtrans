@@ -308,7 +308,7 @@ class KelolaSertifikasiAsesiController extends Controller
 
             FileHelper::handleSingleFileUploads($mahasiswa, ['foto_ktp', 'pas_foto'], $request, 'berkas_mahasiswa');
             FileHelper::handleSingleFileUploads($asesi, ['bukti_bayar', 'apl_1', 'apl_2', 'foto_ktm', 'transkrip_nilai'], $request, 'berkas_asesi');
-            FileHelper::handleCollectionFileUploads(BerkasAsesi::class, 'asesi_id', $asesi->id, $request, ['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain'], 'asesi_files');
+            FileHelper::handleCollectionFileUploads(BerkasAsesi::class, 'asesi_id', $asesi->id, $request, ['surat_ket_magang', 'sertif_pelatihan', 'dok_pendukung_lain'], 'berkas_asesi');
 
             FileHelper::saveIfDirty([$mahasiswa, $user, $asesi]);
 
